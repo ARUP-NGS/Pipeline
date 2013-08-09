@@ -2437,11 +2437,12 @@ public class VarUtils {
 				
 			}
 			
-			System.out.println(VariantRec.getSimpleHeader());
+			System.out.println(VariantRec.getSimpleHeader() + "\tsample.count");
 			for(String contig : union.getContigs()) {
 				for(VariantRec var : union.getVariantsForContig(contig)) {
 					if (var.getProperty(VariantRec.SAMPLE_COUNT) > 0) {
-						System.out.println(contig + "\t" + var.getStart() + "\t" + var.getRef() + "\t" + var.getAlt() + "\t" + var.getPropertyOrAnnotation(VariantRec.SAMPLE_COUNT));
+						System.out.println(var.toSimpleString() + "\t" + var.getPropertyOrAnnotation(VariantRec.SAMPLE_COUNT) );
+						//System.out.println(contig + "\t" + var.getStart() + "\t" + var.getRef() + "\t" + var.getAlt() + "\t" + var.getPropertyOrAnnotation(VariantRec.SAMPLE_COUNT));
 					}
 				}
 			}
