@@ -28,7 +28,8 @@ public class VCFLineParser implements VariantLineReader {
 		private String[] formatToks = null; //Tokenized format string, produced as needed
 		private int gtCol = -1; //Format column which contains genotype info
 		private int gqCol = -1; //Format column which contains genotype quality info 
-		private int adCol = -1; //Format column which contains allele depth info 
+		private int adCol = -1; //Format column which contains allele depth info
+		private int aoCol = -1; //Format column which contains 'alternate allele' depth count
 		private int dpCol = -1; //Format column which contains depth info
 				
 		private String sample = null; //Emit information for only this sample if specified (when not given, defaults to first sample)
@@ -627,12 +628,17 @@ public class VCFLineParser implements VariantLineReader {
 			if (formatToks == null)
 				return 1;
 			
-			if (adCol < 0)
+			//if adCol specified, use it. Otherwise, try aoCol. If there's not that either, return null;
+			int colIndex = adCol;
+			if (colIndex < 0) {
+				colIndex = aoCol;
+			}
+			if (colIndex < 0)
 				return null;
 				
 			
 			String[] formatValues = lineToks[sampleColumn].split(":");
-			String adStr = formatValues[adCol];
+			String adStr = formatValues[colIndex];
 			try {
 				String[] depths = adStr.split(",");
 				if (depths.length==1)
@@ -675,6 +681,9 @@ public class VCFLineParser implements VariantLineReader {
 				}
 				if (formatToks[i].equals("DP")) {
 					dpCol = i;
+				}
+				if (formatToks[i].equals("AO")) {
+					aoCol = i;
 				}
 
 			}
