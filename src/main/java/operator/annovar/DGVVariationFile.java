@@ -9,9 +9,8 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import pipeline.Pipeline;
-
+import util.Interval;
 import buffer.IntervalsFile;
-import buffer.IntervalsFile.Interval;
 
 /**
  * Provides access to the information in a 'variation' file from the DGV, which catalogues large chromosomal 
