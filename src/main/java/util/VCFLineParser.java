@@ -94,7 +94,8 @@ public class VCFLineParser implements VariantLineReader {
 				advanceLine();
 				
 				if (currentLine == null) {
-					throw new IOException("Could not find start of data");
+					//no data in file
+					return;
 				}
 				
 				if (currentLine.startsWith("#CHROM")) {
@@ -117,7 +118,6 @@ public class VCFLineParser implements VariantLineReader {
 						throw new IllegalArgumentException("Cannot find column for sample " + sample);
 					}
 				}
-				
 				
 			}
 		}
@@ -628,23 +628,32 @@ public class VCFLineParser implements VariantLineReader {
 			if (formatToks == null)
 				return 1;
 			
-			//if adCol specified, use it. Otherwise, try aoCol. If there's not that either, return null;
+			//if adCol specified (from GATK), use it. Otherwise, try aoCol (from IonTorrent). If there's not that either, return null;
+			boolean depthFromAD = true;
 			int colIndex = adCol;
 			if (colIndex < 0) {
+				depthFromAD = false;
 				colIndex = aoCol;
 			}
 			if (colIndex < 0)
 				return null;
 				
-			
+			//Confusing logic below to parse var depth (alt depth) from both GATK and IonTorrent-style vcfs...
 			String[] formatValues = lineToks[sampleColumn].split(":");
 			String adStr = formatValues[colIndex];
 			try {
 				String[] depths = adStr.split(",");
-				if (depths.length==1)
-					return 0;
-				Integer altReadDepth = Integer.parseInt(depths[which+1]);
-				return altReadDepth;
+				if (depthFromAD) {
+					if (depths.length==1) 
+						return 0;
+					else 
+						return Integer.parseInt(depths[which+1]); 
+				}
+				else {
+					Integer altReadDepth = Integer.parseInt(depths[which]);
+					return altReadDepth;
+				}
+				
 			}
 			catch (NumberFormatException ex) {
 				System.err.println("Could not parse alt depth from " + adStr);

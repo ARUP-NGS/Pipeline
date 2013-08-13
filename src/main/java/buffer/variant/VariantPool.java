@@ -110,7 +110,7 @@ public class VariantPool extends Operator  {
 		do {
 			VariantRec rec = reader.toVariantRec();
 			if (rec == null) {
-				if (reader.getCurrentLine().length()>0)
+				if (reader.getCurrentLine() != null && reader.getCurrentLine().length()>0)
 					System.err.println("Warning, could not import variant from line: " + reader.getCurrentLine() );
 			}
 			else {
