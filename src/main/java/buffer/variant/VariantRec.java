@@ -566,7 +566,8 @@ public class VariantRec {
 	public static final String VARBIN_BIN = "varbin.bin";
 	public static final String CLINVAR_TYPE = "dbsnp.clinvar.type";
 	public static final String CLINVAR_VALIDATED = "dbsnp.clinvar.validated";
-	public static final String RP_SCORE = "readpos.score";	
+	public static final String RP_SCORE = "readpos.score";
+	public static final String HALOPLEX_PANEL_FREQ = "haloplex.freq";
 	
 }
 
