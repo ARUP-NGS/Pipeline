@@ -6,16 +6,13 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 
-import org.junit.Assert;
-import org.junit.Test;
-
+import junit.framework.Assert;
 import util.VarUtils;
 import buffer.VCFFile;
 import buffer.variant.VariantPool;
 
 public class VarUtilsTests {
 
-	@Test
 	public void TestSubtraction() {
 		
 		//These tests are run by emulating a full varUtils command line, so we can
