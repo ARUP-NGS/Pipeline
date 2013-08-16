@@ -29,6 +29,13 @@
 	    <descriptorRefs>
 	      <descriptorRef>jar-with-dependencies</descriptorRef>
 	    </descriptorRefs>
+	    <archive>
+             <manifest>
+               <addClasspath>true</addClasspath>
+               <mainClass>pipeline.Pipeline</mainClass>
+             </manifest>
+           </archive>
+
 	  </configuration>
 	</plugin>
     </plugins>
