@@ -1937,8 +1937,6 @@ public class VarUtils {
 		try {
 			VariantLineReader baseVars = getReader(args[1]);
 			System.out.println(baseVars.getHeader().trim());
-			if (args[1].endsWith(".vcf"))
-				baseVars.advanceLine(); //Skips header
 			
 			do {
 				VariantRec var = baseVars.toVariantRec();

@@ -10,7 +10,7 @@ import pipeline.Pipeline;
 import buffer.variant.VariantRec;
 
 public class FPAnnotator extends Annotator{
-	 HaloplexDB haloDB = null;
+	 	HaloplexDB haloDB = null;
 	     
 	    @Override
 		public void annotateVariant(VariantRec var) throws OperationFailedException {
