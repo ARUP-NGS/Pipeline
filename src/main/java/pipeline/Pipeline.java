@@ -25,6 +25,9 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import operator.OperationFailedException;
 import operator.Operator;
+import operator.hook.OperatorHook;
+import operator.hook.OperatorStartHook;
+import operator.hook.OperatorEndHook;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -429,6 +432,17 @@ public class Pipeline {
 				Date opStart = new Date();
 				fireOperatorBeginning(op);
 				op.setAttribute(START_TIME, "" + opStart.getTime());
+				// Add the hooks to each operator
+				// NOTE: OperatorHook.initHook must be called
+				for(OperatorHook osh : handler.getHookList()){
+					osh.initHook(op);
+					if(osh instanceof OperatorStartHook){
+						op.addStartHook((OperatorStartHook)osh);
+					}
+					if(osh instanceof OperatorEndHook){
+						op.addEndHook((OperatorEndHook)osh);
+					}
+				}
 				primaryLogger.info("Executing operator : " + op.getObjectLabel() + " class: " + op.getClass());
 				op.operate();
 				System.err.flush(); //Make sure info is written to logger if necessary

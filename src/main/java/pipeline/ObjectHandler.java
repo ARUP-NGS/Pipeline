@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 import operator.Operator;
+import operator.hook.OperatorHook;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -27,14 +28,15 @@ public class ObjectHandler {
 
 	protected Document doc;
 	protected List<Operator> operatorList = null;
-	
+	protected List<OperatorHook> hookList = null;
+
 	protected Map<String, PipelineObject> objectMap = new HashMap<String, PipelineObject>();
 
 	private final boolean verbose = false;
 	private Pipeline pipelineOwner = null;
-	
+
 	private ClassLoader classLoader = null;
-	
+
 	public ObjectHandler(Pipeline pipeline, Document doc) {
 		this.pipelineOwner = pipeline;
 		this.doc = doc;
@@ -48,7 +50,7 @@ public class ObjectHandler {
 	public PipelineObject getObjectForLabel(String label) {
 		return objectMap.get(label);
 	}
-	
+
 	/**
 	 * Return a reference to the Pipeline object that 'owns' this ObjectHandler 
 	 * @return
@@ -56,7 +58,7 @@ public class ObjectHandler {
 	public Pipeline getPipelineOwner() {
 		return pipelineOwner;
 	}
-	
+
 	/**
 	 * Recursively create and initialize all elements found in the input Document. All objects that are
 	 * Operators are added to the operatorList field. 
@@ -64,7 +66,7 @@ public class ObjectHandler {
 	 * @throws ObjectCreationException
 	 */
 	public void readObjects() throws ObjectCreationException {
-		
+
 		//Instantiate top-level buffers
 		Element root = doc.getDocumentElement();
 		Logger.getLogger(Pipeline.primaryLoggerName).info("Reading objects for document with root element : " + root.getNodeName() );
@@ -72,28 +74,43 @@ public class ObjectHandler {
 			System.out.println("Reading objects... root element is : " + root);
 		}
 		createElement(root); //Recursively creates all child elements
-				
-		//Build operator list. We assume all operators are at top level for now
+
+		//Build operator list and hook list.  
+		// Hooks are added to every operator by the Pipeline (for now).
+		// We assume all operators and the hooks list are at top level for now
+		hookList = new ArrayList<OperatorHook>();
 		operatorList = new ArrayList<Operator>();
 		NodeList children = root.getChildNodes();
 		for(int i=0; i<children.getLength(); i++) {
 			Node child = children.item(i);
-			if (child.getNodeType() == Node.ELEMENT_NODE) {
-				String label = child.getNodeName();
-				PipelineObject obj = objectMap.get(label);
-				if (obj instanceof Operator) {
-					Operator op = (Operator)obj;
-					if (operatorList.contains(op)) {
-						throw new ObjectCreationException("The input file appears to contain duplicate operators, named: " + op.getObjectLabel(), (Element)child);
-					}
-					Logger.getLogger(Pipeline.primaryLoggerName).info("Adding operator :" + label + " of class " + op.getClass() + " to operator list");
-					operatorList.add( op );
+
+			// We have a special case for hooks, since all hooks are listed inside the "hooks" node
+			if(child.getNodeType() == Node.ELEMENT_NODE && child.getNodeName().equals("hooks")){
+				NodeList hookChildren = child.getChildNodes();
+				for(int j=0; j<hookChildren.getLength(); j++){
+					addObjectToList(hookChildren.item(j), OperatorHook.class, hookList);
 				}
+			}
+			addObjectToList(child, Operator.class, operatorList);
+		}
+	}
+
+	public void addObjectToList(Node n, Class<?> c, List list) throws ObjectCreationException{
+		if(n.getNodeType() == Node.ELEMENT_NODE){
+			String label = n.getNodeName();
+			PipelineObject obj = objectMap.get(label);
+			if(c.isInstance(obj)){
+				Object o = c.cast(obj);
+				if(list.contains(o)){
+					throw new ObjectCreationException("The input file appears to contain duplicate " + c.getCanonicalName() + ", named: " + obj.getObjectLabel(), (Element)n);
+				}
+				Logger.getLogger(Pipeline.primaryLoggerName).info("Adding " + c.getCanonicalName() + ": " + label + " of class " + obj.getClass() + " to " + c.getSimpleName() + " list");
+				list.add(o);
 			}
 		}
 	}
-	
-	
+
+
 	/**
 	 * Get the list of Operators defined at top level in the xml file 
 	 * @return
@@ -101,7 +118,11 @@ public class ObjectHandler {
 	public List<Operator> getOperatorList() {
 		return operatorList;
 	}
-	
+
+	public List<OperatorHook> getHookList(){
+		return hookList;
+	}
+
 	/**
 	 * Recursively creates all objects descending from the given XML element (in pre-order) 
 	 * and then creates this element using the default no-arg constructor (as in class.newInstance() )
@@ -114,7 +135,7 @@ public class ObjectHandler {
 		if (verbose) {
 			System.out.println("Examining element : " + el.getNodeName());
 		}
-		
+
 		//Recursively create children first
 		NodeList children = el.getChildNodes();
 		for(int i=0; i<children.getLength(); i++) {
@@ -125,14 +146,14 @@ public class ObjectHandler {
 				//We don't actually do anything with the element now. It might be null if the element has no class="blah" info
 			}	
 		}
-		
+
 		String classStr = getElementClass(el);
 		if (classStr != null && classStr.length()>0) {
 			try {
 				if (verbose) {
 					System.out.println("Class element is : " + classStr + " ... attempting creation");
 				}
-				
+
 				//We're here because a class string has been listed as an argument to this element, meaning that it maps
 				//to an object we should create. If there's already an object with the same label but a different
 				//class in the objectMap, we should throw an error
@@ -151,13 +172,13 @@ public class ObjectHandler {
 				if (verbose) {
 					System.out.println("Class " + clz + " loaded successfully!");
 				}
-				
+
 				Object instance = clz.newInstance();
 				if (verbose) {
 					System.out.println("Successfully created object of " + instance.getClass() );
 				}
-			
-	
+
+
 				PipelineObject obj = (PipelineObject) instance;
 				obj.setObjectLabel(el.getNodeName());
 				obj.setObjectHandler(this);
@@ -213,7 +234,7 @@ public class ObjectHandler {
 	public void setClassLoader(ClassLoader loader) {
 		this.classLoader = loader;
 	}
-	
+
 	/**
 	 * Returns the value of the attribute associated with the key CLASS_ATTR, or 
 	 * an *EMPTY STRING* (not null) if no such attribute exists 
@@ -225,6 +246,6 @@ public class ObjectHandler {
 		return val;
 	}
 
-	
-	
+
+
 }
