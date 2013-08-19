@@ -14,6 +14,9 @@ import pipeline.PipelineObject;
  */
 public abstract class OperatorHook extends PipelineObject implements IOperatorHook {
 	protected Map<String, String> properties = new HashMap<String, String>();
+	protected static final String STATUS_STARTING = "Starting";
+	protected static final String STATUS_STOPPING = "Stopping";
+	
 	
 	@Override
 	public void setAttribute(String key, String value) {
