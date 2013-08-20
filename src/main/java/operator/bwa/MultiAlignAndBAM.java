@@ -379,10 +379,18 @@ public class MultiAlignAndBAM extends PipedCommandOp {
 		
 		public AlignerJob(FileBuffer inputFile) {
 			String temp="";
-			if(maxGapOpen!= null) temp=temp+ " -o " + maxGapOpen;
-			if(maxGapExt!= null) temp=temp+ " -o " + maxGapExt;
-			if(penGapOpen!= null) temp=temp+ " -o " + penGapOpen;
-			if(penGapExt!= null) temp=temp+ " -o " + penGapExt;
+			if(maxGapOpen!= null){
+				temp=temp+ " -o " + maxGapOpen;
+			}
+			if(maxGapExt!= null){
+				temp=temp+ " -e " + maxGapExt;
+			}
+			if(penGapOpen!= null){
+				temp=temp+ " -O " + penGapOpen;
+			}
+			if(penGapExt!= null){
+				temp=temp+ " -E " + penGapExt;
+			}
 			
 			baseFilename = inputFile.getFilename();
 			if(maxEditDist != null){
