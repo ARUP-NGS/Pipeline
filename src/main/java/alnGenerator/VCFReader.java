@@ -2,7 +2,6 @@ package alnGenerator;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
@@ -39,10 +38,10 @@ public class VCFReader {
 		while (line != null && (!line.startsWith("#CHROM"))) {
 			line = reader.readLine();
 		}
+		reader.close();
 		if (line == null) {
 			throw new IOException("Could not read data from file, no column header line found");
 		}
-		
 		String[] toks = line.split("\t");
 		//First 8 columns are info, remaining columns are samples
 		for(int i=8; i<toks.length; i++) {
@@ -50,6 +49,7 @@ public class VCFReader {
 			Integer column = i;
 			sampleColumnMap.put(sampleName, column);
 		}
+		
 	}
 	
 	/**
@@ -64,6 +64,7 @@ public class VCFReader {
 		while (line != null && (line.startsWith("#"))) {
 			line = reader.readLine();
 		}
+		reader.close();
 		if (line == null) {
 			throw new IOException("Could not read data from file, no column header line found");
 		}
@@ -149,9 +150,7 @@ public class VCFReader {
 			alnGen.addSampleReader(varReader);
 			
 			List<ProtoSequence> seqs = alnGen.getAlignment("" + contig, startPos, endPos);
-			
-			
-			
+				
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

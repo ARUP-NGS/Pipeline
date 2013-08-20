@@ -68,6 +68,7 @@ public class BAMFile extends FileBuffer implements HasMD5 {
 		
 		String mdStr = new String(digestor.digest()); 
 		setMD5Sum(mdStr);
+		inputSam.close();
 	}
 	
 	public void setMD5Sum(String sum) {
