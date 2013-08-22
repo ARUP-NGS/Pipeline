@@ -37,10 +37,18 @@ public class MultiAlignAndBAM extends PipedCommandOp {
 	public static final String SEED_LENGTH = "seed.length";
 	public static final String SAMPLE = "sample";
 	public static final String MAXEDITDIST = "max.edit.dist";
+	public static final String MAXGAPOPEN = "max.gap.open";
+	public static final String MAXGAPEXT = "max.gap.ext";
+	public static final String PENGAPOPEN = "pen.gap.open";
+	public static final String PENGAPEXT = "pen.gap.ext";
 	
 	
 	protected int sampeThreads = 1;  //Overridden in performOperation
 	protected String maxEditDist; //Maximum edit distance for alignment
+	protected String maxGapOpen; //Maximum number of gap opens for alignment, default is [1]
+	protected String maxGapExt; //Maximum number of gap extensions, -1 for k-difference mode (disallowing long gaps), default is [-1]
+	protected String penGapOpen; //Gap open penalty, default is [11]
+	protected String penGapExt; //Gap extension penalty, default is [4]
 	protected String pathToBWA = "bwa";
 	protected String pathToSamTools = "samtools";
 	protected int defaultThreads = 4;
@@ -93,6 +101,38 @@ public class MultiAlignAndBAM extends PipedCommandOp {
 		}
 		else{
 			maxEditDist = null;
+		}
+
+		String maxGapOpenAttr = properties.get(MAXGAPOPEN);
+		if(maxGapOpenAttr != null){
+			maxGapOpen = maxGapOpenAttr;
+		}
+		else{
+			maxGapOpen = null;
+		}
+
+		String maxGapExtAttr = properties.get(MAXGAPEXT);
+		if(maxGapExtAttr != null){
+			maxGapExt = maxGapExtAttr;
+		}
+		else{
+			maxGapExt = null;
+		}
+
+		String penGapOpenAttr = properties.get(PENGAPOPEN);
+		if(penGapOpenAttr != null){
+			penGapOpen = penGapOpenAttr;
+		}
+		else{
+			penGapOpen = null;
+		}
+
+		String penGapExtAttr = properties.get(PENGAPEXT);
+		if(penGapExtAttr != null){
+			penGapExt = penGapExtAttr;
+		}
+		else{
+			penGapExt = null;
 		}
 		
 		String singleEndAttr = properties.get(SINGLE_END);
@@ -338,12 +378,26 @@ public class MultiAlignAndBAM extends PipedCommandOp {
 		String baseFilename;
 		
 		public AlignerJob(FileBuffer inputFile) {
+			String temp="";
+			if(maxGapOpen!= null){
+				temp=temp+ " -o " + maxGapOpen;
+			}
+			if(maxGapExt!= null){
+				temp=temp+ " -e " + maxGapExt;
+			}
+			if(penGapOpen!= null){
+				temp=temp+ " -O " + penGapOpen;
+			}
+			if(penGapExt!= null){
+				temp=temp+ " -E " + penGapExt;
+			}
+			
 			baseFilename = inputFile.getFilename();
 			if(maxEditDist != null){
-				command = pathToBWA + " aln -n " + maxEditDist + " -t " + Math.max(1, threads) + " " + referencePath + " " + inputFile.getAbsolutePath();
+				command = pathToBWA + " aln "+ temp+" -n " + maxEditDist + " -t " + Math.max(1, threads) + " " + referencePath + " " + inputFile.getAbsolutePath();
 			}
 			else{
-				command = pathToBWA + " aln -t " + Math.max(1, threads) + " " + referencePath + " " + inputFile.getAbsolutePath();
+				command = pathToBWA + " aln "+ temp+" -t " + Math.max(1, threads) + " " + referencePath + " " + inputFile.getAbsolutePath();
 			}
 		}
 		
