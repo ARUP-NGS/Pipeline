@@ -19,7 +19,7 @@ public class MQChecker extends AbstractChecker<BAMMetrics> {
 		result.message = "";
 		result.result = QCItemCheck.ResultType.OK;
 
-		Histogram mqHisto = bam.mqHistogram;
+		Histogram mqHisto = bam.getMqHistogram();
 		if (mqHisto == null) {
 			result.message = "No mapping quality information found";
 			result.result =QCItemCheck.ResultType.UNKNOWN;

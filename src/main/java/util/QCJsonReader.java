@@ -200,6 +200,7 @@ public class QCJsonReader {
 			System.err.println("Enter <command> qcfile1 [qcfile2 ...]");
 			return;
 		}
+		
 		String command = args[0];
 		List<String> paths = new ArrayList<String>();
 		for(int i=1; i<args.length; i++) {
@@ -208,6 +209,16 @@ public class QCJsonReader {
 		
 		if (command.startsWith("sum")) {
 			performSummary(paths, System.out);
+			return;
+		}
+		
+		if (command.startsWith("comp")) {
+			try {
+				performComparison(paths, System.out);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			return;
 		}
 		
@@ -227,6 +238,52 @@ public class QCJsonReader {
 		}
 		
 		System.err.println("Unrecognized command");
+		
+	}
+
+	private static void performComparison(List<String> paths, PrintStream out) throws IOException {
+		if (paths.size() != 2) {
+			out.println("Please enter two directories to compare.");
+			return;
+		}
+		
+		String sampleAId = sampleIDFromManifest(new File(paths.get(0) + "/sampleManifest.txt"));
+		String sampleBId = sampleIDFromManifest(new File(paths.get(1) + "/sampleManifest.txt"));
+		out.println("Comparing " + sampleAId + " to " + sampleBId);
+		
+		try {
+			JSONObject qcA = toJSONObj(paths.get(0));
+			JSONObject qcB = toJSONObj(paths.get(1));
+			
+			out.println("Metric\t" + sampleAId + "\t" + sampleBId);
+			
+			JSONObject finalCovA = qcA.getJSONObject("final.coverage.metrics");
+			JSONArray fracAboveA = finalCovA.getJSONArray("fraction.above.index");		
+
+			JSONObject finalCovB = qcB.getJSONObject("final.coverage.metrics");
+			JSONArray fracAboveB = finalCovB.getJSONArray("fraction.above.index");	
+			
+			Double meanA = finalCovA.getDouble("mean.coverage");
+			String above15A = formatter.format(fracAboveA.getDouble(15));
+			String above25A = formatter.format(fracAboveA.getDouble(25));
+			String above50A = formatter.format(fracAboveA.getDouble(50));
+
+			Double meanB = finalCovB.getDouble("mean.coverage");
+			String above15B = formatter.format(fracAboveB.getDouble(15));
+			String above25B = formatter.format(fracAboveB.getDouble(25));
+			String above50B = formatter.format(fracAboveB.getDouble(50));
+			
+			out.println("Mean coverage:\t" + meanA + "\t" + meanB);
+			out.println("       % > 15:\t" + above15A + "\t" + above15B);
+			out.println("       % > 25:\t" + above25A + "\t" + above25B);
+			out.println("       % > 50:\t" + above50A + "\t" + above50B);
+			
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		
 		
 	}
 
@@ -364,6 +421,14 @@ public class QCJsonReader {
 		}
 		reader.close();
 		return pairs;
+	}
+	
+	private static String analysisTypeFromManifest(File manifestFile) throws IOException {
+		Map<String, String> vals = readManifest(manifestFile);
+		String analysisType = vals.get("analysis.type");
+		if (analysisType == null) 
+			analysisType = "?";
+		return analysisType;
 	}
 	
 	private static String sampleIDFromManifest(File manifestFile) throws IOException {

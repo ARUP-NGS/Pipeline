@@ -26,7 +26,7 @@ import operator.Operator;
  */
 public class ServiceUpdateEndHook extends OperatorEndHook implements IOperatorEndHook {
 
-	protected static final String serviceURL = "http://localhost:9172/Dispatcher/UpdateService";
+	protected static final String serviceURL = "http://iis7intdev/ngs/Dispatcher/UpdateService";
 	protected static final String success = "\"Success\"";
 	
 	protected String opCanName;
@@ -76,6 +76,7 @@ public class ServiceUpdateEndHook extends OperatorEndHook implements IOperatorEn
 			obj.put("opName", opName);
 			obj.put("jobID", jobID);
 			obj.put("ipAddress", ipAddress);
+			obj.put("status", STATUS_STOPPING);
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}

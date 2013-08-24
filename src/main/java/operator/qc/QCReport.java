@@ -517,22 +517,31 @@ public class QCReport extends Operator {
 		writer.write("<p> Bases with quality > 30 : " + metrics.basesQAbove30 + " ( " + formatter.format(100.0*metrics.basesQAbove30 / metrics.basesRead) + "% )" +" </p>" + lineSep );
 		writer.write("<p> Bases with quality > 20 : " + metrics.basesQAbove20 + " ( " + formatter.format(100.0*metrics.basesQAbove20 / metrics.basesRead) + "% )" + " </p>" +lineSep );
 		writer.write("<p> Bases with quality > 10 : " + metrics.basesQAbove10 + " ( " + formatter.format(100.0*metrics.basesQAbove10 / metrics.basesRead) + "% )" + " </p>" +lineSep );
-		writer.write(" Mean quality :" + formatter.format(metrics.baseQualityHistogram.getMean()) + " </p>" +lineSep);		
-		writer.write(" Stdev quality:" + formatter.format(metrics.baseQualityHistogram.getStdev()) + " </p>" +lineSep );
+		
+		if(metrics.baseQualityHistogram != null){
+			writer.write(" Mean quality :" + formatter.format(metrics.baseQualityHistogram.getMean()) + " </p>" +lineSep);		
+			writer.write(" Stdev quality:" + formatter.format(metrics.baseQualityHistogram.getStdev()) + " </p>" +lineSep );
+		}
+		else{
+			writer.write(" Mean quality : Unable to calculate. </p>" +lineSep);		
+			writer.write(" Stdev quality: Unable to calculate. </p>" +lineSep );
+		}
 		
 		String bqFigStr =  "bqfig-" + ("" + System.currentTimeMillis()).substring(6) + ".png";
 		String bqFigFullPath = outputDir.getAbsolutePath() + "/" + bqFigStr;
 				
 		Histogram[] histos = metrics.readPosQualHistos;
 		
-		double[][] heats = new double[histos.length][histos[0].getBinCount()];
-		for(int i=0; i<histos.length; i++) {
-			Histogram posHist = histos[i];
-			if (posHist != null)
-				System.arraycopy(posHist.getRawCounts(), 0, heats[i], 0, posHist.getRawCounts().length);
+		if(histos != null){
+			double[][] heats = new double[histos.length][histos[0].getBinCount()];
+			for(int i=0; i<histos.length; i++) {
+				Histogram posHist = histos[i];
+				if (posHist != null)
+					System.arraycopy(posHist.getRawCounts(), 0, heats[i], 0, posHist.getRawCounts().length);
+			}
+			HeatMapFigure readPosFig = FigureFactory.createFigure("Read position", "Quality", heats);
+			FigureFactory.saveFigure(new Dimension(500, 500), readPosFig, new File(bqFigFullPath));
 		}
-		HeatMapFigure readPosFig = FigureFactory.createFigure("Read position", "Quality", heats);
-		FigureFactory.saveFigure(new Dimension(500, 500), readPosFig, new File(bqFigFullPath));
 		
 		//CreateFigure.generateFigure(getPipelineOwner(), metrics.baseQualityHistogram, "Quality score", "Base qualities", "Frequency", bqFigFullPath);
 		writer.write("<div id=\"separator\">  </div>");
@@ -821,8 +830,10 @@ public class QCReport extends Operator {
 		
 			writer.write("<div id=\"separator\">  </div>");
 			writer.write("<h2>  Distribution of mapping qualities : " + " </h2>\n");
-			if (rawMetrics.mqHistogram != null) {
-				XYSeriesFigure mqFig = FigureFactory.createFigure("Mapping quality", "Frequency", histoToPointList(rawMetrics.mqHistogram), "Raw reads", Color.blue); 		
+//			if (rawMetrics.mqHistogram != null) {
+			Histogram mqHistogram = rawMetrics.getMqHistogram();
+			if (mqHistogram != null) {
+				XYSeriesFigure mqFig = FigureFactory.createFigure("Mapping quality", "Frequency", histoToPointList(mqHistogram), "Raw reads", Color.blue); 		
 				String mqFigStr =  "mqfig-" + ("" + System.currentTimeMillis()).substring(6) + ".png";
 				String mqFigFullPath = outputDir.getAbsolutePath() + "/" + mqFigStr;
 
@@ -830,10 +841,10 @@ public class QCReport extends Operator {
 
 				writer.write("<img src=\"" + mqFigStr + "\">");
 				
-				writer.write("<p>  Mean mapping quality: " + rawMetrics.mqHistogram.getMean() + " </p> \n");
-				writer.write("<p>  Percentage of reads with mq > 50 : " + formatter.format(100.0-100.0*rawMetrics.mqHistogram.getCumulativeDensity( rawMetrics.mqHistogram.getBin(50.0))) + "% </p> \n");
-				writer.write("<p>  Percentage of reads with mq > 30 : " + formatter.format(100.0-100.0*rawMetrics.mqHistogram.getCumulativeDensity( rawMetrics.mqHistogram.getBin(30.0))) + "% </p> \n");
-				writer.write("<p>  Percentage of reads with mq > 10 : " + formatter.format(100.0-100.0*rawMetrics.mqHistogram.getCumulativeDensity( rawMetrics.mqHistogram.getBin(10.0))) + "% </p> \n");
+				writer.write("<p>  Mean mapping quality: " + mqHistogram.getMean() + " </p> \n");
+				writer.write("<p>  Percentage of reads with mq > 50 : " + formatter.format(100.0-100.0*mqHistogram.getCumulativeDensity( mqHistogram.getBin(50.0))) + "% </p> \n");
+				writer.write("<p>  Percentage of reads with mq > 30 : " + formatter.format(100.0-100.0*mqHistogram.getCumulativeDensity( mqHistogram.getBin(30.0))) + "% </p> \n");
+				writer.write("<p>  Percentage of reads with mq > 10 : " + formatter.format(100.0-100.0*mqHistogram.getCumulativeDensity( mqHistogram.getBin(10.0))) + "% </p> \n");
 			}
 			else {
 				writer.write("<p id=\"error\">  No mapping quality information found </p> \n");
@@ -843,21 +854,26 @@ public class QCReport extends Operator {
 			//Emit insert size distribution figure
 			writer.write("<h2>  Distribution of insert sizes : " + " </h2>\n");
 			
-			writer.write("<p>  Mean insert size:" + formatter.format(finalMetrics.insertSizeHistogram.getMean()) + " </p>\n");		
-			writer.write("<p>  Stdev insert size:" + formatter.format(finalMetrics.insertSizeHistogram.getStdev()) + " </p>\n");
-			writer.write("<p>  Insert size range: " + finalMetrics.insertSizeHistogram.getMinValueAdded() + " - " + finalMetrics.insertSizeHistogram.getMaxValueAdded() + " </p>\n" );
+			if(finalMetrics.insertSizeHistogram != null){
+				writer.write("<p>  Mean insert size:" + formatter.format(finalMetrics.insertSizeHistogram.getMean()) + " </p>\n");		
+				writer.write("<p>  Stdev insert size:" + formatter.format(finalMetrics.insertSizeHistogram.getStdev()) + " </p>\n");
+				writer.write("<p>  Insert size range: " + finalMetrics.insertSizeHistogram.getMinValueAdded() + " - " + finalMetrics.insertSizeHistogram.getMaxValueAdded() + " </p>\n" );
+	
+				String figStr =  "insertsizefig-" + ("" + System.currentTimeMillis()).substring(6) + ".png";
+				String figFullPath = outputDir.getAbsolutePath() + "/" + figStr;
+				
+				
+				//System.out.println("Creating insert size histogram, orig histo is : " + finalMetrics.insertSizeHistogram.toString());
+				XYSeriesFigure fig = FigureFactory.createFigure("Insert Size", "Frequency", histoToPointList(finalMetrics.insertSizeHistogram), "All reads", Color.blue); 		
+				FigureFactory.saveFigure(new Dimension(500, 500), fig, new File(figFullPath));
+			
+				writer.write("<img src=\"" + figStr + "\">");				
+			}
+			else {
+				writer.write("<p id=\"error\">  No mapping quality information found </p> \n");
+			}		
 
-			String figStr =  "insertsizefig-" + ("" + System.currentTimeMillis()).substring(6) + ".png";
-			String figFullPath = outputDir.getAbsolutePath() + "/" + figStr;
-			
-			
-			//System.out.println("Creating insert size histogram, orig histo is : " + finalMetrics.insertSizeHistogram.toString());
-			XYSeriesFigure fig = FigureFactory.createFigure("Insert Size", "Frequency", histoToPointList(finalMetrics.insertSizeHistogram), "All reads", Color.blue); 		
-			FigureFactory.saveFigure(new Dimension(500, 500), fig, new File(figFullPath));
-		
-			writer.write("<img src=\"" + figStr + "\">");				
 			writer.write("</div> <!-- bammetrics -->\n");
-			
 			
 			writer.write("<div id=\"separator\">  </div>");
 			
