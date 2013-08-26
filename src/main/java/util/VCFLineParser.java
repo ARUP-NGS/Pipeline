@@ -11,6 +11,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import pipeline.PipelineObject;
@@ -33,17 +35,21 @@ public class VCFLineParser extends PipelineObject implements VariantLineReader  
 		private String currentLine = null;
 		protected String[] lineToks = null;
 		private String[] formatToks = null; //Tokenized format string, produced as needed
-		private int gtCol = -1; //Format column which contains genotype info
-		private int gqCol = -1; //Format column which contains genotype quality info 
-		private int adCol = -1; //Format column which contains allele depth info
-		private int aoCol = -1; //Format column which contains 'alternate allele' depth count
-		private int dpCol = -1; //Format column which contains depth info
+		protected int gtCol = -1; //Format column which contains genotype info
+		protected int gqCol = -1; //Format column which contains genotype quality info 
+		protected int adCol = -1; //Format column which contains allele depth info
+		protected int aoCol = -1; //Format column which contains 'alternate allele' depth count
+		protected int dpCol = -1; //Format column which contains depth info
+		protected int fdpCol = -1; //Format column which contains depth info
+		protected int faoCol = -1; //Format column which contains depth info
 				
 		private String sample = null; //Emit information for only this sample if specified (when not given, defaults to first sample)
 		private int sampleColumn = -1; //Column that stores information for the given sample
 		protected final File sourceFile;
 		
 		private String currentFormatStr = null;
+		
+		
 		
 		public VCFLineParser() {
 			sourceFile = null;
@@ -66,18 +72,14 @@ public class VCFLineParser extends PipelineObject implements VariantLineReader  
 		public VCFLineParser(InputStream stream) throws IOException {
 			setInputStream(stream);
 			sourceFile = null;
-			currentLine = reader.readLine();
-			sampleColumn = 9; //First column with info, this is the default when no sample is specified
-			readHeader();
+			primeForReading();
 		}
 		
 		
 		public VCFLineParser(File file) throws IOException {
 			setInputStream(new FileInputStream(file));
 			this.sourceFile = file;
-			currentLine = reader.readLine();
-			sampleColumn = 9; //First column with info, this is the default when no sample is specified
-			readHeader();
+			primeForReading();
 		}
 
 		
@@ -85,13 +87,35 @@ public class VCFLineParser extends PipelineObject implements VariantLineReader  
 			this(file.getFile());
 		}
 		
-		public void setInputStream(InputStream stream) {
+		public void setInputStream(InputStream stream) throws IOException {
 			this.reader = new BufferedReader(new InputStreamReader(stream));
+		}
+		
+		public void primeForReading() throws IOException {
+			if (this.reader == null) {
+				throw new IllegalArgumentException("No reader set");
+			}
+			
+			currentLine = reader.readLine();
+			sampleColumn = 9; //First column with info, this is the default when no sample is specified
+			readHeader();
+		}
+		
+		public boolean isPrimed() {
+			return currentLine != null;
+		}
+		
+		public int getSampleColumn() {
+			return sampleColumn;
 		}
 		
 		public String getHeader() throws IOException {
 			if (sourceFile == null) {
 				return null;
+			}
+			
+			if (! isPrimed()) {
+				primeForReading();
 			}
 			
 			BufferedReader headReader = new BufferedReader(new FileReader(sourceFile));
@@ -149,6 +173,10 @@ public class VCFLineParser extends PipelineObject implements VariantLineReader  
 		 * @throws IOException 
 		 */
 		public void advanceToContig(String contig) throws IOException {
+			if (! isPrimed()) {
+				primeForReading();
+			}
+			
 			while (hasLine() && (!getContig().equals(contig))) {
 				advanceLine();
 			}
@@ -196,6 +224,14 @@ public class VCFLineParser extends PipelineObject implements VariantLineReader  
 		 * @return A new variant record containing the information in this vcf line
 		 */
 		public VariantRec toVariantRec(boolean stripChr) {
+			if (! isPrimed()) {
+				try {
+					primeForReading();
+				} catch (IOException e) {
+					throw new RuntimeException(e.getMessage());
+				}
+			}
+			
 			if (currentLine == null || currentLine.trim().length()==0)
 				return null;
 			else {
@@ -412,7 +448,7 @@ public class VCFLineParser extends PipelineObject implements VariantLineReader  
 			return currentLineNumber;
 		}
 		
-		private void updateFormatIfNeeded() {
+		protected void updateFormatIfNeeded() {
 			if (lineToks.length > 7) {
 				if (formatToks == null) {
 					createFormatString(lineToks);
@@ -680,8 +716,8 @@ public class VCFLineParser extends PipelineObject implements VariantLineReader  
 		/**
 		 * Create the string array representing elements in the 'format' column, which
 		 * we assume is always column 8. Right now we use this info to figure out which portion
-		 * of the format string is the genotype and genotype quality part, and we ignore the
-		 * rest
+		 * of the format string correspond to the genotype, genotype quality, depth, alt depth, etc. parts.
+		 * Probably switching to a map implementation would be better someday. 
 		 */
 		private void createFormatString(String[] toks) {
 			if (toks.length <= 8) {
@@ -696,7 +732,6 @@ public class VCFLineParser extends PipelineObject implements VariantLineReader  
 				if (formatToks[i].equals("GT")) {
 					gtCol = i;
 				}
-				
 				if (formatToks[i].equals("GQ")) {
 					gqCol = i;
 				}
@@ -709,6 +744,12 @@ public class VCFLineParser extends PipelineObject implements VariantLineReader  
 				}
 				if (formatToks[i].equals("AO")) {
 					aoCol = i;
+				}
+				if (formatToks[i].equals("FAO")) {
+					faoCol = i;
+				}
+				if (formatToks[i].equals("FDP")) {
+					fdpCol = i;
 				}
 
 			}
@@ -736,7 +777,55 @@ public class VCFLineParser extends PipelineObject implements VariantLineReader  
 
 		@Override
 		public void initialize(NodeList children) {
-			//Nothing to do, yet. 
+			
+			for(int i=0; i<children.getLength(); i++) {
+				Node child = children.item(i);
+				if (child.getNodeType() == Node.ELEMENT_NODE) {
+					Element el = (Element)child;
+					PipelineObject obj = getObjectFromHandler(el.getNodeName());
+					if (obj instanceof VCFFile) {
+						VCFFile inputVCF = (VCFFile)obj;
+						try {
+							setInputStream(new FileInputStream(inputVCF.getFile()));
+						} catch (IOException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					}
+					
+				}
+			}
+			
+			//Get name of input file...
+			String fileName = this.getAttribute("filename");
+
+			if (fileName != null && reader != null) {
+				//hmm reader initialized but user has also specified filename...
+				throw new IllegalArgumentException("Cannot specify a filename and an input file object at the same time");
+			}
+			
+			if (reader == null && fileName != null) {
+
+				//TODO support for sample, codec, etc. 
+
+				File inputFile = null;
+				if (fileName.startsWith("/")) {
+					inputFile = new File(fileName);
+				}
+				else {
+					inputFile = new File(getProjectHome() + "/" + fileName);
+				}
+
+				if (! inputFile.exists()) {
+					throw new IllegalArgumentException("Input file " + inputFile.getAbsolutePath() + " does not exist");
+				}
+
+				try {
+					this.setInputStream(new FileInputStream(inputFile));
+				} catch (IOException e) {
+					throw new IllegalArgumentException("Error opening input file " + inputFile.getAbsolutePath() + ": " + e.getMessage());
+				}
+			}
 		}
 		
 

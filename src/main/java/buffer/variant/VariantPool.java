@@ -1050,6 +1050,10 @@ public class VariantPool extends Operator  {
 				}
 			}
 		}
+		
+		if (inputVariants != null && varLineReader != null) {
+			throw new IllegalArgumentException("Only one variant file or variant reader can be specified");
+		}
 	}
 
 	/**
@@ -1096,13 +1100,15 @@ public class VariantPool extends Operator  {
 		
 		
 		Logger logger = Logger.getLogger(Pipeline.primaryLoggerName);
-		if (inputVariants == null) {
+		if (inputVariants == null && varLineReader == null) {
 			logger.info("Creating empty variant pool. ");
 			return ; // Just make an empty pool
 		}
 
+		if (inputVariants != null) {
+			logger.info("Building variant pool from variants in file " + inputVariants.getFilename());
+		}
 		
-		logger.info("Building variant pool from variants in file " + inputVariants.getFilename());
 
 		//If variant reader already specified, use it
 		if (varLineReader != null) {
