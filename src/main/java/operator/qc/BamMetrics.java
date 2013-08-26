@@ -94,6 +94,7 @@ public class BamMetrics extends IOOperator {
 						
 			mqHisto.addValue( samRecord.getMappingQuality() );
 			
+			
 			if (samRecord.getMateUnmappedFlag())
 				unmappedMate++;
 			if (samRecord.getReadUnmappedFlag())

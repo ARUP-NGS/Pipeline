@@ -2,11 +2,18 @@ package util;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
+import org.w3c.dom.NodeList;
+
+import pipeline.PipelineObject;
 import buffer.VCFFile;
 import buffer.variant.VariantLineReader;
 import buffer.variant.VariantRec;
@@ -19,7 +26,7 @@ import buffer.variant.VariantRec;
  * @author brendan
  *
  */
-public class VCFLineParser implements VariantLineReader {
+public class VCFLineParser extends PipelineObject implements VariantLineReader  {
 
 		private BufferedReader reader;
 		private int currentLineNumber = -1;
@@ -38,8 +45,13 @@ public class VCFLineParser implements VariantLineReader {
 		
 		private String currentFormatStr = null;
 		
+		public VCFLineParser() {
+			sourceFile = null;
+			//No arg constructor, imput stream and sample must be set using setters
+		}
+		
 		public VCFLineParser(File file, String sample) throws IOException {
-			this.reader = new BufferedReader(new FileReader(file));
+			setInputStream(new FileInputStream(file));
 			this.sourceFile = file;
 			currentLine = reader.readLine();
 			this.sample = sample; //Sample must be specified before header is read
@@ -52,15 +64,16 @@ public class VCFLineParser implements VariantLineReader {
 		 * @throws IOException
 		 */
 		public VCFLineParser(InputStream stream) throws IOException {
-			this.reader = new BufferedReader(new InputStreamReader(stream));
+			setInputStream(stream);
 			sourceFile = null;
 			currentLine = reader.readLine();
 			sampleColumn = 9; //First column with info, this is the default when no sample is specified
 			readHeader();
 		}
 		
+		
 		public VCFLineParser(File file) throws IOException {
-			this.reader = new BufferedReader(new FileReader(file));
+			setInputStream(new FileInputStream(file));
 			this.sourceFile = file;
 			currentLine = reader.readLine();
 			sampleColumn = 9; //First column with info, this is the default when no sample is specified
@@ -68,9 +81,12 @@ public class VCFLineParser implements VariantLineReader {
 		}
 
 		
-		
 		public VCFLineParser(VCFFile file) throws IOException {
 			this(file.getFile());
+		}
+		
+		public void setInputStream(InputStream stream) {
+			this.reader = new BufferedReader(new InputStreamReader(stream));
 		}
 		
 		public String getHeader() throws IOException {
@@ -699,19 +715,30 @@ public class VCFLineParser implements VariantLineReader {
 			
 			currentFormatStr = formatStr;
 		}
+
 		
-//		public static void main(String[] args) {
-//			File file = new File("/media/DATA/exome_compare/ex1.cap.pass.vcf");
-//			try {
-//				VCFLineParser vParser = new VCFLineParser(file);
-//				for(int i=0; i<10;i++) {
-//					System.out.println(vParser.getLineNumber() + " : " + vParser.getContig() + "\t" + vParser.getPosition() + "\t" + vParser.getQuality() + "\t het: " + vParser.isHetero());
-//					vParser.advanceLine();
-//				}
-//			} catch (IOException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			}
-//			
-//		}
+		//Pipeline Object implementation : Currently, don't do anything
+		
+		@Override
+		public void setAttribute(String key, String value) {
+			attributes.put(key, value);
+		}
+
+		@Override
+		public String getAttribute(String key) {
+			return attributes.get(key);
+		}
+
+		@Override
+		public Collection<String> getAttributeKeys() {
+			return attributes.keySet();
+		}
+
+		@Override
+		public void initialize(NodeList children) {
+			//Nothing to do, yet. 
+		}
+		
+
+		private Map<String, String> attributes = new HashMap<String, String>();
 }

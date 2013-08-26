@@ -46,6 +46,10 @@ public class VariantPool extends Operator  {
 	private VariantRec qRec = new VariantRec("?", 0, 0, "x", "x", 0.0, false);
 	private boolean operationPerformed = false; //Set to true when performOperation called, avoids loading variants multiple times
 	
+	protected VariantLineReader varLineReader = null;
+	
+	
+	
 	/**
 	 * Build a new variant pool from the given list of variants
 	 * @param varList
@@ -69,7 +73,8 @@ public class VariantPool extends Operator  {
 	 * @throws IOException
 	 */
 	public VariantPool(VariantLineReader reader) throws IOException {
-		importFromVariantReader(reader);
+		this.varLineReader = reader;
+		importFromVariantReader();
 	}
 
 	/**
@@ -94,30 +99,36 @@ public class VariantPool extends Operator  {
 	 */
 	
 	public VariantPool(CSVFile file) throws IOException {
-		importFromVariantReader(new CSVLineReader(file.getFile()));
+		this.varLineReader = new CSVLineReader(file.getFile());
+		importFromVariantReader();
 	}
 
 	public VariantPool(VCFFile file) throws IOException {
-		importFromVariantReader(new VCFLineParser(file));
+		this.varLineReader = new VCFLineParser(file);
+		importFromVariantReader();
 	}
 	
 	public String toString() {
 		return "Pool with " + this.size() + " variants in " + vars.size() + " contigs "; 
 	}
 	
-	private void importFromVariantReader(VariantLineReader reader) throws IOException {
+	private void importFromVariantReader() throws IOException {
+		if (varLineReader == null) {
+			throw new IOException("VariantLineReader not initialized");
+		}
+		
 		int lineNumber = 0;
 		do {
-			VariantRec rec = reader.toVariantRec();
+			VariantRec rec = varLineReader.toVariantRec();
 			if (rec == null) {
-				if (reader.getCurrentLine() != null && reader.getCurrentLine().length()>0)
-					System.err.println("Warning, could not import variant from line: " + reader.getCurrentLine() );
+				if (varLineReader.getCurrentLine() != null && varLineReader.getCurrentLine().length()>0)
+					System.err.println("Warning, could not import variant from line: " + varLineReader.getCurrentLine() );
 			}
 			else {
 				this.addRecordNoSort(rec);
 			}
 			lineNumber++;
-		} while (reader.advanceLine());
+		} while (varLineReader.advanceLine());
 		sortAllContigs();
 	}
 	
@@ -1034,6 +1045,9 @@ public class VariantPool extends Operator  {
 				if (obj instanceof CSVFile) {
 					inputVariants = (CSVFile)obj;					
 				}
+				if (obj instanceof VariantLineReader) {
+					this.varLineReader = (VariantLineReader)obj;
+				}
 			}
 		}
 	}
@@ -1080,16 +1094,32 @@ public class VariantPool extends Operator  {
 			Logger.getLogger(Pipeline.primaryLoggerName).info("Added " + this.size() + " variant records");
 		}
 		
-		if (inputVariants == null) 
-			return ; // Just make an empty pool
 		
-
 		Logger logger = Logger.getLogger(Pipeline.primaryLoggerName);
+		if (inputVariants == null) {
+			logger.info("Creating empty variant pool. ");
+			return ; // Just make an empty pool
+		}
+
+		
 		logger.info("Building variant pool from variants in file " + inputVariants.getFilename());
+
+		//If variant reader already specified, use it
+		if (varLineReader != null) {
+			try {
+				importFromVariantReader();
+			} catch (IOException e) {
+				e.printStackTrace();
+				throw new OperationFailedException("Error importing from variant reader: " + e.getMessage(), this);
+			}
+			return;
+		}
+		
 		
 		if (inputVariants instanceof VCFFile) {
 			try {
-				importFromVariantReader(new VCFLineParser( (VCFFile)inputVariants ) );
+				this.varLineReader = new VCFLineParser( (VCFFile)inputVariants );
+				importFromVariantReader();
 			} catch (IOException e) {
 				e.printStackTrace();
 				throw new OperationFailedException("IO error reading file: " + inputVariants.getAbsolutePath(), this);
@@ -1098,8 +1128,8 @@ public class VariantPool extends Operator  {
 		
 		if (inputVariants instanceof CSVFile) {
 			try {
-				importFromVariantReader(new CSVLineReader( ((CSVFile)inputVariants).getFile() ));
-				//importFromVariantReader( new SimpleLineReader(inputVariants.getFile()));
+				this.varLineReader = new CSVLineReader( ((CSVFile)inputVariants).getFile() );
+				importFromVariantReader();
 			} catch (IOException e) {
 				e.printStackTrace();
 				throw new OperationFailedException("IO error reading file: " + inputVariants.getAbsolutePath(), this);
@@ -1120,9 +1150,6 @@ public class VariantPool extends Operator  {
 
 
 	private FileBuffer inputVariants = null;
-	
-
-
 
 	
 }
