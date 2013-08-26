@@ -86,6 +86,7 @@ public class BamMetrics extends IOOperator {
 		long basesAbove10 = 0;
 		long totalBaseCount = 0;
 		Histogram[] posHisto = null; 
+		boolean paired;
 		
 		final int baseSubSample = 4; //Only count 1 of every this many bases
 		
@@ -94,8 +95,9 @@ public class BamMetrics extends IOOperator {
 						
 			mqHisto.addValue( samRecord.getMappingQuality() );
 			
+			paired = samRecord.getReadPairedFlag();
 			
-			if (samRecord.getMateUnmappedFlag())
+			if (paired && samRecord.getMateUnmappedFlag())
 				unmappedMate++;
 			if (samRecord.getReadUnmappedFlag())
 				unmappedCount++;
@@ -140,20 +142,22 @@ public class BamMetrics extends IOOperator {
 				
 				if (i < posHisto.length) {
 					int index = i;
-					if (samRecord.getSecondOfPairFlag()) //invert for reverse orientation
+					if (paired && samRecord.getSecondOfPairFlag()) //invert for reverse orientation
 						index = posHisto.length - i -1;
 					posHisto[index].addValue( bq );
 				}
 			}
 			
 			totalBaseCount += baseQuals.length;
-			int insertSize = Math.abs( samRecord.getInferredInsertSize() );
-			if (insertSize > 10000) {
-				hugeInsertSize++;
+			if(paired){
+				int insertSize = Math.abs( samRecord.getInferredInsertSize() );
+				if (insertSize > 10000) {
+					hugeInsertSize++;
+				}
+				else {
+					insertSizeHisto.addValue(insertSize);
+				}				
 			}
-			else {
-				insertSizeHisto.addValue(insertSize);
-			}				
 		} //end loop over all reads
 
 
@@ -171,7 +175,8 @@ public class BamMetrics extends IOOperator {
 		metrics.basesQAbove10 = basesAbove10;
 		metrics.basesQAbove20 = basesAbove20;
 		metrics.basesQAbove30 = basesAbove30;
-		metrics.mqHistogram = mqHisto;
+//		metrics.mqHistogram = mqHisto;
+		metrics.setMqHistogram(mqHisto);
 		metrics.basesRead = totalBaseCount;
 		metrics.readPosQualHistos = posHisto;
 		return metrics;
