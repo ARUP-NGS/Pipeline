@@ -55,9 +55,11 @@ public class IonTorrentVCFParser extends VCFLineParser {
 		String[] formatValues = lineToks[getSampleColumn()].split(":");
 		
 		//Confusing logic below to parse var depth (alt depth) from both new (FAO) and old (AD) IonTorrent VCFs
+		boolean useAD = false;
 		int index = faoCol;
 		if (index == -1) {
 			index = adCol;
+			useAD = true;
 		}
 		if (index == -1) {
 			return null;
@@ -66,8 +68,13 @@ public class IonTorrentVCFParser extends VCFLineParser {
 		String adStr = formatValues[index];
 		try {
 			String[] depths = adStr.split(",");
-			
-			Integer altReadDepth = Integer.parseInt(depths[which]);
+			Integer altReadDepth = null;
+			if (useAD) {
+				altReadDepth = Integer.parseInt(depths[which+1]);
+			}
+			else {
+				altReadDepth = Integer.parseInt(depths[which]);
+			}
 			return altReadDepth;
 			
 			
