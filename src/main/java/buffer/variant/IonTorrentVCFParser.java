@@ -52,9 +52,18 @@ public class IonTorrentVCFParser extends VCFLineParser {
 	public Integer getVariantDepth(int which) {
 		updateFormatIfNeeded();
 		
-		//Confusing logic below to parse var depth (alt depth) from both GATK and IonTorrent-style vcfs...
 		String[] formatValues = lineToks[getSampleColumn()].split(":");
-		String adStr = formatValues[faoCol];
+		
+		//Confusing logic below to parse var depth (alt depth) from both new (FAO) and old (AD) IonTorrent VCFs
+		int index = faoCol;
+		if (index == -1) {
+			index = adCol;
+		}
+		if (index == -1) {
+			return null;
+		}
+		
+		String adStr = formatValues[index];
 		try {
 			String[] depths = adStr.split(",");
 			
