@@ -468,6 +468,9 @@ public class VCFLineParser extends PipelineObject implements VariantLineReader  
 			
 			if (formatToks == null)
 				return false;
+			if (gtCol < 0) {
+				return false;
+			}
 			
 			String[] formatValues = lineToks[sampleColumn].split(":");
 			String GTStr = formatValues[gtCol];
