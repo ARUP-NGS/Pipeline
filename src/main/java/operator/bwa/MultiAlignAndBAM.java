@@ -275,10 +275,12 @@ public class MultiAlignAndBAM extends PipedCommandOp {
 		}
 		
 		logger.info("All bwa aln steps have completed, now creating SAM files");
-		if (sampeThreads > 1)
+		if (sampeThreads > 1) {
 			threadPool = (ThreadPoolExecutor) Executors.newFixedThreadPool( getPreferredThreadCount()/ sampeThreads );
-		else
+		}
+		else {
 			threadPool = (ThreadPoolExecutor) Executors.newFixedThreadPool( getPreferredThreadCount() );
+		}
 		
 		
 		//Now build sam files in parallel since we can do that and bwa can't
