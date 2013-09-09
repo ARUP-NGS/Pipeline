@@ -2493,6 +2493,16 @@ public class VarUtils {
 					String chr0 = toks0[0];
 					String chr1 = toks1[0];
 					if (! chr0.equals(chr1)) {
+						//try to parse ints from chrs if possible
+						try {
+							Integer chrNum0 = Integer.parseInt(chr0);
+							Integer chrNum1 = Integer.parseInt(chr1);
+							return chrNum0.compareTo(chrNum1);
+						}
+						catch(NumberFormatException ex) {
+							//forget it, this is expected sometimes
+						}
+						
 						return chr0.compareTo(chr1);
 					}
 					else {
