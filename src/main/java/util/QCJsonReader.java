@@ -153,7 +153,6 @@ public class QCJsonReader {
 				}
 				
 				
-				
 				//Variant rundown
 				if (obj.has("variant.metrics") ) {
 					output.println("\n\t Variant summary:");

@@ -61,7 +61,9 @@ import buffer.variant.VariantPool;
 import buffer.variant.VariantRec;
 
 /**
- * Builds a small html report containing some QC information. 
+ * This function builds the HTML pages for the QC Reports viewable from VarViewer and JobWrangler
+ * Currently includes pages for the overview, base qualities, alignment metrics,
+ * variant metrics, and the full log for the run 
  * @author brendan
  *
  */

@@ -53,6 +53,7 @@ public class BAMFile extends FileBuffer implements HasMD5 {
 		
 		final SAMFileReader inputSam = new SAMFileReader(getFile());
 		inputSam.setValidationStringency(ValidationStringency.LENIENT);
+		
 		MessageDigest digestor = null; 
 		try {
 			digestor = MessageDigest.getInstance("MD5");
@@ -61,7 +62,6 @@ public class BAMFile extends FileBuffer implements HasMD5 {
 			setMD5Sum(null);
 			return;
 		}
-		
 		for (final SAMRecord samRecord : inputSam) {
 			digestor.update( samRecord.getSAMString().getBytes() );
 		}

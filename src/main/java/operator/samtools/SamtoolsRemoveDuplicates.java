@@ -1,7 +1,6 @@
 package operator.samtools;
 
 import operator.PipedCommandOp;
-import pipeline.Pipeline;
 import pipeline.PipelineXMLConstants;
 
 /**

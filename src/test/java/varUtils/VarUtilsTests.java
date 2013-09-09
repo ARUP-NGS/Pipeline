@@ -6,7 +6,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.junit.Test;
 
@@ -141,9 +141,17 @@ public class VarUtilsTests {
 			VarUtils.main(args);
 			output.close();
 			result = new VariantPool(new VCFFile(outputFile));
-			Assert.assertTrue(result.size()==0);
+			Assert.assertTrue(result.size()==0);			
 			
-			
+			//Subtract an empty vcf from one with a few vars
+			args = new String[]{"subtract", "src/test/java/varUtils/testdata/different_allele.vcf",
+			"src/test/java/varUtils/testdata/a.vcf"};
+			output = new PrintStream(new FileOutputStream(outputFile));
+			System.setOut(output);
+			VarUtils.main(args);
+			output.close();
+			result = new VariantPool(new VCFFile(outputFile));
+			Assert.assertTrue(result.size()==4);
 			
 			
 			
@@ -158,8 +166,7 @@ public class VarUtilsTests {
 			Assert.fail();
 		}
 		
-	}
-		
+	}		
 	
 	
 }
