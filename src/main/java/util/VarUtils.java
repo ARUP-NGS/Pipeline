@@ -1802,7 +1802,6 @@ public class VarUtils {
 			
 			VariantPool intersection = (VariantPool) varsA.intersect(varsB);
 			
-			
 			VariantPool uniqA = new VariantPool(varsA);
 			VariantPool uniqB = new VariantPool(varsB);
 			for(String contig : varsB.getContigs()) {
@@ -1817,7 +1816,6 @@ public class VarUtils {
 				}
 			}
 			
-
 			System.out.println("\nTotal intersection size: " + intersection.size());
 			
 			System.out.println("Number of variants unique to " + fileA.getName() + " : " + uniqA.size());
@@ -1825,12 +1823,9 @@ public class VarUtils {
 			
 			System.out.println("TT ratio in variants unique to " + fileA.getName() + " : " + uniqA.computeTTRatio());
 			System.out.println("TT ratio in variants unique to " + fileB.getName() + " : " + uniqB.computeTTRatio());
-			
-	
 
 			System.out.println("%Intersection in " + fileA.getName() + " : " + formatter.format( (double)intersection.size() / (double)varsA.size()));
 			System.out.println("%Intersection in " + fileB.getName() + " : " + formatter.format( (double)intersection.size() / (double)varsB.size()));
-			
 			
 			System.out.println("Mean quality of sites in intersection: " + formatter.format(intersection.meanQuality()));
 			System.out.println("Mean quality of sites in A but not in intersection: " + formatter.format(uniqA.meanQuality()));
@@ -3192,6 +3187,4 @@ public class VarUtils {
 		}
 	}
 }
-
-
 
