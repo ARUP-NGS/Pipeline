@@ -1,11 +1,19 @@
 package operator.qc;
 
+import gene.ExonLookupService;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.logging.Logger;
 
+import json.JSONArray;
 import json.JSONException;
 import json.JSONObject;
 import operator.OperationFailedException;
@@ -14,6 +22,7 @@ import operator.Operator;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import pipeline.Pipeline;
 import pipeline.PipelineObject;
 import buffer.BAMFile;
 import buffer.BAMMetrics;
@@ -101,10 +110,14 @@ public class QCtoJSON extends Operator {
 		}
 		
 		try {
-			qcObj.put("nocalls", new JSONObject(noCallsToJSON(noCallCSV)));
+			//qcObj.put("nocalls", new JSONObject(noCallsToJSON(noCallCSV)));
+			qcObj.put("nocalls", new JSONObject(noCallsToJSONWithAnnotations(noCallCSV)));
 		} catch (JSONException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 		
 		try {
@@ -152,6 +165,88 @@ public class QCtoJSON extends Operator {
 			
 		}
 		return obj.toString();
+	}
+	
+	private String noCallsToJSONWithAnnotations(CSVFile noCallCSV) throws JSONException, IOException {	
+		JSONObject obj = new JSONObject();
+		JSONArray allRegions = new JSONArray();
+		obj.put("regions", allRegions);
+		
+		if (noCallCSV == null) {
+			obj.put("error", "no no-call file specified");
+			return obj.toString();
+		}
+		
+		//Use the feature lookup service to find which features correspond to particular low coverage intervals
+		ExonLookupService featureLookup = null;
+			try {
+				featureLookup = new ExonLookupService();
+				String featureFile = getPipelineProperty("feature.file");
+				featureLookup.buildExonMap(new File(featureFile));
+			}
+			catch (IOException ex) {
+				
+				Logger.getLogger(Pipeline.primaryLoggerName).warning("Error opening feature file, can't compute features for low coverage regions. " + ex.getLocalizedMessage());
+				obj.put("error", "Error reading exon features file");
+				return obj.toString();
+			}
+			
+			BufferedReader reader = new BufferedReader(new FileReader(noCallCSV.getAbsolutePath()));
+			String line = reader.readLine();
+			int noCallIntervals = 0;
+			int noCallPositions = 0;
+			
+			List<List<String>> regions = new ArrayList<List<String>>();
+			
+			while(line != null) {
+				String[] toks = line.split(" ");
+				if (toks.length == 4) {
+					if (! toks[3].equals("CALLABLE")) {
+						JSONObject region = new JSONObject();
+						noCallIntervals++;
+						try {
+							String contig = toks[0];
+							long startPos = Long.parseLong(toks[1]);
+							long endPos = Long.parseLong(toks[2]);
+							long length = endPos - startPos;
+
+							String cause = toks[3];
+							cause = cause.toLowerCase();
+							cause  = ("" + cause.charAt(0)).toUpperCase() + cause.substring(1);
+
+							String[] features = new String[]{};
+							if (featureLookup != null) {
+								features = featureLookup.getInfoForRange(contig, (int)startPos, (int)endPos);							
+							}
+							String featureStr = QCReport.mergeStrings(features);
+							if (length > 1 && (featureStr.contains("exon"))) {
+								regions.add(Arrays.asList(new String[]{"chr" + toks[0] + ":" + toks[1] + " - " + toks[2], "" + length, cause, featureStr}) );
+							}
+							noCallPositions += length;
+							
+							region.put("gene", featureStr);
+							region.put("size", length);
+							region.put("reason", cause);
+							region.put("chr", toks[0]);
+							region.put("start", Integer.parseInt(toks[1]));
+							region.put("end", Integer.parseInt(toks[2]));
+							
+							allRegions.put(region);
+						} catch (NumberFormatException nfe) {
+							//dont stress it
+						}
+
+					}
+				}
+				line = reader.readLine();
+			}
+			
+			reader.close();
+			
+			obj.put("interval.count", noCallIntervals);
+			obj.put("no.call.extent", noCallPositions);
+		
+			return obj.toString();
 	}
 	
 	private String variantPoolToJSON(VariantPool vp) throws JSONException {

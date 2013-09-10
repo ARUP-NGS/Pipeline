@@ -228,6 +228,7 @@ public class AbstractBAMFilter extends IOOperator {
 						}
 					}
 					
+					
 					if (passes) {
 						passingReads++;
 						writer.addAlignment(samRecord);

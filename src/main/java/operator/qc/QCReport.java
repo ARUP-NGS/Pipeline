@@ -365,9 +365,13 @@ public class QCReport extends Operator {
 		
 		writer.write("<div id=\"vartablewrap\">" +  table.getHTML() + "\n</div><!-- table wrapper -->\n");
 		
-		
-		writer.write("<p> Novel variant % : " + formatter.format( 100*novels.size()/(novels.size()+knowns.size()))) ;
-		writer.write("<p> Variants per sequenced base : " + smallFormatter.format( (double)(novels.size()+knowns.size()) / (double)captureBed.getExtent() ) ) ;
+		if (novels.size() + knowns.size() > 0) {
+			writer.write("<p> Novel variant % : " + formatter.format( 100*novels.size()/(novels.size()+knowns.size())) + "</p>") ;
+		}
+		else {
+			writer.write("<p> Novel variant % : NA </p>") ;
+		}
+		writer.write("<p> Variants per sequenced base : " + smallFormatter.format( (double)(novels.size()+knowns.size()) / (double)captureBed.getExtent() ) + "</p>") ;
 		
 		
 		Histogram varDepthHisto = new Histogram(0, 1, 50);
