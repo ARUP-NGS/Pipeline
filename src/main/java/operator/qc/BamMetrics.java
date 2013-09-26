@@ -42,21 +42,23 @@ public class BamMetrics extends IOOperator {
 		
 		logger.info("Computing summary metrics for input bam file " + inputBAM.getAbsolutePath());
 		
-		FileBuffer outputFile = getOutputBufferForClass(TextBuffer.class);
+		//Optional, if provided we'll write the info to a text file as well. 
+		FileBuffer outputTextFile = getOutputBufferForClass(TextBuffer.class);
 		
 		
 		computeBAMMetrics( (BAMFile)inputBAM, metrics);
 		
-		String metricsSummary = getBAMMetricsSummary(metrics);
-		try {
-			BufferedWriter writer = new BufferedWriter(new FileWriter(outputFile.getFile()));
-			writer.write(metricsSummary);
-			writer.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-			throw new OperationFailedException("Error writing to output file: " + outputFile.getAbsolutePath(), this);
+		if (outputTextFile != null) {
+			String metricsSummary = getBAMMetricsSummary(metrics);
+			try {
+				BufferedWriter writer = new BufferedWriter(new FileWriter(outputTextFile.getFile()));
+				writer.write(metricsSummary);
+				writer.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+				throw new OperationFailedException("Error writing to output file: " + outputTextFile.getAbsolutePath(), this);
+			}
 		}
-		
 		logger.info("Done computing summary metrics for input bam file " + inputBAM.getAbsolutePath());
 	}
 	

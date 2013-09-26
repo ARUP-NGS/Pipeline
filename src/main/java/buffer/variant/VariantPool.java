@@ -330,6 +330,8 @@ public class VariantPool extends Operator  {
 		return varList.get(index);		
 	}
 	
+	
+	
 	/**
 	 * Returns the result of binary search for a record at the given position. If the 
 	 * record is found the result will be the index of the found record. If no record is

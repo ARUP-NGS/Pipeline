@@ -250,7 +250,7 @@ public class ReviewDirGenerator extends Operator {
 	
 	private boolean createDir(String parent, String dirName) {
 		File dir = new File(parent + "/" + dirName);
-		boolean ok = dir.mkdir();
+		boolean ok = dir.mkdirs();
 		return ok;
 	}
 	

@@ -2478,6 +2478,8 @@ public class VarUtils {
 			
 			reader.close();
 			
+			final List<String> refList = Arrays.asList(refOrder);
+			
 			Collections.sort(lines, new Comparator<String>() {
 
 				@Override
@@ -2488,17 +2490,10 @@ public class VarUtils {
 					String chr0 = toks0[0];
 					String chr1 = toks1[0];
 					if (! chr0.equals(chr1)) {
-						//try to parse ints from chrs if possible
-						try {
-							Integer chrNum0 = Integer.parseInt(chr0);
-							Integer chrNum1 = Integer.parseInt(chr1);
-							return chrNum0.compareTo(chrNum1);
-						}
-						catch(NumberFormatException ex) {
-							//forget it, this is expected sometimes
-						}
+						Integer val0 = refList.indexOf(chr0);
+						Integer val1 = refList.indexOf(chr1);
 						
-						return chr0.compareTo(chr1);
+						return val0.compareTo(val1);
 					}
 					else {
 						Integer pos0 = Integer.parseInt(toks0[1]);
@@ -2536,7 +2531,7 @@ public class VarUtils {
 				VariantLineReader reader = getReader(args[i]);
 				do {
 					VariantRec var = reader.toVariantRec();
-					VariantRec existing = pool.findRecordNoWarn(var.getContig(), var.getStart());
+					VariantRec existing = pool.findRecord(var.getContig(), var.getStart(), var.getAlt());
 					if (existing == null) {
 						pool.addRecord(var);
 						pool.sortAllContigs();
@@ -3186,5 +3181,14 @@ public class VarUtils {
 			e.printStackTrace();
 		}
 	}
+	
+	public static final String[] refOrder = new String[]{"1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","X"
+		,"Y","MT","GL000207.1","GL000226.1","GL000229.1","GL000231.1","GL000210.1","GL000239.1","GL000235.1","GL000201.1","GL000247.1","GL000245.1","GL000197.1","GL000203.1"
+		,"GL000246.1","GL000249.1","GL000196.1","GL000248.1","GL000244.1","GL000238.1","GL000202.1","GL000234.1","GL000232.1","GL000206.1","GL000240.1","GL000236.1","GL000241.1","GL000243.1","GL000242.1","GL000230.1","GL000237.1"
+		,"GL000233.1","GL000204.1","GL000198.1","GL000208.1","GL000191.1","GL000227.1","GL000228.1","GL000214.1","GL000221.1","GL000209.1","GL000218.1","GL000220.1"
+		,"GL000213.1","GL000211.1","GL000199.1","GL000217.1","GL000216.1","GL000215.1","GL000205.1","GL000219.1","GL000224.1","GL000223.1","GL000195.1"
+		,"GL000212.1","GL000222.1","GL000200.1","GL000193.1","GL000194.1","GL000225.1","GL000192.1" };
 }
+
+
 
