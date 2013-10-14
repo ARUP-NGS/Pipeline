@@ -33,7 +33,15 @@ public class AnnotatedVarsJsonConverter {
 			catch (NumberFormatException nex) {
 				//Expected, ignore this
 			}
-			varObj.put(key, var.getProperty(key));
+			
+			Double val = var.getProperty(key);
+			//JSON can't handle infinite or NaN's, so convert to a string here
+			if (val.isInfinite() || val.isNaN()) {
+				varObj.put(key, "" + val);
+			}
+			else {
+				varObj.put(key, var.getProperty(key));
+			}
 		}
 		
 		for(String key : ensureKeys) {

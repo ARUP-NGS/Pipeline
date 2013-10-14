@@ -11,7 +11,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 import java.util.zip.GZIPOutputStream;
 
@@ -79,6 +81,8 @@ public class ReviewDirGenerator extends Operator {
 		createDir(rootPath, "bed");
 		
 
+		Map<String, String> manifest = new HashMap<String, String>();
+		
 		//This should happen before files get moved around
 		createSampleManifest("sampleManifest.txt");
 		
@@ -173,15 +177,15 @@ public class ReviewDirGenerator extends Operator {
 		}
 		
 		jsonResponse.put("variant.list", jsonVarList);
-		
+
 		//Get the json string, then compress it to a byte array
 		String str = jsonResponse.toString();			
 		byte[] bytes = compressGZIP(str);
-				
+
 		if (dest.exists()) {
 			throw new IOException("Destination file already exists");
 		}
-		
+
 		BufferedOutputStream writer = new BufferedOutputStream(new FileOutputStream(dest));
 		writer.write(bytes);
 		writer.close();
@@ -189,23 +193,25 @@ public class ReviewDirGenerator extends Operator {
 	}
 
 
-/**
- * GZIP compress the given string to a byte array
- * @param str
- * @return
- */
-private static byte[] compressGZIP(String str){
-	ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-	try{
-		GZIPOutputStream gzipOutputStream = new GZIPOutputStream(byteArrayOutputStream);
-		gzipOutputStream.write(str.getBytes("UTF-8"));
-		gzipOutputStream.close();
-	} catch(IOException e){
-		throw new RuntimeException(e);
+	/**
+	 * GZIP compress the given string to a byte array
+	 * @param str
+	 * @return
+	 */
+	private static byte[] compressGZIP(String str){
+		ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+		try{
+			GZIPOutputStream gzipOutputStream = new GZIPOutputStream(byteArrayOutputStream);
+			gzipOutputStream.write(str.getBytes("UTF-8"));
+			gzipOutputStream.close();
+		} catch(IOException e){
+			throw new RuntimeException(e);
+		}
+		return byteArrayOutputStream.toByteArray();
 	}
-	return byteArrayOutputStream.toByteArray();
-}
 
+	
+	
 	private void createSampleManifest(String filename) {
 		File manifestFile = new File(rootPath + "/" +filename);
 		try {
@@ -216,8 +222,12 @@ private static byte[] compressGZIP(String str){
 			writer.write("pipeline.version=" +  Pipeline.PIPELINE_VERSION + "\n");
 			writer.write("submitter=" +  submitter + "\n");
 			writer.write("analysis.type=" +  analysisType + "\n");
-			if (annotatedVariants != null)
+			if (annotatedVariants != null) {
 				writer.write("annotated.vars=var/" + annotatedVariants.getFilename() + "\n");
+				if (createJSONVariants) {
+					writer.write("json.vars=var/" + annotatedVariants.getFilename().replace(".csv", ".json.gz") + "\n");
+				}
+			}
 			if (variantFile != null) {
 				writer.write("vcf.file=var/" + variantFile.getFilename() + "\n");
 				//WARNING: Bad code here. This should be updated to make sure we're getting the correct
