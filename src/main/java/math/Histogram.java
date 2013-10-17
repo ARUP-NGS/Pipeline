@@ -344,6 +344,7 @@ public class Histogram {
 		}
 		return sum;
 	}
+
 	
 	/**
 	 * The number of values added which are greater than or equal to maxVal

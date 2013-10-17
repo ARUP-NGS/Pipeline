@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,6 +16,7 @@ import java.util.Map;
 import json.JSONArray;
 import json.JSONException;
 import json.JSONObject;
+import math.Histogram;
 
 /**
  * A smallish utility to read QC data from qc.json files
@@ -236,10 +239,180 @@ public class QCJsonReader {
 			return;
 		}
 		
+		if (command.startsWith("qcList")) {
+			performQCList(paths, System.out);
+			return;
+		}
+		
 		System.err.println("Unrecognized command");
 		
 	}
 
+	
+	private static void performQCList(List<String> paths, PrintStream out) {
+		Map<String, QCInfoList> analysisMap = new HashMap<String, QCInfoList>(); //Mapping from analysis types to groups of qc metrics
+		
+		for(String path : paths) {
+			try {
+				File manifestFile = new File(path + "/sampleManifest.txt");
+				Map<String, String> manifest = readManifest(manifestFile);
+				String analysisType = analysisTypeFromManifest(manifestFile).replace(" (v. 1.0)", "");
+				QCInfoList qcList = analysisMap.get(analysisType);
+				if (qcList == null) {
+					qcList = new QCInfoList();
+					analysisMap.put(analysisType, qcList);
+				}
+				
+				
+				JSONObject obj = toJSONObj(path);
+				JSONObject finalCov = obj.getJSONObject("final.coverage.metrics");
+				JSONArray fracAbove = finalCov.getJSONArray("fraction.above.index");		
+
+				Double mean = finalCov.getDouble("mean.coverage");
+				Double above0 = fracAbove.getDouble(0);
+				Double above20 = fracAbove.getDouble(20);
+				Double above50 = fracAbove.getDouble(50);
+				qcList.add("mean.coverage", mean);
+				qcList.add("frac.above.0", above0);
+				qcList.add("frac.above.20", above20);
+				qcList.add("frac.above.50", above50);
+				
+				
+				
+				JSONObject rawBam = obj.getJSONObject("raw.bam.metrics");
+				Double rawReadCount = rawBam.getDouble("total.reads");
+				qcList.add("raw.reads", rawReadCount);
+				double basesRead = rawBam.getDouble("bases.read");
+				qcList.add("bases.above.q10", rawBam.getDouble("bases.above.q10")/basesRead);
+				qcList.add("bases.above.q20", rawBam.getDouble("bases.above.q20")/basesRead);
+				qcList.add("bases.above.q30", rawBam.getDouble("bases.above.q30")/basesRead);
+				qcList.add("unmapped.reads", rawBam.getDouble("unmapped.reads")/rawReadCount);
+				
+				
+				JSONObject finalBam = obj.getJSONObject("final.bam.metrics");
+				Double finalReadCount = finalBam.getDouble("total.reads");
+				double percentDups = (rawReadCount - finalReadCount)/rawReadCount;
+				qcList.add("percent.dups", percentDups);
+				
+				int indelCount = -1;
+				Double snpCount = Double.NaN;
+				Double varCount = Double.NaN;
+				Double tstv = Double.NaN;
+				Double knownSnps = Double.NaN;
+				Double novelFrac = Double.NaN;
+				JSONObject variants = null;
+				try {
+					variants = obj.getJSONObject("variant.metrics");
+				}
+				catch (JSONException e) {
+
+				}
+				try {
+					varCount = variants.getDouble("total.vars");
+					qcList.add("total.variants", varCount);
+				}
+				catch (JSONException e) {
+
+				}
+				try {
+					snpCount = variants.getDouble("total.snps");
+					qcList.add("total.snps", snpCount);
+				}
+				catch (JSONException e) {
+
+				}
+				indelCount = (int)(varCount - snpCount);
+				try {
+					knownSnps = variants.getDouble("total.known");
+					qcList.add("known.snps", knownSnps);
+					if (snpCount > 0) {
+						qcList.add("known.snps.frac", knownSnps/snpCount);
+					}
+				}
+				catch (JSONException e) {
+
+				}
+				
+				if (snpCount > 0) {
+					novelFrac = 1.0 - knownSnps/snpCount;
+					qcList.add("frac.above.50", above50);
+				}
+				
+				try {
+					tstv = variants.getDouble("total.tt.ratio");
+					qcList.add("total.tt.ratio", tstv);
+				}
+				catch (JSONException e) {
+
+				}
+				
+				try {
+					tstv = variants.getDouble("known.tt");
+					qcList.add("known.tt", tstv);
+				}
+				catch (JSONException e) {
+
+				}
+				
+				try {
+					tstv = variants.getDouble("novel.tt");
+					qcList.add("novel.tt", tstv);
+				}
+				catch (JSONException e) {
+
+				}
+
+				//System.out.println(toSampleName(path) + "\t" + rawReadCount + "\t" + mean + "\t" + formatter.format(percentDups) + "\t" + above15 + "\t" + snpCount + "\t" + indelCount + "\t" + formatter.format(novelFrac) + "\t" + formatter.format(tstv));
+
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} 
+		}
+		
+		for(String analType : analysisMap.keySet()) {
+			
+			QCInfoList qcItems = analysisMap.get(analType);
+			List<String> sortedKeys = new ArrayList<String>();
+			sortedKeys.addAll( qcItems.keys());
+			Collections.sort(sortedKeys);
+			int count = qcItems.getValsForMetric( sortedKeys.get(0) ).size();
+			out.println("Analysis type: " + analType + " samples found: " + count);
+			for(String metric : sortedKeys) {
+				out.print("\t" + metric + "\t");
+				List<Double> vals = qcItems.getValsForMetric(metric);
+				String formattedList = formatQCListVals(vals);
+				out.print(formattedList);
+				out.println();
+			}
+		}
+	}
+	
+	//Nicely format a long list of qc values
+	private static String formatQCListVals(List<Double> vals) {
+		DecimalFormat formatter = new DecimalFormat("0.0##");
+		if (vals.size() < 3) {
+			return "Not enough data (" + vals.size() + " elements)";
+		}
+		Collections.sort(vals);
+		Double min = vals.get(0);
+		Double max = vals.get( vals.size() - 1 );
+		Histogram histo = new Histogram(min, max, vals.size());
+		for(Double x : vals) {
+			histo.addValue(x);
+		}
+		
+		return formatter.format(histo.getMean()) + "\t" + formatter.format(histo.lowerHPD(0.025)) + "\t" + formatter.format(histo.lowerHPD(0.05)) + "\t" + formatter.format(histo.upperHPD(0.05)) + "\t" + formatter.format(histo.upperHPD(0.025)); 
+	}
+	
+	
+	
+	
+	
+	
 	private static void performComparison(List<String> paths, PrintStream out) throws IOException {
 		if (paths.size() != 2) {
 			out.println("Please enter two directories to compare.");
@@ -502,5 +675,28 @@ public class QCJsonReader {
 		}
 		
 		out.println(data.toString());
+	}
+	
+	
+	static class QCInfoList {
+		Map<String, List<Double>> items = new HashMap<String, List<Double>>();
+		
+		public void add(String metric, Double val) {
+			List<Double> itemList = items.get(metric);
+			if (itemList == null) {
+				itemList = new ArrayList<Double>(8);
+				items.put(metric, itemList);
+			}
+			itemList.add(val);
+		}
+		
+		public List<Double> getValsForMetric(String metric) {
+			return items.get(metric);
+		}
+		
+		public Collection<String> keys() {
+			return items.keySet();
+		}
+		
 	}
 }
