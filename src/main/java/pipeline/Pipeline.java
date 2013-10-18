@@ -432,6 +432,7 @@ public class Pipeline {
 				Date opStart = new Date();
 				fireOperatorBeginning(op);
 				op.setAttribute(START_TIME, "" + opStart.getTime());
+				//op.setAttribute("jobID", value) //Once this is set, the hooks should be working correctly!!
 				// Add the hooks to each operator
 				// NOTE: OperatorHook.initHook must be called
 				for(OperatorHook osh : handler.getHookList()){

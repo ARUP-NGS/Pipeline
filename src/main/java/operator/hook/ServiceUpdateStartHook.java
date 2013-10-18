@@ -26,13 +26,13 @@ import operator.Operator;
  *
  */
 public class ServiceUpdateStartHook extends OperatorStartHook implements IOperatorStartHook{
-	protected static final String serviceURL = "http://iis7intdev/ngs/Dispatcher/UpdateService";
+	protected static final String serviceURL = "http://ngs-webapp-dev/Dispatcher/UpdateService";
 	protected static final String success = "\"Success\"";
 	
 	protected String opCanName;
 	protected String opName;
 	protected String ipAddress;
-	protected int jobID;
+	protected String jobID;
 	
 	public ServiceUpdateStartHook(){
 		
@@ -41,7 +41,7 @@ public class ServiceUpdateStartHook extends OperatorStartHook implements IOperat
 	public ServiceUpdateStartHook(String opCanName,
 							String opName,
 							String ipAddress,
-							int jobID){
+							String jobID){
 		this.opCanName = opCanName;
 		this.opName = opName;
 		this.ipAddress = ipAddress;
@@ -68,7 +68,7 @@ public class ServiceUpdateStartHook extends OperatorStartHook implements IOperat
 	 * Sets the Job ID
 	 * @param jobID
 	 */
-	public void setJobID(int jobID){
+	public void setJobID(String jobID){
 		this.jobID = jobID;
 	}
 	
@@ -127,7 +127,7 @@ public class ServiceUpdateStartHook extends OperatorStartHook implements IOperat
 		// Where to we get the Operator Job ID?
 		String strJobID = op.getAttribute("jobID");
 		if(strJobID != null){
-			this.jobID = Integer.parseInt(strJobID);
+			this.jobID = strJobID;
 		}
 	}
 

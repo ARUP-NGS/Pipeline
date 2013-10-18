@@ -4,8 +4,10 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.net.InetAddress;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.UnknownHostException;
 
 import json.JSONException;
 import json.JSONObject;
@@ -25,14 +27,13 @@ import operator.Operator;
  *
  */
 public class ServiceUpdateEndHook extends OperatorEndHook implements IOperatorEndHook {
-
-	protected static final String serviceURL = "http://iis7intdev/ngs/Dispatcher/UpdateService";
+	protected static final String serviceURL = "http://ngs-webapp-dev/Dispatcher/UpdateService";
 	protected static final String success = "\"Success\"";
 	
 	protected String opCanName;
 	protected String opName;
 	protected String ipAddress;
-	protected int jobID;
+	protected String jobID;
 	
 	public ServiceUpdateEndHook(){
 		
@@ -41,13 +42,37 @@ public class ServiceUpdateEndHook extends OperatorEndHook implements IOperatorEn
 	public ServiceUpdateEndHook(String opCanName,
 							String opName,
 							String ipAddress,
-							int jobID){
+							String jobID){
 		this.opCanName = opCanName;
 		this.opName = opName;
 		this.ipAddress = ipAddress;
 		this.jobID = jobID;
 	}
+	
+	/**
+	 * Sets the Operator canonical name
+	 * @param opCanName
+	 */
+	public void setOpCanName(String opCanName){
+		this.opCanName = opCanName;
+	}
+	
+	/**
+	 * Sets the Operator name
+	 * @param opName
+	 */
+	public void setOpName(String opName){
+		this.opName = opName;
+	}
 
+	/**
+	 * Sets the Job ID
+	 * @param jobID
+	 */
+	public void setJobID(String jobID){
+		this.jobID = jobID;
+	}
+	
 	public void HttpPostJSON(String url, JSONObject js) throws IOException{
 		String content = js.toString();
 		
@@ -68,6 +93,7 @@ public class ServiceUpdateEndHook extends OperatorEndHook implements IOperatorEn
 		if(!response.equals(success)) throw new IOException("Error when posting update to .NET service");
 	}
 	
+
 	@Override
 	public void doHook() throws Exception {
 		JSONObject obj = new JSONObject();
@@ -85,25 +111,25 @@ public class ServiceUpdateEndHook extends OperatorEndHook implements IOperatorEn
 
 	@Override
 	public void initialize(NodeList children) {
+		// TODO Auto-generated method stub
 		
 	}
 
-	/**
-	 * From the operator we can get all the information we need
-	 */
 	@Override
 	public void initHook(Operator op) {
 		this.opCanName = op.getClass().getCanonicalName();
 		this.opName = op.getObjectLabel();
-		this.ipAddress = op.getAttribute("ipAddress");
+		try {
+			this.ipAddress = InetAddress.getLocalHost().getHostAddress();
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+		}
 		
 		// Where to we get the Operator Job ID?
 		String strJobID = op.getAttribute("jobID");
 		if(strJobID != null){
-			this.jobID = Integer.parseInt(strJobID);
+			this.jobID = strJobID;
 		}
 	}
-	
-	
 
 }
