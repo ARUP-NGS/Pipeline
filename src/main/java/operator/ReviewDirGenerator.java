@@ -165,7 +165,7 @@ public class ReviewDirGenerator extends Operator {
 
 		JSONArray jsonVarList = new JSONArray();
 		
-		List<String> map = Arrays.asList( varReader.getHeader().replace("#",  "").split("\t") );
+		List<String> map = Arrays.asList( varReader.getHeader().replace("#",  "").replace(" ", "").split("\t") );
 		converter.setKeys(map);
 		
 		//Danger: could create huge json object if variant list is big
