@@ -21,6 +21,7 @@ import pipeline.Pipeline;
 public class HGMDAnnotator extends AbstractGeneAnnotator {
 	
 	public static final String HGMDB_PATH = "hgmd.path";
+	public static final String HGMDB_INDEL_PATH = "hgmd.indel.path";
 	
 	HGMDB db = null;
 	
@@ -34,19 +35,32 @@ public class HGMDAnnotator extends AbstractGeneAnnotator {
 	public void annotateGene(Gene gene) throws OperationFailedException {
 		if (db == null) {
 			db = new HGMDB();
-			Object hgmdObj =  getPipelineProperty(HGMDB_PATH);
-			if (hgmdObj== null) {
+			Object hgmdSNVObj =  getPipelineProperty(HGMDB_PATH);
+			if (hgmdSNVObj== null) {
 				throw new OperationFailedException("Could not initialize HGMD db, no path to db file specified (use " + HGMDB_PATH + ")", this);
 			}
-			File dbFile = new File(hgmdObj.toString());
-			if (! dbFile.exists()) {
-				throw new OperationFailedException("HGMD db file at path " + hgmdObj.toString() + " does not exist", this);
+			File snvFile = new File(hgmdSNVObj.toString());
+			if (! snvFile.exists()) {
+				throw new OperationFailedException("HGMD db file at path " + hgmdSNVObj.toString() + " does not exist", this);
 			}
-			Logger.getLogger(Pipeline.primaryLoggerName).info("Initializing hgmd db from file: " + dbFile.getAbsolutePath());
+			
+			
+			Object hgmdIndelObj =  getPipelineProperty(HGMDB_INDEL_PATH);
+			if (hgmdIndelObj== null) {
+				throw new OperationFailedException("Could not initialize HGMD db, no path to db file specified (use " + HGMDB_PATH + ")", this);
+			}
+			File indelFile = new File(hgmdIndelObj.toString());
+			if (! indelFile.exists()) {
+				throw new OperationFailedException("HGMD db indel file at path " + hgmdIndelObj.toString() + " does not exist", this);
+			}
+			
+			
+			
+			Logger.getLogger(Pipeline.primaryLoggerName).info("Initializing hgmd db from file: " + snvFile.getAbsolutePath());
 			try {
-				db.initializeMap(dbFile);
+				db.initializeMap(snvFile, indelFile);
 			} catch (IOException e) {
-				throw new OperationFailedException("Error reading HGMD db file at path " + hgmdObj.toString() + " : " + e.getMessage(), this);
+				throw new OperationFailedException("Error reading HGMD db file at path " + hgmdSNVObj.toString() + " : " + e.getMessage(), this);
 			}
 			
 		}

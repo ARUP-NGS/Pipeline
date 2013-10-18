@@ -32,20 +32,71 @@ public class HGMDB {
 	 * @param dbFile
 	 * @throws IOException
 	 */
-	public void initializeMap(File dbFile) throws IOException {
-		BufferedReader reader = new BufferedReader(new FileReader(dbFile));
+	public void initializeMap(File snvFile, File indelFile) throws IOException {
+		
+		//Import SNVs
+		BufferedReader reader = new BufferedReader(new FileReader(snvFile));
 		String line = reader.readLine();
 		while(line != null) {
-			importFromLine(line);
+			HGMDInfo info = importSNVFromLine(line);
+			if (info == null) {
+				line = reader.readLine();
+				continue;
+			}
+			List<HGMDInfo> list = db.get(info.contig);
+			if (list == null) {
+				list = new ArrayList<HGMDInfo>(1024);
+				db.put(info.contig, list);
+			}
+			list.add(info);
+
+			List<HGMDInfo> geneList = geneMap.get(info.geneName);
+			if (geneList == null) {
+				geneList = new ArrayList<HGMDInfo>(256);
+				geneMap.put(info.geneName, geneList);
+			}
+			geneList.add(info);
 			line = reader.readLine();
 		}
 		reader.close();
+		
+		//Import indels
+		reader = new BufferedReader(new FileReader(indelFile));
+		line = reader.readLine();
+		while(line != null) {
+			HGMDInfo info = importIndelFromLine(line);
+			if (info == null) {
+				line = reader.readLine();
+				continue;
+			}
+			List<HGMDInfo> list = db.get(info.contig);
+			if (list == null) {
+				list = new ArrayList<HGMDInfo>(1024);
+				db.put(info.contig, list);
+			}
+			list.add(info);
+
+			List<HGMDInfo> geneList = geneMap.get(info.geneName);
+			if (geneList == null) {
+				geneList = new ArrayList<HGMDInfo>(256);
+				geneMap.put(info.geneName, geneList);
+			}
+			geneList.add(info);
+			line = reader.readLine();
+		}
+		reader.close();
+		
+		
+		
 		sortAll();
 		
 		int count = 0;
 		for(String contig : db.keySet()) {
 			count += db.get(contig).size();
 		}
+		
+		
+		
 		
 		Logger.getLogger(Pipeline.primaryLoggerName).info("HGMDb initialzed with " + count + " total variants in " + geneMap.size() + " genes");
 	}
@@ -90,45 +141,113 @@ public class HGMDB {
 		return geneMap.get(geneName);
 	}
 	
-	private void importFromLine(String line) {
+	
+	/**
+	 * Newer version, works with updated HGMD files since October, 2013
+	 * @param line
+	 * @return
+	 */
+	private HGMDInfo importSNVFromLine(String line) {
+		if (line.startsWith("//")) {
+			return null;
+		}
+		if (line.length() < 2) {
+			return null;
+		}
 		String[] toks = line.split("\t");
 		HGMDInfo info = new HGMDInfo();
-		info.contig = toks[0];
+		String coords = toks[5];
+		String[] coordToks = coords.split(":");
+		if (coordToks.length == 1) {
+			return null;
+		}
+		String contig = coordToks[0].replace("chr", "");
+		
+		
+		info.contig = contig;
 		
 		try {
-			info.pos = Integer.parseInt(toks[1]);
+			info.pos = Integer.parseInt(coordToks[1]);
+			info.posEnd = info.pos;
 		}
 		catch(NumberFormatException nfe) {
 			//Logger.getLogger(Pipeline.primaryLoggerName).warning("Could not import HGMD variant from line: " + line);
-			return;
+			return null;
 		}
-		info.cDot = toks[2];
-		info.pDot = toks[3];
-		info.geneName = toks[4];
-		info.condition = toks[5];
-		info.assocType = toks[6];
-		info.citation = toks[7];
 		
-		if (toks.length>8) {
-			info.pmid = toks[8];
+		info.cDot = toks[6];
+		info.pDot = toks[7];
+		info.geneName = toks[8];
+		info.condition = toks[9];
+		info.assocType = toks[1];
+		try {
+			info.citation = toks[18] + " " + toks[19] + " vol. " + toks[20] + ": " + toks[21] + " (" + toks[22] + ")" ;
+			info.pmid = toks[23];
 		}
-		else {
-			info.pmid = "";
+		catch (Exception ex) {
+			//Sometimes this happens, if  so fine, but no citation
 		}
+		
 
-		List<HGMDInfo> list = db.get(info.contig);
-		if (list == null) {
-			list = new ArrayList<HGMDInfo>(1024);
-			db.put(info.contig, list);
+		return info;
+	}
+	
+	private HGMDInfo importIndelFromLine(String line) {
+		if (line.startsWith("//")) {
+			return null;
 		}
-		list.add(info);
+		if (line.length() < 2) {
+			return null;
+		}
+		String[] toks = line.split("\t");
+		if (toks.length < 6) {
+			return null;
+		}
+		HGMDInfo info = new HGMDInfo();
+		
+		String coords = toks[6];
+		String[] coordToks = coords.split(":");
+		if (coordToks.length == 1) {
+			return null;
+		}
+		String contig = coordToks[0].replace("chr", "");
+		
+		
+		info.contig = contig;
+		
+		try {
+			String noStrand = coordToks[1].replace(" (-)", "").replace(" (+)", "");
+			String posEnd = null;
+			if (noStrand.contains("-")) {
+				posEnd = noStrand.substring(noStrand.indexOf("-")+1);
+				noStrand = noStrand.substring(0, noStrand.indexOf("-"));
+			}
+			info.pos = Integer.parseInt(noStrand);
+			if (posEnd != null) {
+				info.posEnd = Integer.parseInt(posEnd);
+			}
+			
+		}
+		catch(NumberFormatException nfe) {
+			//Logger.getLogger(Pipeline.primaryLoggerName).warning("Could not import HGMD variant from line: " + line);
+			return null;
+		}
+		
+		info.cDot = toks[4];
+		info.pDot = null;
+		info.geneName = toks[2];
+		info.condition = toks[3];
+		info.assocType = toks[1];
+		try {
+			info.citation = toks[13] + " " + toks[14] + " vol. " + toks[15] + ": " + toks[16] + " (" + toks[17] + ")" ;
+			info.pmid = toks[18];
+		}
+		catch (Exception ex) {
+			//OK, not always citation info available, in this case there are no columns
+		}
+		
 
-		List<HGMDInfo> geneList = geneMap.get(info.geneName);
-		if (geneList == null) {
-			geneList = new ArrayList<HGMDInfo>(256);
-			geneMap.put(info.geneName, geneList);
-		}
-		geneList.add(info);
+		return info;
 	}
 	
 	/**
@@ -231,15 +350,14 @@ public class HGMDB {
 		public String pDot;
 		public String pmid;
 		String contig;
-		int pos; //Chromosomal position 
+		public int pos; //Chromosomal position 
+		public int posEnd; //End position of variant
 		public String nm;
 		public String geneName;
 		public String cDot;
 		public String condition;
 		public String assocType;
-		String pubmedID;
 		public String citation;
-		String rsNum;
 		
 		public String toString() {
 			return " nm: " + nm + " gene: " + geneName + " condition: " + condition + " cdot: " + cDot;

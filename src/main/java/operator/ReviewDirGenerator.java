@@ -1,14 +1,26 @@
 package operator;
 
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
+import java.util.zip.GZIPOutputStream;
 
+import json.AnnotatedVarsJsonConverter;
+import json.JSONArray;
+import json.JSONException;
+import json.JSONObject;
 import operator.qc.QCReport;
 
 import org.w3c.dom.Node;
@@ -24,6 +36,9 @@ import buffer.InstanceLogFile;
 import buffer.MultiFileBuffer;
 import buffer.TextBuffer;
 import buffer.VCFFile;
+import buffer.variant.CSVLineReader;
+import buffer.variant.VariantLineReader;
+import buffer.variant.VariantRec;
 
 /**
  * Create directories and copy files to the directory where GenomicsReviewApp can see them
@@ -47,7 +62,7 @@ public class ReviewDirGenerator extends Operator {
 	QCReport qcReport = null;
 	TextBuffer qcJsonFile = null;
 	BEDFile capture = null;
-	
+	private boolean createJSONVariants = true; //If true, create a compressed json variants file
 	
 	@Override
 	public void performOperation() throws OperationFailedException {
@@ -66,6 +81,8 @@ public class ReviewDirGenerator extends Operator {
 		createDir(rootPath, "bed");
 		
 
+		Map<String, String> manifest = new HashMap<String, String>();
+		
 		//This should happen before files get moved around
 		createSampleManifest("sampleManifest.txt");
 		
@@ -81,6 +98,17 @@ public class ReviewDirGenerator extends Operator {
 		}
 		
 		if (annotatedVariants != null) {
+			if (createJSONVariants) {
+				try {
+					createJSONVariants(annotatedVariants, new File(rootPath + "/var/") );
+				} catch (JSONException e) {
+					Logger.getLogger(Pipeline.primaryLoggerName).warning("Error creating annotated vars json: " + e.getLocalizedMessage());
+				} catch (IOException e) {
+					Logger.getLogger(Pipeline.primaryLoggerName).warning("Error creating annotated vars json: " + e.getLocalizedMessage());
+					e.printStackTrace();
+				}
+			}
+			
 			moveFile(annotatedVariants, new File(rootPath + "/var/"));
 		}
 		
@@ -127,6 +155,63 @@ public class ReviewDirGenerator extends Operator {
 	}
 	
 
+	private void createJSONVariants(CSVFile inputVars, File destDir) throws JSONException, IOException {
+		JSONObject jsonResponse = new JSONObject();
+		String destFilename = inputVars.getFilename().replace(".csv", ".json.gz");
+		File dest = new File(destDir.getAbsolutePath() + "/" + destFilename);
+		
+		VariantLineReader varReader = new CSVLineReader(inputVars.getFile());
+		AnnotatedVarsJsonConverter converter = new AnnotatedVarsJsonConverter();
+
+		JSONArray jsonVarList = new JSONArray();
+		
+		List<String> map = Arrays.asList( varReader.getHeader().replace("#",  "").replace(" ", "").split("\t") );
+		converter.setKeys(map);
+		
+		//Danger: could create huge json object if variant list is big
+		VariantRec var = varReader.toVariantRec();
+		while(var != null) {
+			jsonVarList.put( converter.toJSON(var) );
+			varReader.advanceLine();
+			var = varReader.toVariantRec();
+		}
+		
+		jsonResponse.put("variant.list", jsonVarList);
+
+		//Get the json string, then compress it to a byte array
+		String str = jsonResponse.toString();			
+		byte[] bytes = compressGZIP(str);
+
+		if (dest.exists()) {
+			throw new IOException("Destination file already exists");
+		}
+
+		BufferedOutputStream writer = new BufferedOutputStream(new FileOutputStream(dest));
+		writer.write(bytes);
+		writer.close();
+
+	}
+
+
+	/**
+	 * GZIP compress the given string to a byte array
+	 * @param str
+	 * @return
+	 */
+	private static byte[] compressGZIP(String str){
+		ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+		try{
+			GZIPOutputStream gzipOutputStream = new GZIPOutputStream(byteArrayOutputStream);
+			gzipOutputStream.write(str.getBytes("UTF-8"));
+			gzipOutputStream.close();
+		} catch(IOException e){
+			throw new RuntimeException(e);
+		}
+		return byteArrayOutputStream.toByteArray();
+	}
+
+	
+	
 	private void createSampleManifest(String filename) {
 		File manifestFile = new File(rootPath + "/" +filename);
 		try {
@@ -137,8 +222,12 @@ public class ReviewDirGenerator extends Operator {
 			writer.write("pipeline.version=" +  Pipeline.PIPELINE_VERSION + "\n");
 			writer.write("submitter=" +  submitter + "\n");
 			writer.write("analysis.type=" +  analysisType + "\n");
-			if (annotatedVariants != null)
+			if (annotatedVariants != null) {
 				writer.write("annotated.vars=var/" + annotatedVariants.getFilename() + "\n");
+				if (createJSONVariants) {
+					writer.write("json.vars=var/" + annotatedVariants.getFilename().replace(".csv", ".json.gz") + "\n");
+				}
+			}
 			if (variantFile != null) {
 				writer.write("vcf.file=var/" + variantFile.getFilename() + "\n");
 				//WARNING: Bad code here. This should be updated to make sure we're getting the correct
@@ -250,9 +339,11 @@ public class ReviewDirGenerator extends Operator {
 	
 	private boolean createDir(String parent, String dirName) {
 		File dir = new File(parent + "/" + dirName);
-		boolean ok = dir.mkdir();
+		boolean ok = dir.mkdirs();
 		return ok;
 	}
+	
+	
 	
 	@Override
 	public void initialize(NodeList children) {
