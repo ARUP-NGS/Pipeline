@@ -87,7 +87,14 @@ public class ObjectHandler {
 			// We have a special case for hooks, since all hooks are listed inside the "hooks" node
 			if(child.getNodeType() == Node.ELEMENT_NODE && child.getNodeName().equals("hooks")){
 				NodeList hookChildren = child.getChildNodes();
+				Node jobID = child.getAttributes().getNamedItem("jobID");
+				// Add jobID to every hook so it knows which jobID to send back to the .NET service
 				for(int j=0; j<hookChildren.getLength(); j++){
+					Node item = hookChildren.item(j);
+					NamedNodeMap attrs = item.getAttributes();
+					if(attrs != null){
+						attrs.setNamedItem(jobID.cloneNode(false));
+					}
 					addObjectToList(hookChildren.item(j), OperatorHook.class, hookList);
 				}
 			}
@@ -98,11 +105,15 @@ public class ObjectHandler {
 	public void addObjectToList(Node n, Class<?> c, List list) throws ObjectCreationException{
 		if(n.getNodeType() == Node.ELEMENT_NODE){
 			String label = n.getNodeName();
+			NamedNodeMap attrs = n.getAttributes();
 			PipelineObject obj = objectMap.get(label);
 			if(c.isInstance(obj)){
-				Object o = c.cast(obj);
+				PipelineObject o = (PipelineObject)c.cast(obj);
 				if(list.contains(o)){
 					throw new ObjectCreationException("The input file appears to contain duplicate " + c.getCanonicalName() + ", named: " + obj.getObjectLabel(), (Element)n);
+				}
+				for(int j = 0; j < attrs.getLength(); j++){
+					o.setAttribute(attrs.item(j).getNodeName(), attrs.item(j).getNodeValue());
 				}
 				Logger.getLogger(Pipeline.primaryLoggerName).info("Adding " + c.getCanonicalName() + ": " + label + " of class " + obj.getClass() + " to " + c.getSimpleName() + " list");
 				list.add(o);

@@ -126,7 +126,7 @@ public class ServiceUpdateEndHook extends OperatorEndHook implements IOperatorEn
 		}
 		
 		// Where to we get the Operator Job ID?
-		String strJobID = op.getAttribute("jobID");
+		String strJobID = this.getAttribute("jobID");
 		if(strJobID != null){
 			this.jobID = strJobID;
 		}

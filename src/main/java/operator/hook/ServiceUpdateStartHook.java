@@ -125,7 +125,7 @@ public class ServiceUpdateStartHook extends OperatorStartHook implements IOperat
 		}
 		
 		// Where to we get the Operator Job ID?
-		String strJobID = op.getAttribute("jobID");
+		String strJobID = this.getAttribute("jobID");
 		if(strJobID != null){
 			this.jobID = strJobID;
 		}
