@@ -19,10 +19,11 @@ public class AnnotatedVarsJsonConverter {
 	
 	public JSONObject toJSON(VariantRec var) throws JSONException {
 		JSONObject varObj = new JSONObject();
-
+		
 		for(String key : var.getAnnotationKeys()) {
 			varObj.put(key, var.getAnnotation(key));
 		}
+		
 		for(String key : var.getPropertyKeys()) {
 			//See if we can parse an int first.
 			try {
@@ -43,7 +44,14 @@ public class AnnotatedVarsJsonConverter {
 				varObj.put(key, var.getProperty(key));
 			}
 		}
-		
+
+		//A few special cases:
+		varObj.put("chr", var.getContig());
+		varObj.put("pos", var.getStart());
+		varObj.put("quality", var.getQuality());
+		varObj.put("ref", var.getRef());
+		varObj.put("alt", var.getAlt());
+
 		for(String key : ensureKeys) {
 			if (! varObj.has(key)) {
 				varObj.put(key, "");

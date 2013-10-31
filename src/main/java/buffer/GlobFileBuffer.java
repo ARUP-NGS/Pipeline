@@ -87,7 +87,6 @@ public class GlobFileBuffer extends MultiFileBuffer {
 			this.parent = parent;
 		}
 		
-		@Override
 		public boolean accept(File dir, String name) {
 			Matcher matcher = pattern.matcher(name);
 			return matcher.matches();

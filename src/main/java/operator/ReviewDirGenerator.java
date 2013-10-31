@@ -9,7 +9,7 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -165,7 +165,12 @@ public class ReviewDirGenerator extends Operator {
 
 		JSONArray jsonVarList = new JSONArray();
 		
-		List<String> map = Arrays.asList( varReader.getHeader().replace("#",  "").replace(" ", "").split("\t") );
+		//Trim, etc
+		List<String> map = new ArrayList<String>();
+		String[] headerToks =  varReader.getHeader().trim().replace("#",  "").split("\t");
+		for(int i=0; i<headerToks.length; i++) {
+			map.add(headerToks[i].trim().replace(" ", ""));
+		}
 		converter.setKeys(map);
 		
 		//Danger: could create huge json object if variant list is big
