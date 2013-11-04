@@ -20,4 +20,5 @@ public class PipelineXMLConstants {
 	public static final String CLASS_ATTR = "class";
 	public static final String THREADS_ATTR = "threads";
 	public static final String MAIL_RECIPIENT = "brendan.d.ofallon@aruplab.com";
+	public static final String PYLOWCOV_PATH = null;
 }
