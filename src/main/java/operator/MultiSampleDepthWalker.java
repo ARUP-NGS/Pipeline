@@ -1,6 +1,14 @@
 package operator;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.w3c.dom.NodeList;
+
 import pipeline.PipelineXMLConstants;
+import buffer.BAMFile;
+import buffer.BEDFile;
+import buffer.FileBuffer;
 import buffer.ReferenceFile;
 
 public class MultiSampleDepthWalker extends CommandOperator {
@@ -20,6 +28,9 @@ public class MultiSampleDepthWalker extends CommandOperator {
 	public static final String NoCovCountMin="nowCovCountMin";
 	public static final String MIN_DEPTH="min.depth";
 		
+	protected List<BAMFile> inputBams = null;
+	protected BEDFile targets = null;
+	
 	@Override
 	public boolean requiresReference() {
 		return true;
@@ -37,8 +48,18 @@ public class MultiSampleDepthWalker extends CommandOperator {
 			lowcovPath = path;
 		}
 		
-		String bamfiles=properties.get(BAM_FILES);
-		String panelBed=properties.get(PANEL_BED);
+		
+		//Don't get bams from attributes, get them as objects given to this operator 
+		//String bamfiles=properties.get(BAM_FILES);
+		
+		//For each input bam add its absolute path to the string of paths
+		String bamFilePaths = "";
+		for(BAMFile bam : inputBams) {
+			bamFilePaths = bamFilePaths + bam.getAbsolutePath() + " ";
+		}
+		
+		
+		
 		String outputPrefix=(OutPrefix);
 		
 		String lowCovCountMin="5";
@@ -81,12 +102,24 @@ public class MultiSampleDepthWalker extends CommandOperator {
 		
 		String reference = getInputBufferForClass(ReferenceFile.class).getAbsolutePath();
 
-		String command = "python " + lowcovPath + " " + bamfiles + " " + panelBed;
+		String command = "python " + lowcovPath + " " + bamFilePaths + " " + targets.getAbsolutePath();
 		command = command + " " + outputPrefix + " -l " + lowCovCountMin + " -n " + noCovCountMin;
 		command = command + " -d " + minDepth + " -g " + sizeFile + " -ref " + reference;
 		command = command + " -gatk " + gatkPath + " -SNP " + hgmdSNP_vcf + " -IND " + hgmdIND_vcf;
 
 		return command;
+	}
+	
+	public void initialize(NodeList children) {
+		super.initialize(children);
+		
+		List<FileBuffer> bams = super.getAllInputBuffersForClass(BAMFile.class);
+		inputBams = new ArrayList<BAMFile>();
+		for(FileBuffer bam : bams) {
+			inputBams.add( (BAMFile)bam);
+		}
+		
+		targets = (BEDFile) super.getInputBufferForClass(BEDFile.class);
 	}
 
 }
