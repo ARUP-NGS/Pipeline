@@ -189,7 +189,7 @@ public class VariantPool extends Operator  {
 	 * @param pos
 	 * @return
 	 */
-	public VariantRec findRecord(String contig, int pos, String alt) {
+	public VariantRec findRecord(String contig, int pos, String ref, String alt) {
 		contig = contig.replace("chr", "");
 		List<VariantRec> varList = vars.get(contig);
 		if (varList == null) {
@@ -211,7 +211,7 @@ public class VariantPool extends Operator  {
 		}
 		
 		while(index < varList.size() && varList.get(index).getStart()==pos) {
-			if (varList.get(index).getAlt().equals(alt)) {
+			if (varList.get(index).getAlt().equals(alt) && varList.get(index).getRef().equals(ref)) {
 				return varList.get(index);
 			}
 			index++;
