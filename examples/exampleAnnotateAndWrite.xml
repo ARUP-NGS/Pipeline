@@ -1,0 +1,25 @@
+
+<Pipeline>
+
+
+<InputVCF class="buffer.VCFFile" filename="test.vcf" />
+
+<!-- This will read all of the variants in the VCF into a big, in-memory collection of variants -->
+<VariantPool class="buffer.variant.VariantPool">
+ <InputVCF />
+</VariantPool>
+
+<!-- Now annotate the vars -->
+<Annotate class="operator.examples.ExampleAnnotator">
+ <VariantPool />
+</Annotate>
+
+<!-- And write them to an output file -->
+<Writem class="operator.examples.ExampleWriter">
+ <VariantPool />
+ <Outputfile class="buffer.CSVFile" filename="annotated.vars.csv" />
+</Writem>
+
+
+
+</Pipeline>

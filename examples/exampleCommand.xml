@@ -1,0 +1,11 @@
+<Pipeline>
+
+<InputBAM class="buffer.BAMFile" filename="test.bam" />
+
+<WriteTheText class="operator.examples.ExampleCommandOp">
+ <input>
+   <InputBAM />
+ </input>
+</WriteTheText>
+
+</Pipeline>
