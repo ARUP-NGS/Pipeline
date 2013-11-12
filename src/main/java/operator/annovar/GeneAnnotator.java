@@ -24,11 +24,19 @@ import buffer.variant.VariantRec;
 public class GeneAnnotator extends AnnovarAnnotator {
 
 	public static final String NM_DEFS = "nm.Definitions";
+	public static final String SPLICING_THRESH = "splicing.threshold";
+
 	protected int splicingThreshold = 10;
 	
 	public void performOperation() throws OperationFailedException {
 		if (variants == null)
 			throw new OperationFailedException("Variant pool not initialized", this);
+		
+		String splicingThreshAttr = this.getAttribute(SPLICING_THRESH);
+		if(splicingThreshAttr != null){
+			Logger.getLogger(Pipeline.primaryLoggerName).info("Splicing threshold specified as " + splicingThreshAttr + " in template.");
+			splicingThreshold = Integer.parseInt(splicingThreshAttr);
+		}
 		
 		String command = "perl " + annovarPath + "annotate_variation.pl -geneanno --buildver " + buildVer + " --splicing_threshold " + splicingThreshold +  " " + annovarInputFile.getAbsolutePath() + " --outfile " + annovarPrefix + " " + annovarPath + "humandb/";
 		executeCommand(command);
@@ -165,6 +173,7 @@ public class GeneAnnotator extends AnnovarAnnotator {
 		lastFewErrors.clear();
 		while(line != null) {
 			if (line.length()>1) {
+				logger.info("Line: " + line);
 				String[] toks = line.split("\\t");
 				String exonicFunc = toks[1];
 				String ref = toks[6];
@@ -183,7 +192,7 @@ public class GeneAnnotator extends AnnovarAnnotator {
 				String[] nms = toks[2].split(",");
 				String gene = null;
 				String tmpNM;
-				int nmRec = 0; // iif the user hasn't specified an NM #, just take the first
+				int nmRec = 0; // if the user hasn't specified an NM #, just take the first
 				for(int i = 0; i < nms.length; i++){
 					String[] details = nms[i].split(":");
 					//Sometimes theres no gene, so don't try to parse any info

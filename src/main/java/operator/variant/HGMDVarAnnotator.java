@@ -41,7 +41,7 @@ public class HGMDVarAnnotator extends Annotator {
 			
 			Object hgmdIndelObj =  getPipelineProperty(HGMDB_INDEL_PATH);
 			if (hgmdIndelObj== null) {
-				throw new OperationFailedException("Could not initialize HGMD db, no path to db file specified (use " + HGMDB_PATH + ")", this);
+				throw new OperationFailedException("Could not initialize HGMD INDEL db, no path to db file specified (use " + HGMDB_INDEL_PATH + ")", this);
 			}
 			File indelFile = new File(hgmdIndelObj.toString());
 			if (! indelFile.exists()) {

@@ -145,7 +145,7 @@ public abstract class AnnovarAnnotator extends Annotator {
 	protected VariantRec findVariant(String contig, int pos, String ref, String alt) {
 
 		contig = contig.replace("chr", "");
-		VariantRec rec = variants.findRecord(contig, pos, alt);
+		VariantRec rec = variants.findRecord(contig, pos, ref, alt);
 		if (rec != null)
 			return rec;
 
@@ -168,7 +168,7 @@ public abstract class AnnovarAnnotator extends Annotator {
 		
 		
 		if (modPos > pos)
-			rec = variants.findRecord(contig, modPos, alt);
+			rec = variants.findRecord(contig, modPos, ref, alt);
 		if (rec == null) {
 			return null;
 		}

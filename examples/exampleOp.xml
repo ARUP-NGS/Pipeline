@@ -1,0 +1,9 @@
+<Pipeline>
+
+<InputText class="buffer.TextBuffer" filename="exampleInput.txt" />
+
+<WriteTheText class="operator.examples.Example1">
+   <InputText />
+</WriteTheText>
+
+</Pipeline>
