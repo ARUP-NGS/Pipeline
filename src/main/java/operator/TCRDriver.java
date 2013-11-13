@@ -1,12 +1,9 @@
 package operator;
 
-import java.io.File;
 import java.util.List;
 
-import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import pipeline.PipelineObject;
 import buffer.FastQFile;
 import buffer.FileBuffer;
 import buffer.TextBuffer;
@@ -30,13 +27,20 @@ public class TCRDriver extends CommandOperator {
 		if (path != null) {
 			TCRPath = path;
 		}
+	
+		List<FileBuffer> inputTextBuffer = getAllInputBuffersForClass(TextBuffer.class);
+		inputFile_v = (TextBuffer) inputTextBuffer.get(0);
+		inputFile_j = (TextBuffer) inputTextBuffer.get(1);
 		
-		List<FileBuffer> output = this.getAllOutputBuffersForClass(FastQFile.class);
-		File outputA = new File(getProjectHome() + "TCR_out.txt");
-		output.get(0).setFile(outputA);
+		FastQFile inputFastq =  (FastQFile) getInputBufferForClass(FastQFile.class);
+		
+		
+		
+		FileBuffer output = getOutputBufferForClass(TextBuffer.class);
+		
 		
 		String command = "java -jar " + TCRPath + " -v " + inputFile_v.getAbsolutePath() + " -j " + inputFile_j.getAbsolutePath();
-		command = command + " -o "+outputA+" -i fastq";
+		command = command + " -o " + output.getAbsolutePath() +" -i " + inputFastq.getAbsolutePath();
 		
 		return command;
 	}
@@ -44,31 +48,11 @@ public class TCRDriver extends CommandOperator {
 	public void initialize(NodeList children) {
 		super.initialize(children);
 		
-		Node iChild = children.item(0);
-		if (iChild.getNodeType() == Node.ELEMENT_NODE) {
-			PipelineObject obj = getObjectFromHandler(iChild.getNodeName());
-					
-			if (obj instanceof TextBuffer ) {
-				if (inputFile_v == null) {
-					inputFile_v = (TextBuffer) obj;
-				}
-			}
+		int num = getAllInputBuffersForClass(TextBuffer.class).size();
+		if (num != 2) {
+			throw new IllegalArgumentException("Could not find exactly two input files of type text buffer");
 		}
-		
-		iChild = children.item(1);
-		if (iChild.getNodeType() == Node.ELEMENT_NODE) {
-			PipelineObject obj = getObjectFromHandler(iChild.getNodeName());
-					
-			if (obj instanceof TextBuffer ) {
-				if (inputFile_j == null) {
-					inputFile_j = (TextBuffer) obj;
-				}
-			}
-		}		
-				
-		inputFile_v = (TextBuffer)super.getInputBufferForClass(TextBuffer.class);
-		inputFile_j = (TextBuffer)super.getInputBufferForClass(TextBuffer.class);
-		
 	}
+	
 
 }

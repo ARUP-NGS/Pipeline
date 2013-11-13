@@ -9,7 +9,6 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import pipeline.PipelineObject;
-import buffer.FastQFile;
 import buffer.FileBuffer;
 import buffer.ReferenceFile;
 
@@ -72,7 +71,7 @@ public abstract class IOOperator extends Operator {
 	 * @param clz
 	 * @return
 	 */
-	public List<FileBuffer> getAllOutputBuffersForClass(Class<FastQFile> clz) {
+	public List<FileBuffer> getAllOutputBuffersForClass(Class<?> clz) {
 		List<FileBuffer> buffers = new ArrayList<FileBuffer>();
 		for(FileBuffer buff :  outputBuffers) {
 			if (clz.isAssignableFrom(buff.getClass()))
