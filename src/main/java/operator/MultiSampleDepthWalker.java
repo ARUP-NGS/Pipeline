@@ -19,7 +19,7 @@ public class MultiSampleDepthWalker extends CommandOperator {
 	
 	public static final String OutPrefix = "out.prefix";
 	public static final String LowCovCountMin="lowCovCountMin";
-	public static final String NoCovCountMin="nowCovCountMin";
+	public static final String NoCovCountMin="noCovCountMin";
 	public static final String MIN_DEPTH="min.depth";
 		
 	protected TextBuffer inputBamsFileList = null;
@@ -45,19 +45,19 @@ public class MultiSampleDepthWalker extends CommandOperator {
 	
 		String outputPrefix=(OutPrefix);
 		
-		String lowCovCountMin="5";
+		String lowCovCountMin="1";
 		String lowCovCountMinAttr = properties.get(LowCovCountMin);
 		if(lowCovCountMinAttr != null){
 			lowCovCountMin = lowCovCountMinAttr;
 		}
 		
-		String noCovCountMin="5";
+		String noCovCountMin="1";
 		String noCovCountMinAttr = properties.get(NoCovCountMin);
 		if(noCovCountMinAttr != null){
 			noCovCountMin = noCovCountMinAttr;
 		}
 		
-		String minDepth="15";
+		String minDepth="5";
 		String minDepthAttr = properties.get(MIN_DEPTH);
 		if(minDepthAttr != null){
 			minDepth = minDepthAttr;
@@ -85,10 +85,11 @@ public class MultiSampleDepthWalker extends CommandOperator {
 		
 		String reference = getInputBufferForClass(ReferenceFile.class).getAbsolutePath();
 
-		String command = "python " + lowcovPath + " " + inputBamsFileList.getAbsolutePath() + " " + targets.getAbsolutePath();
-		command = command + " " + outputPrefix + " -l " + lowCovCountMin + " -n " + noCovCountMin;
-		command = command + " -d " + minDepth + " -g " + sizeFile + " -ref " + reference;
-		command = command + " -gatk " + gatkPath + " -SNP " + hgmdSNP_vcf + " -IND " + hgmdIND_vcf;
+		String command = "python " + lowcovPath;
+		command = command + " -l " + lowCovCountMin + " -n " + noCovCountMin + " -d " + minDepth + " -g " + sizeFile;
+		command = command + " -kbed " + kitBed + " -ref " + reference + " -gatk " + gatkPath + " -SNP " + hgmdSNP_vcf;
+		command = command + " -InD " + hgmdIND_vcf + " " + inputBamsFileList.getAbsolutePath();
+		command = command + " " + targets.getAbsolutePath() + " " + outputPrefix ;
 
 		return command;
 	}

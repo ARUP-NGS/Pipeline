@@ -117,7 +117,7 @@ public class VariantPool extends Operator  {
 			throw new IOException("VariantLineReader not initialized");
 		}
 		
-		int lineNumber = 0;
+		//int lineNumber = 0;
 		do {
 			VariantRec rec = varLineReader.toVariantRec();
 			if (rec == null) {
@@ -127,7 +127,7 @@ public class VariantPool extends Operator  {
 			else {
 				this.addRecordNoSort(rec);
 			}
-			lineNumber++;
+			//lineNumber++;
 		} while (varLineReader.advanceLine());
 		sortAllContigs();
 	}
