@@ -123,6 +123,7 @@ public class QCJsonReader {
 					double rawUnmappedFrac = (double)unmappedRawReads / (double) totRawReads;
 					double finalUnmappedFrac = (double)unmappedFinalReads / (double) totFinalReads;
 					output.println("Total raw/final reads: " + totRawReads +",  " + totFinalReads);
+					output.println("Frac PCR dups removed: " + formatter.format(1.0 - (double)totFinalReads/(double)totRawReads));
 					output.println("Fraction unmapped raw/final : " + formatter.format(rawUnmappedFrac) +",  " + formatter.format(finalUnmappedFrac));
 				}
 				else {
