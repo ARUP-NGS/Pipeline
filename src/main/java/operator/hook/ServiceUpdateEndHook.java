@@ -15,6 +15,7 @@ import json.JSONObject;
 import org.w3c.dom.NodeList;
 
 import operator.Operator;
+import util.HttpUtils;
 
 /**
  * This is an Operator End hook which is run after 
@@ -73,26 +74,6 @@ public class ServiceUpdateEndHook extends OperatorEndHook implements IOperatorEn
 		this.jobID = jobID;
 	}
 	
-	public void HttpPostJSON(String url, JSONObject js) throws IOException{
-		String content = js.toString();
-		
-		URLConnection conn = new URL(url).openConnection();
-		conn.setUseCaches(false);
-		conn.setDoInput(true);
-		conn.setDoOutput(true);
-		conn.setRequestProperty("Content-Length", "" + content.length());
-		conn.setRequestProperty("Content-Type", "application/json");
-		
-		OutputStream out = conn.getOutputStream();
-		out.write(content.getBytes());
-		out.close();
-		
-		BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-		String response = br.readLine();
-		br.close();
-		if(!response.equals(success)) throw new IOException("Error when posting update to .NET service");
-	}
-	
 
 	@Override
 	public void doHook() throws Exception {
@@ -106,7 +87,9 @@ public class ServiceUpdateEndHook extends OperatorEndHook implements IOperatorEn
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
-		HttpPostJSON(serviceURL, obj);
+		if(!HttpUtils.HttpPostJSON(serviceURL, obj).equals(success)){
+			throw new Exception("Error posting to the .NET service for End Hook");
+		}
 	}
 
 	@Override
