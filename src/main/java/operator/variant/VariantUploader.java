@@ -9,10 +9,12 @@ import json.JSONObject;
 import operator.OperationFailedException;
 import operator.Operator;
 
+import org.apache.log4j.Logger;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import pipeline.Pipeline;
 import pipeline.PipelineObject;
 import util.HttpUtils;
 import buffer.variant.VariantPool;
@@ -23,7 +25,7 @@ public class VariantUploader extends Operator {
 	public static final String VARIANT_UPLOAD_URL = "variant.upload.url";
 	protected VariantPool variants = null;
 	
-//	protected final String uploadURL = "http://ngs-webapp-dev/Variant/UploadVariants";
+//	protected String uploadURL = "http://ngs-webapp-dev/Variant/UploadVariants";
 	protected String uploadURL = "http://localhost:9172/Variant/UploadVariants";
 	protected final String success = "\"Success\"";
 	
@@ -47,11 +49,15 @@ public class VariantUploader extends Operator {
 				list.put(row);
 			}
 	
+			
 			json.put("variant.list", list);
-			String result = HttpUtils.HttpPostJSON(uploadURL, json); 
+			String result = HttpUtils.HttpPostJSON(uploadURL, json);
+			Logger.getLogger(Pipeline.primaryLoggerName).info("Uploading " + vars.size() + " variants to " + uploadURL);
 			if(!result.equals(success)){
-				throw new OperationFailedException("Failed to post variant list to .NET service: " + result, this);
-				
+				//Not clear if we should fail here or what.. should we continue with future operations even if we 
+				//can't communicate with .NET?
+				//	throw new OperationFailedException("Failed to post variant list to .NET service: " + result, this);
+				Logger.getLogger(Pipeline.primaryLoggerName).warn("Error uploading variants : " + result);
 			}
 		} catch (JSONException e) {
 			throw new OperationFailedException("Failed to upload a JSON list of variants: " + e.getMessage(), this);
