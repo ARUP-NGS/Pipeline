@@ -6,24 +6,25 @@ import java.util.List;
 import json.JSONArray;
 import json.JSONException;
 import json.JSONObject;
+import operator.OperationFailedException;
+import operator.Operator;
 
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import pipeline.PipelineObject;
+import util.HttpUtils;
 import buffer.variant.VariantPool;
 import buffer.variant.VariantRec;
 
-import operator.OperationFailedException;
-import operator.Operator;
-import pipeline.PipelineObject;
-import util.HttpUtils;
-
 public class VariantUploader extends Operator {
 
+	public static final String VARIANT_UPLOAD_URL = "variant.upload.url";
 	protected VariantPool variants = null;
+	
 //	protected final String uploadURL = "http://ngs-webapp-dev/Variant/UploadVariants";
-	protected final String uploadURL = "http://localhost:9172/Variant/UploadVariants";
+	protected String uploadURL = "http://localhost:9172/Variant/UploadVariants";
 	protected final String success = "\"Success\"";
 	
 	@Override
@@ -52,7 +53,10 @@ public class VariantUploader extends Operator {
 				throw new OperationFailedException("Failed to post variant list to .NET service: " + result, this);
 				
 			}
-		} catch (JSONException | IOException e) {
+		} catch (JSONException e) {
+			throw new OperationFailedException("Failed to upload a JSON list of variants: " + e.getMessage(), this);
+		}
+		catch (IOException e) {
 			throw new OperationFailedException("Failed to upload a JSON list of variants: " + e.getMessage(), this);
 		}
 		
@@ -61,6 +65,15 @@ public class VariantUploader extends Operator {
 
 	@Override
 	public void initialize(NodeList children) {
+		
+		uploadURL = this.getPipelineProperty(VARIANT_UPLOAD_URL);
+		if (uploadURL == null) {
+			uploadURL = this.getAttribute(VARIANT_UPLOAD_URL);
+		}
+		if (uploadURL == null) {
+			throw new IllegalArgumentException("VariantUploader required variant.upload.url to be specified");
+		}
+		
 		for(int i=0; i<children.getLength(); i++) {
 			Node child = children.item(i);
 			if (child.getNodeType() == Node.ELEMENT_NODE) {
