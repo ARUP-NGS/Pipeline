@@ -227,6 +227,8 @@ public class ReviewDirGenerator extends Operator {
 			writer.write("pipeline.version=" +  Pipeline.PIPELINE_VERSION + "\n");
 			writer.write("submitter=" +  submitter + "\n");
 			writer.write("analysis.type=" +  analysisType + "\n");
+			writer.write("include.in.freq.calc=true\n");
+			
 			if (annotatedVariants != null) {
 				writer.write("annotated.vars=var/" + annotatedVariants.getFilename() + "\n");
 				if (createJSONVariants) {
