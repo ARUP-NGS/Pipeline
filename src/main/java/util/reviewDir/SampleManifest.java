@@ -11,8 +11,9 @@ import java.util.Map;
  * @author brendan
  *
  */
-public class ReviewDirInfo {
+public class SampleManifest {
 
+	public static final String MANIFEST_FILENAME = "sampleManifest.txt";
 	public static final String SAMPLE_NAME = "sample.name";
 	public static final String ANALYSIS_TYPE = "analysis.type";
 	public static final String VCF = "VCF";
@@ -22,26 +23,30 @@ public class ReviewDirInfo {
 	public static final String LOG = "LOG";
 	public static final String INPUT = "INPUT";
 	
-	private Map<String, String> manifest = null;
+	protected Map<String, String> manifest = null;
 	private Map<String, File> files = null;
-	private File source;
+	private File reviewDirRoot;
 	
-	ReviewDirInfo(File source, Map<String, String> manifest, Map<String, File> files) {
-		this.source = source;
+	SampleManifest(File source, Map<String, String> manifest, Map<String, File> files) {
+		this.reviewDirRoot = source;
 		this.manifest = manifest;
 		this.files = files;
 	}
 	
-	public static ReviewDirInfo create(String path, ReviewDirInfoFactory parser) throws ReviewDirParseException {
-		return parser.constructInfo(path);
+	public static SampleManifest create(String path, ManifestReader parser) throws ManifestParseException {
+		return parser.readManifest(path);
 	}
 	
-	public static ReviewDirInfo create(String path) throws ReviewDirParseException {
-		return (new DefaultReviewDirFactory()).constructInfo(path);
+	public static SampleManifest create(String path) throws ManifestParseException {
+		return (new DefaultManifestFactory()).readManifest(path);
+	}
+	
+	public File getManifestFile() {
+		return new File( getSourceFile().getAbsolutePath() + "/" + MANIFEST_FILENAME);
 	}
 	
 	public File getSourceFile()  {
-		return source;
+		return reviewDirRoot;
 	}
 	
 	public String getSampleName() {

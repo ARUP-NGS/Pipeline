@@ -5,9 +5,9 @@ package util.reviewDir;
  * @author brendan
  *
  */
-public class ReviewDirParseException extends Exception {
+public class ManifestParseException extends Exception {
 	
-	public ReviewDirParseException(String message) {
+	public ManifestParseException(String message) {
 		super(message);
 	}
 

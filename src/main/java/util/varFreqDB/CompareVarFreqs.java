@@ -6,8 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import util.VCFLineParser;
-import util.reviewDir.ReviewDirInfo;
-import util.reviewDir.ReviewDirParseException;
+import util.reviewDir.SampleManifest;
+import util.reviewDir.ManifestParseException;
 import buffer.BEDFile;
 import buffer.variant.VariantPool;
 import buffer.variant.VariantRec;
@@ -21,7 +21,7 @@ public class CompareVarFreqs {
 	
 	List<PoolInfo> allVars = new ArrayList<PoolInfo>();
 	
-	public boolean addSample(ReviewDirInfo info) throws IOException {
+	public boolean addSample(SampleManifest info) throws IOException {
 		System.err.println("Adding sample : " + info.getSampleName() + " :" + info.getAnalysisType());
 		File vcf = info.getVCF();
 		File bed = info.getBED();
@@ -61,11 +61,11 @@ public class CompareVarFreqs {
 			return prop;
 	}
 	
-	public void readSamplesInDir(File dir) throws ReviewDirParseException, IOException {
+	public void readSamplesInDir(File dir) throws ManifestParseException, IOException {
 		File[] files = dir.listFiles();
 		for(int i=0; i<files.length; i++) {
 			if (files[i].isDirectory()) {
-				ReviewDirInfo info = ReviewDirInfo.create(files[i].getAbsolutePath());
+				SampleManifest info = SampleManifest.create(files[i].getAbsolutePath());
 				addSample(info);
 			}
 		}
@@ -138,11 +138,11 @@ public class CompareVarFreqs {
 		for(int i=0; i<args.length; i++) {
 			
 			try {
-				boolean ok = cFreqs.addSample( ReviewDirInfo.create(args[i]));
+				boolean ok = cFreqs.addSample( SampleManifest.create(args[i]));
 				if (ok) {
 					added++;
 				}
-			} catch (ReviewDirParseException e) {
+			} catch (ManifestParseException e) {
 				System.err.println("Warning: Skipping file : " + args[i]  + " : " + e.getLocalizedMessage());
 			} catch (IOException e) {
 				// TODO Auto-generated catch block

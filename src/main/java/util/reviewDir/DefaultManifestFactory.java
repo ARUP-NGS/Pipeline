@@ -14,30 +14,30 @@ import java.util.Map;
  * @author brendan
  *
  */
-public class DefaultReviewDirFactory implements ReviewDirInfoFactory {
+public class DefaultManifestFactory implements ManifestReader {
 
 	public static final String SAMPLE_MANIFEST_NAME = "sampleManifest.txt";
 	
 	@Override
-	public ReviewDirInfo constructInfo(String pathToReviewDir)
-			throws ReviewDirParseException {
+	public SampleManifest readManifest(String pathToReviewDir)
+			throws ManifestParseException {
 		
 		File dir = new File(pathToReviewDir);
 		if (! dir.exists()) {
-			throw new ReviewDirParseException("File at path " + pathToReviewDir + " does not exist");
+			throw new ManifestParseException("File at path " + pathToReviewDir + " does not exist");
 		}
 		if (! dir.canRead()) {
-			throw new ReviewDirParseException("File at path " + pathToReviewDir + " exists but is not readable");
+			throw new ManifestParseException("File at path " + pathToReviewDir + " exists but is not readable");
 		}
 		if (! dir.isDirectory()) {
-			throw new ReviewDirParseException("File at path " + pathToReviewDir + " is not a directory.");
+			throw new ManifestParseException("File at path " + pathToReviewDir + " is not a directory.");
 		}
 		
 		Map<String, String> manifest = parseManifest(dir);
 		Map<String, File> files = findFiles(dir);
 		
 		
-		return new ReviewDirInfo(dir, manifest, files);
+		return new SampleManifest(dir, manifest, files);
 	}
 	
 	/**
@@ -53,7 +53,7 @@ public class DefaultReviewDirFactory implements ReviewDirInfoFactory {
 		if (bamDir != null) {
 			File bamFile = fileBySuffix(bamDir.listFiles(), "bam");
 			if (bamFile != null) {
-				files.put(ReviewDirInfo.BAM, bamFile);
+				files.put(SampleManifest.BAM, bamFile);
 			}
 		}
 
@@ -61,7 +61,7 @@ public class DefaultReviewDirFactory implements ReviewDirInfoFactory {
 		if (vcfDir != null) {
 			File file = fileBySuffix(vcfDir.listFiles(), "vcf");
 			if (file != null) {
-				files.put(ReviewDirInfo.VCF, file);
+				files.put(SampleManifest.VCF, file);
 			}
 		}
 
@@ -69,7 +69,7 @@ public class DefaultReviewDirFactory implements ReviewDirInfoFactory {
 		if (logDir != null) {
 			File file = fileBySuffix(logDir.listFiles(), "txt");
 			if (file != null) {
-				files.put(ReviewDirInfo.LOG, file);
+				files.put(SampleManifest.LOG, file);
 			}
 		}
 
@@ -77,7 +77,7 @@ public class DefaultReviewDirFactory implements ReviewDirInfoFactory {
 		if (bedDir != null) {
 			File file = fileBySuffix(bedDir.listFiles(), "bed");
 			if (file != null) {
-				files.put(ReviewDirInfo.BED, file);
+				files.put(SampleManifest.BED, file);
 			}
 		}
 
@@ -86,7 +86,7 @@ public class DefaultReviewDirFactory implements ReviewDirInfoFactory {
 		if (qcDir != null) {
 			File file = fileBySuffix(qcDir.listFiles(), "qc.json");
 			if (file != null) {
-				files.put(ReviewDirInfo.QC_JSON, file);
+				files.put(SampleManifest.QC_JSON, file);
 			}
 		}
 			
@@ -115,12 +115,12 @@ public class DefaultReviewDirFactory implements ReviewDirInfoFactory {
 	 * Return contents of sampleManifest as key=value pairs in a Map
 	 * @param rootDir
 	 * @return
-	 * @throws ReviewDirParseException
+	 * @throws ManifestParseException
 	 */
-	private static Map<String, String> parseManifest(File rootDir) throws ReviewDirParseException {
+	private static Map<String, String> parseManifest(File rootDir) throws ManifestParseException {
 		File manifestFile = new File(rootDir.getAbsolutePath() + System.getProperty("file.separator") + SAMPLE_MANIFEST_NAME);
 		if (! manifestFile.exists()) {
-			throw new ReviewDirParseException("Cannot find manifest");
+			throw new ManifestParseException("Cannot find manifest");
 		}
 		
 		Map<String, String> manifestInfo = new HashMap<String, String>();
@@ -147,16 +147,11 @@ public class DefaultReviewDirFactory implements ReviewDirInfoFactory {
 					//ignore this? 
 				}
 			}
-			throw new ReviewDirParseException("Error reading manifest: " + e.getLocalizedMessage());
+			throw new ManifestParseException("Error reading manifest: " + e.getLocalizedMessage());
 		}
 		
 		return manifestInfo;
 	}
 	
-	
-	public static void main(String[] args) throws ReviewDirParseException {
-		ReviewDirInfo info = ReviewDirInfo.create("/home/brendan/MORE_DATA/clinical_exomes/2013-05-20/13052133816");
-		
-	}
 
 }
