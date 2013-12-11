@@ -140,32 +140,7 @@ public class QCtoJSON extends Operator {
 		
 	}
 
-	private String noCallsToJSON(CSVFile noCallCSV) throws JSONException {
-		JSONObject obj = new JSONObject();
-		if (noCallCSV == null) {
-			obj.put("error", "no no-call file specified");
-			return obj.toString();
-		}
-		try {
-			BufferedReader reader = new BufferedReader(new FileReader(noCallCSV.getAbsolutePath()));
-			String line = reader.readLine();
-			while(line != null) {
-				String[] toks = line.split(" ");
-				if (toks.length == 4) {
-					if (! toks[3].equals("CALLABLE")) {
-						obj.put(toks[0] + ":" + toks[1] + "-" + toks[2], toks[3]);
-					}
-				}
-				line = reader.readLine();
-			}
-			
-			reader.close();
-		}
-		catch(Exception ex) {
-			
-		}
-		return obj.toString();
-	}
+	
 	
 	private String noCallsToJSONWithAnnotations(CSVFile noCallCSV) throws JSONException, IOException {	
 		JSONObject obj = new JSONObject();
@@ -199,9 +174,10 @@ public class QCtoJSON extends Operator {
 			List<List<String>> regions = new ArrayList<List<String>>();
 			
 			while(line != null) {
-				String[] toks = line.split(" ");
-				if (toks.length == 4) {
-					if (! toks[3].equals("CALLABLE")) {
+				line = line.replace(" ", "\t");
+					String[] toks = line.split("\t");
+					
+					if (toks.length > 3 && (! toks[3].equals("CALLABLE"))) {
 						JSONObject region = new JSONObject();
 						noCallIntervals++;
 						try {
@@ -209,11 +185,16 @@ public class QCtoJSON extends Operator {
 							long startPos = Long.parseLong(toks[1]);
 							long endPos = Long.parseLong(toks[2]);
 							long length = endPos - startPos;
-
+							double cov = -1;
+							
+							
 							String cause = toks[3];
 							cause = cause.toLowerCase();
 							cause  = ("" + cause.charAt(0)).toUpperCase() + cause.substring(1);
-
+							if (toks.length > 4) {
+								cov = Double.parseDouble(toks[4]);
+							}
+							
 							String[] features = new String[]{};
 							if (featureLookup != null) {
 								features = featureLookup.getInfoForRange(contig, (int)startPos, (int)endPos);							
@@ -230,13 +211,13 @@ public class QCtoJSON extends Operator {
 							region.put("chr", toks[0]);
 							region.put("start", Integer.parseInt(toks[1]));
 							region.put("end", Integer.parseInt(toks[2]));
-							
+							if (cov > -1) {
+								region.put("mean.coverage", cov);
+							}
 							allRegions.put(region);
 						} catch (NumberFormatException nfe) {
 							//dont stress it
 						}
-
-					}
 				}
 				line = reader.readLine();
 			}

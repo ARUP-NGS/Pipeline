@@ -50,6 +50,11 @@ public class ExonLookupService {
 			String geneName = toks[6];
 			String exon = toks[7];
 			
+			//Eliminate weird unknown number after utrs
+			if (exon.contains("utr")) {
+				exon = exon.trim().split(" ")[0];
+			}
+			
 			String desc = geneName + "(" + nmInfo + ") " + exon;
 			addInterval(contig, start, end, desc);
 			
