@@ -11,7 +11,9 @@ import buffer.TextBuffer;
 public class TCRDriver extends CommandOperator {
 
 	public static final String PATH = "path";
+	public static final String OUTPUT = "filename";
 	protected String TCRPath = "/home/dfisher/projects/TcrDriver_1.1/Apps/TcrDriver.jar";
+	protected String output = "results.txt";
 	
 	protected TextBuffer inputFile_v=null;
 	protected TextBuffer inputFile_j=null;
@@ -27,6 +29,11 @@ public class TCRDriver extends CommandOperator {
 		if (path != null) {
 			TCRPath = path;
 		}
+		
+		String outputParam = properties.get(OUTPUT);
+		if(outputParam != null){
+			output = outputParam;
+		}
 	
 		List<FileBuffer> inputTextBuffer = getAllInputBuffersForClass(TextBuffer.class);
 		inputFile_v = (TextBuffer) inputTextBuffer.get(0);
@@ -34,13 +41,8 @@ public class TCRDriver extends CommandOperator {
 		
 		FastQFile inputFastq =  (FastQFile) getInputBufferForClass(FastQFile.class);
 		
-		
-		
-		FileBuffer output = getOutputBufferForClass(TextBuffer.class);
-		
-		
 		String command = "java -jar " + TCRPath + " -v " + inputFile_v.getAbsolutePath() + " -j " + inputFile_j.getAbsolutePath();
-		command = command + " -o " + output.getAbsolutePath() +" -i " + inputFastq.getAbsolutePath();
+		command = command + " -o " + output +" -i " + inputFastq.getAbsolutePath();
 		
 		return command;
 	}
