@@ -95,7 +95,8 @@ public class QCtoJSON extends Operator {
 		
 		if (finalBAMMetrics != null) {
 			try {
-				qcObj.put("final.bam.metrics", new JSONObject(finalBAMMetrics.toJSONString()));
+				JSONObject finalBAMJson = new JSONObject(finalBAMMetrics.toJSONString());
+				qcObj.put("final.bam.metrics", finalBAMJson);
 			} catch (JSONException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

@@ -102,6 +102,9 @@ public class BCRABLannotator extends Annotator {
 			
 		}
 		String pDot = pDots.get(var.getStart());
+		if (pDot == null) {
+			pDot = "NA";
+		}
 		if (pDot.contains(":")) {
 			pDot = pDot.substring(pDot.indexOf(":")+1, pDot.length());
 		}
