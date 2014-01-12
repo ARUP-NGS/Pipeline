@@ -1,20 +1,31 @@
 package operator.snap;
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.util.List;
 
 import operator.IOOperator;
 import operator.OperationFailedException;
 
 import org.w3c.dom.NodeList;
 
+import buffer.BAMFile;
+import buffer.FastQFile;
+import buffer.FileBuffer;
+
+/**
+ * This thing runs the fancy SNAP aligner. It aligns reads in either single or paired end mode,
+ * and can create sorted, indexed bams. By default, this will produce sorted bams and expects 
+ * exactly two fastqs in paired-end mode
+ * @author brendan
+ *
+ */
 public class SnapAlign extends IOOperator {
 
 	public static final String SNAP_PATH = "snap.path";
 	public static final String SNAP_INDEX = "snap.index";
-	public static final String SAMTOOLS_PATH = "samtools.path";
+	public static final String SORT = "sort";
+	public static final String SINGLE_END = "single";
+	
 	String samtoolsPath = null;
 	String snapIndexPath = null;
 	String snapPath = null;
@@ -22,47 +33,61 @@ public class SnapAlign extends IOOperator {
 	@Override
 	public void performOperation() throws OperationFailedException {
 		
-		throw new OperationFailedException("Yo, this operator isn't finished yet since snap insists on making an enormous sam file and won't write it to std out", this);
+		List<FileBuffer> inputBuffers = this.getAllInputBuffersForClass(FastQFile.class);
 		
-//		List<FileBuffer> inputBuffers = this.getAllInputBuffersForClass(FastQFile.class);
-//		
-//		FileBuffer outputBAMBuffer = this.getOutputBufferForClass(BAMFile.class);
-//		if (outputBAMBuffer == null) {
-//			throw new OperationFailedException("No output BAM file found", this);
-//		}
-//		
-//		if (inputBuffers.size() != 2) {
-//			throw new OperationFailedException("Exactly two fastq files must be provided to SnapAlign, found " + inputBuffers.size(), this);
-//		}
-//		
-//		int threads = this.getPipelineOwner().getThreadCount();
-//		
-//		String command = snapPath 
-//				+ " paired "
-//				+ snapIndexPath
-//				+ inputBuffers.get(0).getAbsolutePath()
-//				+ inputBuffers.get(1).getAbsolutePath()
-//				+ " -so "
-//				+ " -t " + threads
-//				+ " | " + samtoolsPath + " view -Sb - > " + outputBAMBuffer.getAbsolutePath();
-//		
-//		executeBASHCommand(command);
-	}
-	
-	private void executeBASHCommand(String command) throws OperationFailedException {
-		String filename = this.getProjectHome() + "/snapcommand-" + ((1000000.0*Math.random())+"").substring(0, 6).replace(".", "") + ".sh";
-		BufferedWriter writer;
-		try {
-			writer = new BufferedWriter(new FileWriter(filename));
-			writer.write(command + "\n");
-			writer.close();
-		} catch (IOException e) {
-			throw new OperationFailedException("IO Error writing snap command file : " + e.getMessage(), this);
+		FileBuffer outputBAMBuffer = this.getOutputBufferForClass(BAMFile.class);
+		if (outputBAMBuffer == null) {
+			throw new OperationFailedException("No output BAM file found", this);
+		}
+
+		String sortBAM = this.getAttribute(SORT);
+		String sortOpt = " -so ";
+		if (sortBAM != null) {
+			if (! Boolean.parseBoolean(sortBAM)) {
+				sortOpt = "";
+			}
 		}
 		
+		String singleAttr = this.getAttribute(SINGLE_END);
+		String pairedOpt = " paired ";
+		if (singleAttr != null) {
+			if (Boolean.parseBoolean(singleAttr)) {
+				pairedOpt = " single ";
+			}
+		}
 		
-		executeCommand("/bin/bash " + filename);
+		String fastqs = "";
+		
+		//If paired, make sure we have exactly two fastqs
+		if (pairedOpt.contains("paired")) {
+			if (inputBuffers.size() != 2) {
+				throw new OperationFailedException("For paired-end alignment exactly two fastq files must be provided, found " + inputBuffers.size(), this);
+			}
+			fastqs = inputBuffers.get(0).getAbsolutePath() + " " + inputBuffers.get(1).getAbsolutePath();			
+		}
+		else {
+			//For single end alignment they can specify as many as they want
+			for(FileBuffer inputFile : inputBuffers) {
+				fastqs = fastqs + " " + inputFile.getAbsolutePath();
+			}
+		}
+		
+
+		
+		int threads = this.getPipelineOwner().getThreadCount();
+		
+		String command = snapPath 
+				+ pairedOpt
+				+ snapIndexPath
+				+ fastqs
+				+ sortOpt
+				+ " -M " //Use M instead of = in CIGARs, without this gatk and freebayes will break
+				+ " -t " + threads
+				+ " -o " + outputBAMBuffer.getAbsolutePath();
+		
+		executeCommand(command);
 	}
+	
 	
 	@Override
 	public void initialize(NodeList children) {
@@ -92,14 +117,7 @@ public class SnapAlign extends IOOperator {
 			throw new IllegalArgumentException("No file found at Snap index path : " + snapIndexAttr);
 		}
 		this.snapIndexPath = snapIndexAttr;
-		
-		String samtoolsAttr = this.getAttribute(SAMTOOLS_PATH);
-		if (samtoolsAttr == null) {
-			samtoolsAttr = this.getPipelineProperty(SAMTOOLS_PATH);
-		}
-		this.samtoolsPath = samtoolsAttr;
-		
-		
+			
 	}
 
 
