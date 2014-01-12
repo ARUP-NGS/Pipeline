@@ -76,11 +76,11 @@ public class SnapAlign extends IOOperator {
 		
 		int threads = this.getPipelineOwner().getThreadCount();
 		
-		String command = snapPath 
-				+ pairedOpt
-				+ snapIndexPath
-				+ fastqs
-				+ sortOpt
+		String command = snapPath + " "
+				+ pairedOpt + " "
+				+ snapIndexPath + " "
+				+ fastqs + " "
+				+ sortOpt + " "
 				+ " -M " //Use M instead of = in CIGARs, without this gatk and freebayes will break
 				+ " -t " + threads
 				+ " -o " + outputBAMBuffer.getAbsolutePath();
