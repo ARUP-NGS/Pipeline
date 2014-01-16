@@ -15,6 +15,7 @@ public class SampleManifest {
 
 	public static final String MANIFEST_FILENAME = "sampleManifest.txt";
 	public static final String SAMPLE_NAME = "sample.name";
+	public static final String ANNOTATED_VARS = "annotated.vars";
 	public static final String ANALYSIS_TYPE = "analysis.type";
 	public static final String VCF = "VCF";
 	public static final String BAM = "BAM";
@@ -24,7 +25,7 @@ public class SampleManifest {
 	public static final String INPUT = "INPUT";
 	
 	protected Map<String, String> manifest = null;
-	private Map<String, File> files = null;
+	protected Map<String, File> files = null;
 	private File reviewDirRoot;
 	
 	SampleManifest(File source, Map<String, String> manifest, Map<String, File> files) {
@@ -43,6 +44,14 @@ public class SampleManifest {
 	
 	public File getManifestFile() {
 		return new File( getSourceFile().getAbsolutePath() + "/" + MANIFEST_FILENAME);
+	}
+	
+	public String getProperty(String key) {
+		return manifest.get(key);
+	}
+	
+	public boolean hasProperty(String key) {
+		return manifest.containsKey(key);
 	}
 	
 	public File getSourceFile()  {

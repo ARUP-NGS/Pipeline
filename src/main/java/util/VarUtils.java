@@ -2066,8 +2066,8 @@ public class VarUtils {
 				}
 			}
 			
-			if (minQuality < -25.0) {
-				minQuality = -25.0;
+			if (minQuality < 0.0) {
+				minQuality = -0.0;
 			}
 			if (maxQuality > 1000.0) {
 				maxQuality = 1000.0;
@@ -2531,7 +2531,7 @@ public class VarUtils {
 				VariantLineReader reader = getReader(args[i]);
 				do {
 					VariantRec var = reader.toVariantRec();
-					VariantRec existing = pool.findRecord(var.getContig(), var.getStart(), var.getAlt());
+					VariantRec existing = pool.findRecord(var.getContig(), var.getStart(), var.getRef(), var.getAlt());
 					if (existing == null) {
 						pool.addRecord(var);
 						pool.sortAllContigs();
