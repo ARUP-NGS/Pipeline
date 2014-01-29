@@ -133,28 +133,7 @@ public class VarBinAnnotator extends Annotator {
 		//OK, we actually don't do anything in here.... all annotations take place in 'prepare'
 	}
 	
-	protected void executeCommand(String command) throws OperationFailedException {
-		Runtime r = Runtime.getRuntime();
-		Process p;
-		Logger logger = Logger.getLogger(Pipeline.primaryLoggerName);
-		logger.info(getObjectLabel() + " executing command : " + command);
-		try {
-			p = r.exec(command);
-
-			try {
-				if (p.waitFor() != 0) {
-					logger.info("Task with command " + command + " for object " + getObjectLabel() + " exited with nonzero status");
-					throw new OperationFailedException("Task terminated with nonzero exit value : " + System.err.toString() + " command was: " + command, this);
-				}
-			} catch (InterruptedException e) {
-				throw new OperationFailedException("Task was interrupted : " + System.err.toString() + "\n" + e.getLocalizedMessage(), this);
-			}
-
-		}
-		catch (IOException e1) {
-			throw new OperationFailedException("Task encountered an IO exception : " + System.err.toString() + "\n" + e1.getLocalizedMessage(), this);
-		}
-	}
+	
 	
 	@Override
 	public void initialize(NodeList children) {

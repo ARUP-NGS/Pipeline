@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.logging.Logger;
 
 import operator.OperationFailedException;
+import operator.annovar.Annotator;
 
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -16,9 +17,6 @@ import pipeline.Pipeline;
 import pipeline.PipelineObject;
 import buffer.CSVFile;
 import buffer.variant.VariantRec;
-
-import operator.annovar.Annotator;
-import operator.variant.ExcelWriter;
 
 
 /**
@@ -31,7 +29,10 @@ import operator.variant.ExcelWriter;
  */
 
 public class SplicingPredictionAnnotator extends Annotator {
+	
 	public static final String SPLICINGPREDICTION_PATH = "SplicingPrediction.path"; //path to spliceingPrediction/ folder (not script)
+	
+	
 	CSVFile csvFile = null;
 	String SpliceScriptPath = null;
 	
@@ -43,21 +44,24 @@ public class SplicingPredictionAnnotator extends Annotator {
 		
 		//Run Marc Singleton's scoreSpliceSites on CSV file, i.e. annotation must have been previously done
 		String command="perl " + SpliceScriptPath +"/scoreSpliceSites -v" + csvFile.getAbsolutePath() + " -s" + SpliceScriptPath +"/spliceRegions.bed";
-		executeCommand(command)
+		executeCommand(command);
 				
 		//Now read in re-annotated CSV and annotate variants
 		File finalCSV = new File("splice.final.csv");
-		try {
-			annotateVariant(finalCSV);
-		} catch (IOException e) {
-			e.printStackTrace();
-			throw new OperationFailedException("Cannot annotate variant: " + e.getMessage(), this);
-		}
+		
+		//Associate all variants in file with those in variant pool
+		annotateVariantsFromFile(finalCSV);
 
 	}
 	
-	@Override
-	public void annotateVariant(VariantRec var) throws OperationFailedException {
+	/**
+	 * This function takes the output file that the script generates, reads one line at a time and parses 
+	 * the chromosome, position, and splicing info from it, and associates the values with the  
+	 * @param tableFile
+	 * @param var
+	 * @throws OperationFailedException
+	 */
+	private void annotateVariantsFromFile(File tableFile) throws OperationFailedException {
 		/**
 		 * Loop through splicingPrediction output file one line at a time and update annotations in variant pool
 		 */
@@ -76,15 +80,27 @@ public class SplicingPredictionAnnotator extends Annotator {
 
 			//find variant
 			try {
-				Integer bin = Integer.parseInt(binStr);
-				VariantRec var = variants.findRecord(contig, pos);
+				String[] tokens = line.split("\t"); //Split line by tabs
+				//Get chr, pos, ref, and alt from tokens, kinda like this (you may have to change the indices to match the output file):
+				String chr = tokens[0];
+				Integer pos = Integer.parseInt(tokens[1]);
+				String ref = tokens[2];
+				String alt = tokens[3];
+				
+				Double refScore = Double.parseDouble(tokens[??]); //Not sure what index will be
+				Double altScore = Double.parseDouble(tokens[??]); //Not sure what index will be
+				
+				VariantRec var = variants.findRecord(chr, pos, ref, alt);
+				
+				
+				
 				if (var != null) {
 					//assign annotation (string) & property (value)
-					var.addProperty(VariantRec.VARBIN_BIN, new Double(bin)); //number
-					var.addAnnotation(VariantRec.VARBIN_BIN, new Double(bin)); //string
+					var.addProperty(VariantRec.SPLICING_SCORE_REF, refScore); //number
+					var.addProperty(VariantRec.SPLICING_SCORE_ALT, altScore); //number
 				}
 				else {
-					Logger.getLogger(Pipeline.primaryLoggerName).warning("Could not find variant to associate with varbin annotation at position " + contig + ":" + pos);
+					Logger.getLogger(Pipeline.primaryLoggerName).warning("Could not find variant to associate with annotation at position " + chr + ":" + pos);
 				}
 			//	System.out.println("Adding bin #" + bin + " to variant : " + var.toSimpleString());
 			}
@@ -97,31 +113,17 @@ public class SplicingPredictionAnnotator extends Annotator {
 		reader.close();				
 	}
 	
-	
-	protected void executeCommand(String command) throws OperationFailedException {
-		//Handle running script within pipeline
-		Runtime r = Runtime.getRuntime();
-		Process p;
-		Logger logger = Logger.getLogger(Pipeline.primaryLoggerName);
-		logger.info(getObjectLabel() + " executing command : " + command);
-		try {
-			p = r.exec(command);
-
-			try {
-				if (p.waitFor() != 0) {
-					logger.info("Task with command " + command + " for object " + getObjectLabel() + " exited with nonzero status");
-					throw new OperationFailedException("Task terminated with nonzero exit value : " + System.err.toString() + " command was: " + command, this);
-				}
-			} catch (InterruptedException e) {
-				throw new OperationFailedException("Task was interrupted : " + System.err.toString() + "\n" + e.getLocalizedMessage(), this);
-			}
-
-		}
-		catch (IOException e1) {
-			throw new OperationFailedException("Task encountered an IO exception : " + System.err.toString() + "\n" + e1.getLocalizedMessage(), this);
-		}
+	/**
+	 * Unlike usual annotators which do things one variant at time, we instead process everything in a single
+	 * big batch. Since we use the 'Annotator.java' class as a base class we must implement the annotateVariant(...)
+	 * method, but we don't actually use it. 
+	 */
+	@Override
+	public void annotateVariant(VariantRec var) throws OperationFailedException {
+		//OK, we actually don't do anything in here.... all annotations take place in 'prepare'
 	}
-
+	
+	
 	public void initialize(NodeList children) {
 		super.initialize(children);
 		
@@ -159,9 +161,6 @@ public class SplicingPredictionAnnotator extends Annotator {
 		}
 	}		
 	
-	protected void cleanup() throws OperationFailedException {
-		//Delete output file from Marc's script
-	}
 	
 	//Run program automatically
 	public static void main(String[] args) throws IOException {

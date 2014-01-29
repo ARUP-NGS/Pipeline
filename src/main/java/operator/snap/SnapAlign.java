@@ -25,6 +25,9 @@ public class SnapAlign extends IOOperator {
 	public static final String SNAP_INDEX = "snap.index";
 	public static final String SORT = "sort";
 	public static final String SINGLE_END = "single";
+	public static final String SAMPLE = "sample";
+	
+	private String defaultRG = "${SAMPLE}\tPL:ILLUMINA";
 	
 	String samtoolsPath = null;
 	String snapIndexPath = null;
@@ -56,6 +59,12 @@ public class SnapAlign extends IOOperator {
 			}
 		}
 		
+		String sampleAttr = this.getAttribute(SAMPLE);
+		if (sampleAttr == null) {
+			throw new OperationFailedException("Must specify sample name as attribute.", this);
+		}
+		String readGroup = defaultRG.replace("${SAMPLE}", sampleAttr);
+		
 		String fastqs = "";
 		
 		//If paired, make sure we have exactly two fastqs
@@ -76,7 +85,7 @@ public class SnapAlign extends IOOperator {
 		
 		int threads = this.getPipelineOwner().getThreadCount();
 		
-		String command = snapPath + " "
+		String command1 = snapPath + " "
 				+ pairedOpt + " "
 				+ snapIndexPath + " "
 				+ fastqs + " "
@@ -84,9 +93,11 @@ public class SnapAlign extends IOOperator {
 				+ " -M " //Use M instead of = in CIGARs, without this gatk and freebayes will break
 				+ " -t " + threads
 				+ " -o " + outputBAMBuffer.getAbsolutePath();
-		
-		executeCommand(command);
+		String arg1 = " -rg \"" + readGroup + "\"";
+		executeCommand(new String[]{"/bin/bash", " -c ", command1, arg1});
 	}
+	
+	
 	
 	
 	@Override

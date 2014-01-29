@@ -164,6 +164,53 @@ public abstract class IOOperator extends Operator {
 		}
 	}
 	
+	/**
+	 * 
+	 * @param commands
+	 * @throws OperationFailedException
+	 */
+	protected void executeCommand(final String[] commands) throws OperationFailedException {
+		ProcessBuilder procBuilder = new ProcessBuilder(commands);
+		final Process p;
+
+		//For logging / debugging
+		String allcmds = "";
+		for(int i=0; i<commands.length; i++) {
+			allcmds = allcmds + " " + commands[i];
+		}
+		try {
+			p = procBuilder.start();
+			
+		
+			final Thread errConsumer = new StringPipeHandler(p.getErrorStream(), System.err);
+			errConsumer.start();
+			
+			//If runtime is going down, destroy the process so it won't become orphaned
+			Runtime.getRuntime().addShutdownHook(new Thread() {
+				public void run() {
+					//System.err.println("Invoking shutdown thread, destroying task with command : " + command);
+					p.destroy();
+					errConsumer.interrupt();
+				}
+			});
+
+			
+			
+			try {
+				if (p.waitFor() != 0) {
+					throw new OperationFailedException("Task terminated with nonzero exit value : " + System.err.toString() + " command was: " + allcmds, this);
+				}
+			} catch (InterruptedException e) {
+				throw new OperationFailedException("Task was interrupted : " + System.err.toString() + "\n" + e.getLocalizedMessage(), this);
+			}
+
+			
+		}
+		catch (IOException e1) {
+			throw new OperationFailedException("Task encountered an IO exception : " + System.err.toString() + "\n" + e1.getLocalizedMessage(), this);
+		}
+	}
+	
 	
 	/**
 	 * Execute the given system command in its own process, and wait until the process has completed

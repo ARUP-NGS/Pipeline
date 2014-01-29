@@ -121,6 +121,7 @@ public class JSONVarsGenerator {
 				WritableManifest writable = new WritableManifest(manifest);
 				writable.put("json.vars", "var/" + destFilename);
 				writable.save();
+				System.err.println("Created new json.vars file for " + resultsDir.getName());
 				
 			} catch (ManifestParseException e) {
 				// TODO Auto-generated catch block
