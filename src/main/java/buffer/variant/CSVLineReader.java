@@ -5,9 +5,14 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.w3c.dom.NodeList;
+
+import pipeline.PipelineObject;
 
 /**
  * Reads a CSV file and produces VariantRecords from it, typically one variant per line
@@ -16,20 +21,35 @@ import java.util.Map;
  * @author brendan
  *
  */
-public class CSVLineReader implements VariantLineReader {
+public class CSVLineReader extends PipelineObject implements VariantLineReader  {
 
 	protected BufferedReader reader;
 	protected String currentLine = null;
 	protected String[] headerToks = null;
 	//Contains a map for a column header to a column index
-	private Map<String, Integer> headerMap = new HashMap<String, Integer>();
-	protected final File sourceFile;
+	protected Map<String, Integer> headerMap = new HashMap<String, Integer>();
+	protected File sourceFile;
 	
 	
 	public CSVLineReader(File csvFile) throws IOException {
-		reader = new BufferedReader(new FileReader(csvFile));
+		setFile(csvFile);
+		readHeader();
+	}
+	
+	protected CSVLineReader() {
+		//some subclasses override this constructor
+	}
+	
+	public void setFile(File file) {
+		this.sourceFile = file;
+	}
+	
+	protected void readHeader() throws IOException {
+		if (sourceFile == null) {
+			throw new IllegalArgumentException("Source file has not been set.");
+		}
+		reader = new BufferedReader(new FileReader(sourceFile));
 		currentLine = reader.readLine();
-		this.sourceFile = csvFile;
 		if (currentLine.startsWith("#")) {
 			String[] rawToks = currentLine.split("\t");
 			List<String> tokList = new ArrayList<String>();
@@ -249,5 +269,28 @@ public class CSVLineReader implements VariantLineReader {
 	public String getCurrentLine() throws IOException {
 		return currentLine;
 	}
+
+	///////// PipelineObject implementation //////////////
 	
+	@Override
+	public void setAttribute(String key, String value) {
+		attributes.put(key, value);
+	}
+
+	@Override
+	public String getAttribute(String key) {
+		return attributes.get(key);
+	}
+
+	@Override
+	public Collection<String> getAttributeKeys() {
+		return attributes.keySet();
+	}
+
+	@Override
+	public void initialize(NodeList children) {
+		//Nothing to do
+	}
+	
+	private Map<String, String> attributes = new HashMap<String, String>();
 }

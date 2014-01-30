@@ -20,6 +20,7 @@ import util.reviewDir.WritableManifest;
 import buffer.CSVFile;
 import buffer.variant.CSVLineReader;
 import buffer.variant.VariantLineReader;
+import buffer.variant.VariantPool;
 import buffer.variant.VariantRec;
 
 /**
@@ -29,31 +30,30 @@ import buffer.variant.VariantRec;
  */
 public class JSONVarsGenerator {
 
-	public static String createJSONVariants(CSVFile inputVars, File destDir) throws JSONException, IOException {
+	public static void createJSONVariants(VariantPool variants, File dest) throws JSONException, IOException {
 		JSONObject jsonResponse = new JSONObject();
-		String destFilename = inputVars.getFilename().replace(".csv", ".json.gz");
-		File dest = new File(destDir.getAbsolutePath() + "/" + destFilename);
 		
-		VariantLineReader varReader = new CSVLineReader(inputVars.getFile());
 		AnnotatedVarsJsonConverter converter = new AnnotatedVarsJsonConverter();
 
 		JSONArray jsonVarList = new JSONArray();
 		
-		//Trim, etc
-		List<String> map = new ArrayList<String>();
-		String[] headerToks =  varReader.getHeader().trim().replace("#",  "").split("\t");
-		for(int i=0; i<headerToks.length; i++) {
-			map.add(headerToks[i].trim().replace(" ", ""));
-		}
-		converter.setKeys(map);
+		List<String> keys = new ArrayList<String>();
 		
 		//Danger: could create huge json object if variant list is big
-		VariantRec var = varReader.toVariantRec();
-		while(var != null) {
-			jsonVarList.put( converter.toJSON(var) );
-			varReader.advanceLine();
-			var = varReader.toVariantRec();
+		boolean first = true;
+		for(String contig : variants.getContigs()) {
+			for(VariantRec var : variants.getVariantsForContig(contig)) {
+				if (first) {
+					keys.addAll(var.getAnnotationKeys());
+					keys.addAll(var.getPropertyKeys());
+					converter.setKeys(keys);
+					first = false;
+				}
+				
+				jsonVarList.put( converter.toJSON(var) );				
+			}
 		}
+		
 		
 		jsonResponse.put("variant.list", jsonVarList);
 
@@ -68,8 +68,60 @@ public class JSONVarsGenerator {
 		BufferedOutputStream writer = new BufferedOutputStream(new FileOutputStream(dest));
 		writer.write(bytes);
 		writer.close();
+	}
+
+	public static String createJSONVariants(CSVFile inputVars, File destDir) throws JSONException, IOException {
+		String destFilename = inputVars.getFilename().replace(".csv", ".json.gz");
+		File dest = new File(destDir.getAbsolutePath() + "/" + destFilename);
+		
+		VariantLineReader varReader = new CSVLineReader(inputVars.getFile());
+
+		VariantPool variants = new VariantPool(varReader);
+		createJSONVariants(variants, dest);
 		return destFilename;
 	}
+	
+//	public static String createJSONVariants(CSVFile inputVars, File destDir) throws JSONException, IOException {
+//		JSONObject jsonResponse = new JSONObject();
+//		String destFilename = inputVars.getFilename().replace(".csv", ".json.gz");
+//		File dest = new File(destDir.getAbsolutePath() + "/" + destFilename);
+//		
+//		VariantLineReader varReader = new CSVLineReader(inputVars.getFile());
+//		AnnotatedVarsJsonConverter converter = new AnnotatedVarsJsonConverter();
+//
+//		JSONArray jsonVarList = new JSONArray();
+//		
+//		//Trim, etc
+//		List<String> map = new ArrayList<String>();
+//		String[] headerToks =  varReader.getHeader().trim().replace("#",  "").split("\t");
+//		for(int i=0; i<headerToks.length; i++) {
+//			map.add(headerToks[i].trim().replace(" ", ""));
+//		}
+//		converter.setKeys(map);
+//		
+//		//Danger: could create huge json object if variant list is big
+//		VariantRec var = varReader.toVariantRec();
+//		while(var != null) {
+//			jsonVarList.put( converter.toJSON(var) );
+//			varReader.advanceLine();
+//			var = varReader.toVariantRec();
+//		}
+//		
+//		jsonResponse.put("variant.list", jsonVarList);
+//
+//		//Get the json string, then compress it to a byte array
+//		String str = jsonResponse.toString();			
+//		byte[] bytes = compressGZIP(str);
+//
+//		if (dest.exists()) {
+//			throw new IOException("Destination file already exists");
+//		}
+//
+//		BufferedOutputStream writer = new BufferedOutputStream(new FileOutputStream(dest));
+//		writer.write(bytes);
+//		writer.close();
+//		return destFilename;
+//	}
 	
 	/** 
 	 * GZIP compress the given string to a byte array

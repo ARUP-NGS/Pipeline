@@ -45,7 +45,7 @@ public class VCFLineParser extends PipelineObject implements VariantLineReader  
 				
 		private String sample = null; //Emit information for only this sample if specified (when not given, defaults to first sample)
 		private int sampleColumn = -1; //Column that stores information for the given sample
-		protected final File sourceFile;
+		protected File sourceFile;
 		
 		private String currentFormatStr = null;
 		
@@ -57,6 +57,15 @@ public class VCFLineParser extends PipelineObject implements VariantLineReader  
 		}
 		
 		public VCFLineParser(File file, String sample) throws IOException {
+			setInputStream(new FileInputStream(file));
+			this.sourceFile = file;
+			currentLine = reader.readLine();
+			this.sample = sample; //Sample must be specified before header is read
+			readHeader();
+		}
+		
+		@Override
+		public void setFile(File file) throws IOException {
 			setInputStream(new FileInputStream(file));
 			this.sourceFile = file;
 			currentLine = reader.readLine();
@@ -833,4 +842,8 @@ public class VCFLineParser extends PipelineObject implements VariantLineReader  
 		
 
 		private Map<String, String> attributes = new HashMap<String, String>();
+
+
+
+
 }

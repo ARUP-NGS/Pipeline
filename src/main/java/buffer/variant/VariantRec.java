@@ -570,6 +570,7 @@ public class VariantRec {
 	public static final String HALOPLEX_PANEL_FREQ = "haloplex.freq";
 	public static final String SPLICING_SCORE_REF = "splicing.score.ref";
 	public static final String SPLICING_SCORE_ALT = "splicing.score.alt";
+	public static final String HOTSPOT_ID = "hotspot.id";
 	
 }
 

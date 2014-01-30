@@ -36,6 +36,13 @@ public class GVFLineReader implements VariantLineReader {
 	}
 	
 	@Override
+	public void setFile(File file) throws IOException {
+		this.reader = new BufferedReader(new FileReader(file));
+		currentLine = reader.readLine();
+		currentLine = reader.readLine();
+	}
+	
+	@Override
 	public boolean advanceLine() throws IOException {
 		currentLine = reader.readLine();
 		//Skip zero-length lines
@@ -195,8 +202,7 @@ public class GVFLineReader implements VariantLineReader {
 
 	@Override
 	public String getCurrentLine() throws IOException {
-		// TODO Auto-generated method stub
-		return null;
+		return currentLine;
 	}
 
 	@Override
@@ -204,6 +210,8 @@ public class GVFLineReader implements VariantLineReader {
 		// TODO Auto-generated method stub
 		return null;
 	}
+
+	
 	
 	
 }
