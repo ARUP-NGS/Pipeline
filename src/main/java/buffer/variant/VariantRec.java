@@ -568,8 +568,9 @@ public class VariantRec {
 	public static final String CLINVAR_VALIDATED = "dbsnp.clinvar.validated";
 	public static final String RP_SCORE = "readpos.score";
 	public static final String HALOPLEX_PANEL_FREQ = "haloplex.freq";
-	public static final String SPLICING_SCORE_REF = "splicing.score.ref";
-	public static final String SPLICING_SCORE_ALT = "splicing.score.alt";
+	public static final String SPLICING_ALL = "splicing.all";
+	public static final String SPLICING_TOPNM = "splicing.topnm";
+	public static final String SPLICING_TOPNMDIFF = "splicing.topnmdiff";
 	
 }
 
