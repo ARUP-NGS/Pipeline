@@ -1,5 +1,6 @@
 package buffer.variant;
 
+import java.io.File;
 import java.io.IOException;
 
 /**
@@ -11,6 +12,13 @@ import java.io.IOException;
  */
 public interface VariantLineReader {
 
+	/**
+	 * Set the file to read variants from.
+	 * @param file
+	 * @throws IOException
+	 */
+	public void setFile(File file) throws IOException;
+	
 	/**
 	 * Advance this line reader to the next variant record
 	 * returns false is line cannot be read

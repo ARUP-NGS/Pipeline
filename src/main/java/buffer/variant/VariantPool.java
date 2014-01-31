@@ -116,7 +116,7 @@ public class VariantPool extends Operator  {
 		if (varLineReader == null) {
 			throw new IOException("VariantLineReader not initialized");
 		}
-		
+		varLineReader.setFile(inputVariants.getFile());
 		//int lineNumber = 0;
 		do {
 			VariantRec rec = varLineReader.toVariantRec();
@@ -1052,10 +1052,7 @@ public class VariantPool extends Operator  {
 				}
 			}
 		}
-		
-		if (inputVariants != null && varLineReader != null) {
-			throw new IllegalArgumentException("Only one variant file or variant reader can be specified");
-		}
+
 	}
 
 	/**

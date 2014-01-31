@@ -571,6 +571,7 @@ public class VariantRec {
 	public static final String SPLICING_ALL = "splicing.all";
 	public static final String SPLICING_TOPNM = "splicing.topnm";
 	public static final String SPLICING_TOPNMDIFF = "splicing.topnmdiff";
+	public static final String HOTSPOT_ID = "hotspot.id";
 	
 }
 
