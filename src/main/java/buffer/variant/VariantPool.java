@@ -116,7 +116,9 @@ public class VariantPool extends Operator  {
 		if (varLineReader == null) {
 			throw new IOException("VariantLineReader not initialized");
 		}
-		varLineReader.setFile(inputVariants.getFile());
+		if (inputVariants != null) {
+			varLineReader.setFile(inputVariants.getFile());
+		}
 		//int lineNumber = 0;
 		do {
 			VariantRec rec = varLineReader.toVariantRec();

@@ -253,13 +253,4 @@ public class SplicingPredictionAnnotator extends Annotator {
 			throw new IllegalArgumentException("No BED file found on splicingPrediction path: " + SpliceScriptPath + "/spliceRegions.bed");
 		}
 	}		
-	
-	
-	//Run program automatically
-	//public static void main(String[] args) throws IOException {
-	//	SplicingPredictionAnnotator sp = new SplicingPredictionAnnotator();
-			
-	//	sp.annotateVariant(new File("splice.final.vcf"));
-		
-
 }
