@@ -93,8 +93,8 @@ public class SnapAlign extends IOOperator {
 				+ " -M " //Use M instead of = in CIGARs, without this gatk and freebayes will break
 				+ " -t " + threads
 				+ " -o " + outputBAMBuffer.getAbsolutePath();
-		String arg1 = " -rg \"" + readGroup + "\"";
-		executeCommand(new String[]{"/bin/bash", " -c ", command1, arg1});
+		//String arg1 = " -rg \"" + readGroup + "\"";
+		executeCommand(command1);
 	}
 	
 	
