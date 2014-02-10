@@ -113,6 +113,7 @@ public class Genotyper extends CommandOperator {
 		command = command + " -glm BOTH";
 		command = command + " -stand_call_conf " + standCallConf;
 		command = command + " -stand_emit_conf " + standEmitConf;
+		command = command + " -rf BadCigar ";
 		command = command + " -nt " + threads;
 		if(emitAllSites){
 			command += " -out_mode EMIT_ALL_SITES ";
