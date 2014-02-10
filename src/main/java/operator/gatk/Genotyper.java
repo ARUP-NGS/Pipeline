@@ -17,11 +17,14 @@ public class Genotyper extends CommandOperator {
 	public static final String CALLCONF = "call_conf";
 	public static final String CALLEMIT = "call_emit";
 	public static final String MININDELFRAC = "minIndelFrac";
+	public static final String OUT_MODE = "out_mode";
+	public static final String EMIT_ALL_SITES = "EMIT_ALL_SITES";
 	protected String defaultGATKPath = "~/GenomeAnalysisTK/GenomeAnalysisTK.jar";
 	protected String gatkPath = defaultGATKPath;
 	protected double standCallConf = 30.0;
 	protected double standEmitConf = 10.0;
 	protected String minIndelFrac = null;
+	protected String outMode = null;
 	
 	
 	
@@ -59,6 +62,11 @@ public class Genotyper extends CommandOperator {
 			standEmitConf = Double.parseDouble(standEmitConfString);
 		}
 		
+		String outModeString = properties.get(OUT_MODE);
+		if(outModeString != null){
+			outMode = outModeString;
+		}
+		
 		String minIndelFracString = properties.get(MININDELFRAC);
 		if(minIndelFracString != null){
 			minIndelFrac = minIndelFracString;
@@ -87,6 +95,15 @@ public class Genotyper extends CommandOperator {
 		}
 		
 		String outputVCF = outputBuffers.get(0).getAbsolutePath();
+		
+		boolean emitAllSites = false;
+		// gzip the output file if emitting all sites
+		if(EMIT_ALL_SITES.equals(outMode)){
+			emitAllSites = true;
+		}
+		if(emitAllSites){
+			outputVCF = outputVCF.substring(0, outputVCF.lastIndexOf(".vcf")) + "-all_sites.vcf.gz";
+		}
 				
 		String command = "java " + defaultMemOptions + " " + jvmARGStr + " -jar " + gatkPath;
 		command = command + " -R " + reference + " -I " + inputFile + " -T UnifiedGenotyper";
@@ -97,6 +114,9 @@ public class Genotyper extends CommandOperator {
 		command = command + " -stand_call_conf " + standCallConf;
 		command = command + " -stand_emit_conf " + standEmitConf;
 		command = command + " -nt " + threads;
+		if(emitAllSites){
+			command += " -out_mode EMIT_ALL_SITES ";
+		}
 		if (bedFile != null)
 			command = command + " -L:intervals,BED " + bedFilePath;
 		if (minIndelFrac != null)

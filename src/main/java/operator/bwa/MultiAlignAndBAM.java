@@ -447,7 +447,14 @@ public class MultiAlignAndBAM extends PipedCommandOp {
 				threadsStr = " -t " + sampeThreads;
 			}
 				
-			String rgStr = defaultRG.replace("$SAMPLE$", SAMPLE);
+			String sampleName = properties.get(SAMPLE);
+			String rgStr = "";
+			if(sampleName != null){
+				rgStr = defaultRG.replace("$SAMPLE$", sampleName);
+			}
+			else{
+				rgStr = defaultRG.replace("$SAMPLE$", SAMPLE);
+			}
 			
 			bamPath = baseFilename.replace(".sai", "");
 			bamPath = bamPath.replace(".fastq", "");
@@ -490,7 +497,14 @@ public class MultiAlignAndBAM extends PipedCommandOp {
 				threadsStr = " -t " + sampeThreads;
 			}
 				
-			String rgStr = defaultRG.replace("$SAMPLE$", SAMPLE);
+			String sampleName = properties.get(SAMPLE);
+			String rgStr = "";
+			if(sampleName != null){
+				rgStr = defaultRG.replace("$SAMPLE$", sampleName);
+			}
+			else{
+				rgStr = defaultRG.replace("$SAMPLE$", SAMPLE);
+			}
 			
 			bamPath = baseFilename.replace(".sai", "");
 			bamPath = bamPath.replace(".fastq", "");
