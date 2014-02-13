@@ -48,6 +48,9 @@ public class VariantToolChestOperator extends CommandOperator {
 		if(vtcPathProp != null){
 			vtcPath = vtcPathProp.toString();
 		}
+		else{
+			throw new OperationFailedException("'vtc.path' not defined in pipeline properties.", this);
+		}
 		
 		String vtcToolString = properties.get(VTCTool);
 		String inputFileString = properties.get(INPUT_FILES);
