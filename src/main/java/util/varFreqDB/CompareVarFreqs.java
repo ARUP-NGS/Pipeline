@@ -6,9 +6,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import util.VCFLineParser;
-import util.reviewDir.SampleManifest;
 import util.reviewDir.ManifestParseException;
+import util.reviewDir.SampleManifest;
 import buffer.BEDFile;
+import buffer.variant.VariantLineReader;
 import buffer.variant.VariantPool;
 import buffer.variant.VariantRec;
 
@@ -73,6 +74,9 @@ public class CompareVarFreqs {
 	}
 	
 	
+	public void emitTabulatedByType() {
+		//
+	}
 	
 	public void emitTabulated() {
 		
@@ -157,10 +161,15 @@ public class CompareVarFreqs {
 	
 	
 	class PoolInfo {
-		int totalSamples = 0;
+		File source = null;
 		String analysisType = null;
 		BEDFile bed = null;
-		VariantPool pool = new VariantPool();
+		VariantLineReader varReader = new VariantLineReader();
+		
+		public PoolInfo(File source) {
+			this.source = source;	
+		}
+		}
 	}
 	
 }
