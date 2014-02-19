@@ -158,6 +158,9 @@ public class QCtoJSON extends Operator {
 			try {
 				featureLookup = new ExonLookupService();
 				String featureFile = getPipelineProperty("feature.file");
+				if(featureFile == null){
+					throw new IOException("PipelineProperty 'feature.file' not defined.");
+				}
 				featureLookup.buildExonMap(new File(featureFile));
 			}
 			catch (IOException ex) {

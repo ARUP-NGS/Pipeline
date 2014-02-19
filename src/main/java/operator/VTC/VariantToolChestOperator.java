@@ -95,7 +95,7 @@ public class VariantToolChestOperator extends CommandOperator {
 			sb.append(" ");
 			sb.append(rootDir);
 		}
-		return null;
+		return sb.toString();
 	}
 
 }
