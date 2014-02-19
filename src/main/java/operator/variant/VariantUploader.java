@@ -46,10 +46,17 @@ public class VariantUploader extends Operator {
 				row.put("pos", r.getStart());
 				row.put("ref", r.getRef());
 				row.put("alt", r.getAlt());
+				int count = 0;
+				if (r.isHetero()) {
+					count = 1;
+				}
+				else {
+					count = 2;		
+				}
+				row.put("AlleleCount", count);
 				list.put(row);
 			}
-	
-			
+				
 			json.put("variant.list", list);
 			String result = HttpUtils.HttpPostJSON(uploadURL, json);
 			Logger.getLogger(Pipeline.primaryLoggerName).info("Uploading " + vars.size() + " variants to " + uploadURL);

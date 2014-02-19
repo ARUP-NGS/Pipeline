@@ -118,6 +118,7 @@ public class VariantPool extends Operator  {
 		}
 		if (inputVariants != null) {
 			varLineReader.setFile(inputVariants.getFile());
+			varLineReader.advanceLine();
 		}
 		//int lineNumber = 0;
 		do {

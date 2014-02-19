@@ -69,7 +69,6 @@ public class VCFLineParser extends PipelineObject implements VariantLineReader  
 			setInputStream(new FileInputStream(file));
 			this.sourceFile = file;
 			currentLine = reader.readLine();
-			this.sample = sample; //Sample must be specified before header is read
 			readHeader();
 		}
 		
