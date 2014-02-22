@@ -5,11 +5,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import util.VCFLineParser;
 import util.reviewDir.ManifestParseException;
 import util.reviewDir.SampleManifest;
 import buffer.BEDFile;
-import buffer.variant.VariantLineReader;
+import buffer.variant.TinyVCFParser;
 import buffer.variant.VariantPool;
 import buffer.variant.VariantRec;
 
@@ -20,12 +19,16 @@ public class CompareVarFreqs {
 	public static final String HETS = "hets";
 	public static final String HOMS = "homs";
 	
-	List<PoolInfo> allVars = new ArrayList<PoolInfo>();
+	List<SampleInfo> sampleList = new ArrayList<SampleInfo>();
 	
 	public boolean addSample(SampleManifest info) throws IOException {
 		System.err.println("Adding sample : " + info.getSampleName() + " :" + info.getAnalysisType());
 		File vcf = info.getVCF();
 		File bed = info.getBED();
+		boolean include = info.hasProperty("include.in.freq.calc") && Boolean.parseBoolean(info.getProperty("include.in.freq.calc"));
+		if (! include) {
+			System.err.println("Sample " + info.getSampleName() + " " + info.getAnalysisType() + " flagged for non-inclusion, skipping.");
+		}
 		String analysis = info.getAnalysisType();
 		if (analysis.contains("(")) {
 			analysis = analysis.substring(0, analysis.indexOf("(")).trim();
@@ -36,23 +39,14 @@ public class CompareVarFreqs {
 			return false;
 		}
 		
-		PoolInfo pInfo = new PoolInfo();
-		pInfo.analysisType = info.getAnalysisType();
-		pInfo.bed = new BEDFile(bed);
-		pInfo.pool = new VariantPool(new VCFLineParser(vcf));
-		allVars.add(pInfo);
+		SampleInfo sampInfo = new SampleInfo(vcf);
+		sampInfo.analysisType = info.getAnalysisType();
+		sampInfo.bed = new BEDFile(bed);
+		sampleList.add(sampInfo);
 		return true;
 	}
 	
-	public void emitPool(PoolInfo poolInfo) {
-		VariantPool pool = poolInfo.pool;
-		System.out.println("##total.samples=" + poolInfo.totalSamples);
-		for(String contig: pool.getContigs()) {
-			for(VariantRec var : pool.getVariantsForContig(contig)) {
-				System.out.println(contig + "\t" + var.getStart() + "\t" + var.getAlt() + "\t" + formatProperty(var.getPropertyOrAnnotation(HETS)) + "\t" + formatProperty(var.getPropertyOrAnnotation(HOMS)));
-			}
-		}
-	}
+	
 	
 	private static String formatProperty(String prop) {
 		if (prop.equals("-")) {
@@ -74,64 +68,141 @@ public class CompareVarFreqs {
 	}
 	
 	
-	public void emitTabulatedByType() {
-		//
+	private static void incrementProperty(VariantRec var, String key) {
+		Double current = var.getProperty(key);
+		if (current == null) {
+			current = 0.0;
+		}
+		current++;
+		var.addProperty(key, current);
 	}
 	
-	public void emitTabulated() {
+	public void emitTabulated() throws IOException {
 		
-		//Make on giant pool...
+		//Step 1 : Read all variants into gigantic variant pool (without duplicates)
 		System.err.println("Tabulating variants, this may take a moment....");
+		List<SampleInfo> errors = new ArrayList<SampleInfo>();
+		List<String> analysisTypes = new ArrayList<String>();
 		VariantPool everything = new VariantPool();
-		for(PoolInfo poolInfo : allVars) {
-			everything.addAll(poolInfo.pool, false); //Do not allow duplicates
+		
+		
+		for(SampleInfo sampInfo : sampleList) {
+			if (! analysisTypes.contains(sampInfo.analysisType)) {
+				analysisTypes.add(sampInfo.analysisType);
+			}
+			
+			try {
+				everything.addAll(sampInfo.getPool(), false); //Do not allow duplicates
+			}
+			catch (Exception ex) {
+				errors.add(sampInfo);
+				if (sampInfo.source != null) {
+					System.err.println("Error reading variants in " + sampInfo.source.getAbsolutePath() + ": " + ex.getLocalizedMessage() + ", skipping it.");
+				}
+			}
+			sampInfo.disposePool();
 		}
 		
-		System.out.println("#chr\tpos\tref\talt\tsamples.queried\thets\thoms\tfreq");
+		
+		for(SampleInfo err : errors) {
+			sampleList.remove(err);
+		}
+		
+		System.err.println("Found " + everything.size() + " variants in " + sampleList.size() + " samples.");
+		System.err.println(errors.size() + " of which had errors and could not be read.");
+		
+		
+		//Step 2: Iterate across all samples, then across all variants, see how many
+		// samples targeted each variant 
+		
+		
+		for(SampleInfo info : sampleList) {
+			info.bed.buildIntervalsMap();
+			String typeKey = info.analysisType;
+			
+			for(String contig: everything.getContigs()) {
+				for(VariantRec var : everything.getVariantsForContig(contig)) {
+					
+					//Is this variant targeted for this sample?
+					boolean targeted = info.bed.contains(var.getContig(), var.getStart(), false);
+					
+					if (targeted) {
+						incrementProperty(var, typeKey+SAMPLES);
+						incrementProperty(var, SAMPLES);
+						
+						VariantRec queryVar = info.getPool().findRecordNoWarn(contig, var.getStart());
+
+						if (queryVar != null) {
+							if (queryVar.isHetero()) {
+								incrementProperty(var, typeKey+HETS);
+								incrementProperty(var, HETS);
+							}
+							else {
+								incrementProperty(var, typeKey+HOMS);
+								incrementProperty(var, HOMS);
+							}
+						}
+					}
+					
+					
+				}
+			}
+			
+			info.disposePool();
+		}
+		
+		//Now emit everything
+		System.out.print("#chr\tpos\tref\talt\test.type\tsample.count\thets\thoms");
+		System.out.println();
 		
 		for(String contig: everything.getContigs()) {
 			for(VariantRec var : everything.getVariantsForContig(contig)) {
-				System.out.print(contig + "\t" + var.getStart() + "\t" + var.getRef() + "\t" + var.getAlt());
 				
-				int totSamples = 0;
-				int hets = 0;
-				int homs = 0;
-				
-				for(PoolInfo info : allVars) {
-					if (! info.bed.isMapCreated()) {
-						try {
-							info.bed.buildIntervalsMap();
-						} catch (IOException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
+				//First do 'overall'
+				Double totSamples = var.getProperty(SAMPLES);
+				Double compTotSamples = 0.0; //Sanity check, make sure sum of samples by type matches overall total
+				if (totSamples != null && totSamples > 0) {
+					Double hets = var.getProperty(HETS);
+					Double homs = var.getProperty(HOMS);
+					if (hets == null) {
+						hets = 0.0;
 					}
-					if (info.bed.contains(contig, var.getStart(), false)) {
-						totSamples++;
+					if (homs == null) {
+						homs = 0.0;
 					}
 					
-					VariantRec queryVar = info.pool.findRecordNoWarn(contig, var.getStart());
-					if (queryVar != null) {
-						if (queryVar.isHetero()) {
-							hets++;
+
+					System.out.print(contig + "\t" + var.getStart() + "\t" + var.getRef() + "\t" + var.getAlt() + "\toverall");
+					System.out.println("\t" + ("" + (int)Math.round(totSamples)) + "\t" + ("" + (int)Math.round(hets)) + "\t" + ("" + (int)Math.round(homs)));
+					
+					for(String type : analysisTypes) {
+						Double totSamplesType = var.getProperty(type+SAMPLES);
+						if (totSamplesType == null) {
+							totSamplesType = 0.0;
 						}
-						else {
-							homs++;
+						compTotSamples += totSamplesType;
+						hets = var.getProperty(type+HETS);
+						homs = var.getProperty(type+HOMS);
+						if (hets == null) {
+							hets = 0.0;
 						}
+						if (homs == null) {
+							homs = 0.0;
+						}
+					
+						System.out.print(contig + "\t" + var.getStart() + "\t" + var.getRef() + "\t" + var.getAlt() + "\t" + type);
+						System.out.println("\t" + ("" + (int)Math.round(totSamplesType)) + "\t" + ("" + (int)Math.round(hets)) + "\t" + ("" + (int)Math.round(homs)));
 					}
-				} //loop over allVars
-				
-				double freq = (hets + 2.0*homs)/(totSamples*2.0);
-				String freqStr = "" + freq;
-				if (freqStr.length() > 6) {
-					freqStr = freqStr.substring(0, 6);
+					
+					if (! compTotSamples.equals(totSamples)) {
+						throw new IllegalStateException("Sanity check failed: sum of samples did not match total! tot=" + totSamples + " comp: " + compTotSamples);
+					}
 				}
-				System.out.print("\t" + totSamples + "\t" + hets + "\t" + homs + "\t" + freqStr);
-				System.out.println();	
+				
 			}
-			
 		}
 		
+			
 		
 	}
 	
@@ -156,20 +227,38 @@ public class CompareVarFreqs {
 		
 
 		System.err.println("Found " + added + " valid samples");
-		cFreqs.emitTabulated();
+		try {
+			cFreqs.emitTabulated();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 	
-	class PoolInfo {
+	class SampleInfo {
 		File source = null;
 		String analysisType = null;
-		BEDFile bed = null;
-		VariantLineReader varReader = new VariantLineReader();
+		BEDFile bed = null; 
+		private VariantPool pool = null;
 		
-		public PoolInfo(File source) {
+		public SampleInfo(File source) throws IOException {
 			this.source = source;	
 		}
+		
+		public VariantPool getPool() throws IOException {
+			if (pool == null) {
+				pool = new VariantPool(new TinyVCFParser(source));
+			}
+			return pool;
 		}
+		
+		public void disposePool() {
+			pool = null;
+		}
+		
 	}
 	
-}
+	}
+	
+
