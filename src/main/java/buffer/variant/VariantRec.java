@@ -64,6 +64,10 @@ public class VariantRec {
 		annotations.put(key, anno);
 	}
 	
+	public void setQuality(Double quality) {
+		this.qual = quality;
+	}
+	
 	public String getRef() {
 		return ref;
 	}

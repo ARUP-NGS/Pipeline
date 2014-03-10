@@ -31,6 +31,7 @@ public class CSVLineReader extends PipelineObject implements VariantLineReader  
 	protected File sourceFile;
 	
 	
+	
 	public CSVLineReader(File csvFile) throws IOException {
 		setFile(csvFile);
 		readHeader();
@@ -51,17 +52,20 @@ public class CSVLineReader extends PipelineObject implements VariantLineReader  
 		reader = new BufferedReader(new FileReader(sourceFile));
 		currentLine = reader.readLine();
 		if (currentLine.startsWith("#")) {
-			String[] rawToks = currentLine.split("\t");
-			List<String> tokList = new ArrayList<String>();
-			for(int i=0; i<rawToks.length; i++)
-				if (rawToks[i].trim().length()>0) {
-					tokList.add(rawToks[i].trim());
-				}
-			headerToks = tokList.toArray(new String[]{});
-			for(int i=0; i<tokList.size(); i++)
-				headerMap.put(tokList.get(i).trim(), i);
-			currentLine = reader.readLine();
+			currentLine.replaceFirst("#", "");
 		}
+		
+		String[] rawToks = currentLine.split("\t");
+		List<String> tokList = new ArrayList<String>();
+		for(int i=0; i<rawToks.length; i++)
+			if (rawToks[i].trim().length()>0) {
+				tokList.add(rawToks[i].trim());
+			}
+		headerToks = tokList.toArray(new String[]{});
+		for(int i=0; i<tokList.size(); i++)
+			headerMap.put(tokList.get(i).trim(), i);
+		currentLine = reader.readLine();
+
 	}
 	
 	public String getHeader() throws IOException {
@@ -136,7 +140,7 @@ public class CSVLineReader extends PipelineObject implements VariantLineReader  
 		try {
 			String contig = getContig(toks);
 			Integer start = getStart(toks);
-			Integer end = getEnd(toks);
+			//Integer end = getEnd(toks);
 			String ref = getRef(toks);
 			String alt = getAlt(toks);
 			Double qual = getQuality(toks);
@@ -157,10 +161,7 @@ public class CSVLineReader extends PipelineObject implements VariantLineReader  
 					start++;
 				}
 
-				if (ref.equals("-"))
-					end = start;
-				else
-					end = start + ref.length();
+
 			}
 
 			rec = new VariantRec(contig, start, start+ref.length(), ref, alt, qual, isHet);
@@ -229,10 +230,12 @@ public class CSVLineReader extends PipelineObject implements VariantLineReader  
 		if (toks.length < 6)
 			return 0.0;
 		String trimmed = toks[5].trim();
-		if (trimmed.length()>0)
+		try {
 			return Double.parseDouble(trimmed);
-		else
+		}
+		catch (NumberFormatException nfe) {
 			return 0.0;
+		}
 	}
 	
 	protected Double getDepth(String[] toks) {
