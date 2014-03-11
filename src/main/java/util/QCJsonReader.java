@@ -17,6 +17,7 @@ import json.JSONArray;
 import json.JSONException;
 import json.JSONObject;
 import math.Histogram;
+import util.prereviewDataGen.AnalysisTypeConverter;
 
 /**
  * A smallish utility to read QC data from qc.json files
@@ -241,16 +242,22 @@ public class QCJsonReader {
 		}
 		
 		if (command.startsWith("qcList")) {
-			performQCList(paths, System.out);
+			performQCList(paths, System.out, null);
 			return;
 		}
 		
 		System.err.println("Unrecognized command");
 		
 	}
-
 	
-	private static void performQCList(List<String> paths, PrintStream out) {
+	/**
+	 * Create a table of data from the given input paths that is formatted just like the prereview data table
+	 * in NGS.Web, for easy importing of data. It should look something like the following:
+	 * 
+	 * @param paths
+	 * @param out
+	 */	
+	public static void performQCList(List<String> paths, PrintStream out, AnalysisTypeConverter converter) {
 		Map<String, QCInfoList> analysisMap = new HashMap<String, QCInfoList>(); //Mapping from analysis types to groups of qc metrics
 		
 		for(String path : paths) {
@@ -258,6 +265,9 @@ public class QCJsonReader {
 				File manifestFile = new File(path + "/sampleManifest.txt");
 				Map<String, String> manifest = readManifest(manifestFile);
 				String analysisType = analysisTypeFromManifest(manifestFile).replace(" (v. 1.0)", "");
+				if (converter != null) {
+					analysisType = converter.convert(analysisType);
+				}
 				QCInfoList qcList = analysisMap.get(analysisType);
 				if (qcList == null) {
 					qcList = new QCInfoList();
@@ -326,9 +336,6 @@ public class QCJsonReader {
 				try {
 					knownSnps = variants.getDouble("total.known");
 					qcList.add("known.snps", knownSnps);
-					if (snpCount > 0) {
-						qcList.add("known.snps.frac", knownSnps/snpCount);
-					}
 				}
 				catch (JSONException e) {
 
@@ -336,7 +343,6 @@ public class QCJsonReader {
 				
 				if (snpCount > 0) {
 					novelFrac = 1.0 - knownSnps/snpCount;
-					qcList.add("frac.above.50", above50);
 				}
 				
 				try {
@@ -381,12 +387,59 @@ public class QCJsonReader {
 			sortedKeys.addAll( qcItems.keys());
 			Collections.sort(sortedKeys);
 			int count = qcItems.getValsForMetric( sortedKeys.get(0) ).size();
-			out.println("Analysis type: " + analType + " samples found: " + count);
+		
+			out.println("\nAnalysis type: " + analType + " samples found: " + count);
+			if (count < 10) {
+				out.println("Not enough samples, skipping " + analType);
+			}
 			for(String metric : sortedKeys) {
-				out.print("\t" + metric + "\t");
+				if (metric.equals("total.snps")) out.print("Total SNPs");				
+				if (metric.equals("total.variants")) out.print("Total variants");
+				if (metric.equals("known.snps")) out.print("Known SNPs");
+				if (metric.equals("total.tt.ratio")) out.print("Overall Ti/Tv");
+				if (metric.equals("known.tt")) out.print("Known Ti/Tv");
+				if (metric.equals("novel.tt")) out.print("Novel Ti/Tv");
+				if (metric.equals("mean.coverage")) out.print("Mean coverage");
+				if (metric.equals("raw.reads")) out.print("Total reads");
+				if (metric.equals("bases.above.q30")) out.print("Bases above Q30");
+				if (metric.equals("bases.above.q20")) out.print("Bases above Q20");
+				if (metric.equals("bases.above.q10")) out.print("Bases above Q10");
+				if (metric.equals("frac.above.0")) out.print("Fraction above 0X");
+				if (metric.equals("frac.above.20")) out.print("Fraction above 20X");
+				if (metric.equals("frac.above.50")) out.print("Fraction above 50X");
+				if (metric.equals("percent.dups")) out.print("PCR dups. removed");
+				if (metric.equals("unmapped.reads")) out.print("Unmapped reads");
+				
+				out.print(analType + "\t" + metric + "\t");
 				List<Double> vals = qcItems.getValsForMetric(metric);
 				String formattedList = formatQCListVals(vals);
 				out.print(formattedList);
+				
+				if (metric.equals("total.snps")
+						|| metric.equals("total.variants")
+						|| metric.equals("known.tt")
+						|| metric.equals("novel.tt")
+						|| metric.equals("total.tt.ratio")) {
+					out.print("Variant metrics\tvariant.metrics");				
+				}
+				if (metric.equals("mean.coverage")) {
+					out.print("Coverage\tfinal.coverage.metrics");
+				}
+				if (metric.equals("raw.reads")) {
+					out.print("Coverage\traw.bam.metrics");
+				}
+				if (metric.equals("percent.dups")) {
+					out.print("BAM Metrics\tNULL");
+				}
+				if (metric.equals("unmapped.reads")) {
+					out.print("BAM Metrics\tNULL");
+				}
+				if (metric.startsWith("bases.above")) {
+					out.print("BAM Metrics\traw.bam.metrics");
+				}
+				if (metric.startsWith("frac.above")) {
+					out.print("Coverage\tNULL");
+				}
 				out.println();
 			}
 		}
@@ -406,7 +459,7 @@ public class QCJsonReader {
 			histo.addValue(x);
 		}
 		
-		return formatter.format(histo.getMean()) + "\t" + formatter.format(histo.lowerHPD(0.025)) + "\t" + formatter.format(histo.lowerHPD(0.05)) + "\t" + formatter.format(histo.upperHPD(0.05)) + "\t" + formatter.format(histo.upperHPD(0.025)); 
+		return formatter.format(histo.lowerHPD(0.025)) + "\t" + formatter.format(histo.lowerHPD(0.05)) + "\t" + formatter.format(histo.upperHPD(0.05)) + "\t" + formatter.format(histo.upperHPD(0.025)) + "\t"; 
 	}
 	
 	
