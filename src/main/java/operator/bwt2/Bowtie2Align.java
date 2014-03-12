@@ -31,7 +31,6 @@ public class Bowtie2Align extends IOOperator {
 	
 	public static final String JVM_ARGS="jvmargs";
 	public static final String BOWTIE2_DIR = "bowtie2.dir";
-//	public static final String STREAMSORT_PATH = "streamsort.path";
 	public static final String SAMTOOLS_PATH = "samtools.path";
 	public static final String BOWTIE2_STYLE = "bowtie2.style";
 	public static final String BOWTIE2_SUBSTYLE = "bowtie2.substyle";
@@ -93,7 +92,7 @@ public class Bowtie2Align extends IOOperator {
 				+ " -x "
 				+ refBuf.getAbsolutePath() + " -1 "
 				+ inputBuffers.get(0).getAbsolutePath() + " -2 "
-				+ inputBuffers.get(1).getAbsolutePath() + " "
+				+ inputBuffers.get(1).getAbsolutePath()
 				+ " -N " + allowedSeedMismatches
 				+ " " +bowtie2Style + " " + bowtie2Substyle + " " +scoreMin
 				+ " --rg-id \"@RG\\tID:unknown\\tSM:" + sample + "\\tPL:ILLUMINA\" "

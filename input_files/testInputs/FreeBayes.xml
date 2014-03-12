@@ -1,0 +1,15 @@
+<Pipeline>
+
+<reference class="buffer.ReferenceFile" filename="/mounts/genome/human_g1k_v37.fasta" />
+<bamFile class="buffer.BAMFile" filename="/yggdrasil/workspace/JavaWS/Pipeline/examples/test.sorted.bam" />
+<bedRegion class="buffer.BEDFile" filename="/mounts/genome/mutect/testdata/target.exons.small.bed" />
+
+<freeBayes class="operator.freebayes.FreeBayes">
+	<input>
+		<reference />
+		<bamFile />
+		<bedRegion />
+	</input>
+</freeBayes>
+
+</Pipeline>
