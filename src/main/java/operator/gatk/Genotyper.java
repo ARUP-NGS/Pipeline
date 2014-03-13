@@ -19,12 +19,14 @@ public class Genotyper extends CommandOperator {
 	public static final String MININDELFRAC = "minIndelFrac";
 	public static final String OUT_MODE = "out_mode";
 	public static final String EMIT_ALL_SITES = "EMIT_ALL_SITES";
+	public static final String DOWNSAMPLE_TO_COV = "downsample_to_coverage";
 	protected String defaultGATKPath = "~/GenomeAnalysisTK/GenomeAnalysisTK.jar";
 	protected String gatkPath = defaultGATKPath;
 	protected double standCallConf = 30.0;
 	protected double standEmitConf = 10.0;
 	protected String minIndelFrac = null;
 	protected String outMode = null;
+	protected String downsampleToCoverage = null;
 	
 	
 	
@@ -65,6 +67,11 @@ public class Genotyper extends CommandOperator {
 		String outModeString = properties.get(OUT_MODE);
 		if(outModeString != null){
 			outMode = outModeString;
+		}
+		
+		String downsampleToCoverageString = properties.get(DOWNSAMPLE_TO_COV);
+		if(downsampleToCoverageString != null){
+			downsampleToCoverage = downsampleToCoverageString;
 		}
 		
 		String minIndelFracString = properties.get(MININDELFRAC);
@@ -122,6 +129,8 @@ public class Genotyper extends CommandOperator {
 			command = command + " -L:intervals,BED " + bedFilePath;
 		if (minIndelFrac != null)
 			command = command + " -minIndelFrac " + minIndelFrac;
+		if (downsampleToCoverage != null)
+			command = command + " -downsample_to_coverage " + downsampleToCoverage;
 		return command;
 	}
 

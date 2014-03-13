@@ -10,15 +10,15 @@ public class AnalysisTypeConverter {
 	 */
 	public String convert(String analysisType) {
 		String aType = analysisType.toLowerCase();
-		if (aType.contains("exome") || aType.contains("trackex")) {
+		if (aType.contains("exome") || aType.contains("trackex") || aType.contains("exoseq")) {
 			return "EXO";
 		}
 		
-		if (aType.contains("retinitis") || aType.contains(" rp ")) {
+		if (aType.contains("retinitis") || aType.equals("rp seq") || aType.equals("rp panel")) {
 			return "RET";
 		}
 		
-		if (aType.contains("aort") || aType.contains("2.0")) {
+		if (aType.contains("aort") && aType.contains("2.0")) {
 			return "AOR";
 		}
 		
