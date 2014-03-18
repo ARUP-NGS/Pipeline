@@ -39,7 +39,7 @@ public class MarkDuplicates extends PipedCommandOp {
 		else {
 			dupStat = "DupMarked";
 		}
-		String command = "java -jar Xmx16G " + picardDir + " REMOVE_DUPLICATES=" + rmDup 
+		String command = "java -jar Xmx16G " + picardDir + "/MarkDuplicates.jar REMOVE_DUPLICATES=" + rmDup 
 				+ " I=" + inputSAM.getAbsolutePath() + " METRICS_FILE=$(basename " + inputSAM.getAbsolutePath() +
 				" .sam).dupLog O=$(basename " + inputSAM.getAbsolutePath() + " .sam)" + dupStat + ".sam";
 		return(command);
