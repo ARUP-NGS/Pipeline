@@ -26,11 +26,13 @@ public class SnapIndex extends IOOperator {
 	public static final String HREF_PATH = "href.path";
 	public static final String SNAP_PATH = "snap.path";
 	public static final String SNAP_INDEX = "snap.index";
+	public static final String HG19_SETTING = "hg.19";
 		
 	String samtoolsPath = null;
 	String snapIndexPath = null;
 	String snapPath = null;
 	String hRefPath = null;
+	String hg19_setting = null;
 	
 	@Override
 	public void performOperation() throws OperationFailedException {
@@ -53,7 +55,7 @@ public class SnapIndex extends IOOperator {
 		//Builds index
 		String command1 = snapPath + " index "
 				+ hRefPath + " "
-				+ snapIndexPath + " -hg19"
+				+ snapIndexPath + " " + hg19_setting
 				+ " -t " + threads;
 		executeCommand(command1);
 	}
@@ -96,6 +98,18 @@ public class SnapIndex extends IOOperator {
 		if (hRefPathAttr == null) {
 			throw new IllegalArgumentException("A reference genome fasta is required!");
 		}
+		
+		String hg19Attr = this.getAttribute(HG19_SETTING);
+		if (hg19Attr == null || hg19Attr == "true") {
+			hg19Attr = this.getPipelineProperty(HG19_SETTING);
+		}
+		if (hg19Attr == null || hg19Attr == "true") {
+			this.hg19_setting = "-hg19"; //default to hg19 speedup settings
+		}
+		else {
+			this.hg19_setting = "";
+		}
+		
 		
 	}
 
