@@ -25,9 +25,9 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import operator.OperationFailedException;
 import operator.Operator;
+import operator.hook.OperatorEndHook;
 import operator.hook.OperatorHook;
 import operator.hook.OperatorStartHook;
-import operator.hook.OperatorEndHook;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -133,6 +133,11 @@ public class Pipeline {
 		return threadCount;
 	}
 	
+	/**
+	 * A reference to the object handler, which marshals all of the PipelineObjects created
+	 * from the input file and provides references to them
+	 * @return
+	 */
 	public ObjectHandler getObjectHandler() {
 		return handler;
 	}
@@ -358,6 +363,7 @@ public class Pipeline {
 
 			}
 		}
+		
 				
 		if (props.getProperty(PipelineXMLConstants.MAIL_RECIPIENT) != null) {
 			String mailRecipient = props.getProperty(PipelineXMLConstants.MAIL_RECIPIENT);
@@ -379,8 +385,6 @@ public class Pipeline {
 		//Add in a little gizmo to track how long we spend on each operation
 		OperatorTimeSummary profiler = new OperatorTimeSummary();
 		this.addListener(profiler);
-		
-		
 		
 				
 		handler = new ObjectHandler(this, xmlDoc);

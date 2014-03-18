@@ -380,8 +380,8 @@ public class QCJsonReader {
 			} 
 		}
 		
+		
 		for(String analType : analysisMap.keySet()) {
-			
 			QCInfoList qcItems = analysisMap.get(analType);
 			List<String> sortedKeys = new ArrayList<String>();
 			sortedKeys.addAll( qcItems.keys());
@@ -391,8 +391,12 @@ public class QCJsonReader {
 			out.println("\nAnalysis type: " + analType + " samples found: " + count);
 			if (count < 10) {
 				out.println("Not enough samples, skipping " + analType);
+				continue;
 			}
+			
 			for(String metric : sortedKeys) {
+				out.print(analType + "\t");
+				
 				if (metric.equals("total.snps")) out.print("Total SNPs");				
 				if (metric.equals("total.variants")) out.print("Total variants");
 				if (metric.equals("known.snps")) out.print("Known SNPs");
@@ -410,7 +414,7 @@ public class QCJsonReader {
 				if (metric.equals("percent.dups")) out.print("PCR dups. removed");
 				if (metric.equals("unmapped.reads")) out.print("Unmapped reads");
 				
-				out.print(analType + "\t" + metric + "\t");
+				out.print("\t" + metric + "\t");
 				List<Double> vals = qcItems.getValsForMetric(metric);
 				String formattedList = formatQCListVals(vals);
 				out.print(formattedList);
