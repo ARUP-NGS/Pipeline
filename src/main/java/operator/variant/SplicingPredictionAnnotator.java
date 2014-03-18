@@ -129,7 +129,7 @@ public class SplicingPredictionAnnotator extends Annotator {
 				Integer pos = Integer.parseInt(tokens[1]);
 				String ref = tokens[3];
 				String alt = tokens[4];
-				String spliceString = tokens[40]; // all splice output
+				String spliceString = tokens[tokens.length - 1]; // all splice output (last column)
 
 				//Annotate variant if there is a splicing variant call
 				if (spliceString.length() > 1) {
