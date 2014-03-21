@@ -26,12 +26,14 @@ public class SnapAlign extends IOOperator {
 	public static final String SORT = "sort";
 	public static final String SINGLE_END = "single";
 	public static final String SAMPLE = "sample";
+	public static final String EXTRA_OPTIONS = "extra.snap";
 	
 	private String defaultRG = "${SAMPLE}\tPL:ILLUMINA";
 	
 	String samtoolsPath = null;
 	String snapIndexPath = null;
 	String snapPath = null;
+	String extraOptions = "";
 	
 	@Override
 	public void performOperation() throws OperationFailedException {
@@ -92,7 +94,8 @@ public class SnapAlign extends IOOperator {
 				+ sortOpt + " "
 				+ " -M " //Use M instead of = in CIGARs, without this gatk and freebayes will break
 				+ " -t " + threads
-				+ " -o " + outputBAMBuffer.getAbsolutePath();
+				+ " -o " + outputBAMBuffer.getAbsolutePath()
+				+ extraOptions;
 		//String arg1 = " -rg \"" + readGroup + "\"";
 		executeCommand(command1);
 	}
@@ -128,6 +131,14 @@ public class SnapAlign extends IOOperator {
 			throw new IllegalArgumentException("No file found at Snap index path : " + snapIndexAttr);
 		}
 		this.snapIndexPath = snapIndexAttr;
+		
+		String extraAttr = this.getAttribute(EXTRA_OPTIONS);
+		if (extraAttr == null) {
+			extraAttr = this.getPipelineProperty(EXTRA_OPTIONS);
+		}
+		if( extraAttr != null) {
+			this.extraOptions = extraAttr;
+		}
 			
 	}
 
