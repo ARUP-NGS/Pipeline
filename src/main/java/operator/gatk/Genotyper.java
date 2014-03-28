@@ -130,7 +130,7 @@ public class Genotyper extends CommandOperator {
 		if (minIndelFrac != null)
 			command = command + " -minIndelFrac " + minIndelFrac;
 		if (downsampleToCoverage != null)
-			command = command + " -downsample_to_coverage " + downsampleToCoverage;
+			command = command + " --downsample_to_coverage " + downsampleToCoverage;
 		return command;
 	}
 

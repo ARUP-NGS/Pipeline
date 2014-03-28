@@ -180,9 +180,10 @@ public class CSVLineReader extends PipelineObject implements VariantLineReader  
 				for(int i=9; i<toks.length; i++) {
 					String key = headerToks[i].trim();
 					//System.out.println("Adding annotation for key: " + key + " value:" + toks[i]);
-					if (toks[i].equals("-") || toks[i].equals("NA") || toks[i].equals("?"))
-						continue; 
-
+					if ((toks[i].equals("-") || toks[i].equals("NA") || toks[i].equals("?")) && (!key.equals("splicing.topnm") && !key.equals("splicing.topnmdiff"))) {
+							continue;
+						}
+					
 					try {
 						Double val = Double.parseDouble(toks[i]);
 						rec.addProperty(key, val);

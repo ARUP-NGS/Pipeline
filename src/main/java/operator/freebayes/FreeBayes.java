@@ -43,7 +43,7 @@ public class FreeBayes extends IOOperator {
 	String minBaseScore = "20";//Ibid.
 	String readMismatchLimit = "0";//Ibid.
 	String mismatchQualityMin = "10"; //Default quality for FreeBayes. I imagine it could be pretty useful, so I'm writing it in.
-	
+	String bedFilePath = "";
 	public void performOperation() throws OperationFailedException {
 		
 		ReferenceFile refBuf = (ReferenceFile) this.getInputBufferForClass(ReferenceFile.class);
@@ -51,10 +51,11 @@ public class FreeBayes extends IOOperator {
 		FileBuffer inputBED = this.getInputBufferForClass(BEDFile.class);
 		
 		Logger.getLogger(Pipeline.primaryLoggerName).info("Freebayes is looking for SNPs with reference " + refBuf.getFilename() + " in source BAM file of " + inputBuffers.get(0).getFilename() + "." );
-		String bedFilePath = inputBED.getAbsolutePath();
-		if( bedFilePath != null) {
-			bedFilePath = " -t " + bedFilePath;
+
+		if(inputBED != null) {
+			bedFilePath = " -t " + inputBED.getAbsolutePath();
 		}
+		
 		String inputBAM = null;
 		if( inputBuffers.get(0) != null) {
 			inputBAM = " -b " + inputBuffers.get(0).getAbsolutePath();
@@ -64,8 +65,7 @@ public class FreeBayes extends IOOperator {
 				+ " --fasta-reference " + refBuf.getAbsolutePath()
 				+ inputBAM
 				+  " -m " + minMapScore + " -q " + minBaseScore + " -U " + readMismatchLimit + " -Q " + mismatchQualityMin
-				+ bedFilePath
-				+ " 2> LOL.freebayes.stderr.txt " + "1> LOL.freebayes.output.txt ";
+				+ bedFilePath;
 		executeCommand(command);
 
 	}
