@@ -38,7 +38,6 @@ public class FreeBayes extends IOOperator {
 	public static final String MIN_BASE_SCORE="min.base.score";
 	public static final String READ_MISMATCH_LIMIT="read.mismatch.limit";
 	public static final String MISMATCH_QUALITY_MIN="mismatch.quality.min";
-	public static final String OUTPUT_VCF_PATH="";
 	
 	String freeBayesPath = null;
 	String minMapScore = "30"; //Defaults to more stringent options because I felt like it, no good reason.
@@ -46,44 +45,29 @@ public class FreeBayes extends IOOperator {
 	String readMismatchLimit = "0";//Ibid.
 	String mismatchQualityMin = "10"; //Default quality for FreeBayes. I imagine it could be pretty useful, so I'm writing it in.
 	String bedFilePath = "";
-	String outputVCFPath = "";
 	public void performOperation() throws OperationFailedException {
 		
+		FileBuffer outputVCF = outputBuffers.get(0);
 		ReferenceFile refBuf = (ReferenceFile) this.getInputBufferForClass(ReferenceFile.class);
-		FileBuffer inputBuffer = this.getInputBufferForClass(BAMFile.class);
+		List<FileBuffer> inputBuffers = this.getAllInputBuffersForClass(BAMFile.class);
 		FileBuffer inputBED = this.getInputBufferForClass(BEDFile.class);
-		FileBuffer outputVCF = this.getInputBufferForClass(VCFFile.class);
 		
-		String outVCFattr = this.getAttribute(OUTPUT_VCF_PATH);
-		if (outVCFattr == null) {
-			outVCFattr = this.getPipelineProperty(OUTPUT_VCF_PATH);
-		}
-		if (outVCFattr != null) {
-			outputVCFPath = outVCFattr;
-		}
-		else {
-			String temp = inputBuffer.getAbsolutePath();
-			outputVCFPath = temp.substring(0, temp.lastIndexOf('.'));
-			outputVCFPath = outputVCFPath + ".vcf";
-		}
-		
-		
-		Logger.getLogger(Pipeline.primaryLoggerName).info("Freebayes is looking for SNPs with reference " + refBuf.getFilename() + " in source BAM file of " + inputBuffer.getFilename() + "." );
+		Logger.getLogger(Pipeline.primaryLoggerName).info("Freebayes is looking for SNPs with reference " + refBuf.getFilename() + " in source BAM file of " + inputBuffers.get(0).getFilename() + "." );
 
 		if(inputBED != null) {
 			bedFilePath = " -t " + inputBED.getAbsolutePath();
 		}
 		
 		String inputBAM = null;
-		if( inputBuffer != null) {
-			inputBAM = " -b " + inputBuffer.getAbsolutePath();
+		if( inputBuffers.get(0) != null) {
+			inputBAM = " -b " + inputBuffers.get(0).getAbsolutePath();
 		}
 		
 		String command = freeBayesPath
 				+ " --fasta-reference " + refBuf.getAbsolutePath()
 				+ inputBAM
 				+  " -m " + minMapScore + " -q " + minBaseScore + " -U " + readMismatchLimit + " -Q " + mismatchQualityMin
-				+ bedFilePath + " -v " + outputVCFPath;
+				+ bedFilePath + " -v " + outputVCF.getAbsolutePath();
 		executeCommand(command);
 
 	}
