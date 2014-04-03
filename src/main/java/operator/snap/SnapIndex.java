@@ -56,7 +56,7 @@ public class SnapIndex extends IOOperator {
 		String command1 = snapPath + " index "
 				+ hRefPath + " "
 				+ snapIndexPath + " " + hg19_setting
-				+ " -t " + threads;
+				+ " -t" + threads + " -bSpace";
 		executeCommand(command1);
 	}
 	
