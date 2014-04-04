@@ -41,8 +41,8 @@ public class MarkDuplicates extends CommandOperator {
 			dupStat = "DupMarked";
 		}
 		String command = "java -jar -Xmx16G " + picardDir + "/MarkDuplicates.jar REMOVE_DUPLICATES=" + rmDup 
-				+ " I=" + inputBAM.getAbsolutePath() + " METRICS_FILE=$(basename " + inputBAM.getAbsolutePath() +
-				" .bam).dupLog O=$(basename " + inputBAM.getAbsolutePath() + " .bam)." + dupStat + ".bam" + " ASSUME_SORTED=true";
+				+ " I=" + inputBAM.getAbsolutePath() + " METRICS_FILE=" + (inputBAM.getAbsolutePath()).substring(0, (inputBAM.getAbsolutePath()).lastIndexOf('.')) +
+				".dupLog O="+ (inputBAM.getAbsolutePath()).substring(0, (inputBAM.getAbsolutePath()).lastIndexOf('.')) + "." + dupStat + ".bam" + " ASSUME_SORTED=true";
 		System.out.println(command);
 		return(command);
 
