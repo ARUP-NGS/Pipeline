@@ -7,7 +7,7 @@ import org.w3c.dom.NodeList;
 
 import pipeline.PipelineXMLConstants;
 import buffer.FileBuffer;
-import buffer.SAMFile;
+import buffer.BAMFile;
 
 /*
 * This goes through a SAM file and marks duplicates (default) or removes them, making a processed SAM file, without harming the original.
@@ -23,7 +23,7 @@ public class MarkDuplicates extends PipedCommandOp {
 	String rmDup = "true"; //Defaults to true, remove the duplicates
 
 	protected String getCommand() throws OperationFailedException {
-		FileBuffer inputSAM = this.getInputBufferForClass(SAMFile.class);
+		FileBuffer inputBAM = this.getInputBufferForClass(BAMFile.class);
 		
 		Object path = getPipelineProperty(PipelineXMLConstants.PICARD_PATH);
 		if (path != null)
@@ -39,9 +39,9 @@ public class MarkDuplicates extends PipedCommandOp {
 		else {
 			dupStat = "DupMarked";
 		}
-		String command = "java -jar Xmx16G " + picardDir + "/MarkDuplicates.jar REMOVE_DUPLICATES=" + rmDup 
-				+ " I=" + inputSAM.getAbsolutePath() + " METRICS_FILE=$(basename " + inputSAM.getAbsolutePath() +
-				" .sam).dupLog O=$(basename " + inputSAM.getAbsolutePath() + " .sam)" + dupStat + ".sam";
+		String command = "java -jar -Xmx16G " + picardDir + "/MarkDuplicates.jar REMOVE_DUPLICATES=" + rmDup 
+				+ " I=" + inputBAM.getAbsolutePath() + " METRICS_FILE=$(basename " + inputBAM.getAbsolutePath() +
+				" .bam).dupLog O=$(basename " + inputBAM.getAbsolutePath() + " .bam)" + dupStat + ".bam";
 		return(command);
 
 	}

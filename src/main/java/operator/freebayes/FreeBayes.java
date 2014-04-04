@@ -11,6 +11,7 @@ import buffer.BAMFile;
 import buffer.FileBuffer;
 import buffer.ReferenceFile;
 import buffer.BEDFile;
+import buffer.VCFFile;
 import operator.IOOperator;
 import operator.OperationFailedException;
 
@@ -46,6 +47,7 @@ public class FreeBayes extends IOOperator {
 	String bedFilePath = "";
 	public void performOperation() throws OperationFailedException {
 		
+		FileBuffer outputVCF = outputBuffers.get(0);
 		ReferenceFile refBuf = (ReferenceFile) this.getInputBufferForClass(ReferenceFile.class);
 		List<FileBuffer> inputBuffers = this.getAllInputBuffersForClass(BAMFile.class);
 		FileBuffer inputBED = this.getInputBufferForClass(BEDFile.class);
@@ -65,7 +67,7 @@ public class FreeBayes extends IOOperator {
 				+ " --fasta-reference " + refBuf.getAbsolutePath()
 				+ inputBAM
 				+  " -m " + minMapScore + " -q " + minBaseScore + " -U " + readMismatchLimit + " -Q " + mismatchQualityMin
-				+ bedFilePath;
+				+ bedFilePath + " -v " + outputVCF.getAbsolutePath();
 		executeCommand(command);
 
 	}
