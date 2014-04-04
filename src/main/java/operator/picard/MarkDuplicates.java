@@ -41,7 +41,7 @@ public class MarkDuplicates extends PipedCommandOp {
 		}
 		String command = "java -jar -Xmx16G " + picardDir + "/MarkDuplicates.jar REMOVE_DUPLICATES=" + rmDup 
 				+ " I=" + inputBAM.getAbsolutePath() + " METRICS_FILE=$(basename " + inputBAM.getAbsolutePath() +
-				" .bam).dupLog O=$(basename " + inputBAM.getAbsolutePath() + " .bam)" + dupStat + ".bam";
+				" .bam).dupLog O=$(basename " + inputBAM.getAbsolutePath() + " .bam)" + dupStat + ".bam" + " ASSUME_SORTED=true";
 		return(command);
 
 	}
