@@ -28,7 +28,10 @@ public class TestOperators {
 	public void testPipelineParse() {
 		
 		File testInputFile = new File("src/test/java/core/inputFiles/simpleInput.xml");
+		File propertiesFile = new File("src/test/java/core/inputFiles/testProperties.xml");
+		
 		Pipeline ppl = new Pipeline(testInputFile);
+		ppl.setPropertiesPath(propertiesFile.getAbsolutePath());
 		try {
 			ppl.initializePipeline();
 		} catch (Exception ex) {
@@ -40,6 +43,7 @@ public class TestOperators {
 		
 		try {
 			ppl = new Pipeline(emptyInputFile);
+			ppl.setPropertiesPath(propertiesFile.getAbsolutePath());
 			ppl.initializePipeline();
 		} catch (Exception ex) {
 			ex.printStackTrace();
@@ -50,6 +54,7 @@ public class TestOperators {
 		File brokenInputFile = new File("src/test/java/core/inputFiles/brokenInput.xml");
 		try {
 			ppl = new Pipeline(brokenInputFile);
+			ppl.setPropertiesPath(propertiesFile.getAbsolutePath());
 			ppl.initializePipeline();
 			Assert.assertTrue(false);
 		} catch (Exception ex) {
@@ -59,6 +64,7 @@ public class TestOperators {
 		brokenInputFile = new File("src/test/java/core/inputFiles/brokenInput2.xml");
 		try {
 			ppl = new Pipeline(brokenInputFile);
+			ppl.setPropertiesPath(propertiesFile.getAbsolutePath());
 			ppl.initializePipeline();
 			Assert.assertTrue(false);
 		} catch (Exception ex) {
@@ -68,6 +74,7 @@ public class TestOperators {
 		brokenInputFile = new File("src/test/java/core/inputFiles/brokenInput3.xml");
 		try {
 			ppl = new Pipeline(brokenInputFile);
+			ppl.setPropertiesPath(propertiesFile.getAbsolutePath());
 			ppl.initializePipeline();
 			Assert.assertTrue(false);
 		} catch (Exception ex) {
@@ -86,7 +93,9 @@ public class TestOperators {
 	public void testObjectAttributes() {
 		
 		File testInputFile = new File("src/test/java/core/inputFiles/testOperators1.xml");
+		File propertiesFile = new File("src/test/java/core/inputFiles/testProperties.xml");
 		Pipeline ppl = new Pipeline(testInputFile);
+		ppl.setPropertiesPath(propertiesFile.getAbsolutePath());
 		
 		try {
 			ppl.initializePipeline();
@@ -114,7 +123,10 @@ public class TestOperators {
 	public void testEventFiring() {
 		
 		File testInputFile = new File("src/test/java/core/inputFiles/threeOperators.xml");
+		File propertiesFile = new File("src/test/java/core/inputFiles/testProperties.xml");
+		
 		Pipeline ppl = new Pipeline(testInputFile);
+		ppl.setPropertiesPath(propertiesFile.getAbsolutePath());
 		CounterListener listener = new CounterListener();
 		
 		try {
@@ -130,7 +142,6 @@ public class TestOperators {
 		Assert.assertTrue(listener.completed == 3);
 		Assert.assertTrue(listener.started == 3);
 		Assert.assertTrue(listener.finished);
-		
 	}
 
 	
