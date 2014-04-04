@@ -2,4 +2,6 @@
 <!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
 <properties>
 	<entry key="propKey">value</entry>
+	<entry key="key2">value2</entry>
+	<entry key="key3">value3</entry>
 </properties>
