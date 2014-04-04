@@ -1,5 +1,6 @@
 package operator.picard;
 
+import operator.CommandOperator;
 import operator.OperationFailedException;
 import operator.PipedCommandOp;
 
@@ -14,7 +15,7 @@ import buffer.BAMFile;
 * David Nix's Translocation Pipeline uses Picardtools' MarkDuplicates with the option to remove them.
 * @author daniel
 */
-public class MarkDuplicates extends PipedCommandOp {
+public class MarkDuplicates extends CommandOperator {
 	
 	public static final String PICARD_REMOVE_DUPLICATES = "picard.remove.duplicates";
 	protected String defaultPicardDir = "~/picard-tools-1.55/";
@@ -24,7 +25,7 @@ public class MarkDuplicates extends PipedCommandOp {
 
 	protected String getCommand() throws OperationFailedException {
 		FileBuffer inputBAM = this.getInputBufferForClass(BAMFile.class);
-		
+		System.out.println(inputBAM.getAbsolutePath());
 		Object path = getPipelineProperty(PipelineXMLConstants.PICARD_PATH);
 		if (path != null)
 			picardDir = path.toString();
@@ -41,7 +42,8 @@ public class MarkDuplicates extends PipedCommandOp {
 		}
 		String command = "java -jar -Xmx16G " + picardDir + "/MarkDuplicates.jar REMOVE_DUPLICATES=" + rmDup 
 				+ " I=" + inputBAM.getAbsolutePath() + " METRICS_FILE=$(basename " + inputBAM.getAbsolutePath() +
-				" .bam).dupLog O=$(basename " + inputBAM.getAbsolutePath() + " .bam)" + dupStat + ".bam" + " ASSUME_SORTED=true";
+				" .bam).dupLog O=$(basename " + inputBAM.getAbsolutePath() + " .bam)." + dupStat + ".bam" + " ASSUME_SORTED=true";
+		System.out.println(command);
 		return(command);
 
 	}
