@@ -276,7 +276,7 @@ public class MultiAlignAndBAM extends PipedCommandOp {
 		
 		logger.info("All bwa aln steps have completed, now creating SAM files");
 		if (sampeThreads > 1) {
-			threadPool = (ThreadPoolExecutor) Executors.newFixedThreadPool( getPreferredThreadCount()/ sampeThreads );
+			threadPool = (ThreadPoolExecutor) Executors.newFixedThreadPool( Math.max(1, getPreferredThreadCount()/ sampeThreads) );
 		}
 		else {
 			threadPool = (ThreadPoolExecutor) Executors.newFixedThreadPool( getPreferredThreadCount() );
