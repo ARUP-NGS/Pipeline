@@ -5,8 +5,6 @@ import java.util.List;
 import buffer.variant.VariantRec;
 
 public class AnnotatedVarsJsonConverter {
-
-	@SuppressWarnings("unchecked")
 	
 	//If set, all variants will 
 	private List<String> ensureKeys = null;

@@ -2,7 +2,7 @@ package core;
 
 import java.io.File;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 import operator.OperationFailedException;
 import operator.Operator;
 
