@@ -38,6 +38,7 @@ public class FreeBayes extends IOOperator {
 	public static final String MIN_BASE_SCORE="min.base.score";
 	public static final String READ_MISMATCH_LIMIT="read.mismatch.limit";
 	public static final String MISMATCH_QUALITY_MIN="mismatch.quality.min";
+	public static final String EXTRA_OPTIONS="FB.options";
 	
 	String freeBayesPath = null;
 	String minMapScore = "30"; //Defaults to more stringent options because I felt like it, no good reason.
@@ -45,6 +46,7 @@ public class FreeBayes extends IOOperator {
 	String readMismatchLimit = "0";//Ibid.
 	String mismatchQualityMin = "10"; //Default quality for FreeBayes. I imagine it could be pretty useful, so I'm writing it in.
 	String bedFilePath = "";
+	String extraOptions = "";
 	public void performOperation() throws OperationFailedException {
 		
 		ReferenceFile refBuf = (ReferenceFile) this.getInputBufferForClass(ReferenceFile.class);
@@ -66,7 +68,7 @@ public class FreeBayes extends IOOperator {
 				+ " --fasta-reference " + refBuf.getAbsolutePath()
 				+ inputBAM
 				+  " -m " + minMapScore + " -q " + minBaseScore + " -U " + readMismatchLimit + " -Q " + mismatchQualityMin
-				+ bedFilePath + " -v " + baseName + ".allvariants.vcf";
+				+ bedFilePath + " -v " + baseName + ".allvariants.vcf " + extraOptions;
 		executeCommand(command);
 
 	}
@@ -119,6 +121,14 @@ public class FreeBayes extends IOOperator {
 			this.mismatchQualityMin = misQualAttr;
 		}
 		
+		String extraAttr = this.getAttribute(EXTRA_OPTIONS);
+		if(extraAttr == null) {
+			extraAttr = this.getPipelineProperty(EXTRA_OPTIONS);
 		}
-	
+		
+		if(EXTRA_OPTIONS != null) {
+					this.extraOptions = extraAttr;
+		}
+
+	}
 }
