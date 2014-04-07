@@ -1,6 +1,10 @@
 package operator.samtools;
 
 import operator.PipedCommandOp;
+
+import org.apache.log4j.Logger;
+
+import pipeline.Pipeline;
 import pipeline.PipelineXMLConstants;
 
 /**
@@ -13,6 +17,9 @@ public class SamtoolsRemoveDuplicates extends PipedCommandOp {
 	public static final String PATH = "path";
 	protected String defaultSamtoolsPath = "samtools";
 	protected String samtoolsPath = defaultSamtoolsPath;
+	public static final String TREAT_PAIRS_AS_SINGLE = "treat.pairs.as.single";
+
+	protected boolean treatPairsAsSingle = true;
 	
 	@Override
 	protected String getCommand() {
@@ -25,15 +32,24 @@ public class SamtoolsRemoveDuplicates extends PipedCommandOp {
 		if (samPath != null) {
 			samtoolsPath = samPath;
 		}
+	
+		
+		String treatPairsAsSingleAttr = this.getAttribute(TREAT_PAIRS_AS_SINGLE);
+		if (treatPairsAsSingleAttr != null) {
+			Boolean treatAsSingle = Boolean.parseBoolean(treatPairsAsSingleAttr);
+			treatPairsAsSingle = treatAsSingle;
+			Logger.getLogger(Pipeline.primaryLoggerName).info("Treating pairs as single : " + treatPairsAsSingle);
+		}
 		
 		String inputPath = inputBuffers.get(0).getAbsolutePath();
 		String outputPath = outputBuffers.get(0).getAbsolutePath();
 		
-		String fileIsSam = "";
-		if (inputPath.endsWith("sam"))
-			fileIsSam = " -S ";
+		String pairs = "";
+		if (treatPairsAsSingle) {
+			pairs = " -S ";
+		}
 		
-		String command = samtoolsPath + " rmdup " + fileIsSam + inputPath + " " + outputPath;
+		String command = samtoolsPath + " rmdup " + pairs + inputPath + " " + outputPath;
 		return command;
 	}
 

@@ -21,9 +21,9 @@ public class VariantRec {
 	String ref;
 	String alt;
 	Double qual;
-	boolean isHetero;
-	private Map<String, Double> props = new HashMap<String, Double>();
-	private Map<String, String> annotations = new HashMap<String, String>();
+	protected boolean isHetero;
+	protected Map<String, Double> props = new HashMap<String, Double>();
+	protected Map<String, String> annotations = new HashMap<String, String>();
 	Gene gene;
 	
 	public VariantRec(String contig, 
@@ -62,6 +62,10 @@ public class VariantRec {
 	
 	public synchronized void addAnnotation(String key, String anno) {
 		annotations.put(key, anno);
+	}
+	
+	public void setQuality(Double quality) {
+		this.qual = quality;
 	}
 	
 	public String getRef() {
@@ -468,12 +472,39 @@ public class VariantRec {
 		return new PropertyComparator(key);
 	}
 	
+	public static IntervalComparator getIntervalComparator() {
+		return new IntervalComparator();
+	}
 	
 	public static class PositionComparator implements Comparator<VariantRec> {
 
 		@Override
 		public int compare(VariantRec o1, VariantRec o2) {
 			if (o1 == o2 || (o1.equals(o2))) {
+				return 0;
+			}
+
+			return o1.start - o2.start;
+		}
+	}
+	
+	public static class IntervalComparator implements Comparator<VariantRec> {
+
+		@Override
+		public int compare(VariantRec o1, VariantRec o2) {
+			VariantRec first;
+			VariantRec second;
+			if (o1.getStart() <= o2.getStart()) {
+				first = o1;
+				second = o2;
+			}
+			else {
+				first = o2;
+				second = o1;
+			}
+			
+			boolean disjoint = first.getStart() + first.getAlt().length() -1 < second.getStart();
+			if (! disjoint) {
 				return 0;
 			}
 

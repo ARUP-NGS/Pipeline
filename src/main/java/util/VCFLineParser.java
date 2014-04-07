@@ -325,9 +325,6 @@ public class VCFLineParser extends PipelineObject implements VariantLineReader  
 		}
 		
 
-
-
-
 		
 
 		/**

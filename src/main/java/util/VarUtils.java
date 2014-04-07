@@ -560,8 +560,6 @@ public class VarUtils {
 	
 	public static void main(String[] args) {
 		
-		//args = new String[]{"subtract", "/media/DATA/whitney_genome/52Kid2/contig_22.realigned.sorted.recal.vcf", "/media/DATA/whitney_genome/52Kid3/contig_22.realigned.sorted.recal.vcf"};
-		
 		if (args.length==0) {
 			emitUsage();
 			return;
@@ -2097,7 +2095,12 @@ public class VarUtils {
 				for(String contig : trueVars.getContigs()) {
 					for(VariantRec tVar : trueVars.getVariantsForContig(contig)) {
 						if (bedFile.contains(contig, tVar.getStart())) {
-							VariantRec qVar = qVars.findRecordNoWarn(contig, tVar.getStart());
+							
+							//Search for EXACT matches
+							//VariantRec qVar = qVars.findRecordNoWarn(contig, tVar.getStart());
+							//More permissive: search for variants that overlap true variant
+							VariantRec qVar = qVars.findOverlappingRecord(tVar);
+							
 							if (qVar == null) {
 								falseNegatives++;
 								continue;
@@ -2128,7 +2131,8 @@ public class VarUtils {
 						}
 						if (qual >= qCutoff) {
 							if (bedFile.contains(contig, qVar.getStart())) {
-								if (! trueVars.contains(contig, qVar.getStart()))
+								VariantRec  trueOverlapping = trueVars.findOverlappingRecord(qVar);
+								if (trueOverlapping == null)
 									falsePositives++;
 							}
 						}

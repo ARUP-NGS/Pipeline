@@ -31,8 +31,10 @@ public class VariantUploader extends Operator {
 	
 	@Override
 	public void performOperation() throws OperationFailedException {
-		if(variants == null)
+	
+		if(variants == null) {
 			throw new OperationFailedException("No variant pool specified", this);
+		}
 		
 		List<VariantRec> vars = variants.toList();
 		JSONObject json = new JSONObject();

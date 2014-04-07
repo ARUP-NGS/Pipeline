@@ -1,0 +1,8 @@
+<Pipeline>
+
+<Test1 class="buffer.TextBuffer" filename="somefilename" />
+
+<Test1 class="buffer.TextBuffer"  filename="somefilename" />
+
+
+</Pipeline>

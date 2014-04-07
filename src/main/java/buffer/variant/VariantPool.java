@@ -333,6 +333,28 @@ public class VariantPool extends Operator  {
 		return varList.get(index);		
 	}
 	
+	/**
+	 * Find any variants that overlap in any way the given record
+	 * @param contig
+	 * @param pos
+	 * @return
+	 */
+	public VariantRec findOverlappingRecord(VariantRec var) {
+		List<VariantRec> varList = vars.get(var.getContig());
+		if (varList == null) {
+			//System.err.println("Contig " + contig + " not found");
+			return null;
+		}
+		
+		
+		int index = Collections.binarySearch(varList, var, VariantRec.getIntervalComparator());
+		if (index < 0) {
+			return null;
+		}
+		
+		return varList.get(index);		
+	}
+	
 	
 	
 	/**
@@ -365,6 +387,22 @@ public class VariantPool extends Operator  {
 	}
 	
 	/**
+	 * Utility method to convert a list of VariantStubs to full VariantRecs
+	 * @param vars
+	 */
+	private static List<VariantRec> convertToFullRecord(List<VariantRec> vars) {
+		List<VariantRec> fullVars = new ArrayList<VariantRec>(vars.size());
+		for(VariantRec v : vars) {
+			VariantRec fv = v;
+			if (fv instanceof VariantStub) {
+				fv = ((VariantStub)fv).toFullRecord();
+			}
+			fullVars.add(fv);
+		}
+		return fullVars;
+	}
+	
+	/**
 	 * Add all variants from source to this pool
 	 * @param source Variants to add to this pool
 	 * @param allowDups If duplicate variants should be added
@@ -372,7 +410,7 @@ public class VariantPool extends Operator  {
 	public void addAll(VariantPool source, boolean allowDups) {
 		for(String contig : source.getContigs()) {
 			List<VariantRec> curVars = this.getVariantsForContig(contig);
-			List<VariantRec> sourceVars = source.getVariantsForContig(contig);
+			List<VariantRec> sourceVars = convertToFullRecord( source.getVariantsForContig(contig));
 			
 			if (curVars == null || curVars.size() == 0) {
 				List<VariantRec> newContigVars = new ArrayList<VariantRec>();

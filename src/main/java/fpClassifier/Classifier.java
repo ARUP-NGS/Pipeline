@@ -3,21 +3,15 @@ package fpClassifier;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
+import math.ContinuousDistribution;
+import math.Histogram;
+import math.UnitDistribution;
 import buffer.CSVFile;
 import buffer.variant.VariantFilter;
 import buffer.variant.VariantPool;
 import buffer.variant.VariantRec;
-
-import cern.jet.random.Binomial;
-import cern.jet.random.engine.MersenneTwister;
-import cern.jet.random.engine.RandomEngine;
-import math.ContinuousDistribution;
-import math.Histogram;
-import math.UnitDistribution;
 
 public class Classifier {
 

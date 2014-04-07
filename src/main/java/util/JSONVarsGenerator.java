@@ -72,7 +72,7 @@ public class JSONVarsGenerator {
 
 	public static String createJSONVariants(CSVFile inputVars, File destDir) throws JSONException, IOException {
 		String destFilename = inputVars.getFilename().replace(".csv", ".json.gz");
-		destFilename = inputVars.getFilename().replace(".xls", ".json.gz"); // if it wasn't .csv, try .xls
+		destFilename = destFilename.replace(".xls", ".json.gz");
 		File dest = new File(destDir.getAbsolutePath() + "/" + destFilename);
 		
 		VariantLineReader varReader = new CSVLineReader(inputVars.getFile());
@@ -82,47 +82,7 @@ public class JSONVarsGenerator {
 		return destFilename;
 	}
 	
-//	public static String createJSONVariants(CSVFile inputVars, File destDir) throws JSONException, IOException {
-//		JSONObject jsonResponse = new JSONObject();
-//		String destFilename = inputVars.getFilename().replace(".csv", ".json.gz");
-//		File dest = new File(destDir.getAbsolutePath() + "/" + destFilename);
-//		
-//		VariantLineReader varReader = new CSVLineReader(inputVars.getFile());
-//		AnnotatedVarsJsonConverter converter = new AnnotatedVarsJsonConverter();
-//
-//		JSONArray jsonVarList = new JSONArray();
-//		
-//		//Trim, etc
-//		List<String> map = new ArrayList<String>();
-//		String[] headerToks =  varReader.getHeader().trim().replace("#",  "").split("\t");
-//		for(int i=0; i<headerToks.length; i++) {
-//			map.add(headerToks[i].trim().replace(" ", ""));
-//		}
-//		converter.setKeys(map);
-//		
-//		//Danger: could create huge json object if variant list is big
-//		VariantRec var = varReader.toVariantRec();
-//		while(var != null) {
-//			jsonVarList.put( converter.toJSON(var) );
-//			varReader.advanceLine();
-//			var = varReader.toVariantRec();
-//		}
-//		
-//		jsonResponse.put("variant.list", jsonVarList);
-//
-//		//Get the json string, then compress it to a byte array
-//		String str = jsonResponse.toString();			
-//		byte[] bytes = compressGZIP(str);
-//
-//		if (dest.exists()) {
-//			throw new IOException("Destination file already exists");
-//		}
-//
-//		BufferedOutputStream writer = new BufferedOutputStream(new FileOutputStream(dest));
-//		writer.write(bytes);
-//		writer.close();
-//		return destFilename;
-//	}
+
 	
 	/** 
 	 * GZIP compress the given string to a byte array
