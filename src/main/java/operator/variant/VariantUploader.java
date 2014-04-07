@@ -25,8 +25,8 @@ public class VariantUploader extends Operator {
 	public static final String VARIANT_UPLOAD_URL = "variant.upload.url";
 	protected VariantPool variants = null;
 	
-//	protected String uploadURL = "http://ngs-webapp-dev/Variant/UploadVariants";
-	protected String uploadURL = "http://localhost:9172/Variant/UploadVariants";
+	protected String uploadURL = "http://ngs-webapp-dev/Variant/UploadVariants";
+//	protected String uploadURL = "http://localhost:9172/Variant/UploadVariants";
 	protected final String success = "\"Success\"";
 	
 	@Override
@@ -37,7 +37,9 @@ public class VariantUploader extends Operator {
 		List<VariantRec> vars = variants.toList();
 		JSONObject json = new JSONObject();
 		try {
-			json.put("sample.id", Integer.parseInt(properties.get("sampleID")));
+			String sampleId = properties.get("sampleID");
+			Logger.getLogger(Pipeline.primaryLoggerName).info("Uploading variants for sample " + sampleId);
+			json.put("sample.id", Integer.parseInt(sampleId));
 		
 			JSONArray list = new JSONArray();
 			for(VariantRec r: vars){
@@ -66,10 +68,11 @@ public class VariantUploader extends Operator {
 				//	throw new OperationFailedException("Failed to post variant list to .NET service: " + result, this);
 				Logger.getLogger(Pipeline.primaryLoggerName).warn("Error uploading variants : " + result);
 			}
+		} catch (NumberFormatException e){
+			throw new OperationFailedException("Failed to upload a JSON list of variants: " + e.getMessage(), this);
 		} catch (JSONException e) {
 			throw new OperationFailedException("Failed to upload a JSON list of variants: " + e.getMessage(), this);
-		}
-		catch (IOException e) {
+		} catch (IOException e) {
 			throw new OperationFailedException("Failed to upload a JSON list of variants: " + e.getMessage(), this);
 		}
 		

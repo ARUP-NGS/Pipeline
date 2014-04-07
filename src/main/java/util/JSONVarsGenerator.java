@@ -72,6 +72,7 @@ public class JSONVarsGenerator {
 
 	public static String createJSONVariants(CSVFile inputVars, File destDir) throws JSONException, IOException {
 		String destFilename = inputVars.getFilename().replace(".csv", ".json.gz");
+		destFilename = inputVars.getFilename().replace(".xls", ".json.gz"); // if it wasn't .csv, try .xls
 		File dest = new File(destDir.getAbsolutePath() + "/" + destFilename);
 		
 		VariantLineReader varReader = new CSVLineReader(inputVars.getFile());
