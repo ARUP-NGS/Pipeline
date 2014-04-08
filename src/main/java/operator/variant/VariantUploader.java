@@ -1,6 +1,7 @@
 package operator.variant;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import json.JSONArray;
@@ -25,23 +26,41 @@ public class VariantUploader extends Operator {
 	public static final String VARIANT_UPLOAD_URL = "variant.upload.url";
 	protected VariantPool variants = null;
 	
-	protected String uploadURL = "http://ngs-webapp-dev/Variant/UploadVariants";
+	protected String uploadURL = null;
+//	protected String uploadURL = "http://ngs-webapp-dev/Variant/UploadVariants";
 //	protected String uploadURL = "http://localhost:9172/Variant/UploadVariants";
 	protected final String success = "\"Success\"";
 	
 	@Override
 	public void performOperation() throws OperationFailedException {
+		Logger logger = Logger.getLogger(Pipeline.primaryLoggerName);
 	
 		if(variants == null) {
 			throw new OperationFailedException("No variant pool specified", this);
 		}
 		
-		List<VariantRec> vars = variants.toList();
+		logger.info("Here1");
+		logger.info("variants.size(): " + variants.size());
+		logger.info("Here2");
+        List<VariantRec> vars;
+		if(variants.size() == 0){
+			vars = new ArrayList<VariantRec>();
+		}
+		else{
+            vars = variants.toList();
+		}
+		logger.info("Here3");
 		JSONObject json = new JSONObject();
+		String sampleId = "";
 		try {
-			String sampleId = properties.get("sampleID");
-			Logger.getLogger(Pipeline.primaryLoggerName).info("Uploading variants for sample " + sampleId);
+            logger.info("Here4");
+			sampleId = properties.get("sampleID");
+            logger.info("Here5");
+			logger.info("Uploading variants for sample " + sampleId);
+			System.out.println("Uploading variants for sample " + sampleId);
+			System.err.println("Uploading variants for sample " + sampleId);
 			json.put("sample.id", Integer.parseInt(sampleId));
+            logger.info("Here6");
 		
 			JSONArray list = new JSONArray();
 			for(VariantRec r: vars){
@@ -63,19 +82,19 @@ public class VariantUploader extends Operator {
 				
 			json.put("variant.list", list);
 			String result = HttpUtils.HttpPostJSON(uploadURL, json);
-			Logger.getLogger(Pipeline.primaryLoggerName).info("Uploading " + vars.size() + " variants to " + uploadURL);
+			logger.info("Uploading " + vars.size() + " variants to " + uploadURL);
 			if(!result.equals(success)){
 				//Not clear if we should fail here or what.. should we continue with future operations even if we 
 				//can't communicate with .NET?
 				//	throw new OperationFailedException("Failed to post variant list to .NET service: " + result, this);
-				Logger.getLogger(Pipeline.primaryLoggerName).warn("Error uploading variants : " + result);
+				logger.warn("Error uploading variants : " + result);
 			}
 		} catch (NumberFormatException e){
-			throw new OperationFailedException("Failed to upload a JSON list of variants: " + e.getMessage(), this);
+			throw new OperationFailedException("Failed to upload a JSON list of variants (NumberFormatException) (SampleID=" + sampleId + ": " + e.getMessage(), this);
 		} catch (JSONException e) {
-			throw new OperationFailedException("Failed to upload a JSON list of variants: " + e.getMessage(), this);
+			throw new OperationFailedException("Failed to upload a JSON list of variants (JSONException): " + e.getMessage(), this);
 		} catch (IOException e) {
-			throw new OperationFailedException("Failed to upload a JSON list of variants: " + e.getMessage(), this);
+			throw new OperationFailedException("Failed to upload a JSON list of variants (IOException): " + e.getMessage(), this);
 		}
 		
 		
@@ -89,7 +108,7 @@ public class VariantUploader extends Operator {
 			uploadURL = this.getAttribute(VARIANT_UPLOAD_URL);
 		}
 		if (uploadURL == null) {
-			throw new IllegalArgumentException("VariantUploader required variant.upload.url to be specified");
+			throw new IllegalArgumentException("VariantUploader requires variant.upload.url to be specified");
 		}
 		
 		for(int i=0; i<children.getLength(); i++) {
