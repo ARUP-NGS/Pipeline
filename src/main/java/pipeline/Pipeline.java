@@ -586,11 +586,19 @@ public class Pipeline {
 		this.loader = loader;
 	}
 	
+	private static void printVersion() {
+		System.out.println("Pipeline version: " + PIPELINE_VERSION);
+		System.out.println("Compile date: " + new Date(MetaInfo.getManifestModifiedTime()));
+	}
+	
 	public static void main(String[] args) {
 		
 		ArgumentParser argParser = new ArgumentParser();
 		argParser.parse(args);
 		
+		if (args[0].equals("-v") || args[0].equals("-version")) {
+			printVersion();
+		}
 		
 		String check = argParser.getStringOp("check");
 		boolean checkAndExit = false;
@@ -662,6 +670,11 @@ public class Pipeline {
 	
 	
 	
+
+
+
+
+
 	private List<PipelineListener> listeners = new ArrayList<PipelineListener>();
 	private Operator currentOperator = null;
 	private boolean initialized = false;

@@ -31,12 +31,12 @@ public class MetaInfo {
 	 */
 	public static long getManifestModifiedTime() {
 		File jarFile = new File(Pipeline.class.getProtectionDomain().getCodeSource().getLocation().getPath());
-		System.out.println("file path: " + jarFile.getAbsolutePath());
+		//System.out.println("file path: " + jarFile.getAbsolutePath());
 		
 		URL jarURL;
 		try {
 			jarURL = new URL("jar:file:" + jarFile.getAbsolutePath() + "!/");
-			System.out.println("Jar url: " + jarURL);
+			//System.out.println("Jar url: " + jarURL);
 			JarURLConnection jarConnection = (JarURLConnection)jarURL.openConnection();
 			long modTime = jarConnection.getJarFile().getEntry("META-INF/MANIFEST.MF").getTime();
 			return modTime;

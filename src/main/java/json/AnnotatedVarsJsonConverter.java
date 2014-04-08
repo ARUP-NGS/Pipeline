@@ -49,6 +49,15 @@ public class AnnotatedVarsJsonConverter {
 		varObj.put("quality", var.getQuality());
 		varObj.put("ref", var.getRef());
 		varObj.put("alt", var.getAlt());
+		String zyg = "";
+		if (var.isHetero()) {
+			zyg = "het";
+		}
+		else {
+			zyg = "hom";
+		}
+		varObj.put("zygosity", zyg);
+		
 
 		for(String key : ensureKeys) {
 			if (! varObj.has(key)) {
