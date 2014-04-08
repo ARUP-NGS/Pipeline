@@ -3,6 +3,7 @@ package operator.variant;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 import json.JSONArray;
 import json.JSONException;
@@ -10,7 +11,6 @@ import json.JSONObject;
 import operator.OperationFailedException;
 import operator.Operator;
 
-import org.apache.log4j.Logger;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -87,7 +87,7 @@ public class VariantUploader extends Operator {
 				//Not clear if we should fail here or what.. should we continue with future operations even if we 
 				//can't communicate with .NET?
 				//	throw new OperationFailedException("Failed to post variant list to .NET service: " + result, this);
-				logger.warn("Error uploading variants : " + result);
+				logger.warning("Error uploading variants : " + result);
 			}
 		} catch (NumberFormatException e){
 			throw new OperationFailedException("Failed to upload a JSON list of variants (NumberFormatException) (SampleID=" + sampleId + ": " + e.getMessage(), this);
