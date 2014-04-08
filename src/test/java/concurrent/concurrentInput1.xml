@@ -1,0 +1,36 @@
+<Pipeline>
+
+<Test1 class="buffer.TextBuffer" filename="somefilename" />
+
+<Parallelize class="operator.ParallelOperator">
+
+<Test2 class="operator.test.DoNothingOperator">
+   <Test1 />
+</Test2>
+
+
+<Test5 class="operator.test.EchoOperator">
+   Hello everyone!
+</Test5>
+
+<Test3 class="operator.test.WaitOperator" seconds="1">
+   <Test1 />
+</Test3>
+
+<Test6 class="operator.test.DoNothingOperator">
+   <Test1 />
+</Test6>
+
+<Test7 class="operator.test.WaitOperator" seconds="2">
+   <Test1 />
+</Test7>
+
+
+
+<Test4 class="operator.test.EchoOperator">
+   Hello everyone!
+</Test4>
+
+</Parallelize>
+
+</Pipeline>

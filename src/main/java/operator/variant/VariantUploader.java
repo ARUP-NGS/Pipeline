@@ -24,12 +24,15 @@ import buffer.variant.VariantRec;
 public class VariantUploader extends Operator {
 
 	public static final String VARIANT_UPLOAD_URL = "variant.upload.url";
+	public static final String SAMPLEID = "sampleID";
 	protected VariantPool variants = null;
 	
 	protected String uploadURL = null;
 //	protected String uploadURL = "http://ngs-webapp-dev/Variant/UploadVariants";
 //	protected String uploadURL = "http://localhost:9172/Variant/UploadVariants";
 	protected final String success = "\"Success\"";
+	protected String sampleId = null;
+	
 	
 	@Override
 	public void performOperation() throws OperationFailedException {
@@ -54,7 +57,7 @@ public class VariantUploader extends Operator {
 		String sampleId = "";
 		try {
             logger.info("Here4");
-			sampleId = properties.get("sampleID");
+			
             logger.info("Here5");
 			logger.info("Uploading variants for sample " + sampleId);
 			System.out.println("Uploading variants for sample " + sampleId);
@@ -109,6 +112,11 @@ public class VariantUploader extends Operator {
 		}
 		if (uploadURL == null) {
 			throw new IllegalArgumentException("VariantUploader requires variant.upload.url to be specified");
+		}
+		
+		sampleId = this.getAttribute(SAMPLEID);
+		if (sampleId == null || sampleId.length() == 0) {
+			throw new IllegalArgumentException("VariantUploader requires the sampleID to be specified");
 		}
 		
 		for(int i=0; i<children.getLength(); i++) {
