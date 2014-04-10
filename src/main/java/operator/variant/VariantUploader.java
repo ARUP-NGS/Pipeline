@@ -42,9 +42,7 @@ public class VariantUploader extends Operator {
 			throw new OperationFailedException("No variant pool specified", this);
 		}
 		
-		logger.info("Here1");
 		logger.info("variants.size(): " + variants.size());
-		logger.info("Here2");
         List<VariantRec> vars;
 		if(variants.size() == 0){
 			vars = new ArrayList<VariantRec>();
@@ -52,18 +50,12 @@ public class VariantUploader extends Operator {
 		else{
             vars = variants.toList();
 		}
-		logger.info("Here3");
 		JSONObject json = new JSONObject();
-		String sampleId = "";
-		try {
-            logger.info("Here4");
-			
-            logger.info("Here5");
+		try {        
 			logger.info("Uploading variants for sample " + sampleId);
 			System.out.println("Uploading variants for sample " + sampleId);
 			System.err.println("Uploading variants for sample " + sampleId);
 			json.put("sample.id", Integer.parseInt(sampleId));
-            logger.info("Here6");
 		
 			JSONArray list = new JSONArray();
 			for(VariantRec r: vars){
