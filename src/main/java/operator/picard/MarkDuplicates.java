@@ -33,18 +33,10 @@ public class MarkDuplicates extends CommandOperator {
 		if (picardDir.endsWith("/")) {
 			picardDir = picardDir.substring(0, picardDir.length()-1);
 		}
-		
-		String dupStat="";
-		if(rmDup == "true") {
-			dupStat = "DupFree";
-		}
-		else {
-			dupStat = "DupMarked";
-		}
-		
+				
 		String command = "java -jar -Xmx16G " + picardDir + "/MarkDuplicates.jar REMOVE_DUPLICATES=" + rmDup 
 				+ " I=" + inputBAM.getAbsolutePath() + " METRICS_FILE=" + (inputBAM.getAbsolutePath()).substring(0, (inputBAM.getAbsolutePath()).lastIndexOf('.')) +
-				".dupLog O="+ (outputBAM.getAbsolutePath()).substring(0, (inputBAM.getAbsolutePath()).lastIndexOf('.')) + "." + dupStat + ".bam" + " ASSUME_SORTED=true";
+				".dupLog O="+ (outputBAM.getAbsolutePath()).substring(0, (inputBAM.getAbsolutePath()).lastIndexOf('.')) + ".bam" + " ASSUME_SORTED=true";
 		
 		return(command);
 
