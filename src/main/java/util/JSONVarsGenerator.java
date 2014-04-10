@@ -61,9 +61,9 @@ public class JSONVarsGenerator {
 		String str = jsonResponse.toString();			
 		byte[] bytes = compressGZIP(str);
 
-		if (dest.exists()) {
-			throw new IOException("Destination file already exists");
-		}
+//		if (dest.exists()) {
+//			throw new IOException("Destination file already exists");
+//		}
 
 		BufferedOutputStream writer = new BufferedOutputStream(new FileOutputStream(dest));
 		writer.write(bytes);
@@ -106,7 +106,14 @@ public class JSONVarsGenerator {
 		
 		DefaultManifestFactory manifestReader = new DefaultManifestFactory();
 		
-		for(int i=0; i<args.length; i++) {
+		boolean overwrite = false;
+		int start = 0;
+		if (args[0].equals("-f")) {
+			overwrite = true;
+			start = 1;
+		}
+		
+		for(int i=start; i<args.length; i++) {
 			File resultsDir = new File(args[i]);
 			if (! resultsDir.exists()) {
 				System.err.println("Results directory " + resultsDir.getAbsolutePath() + " does not exist, skipping it.");
@@ -116,7 +123,7 @@ public class JSONVarsGenerator {
 				SampleManifest manifest = manifestReader.readManifest(resultsDir.getAbsolutePath());
 				
 				String jsonVars = manifest.getProperty("json.vars");
-				if (jsonVars != null) {
+				if (jsonVars != null && (!overwrite)) {
 					System.err.println(resultsDir.getAbsolutePath() + " already has a json.vars file, not replacing it.");
 					continue;
 				}

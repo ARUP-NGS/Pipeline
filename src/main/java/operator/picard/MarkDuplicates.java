@@ -2,13 +2,12 @@ package operator.picard;
 
 import operator.CommandOperator;
 import operator.OperationFailedException;
-import operator.PipedCommandOp;
 
 import org.w3c.dom.NodeList;
 
 import pipeline.PipelineXMLConstants;
-import buffer.FileBuffer;
 import buffer.BAMFile;
+import buffer.FileBuffer;
 
 /*
 * This goes through a SAM file and marks duplicates (default) or removes them, making a processed SAM file, without harming the original.
@@ -25,7 +24,8 @@ public class MarkDuplicates extends CommandOperator {
 
 	protected String getCommand() throws OperationFailedException {
 		FileBuffer inputBAM = this.getInputBufferForClass(BAMFile.class);
-		System.out.println(inputBAM.getAbsolutePath());
+		FileBuffer outputBAM = this.getOutputBufferForClass(BAMFile.class);
+		
 		Object path = getPipelineProperty(PipelineXMLConstants.PICARD_PATH);
 		if (path != null)
 			picardDir = path.toString();
@@ -33,6 +33,7 @@ public class MarkDuplicates extends CommandOperator {
 		if (picardDir.endsWith("/")) {
 			picardDir = picardDir.substring(0, picardDir.length()-1);
 		}
+		
 		String dupStat="";
 		if(rmDup == "true") {
 			dupStat = "DupFree";
@@ -40,10 +41,11 @@ public class MarkDuplicates extends CommandOperator {
 		else {
 			dupStat = "DupMarked";
 		}
+		
 		String command = "java -jar -Xmx16G " + picardDir + "/MarkDuplicates.jar REMOVE_DUPLICATES=" + rmDup 
 				+ " I=" + inputBAM.getAbsolutePath() + " METRICS_FILE=" + (inputBAM.getAbsolutePath()).substring(0, (inputBAM.getAbsolutePath()).lastIndexOf('.')) +
-				".dupLog O="+ (inputBAM.getAbsolutePath()).substring(0, (inputBAM.getAbsolutePath()).lastIndexOf('.')) + "." + dupStat + ".bam" + " ASSUME_SORTED=true";
-		System.out.println(command);
+				".dupLog O="+ (outputBAM.getAbsolutePath()).substring(0, (inputBAM.getAbsolutePath()).lastIndexOf('.')) + "." + dupStat + ".bam" + " ASSUME_SORTED=true";
+		
 		return(command);
 
 	}

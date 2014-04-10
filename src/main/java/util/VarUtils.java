@@ -306,7 +306,7 @@ public class VarUtils {
 	private static VariantLineReader getReader(String filename) throws IOException {
 		VariantLineReader reader = null;
 		if (filename.endsWith("vcf")) {
-			reader = new VCFLineParser(new File(filename));
+			reader = new VCFLineParser(new File(filename), true);
 		}
 		if (filename.endsWith("csv")) {
 			reader = new CSVLineReader(new File(filename));
@@ -2391,20 +2391,16 @@ public class VarUtils {
 
 	private static void performExtract(String[] args) {
 		String prop = args[1];
-		VariantPool pool;
 		for(int i=2; i<args.length; i++) {
 			try {
-
-				pool = getPool(new File(args[i]));
-				for(String contig : pool.getContigs()) {
-					for(VariantRec var : pool.getVariantsForContig(contig)) {
-						String val = var.getPropertyOrAnnotation(prop);
-						if (var.isHetero())
-							System.out.println("1\t" + val);
-						else 
-							System.out.println("2\t" + val);
-					}
-				}
+				VariantLineReader reader = getReader(args[i]);
+				do {
+					VariantRec var = reader.toVariantRec();
+					String val = var.getPropertyOrAnnotation(prop);
+					System.out.println(val);
+				} while (reader.advanceLine());
+				
+				
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -2732,35 +2728,32 @@ public class VarUtils {
 
 	private static void performHistogram(String[] args) {
 		String prop = args[1];
-		LazyHistogram hist = new LazyHistogram(20);
-		VariantPool pool;
+		LazyHistogram hist = new LazyHistogram(50);
 		try {
 			for(int i=2; i<args.length; i++) {
-				pool = getPool(new File(args[i]));
-				for(String contig : pool.getContigs()) {
-					for(VariantRec var : pool.getVariantsForContig(contig)) {
-						String val = var.getPropertyOrAnnotation(prop);
-						
-						//Var.freq is special case
-						if (prop.equals("var.freq")) {
-							Double depth = var.getProperty(VariantRec.DEPTH);
-							Double altDepth = var.getProperty(VariantRec.VAR_DEPTH);
-							if (depth != null && altDepth != null) {
-								val = "" + altDepth / depth;
-							}
+				VariantLineReader reader = getReader(args[i]);
+				do {
+					VariantRec var = reader.toVariantRec();
+					String val = var.getPropertyOrAnnotation(prop);
+					//Var.freq is special case
+					if (prop.equals("var.freq")) {
+						Double depth = var.getProperty(VariantRec.DEPTH);
+						Double altDepth = var.getProperty(VariantRec.VAR_DEPTH);
+						if (depth != null && altDepth != null) {
+							val = "" + altDepth / depth;
 						}
-						if (val != null && (!val.equals("-"))) {
-							try {
-								Double x = Double.parseDouble(val);
-								hist.addValue(x);
-							}
-							catch (NumberFormatException nfe) {
-								System.err.println("ERROR: could not parse value from : " + val);
-							}
-						}
-
 					}
-				}
+					if (val != null && (!val.equals("-"))) {
+						try {
+							Double x = Double.parseDouble(val);
+							hist.addValue(x);
+						}
+						catch (NumberFormatException nfe) {
+							System.err.println("ERROR: could not parse value from : " + val);
+						}
+					}
+				} while(reader.advanceLine());
+				
 			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

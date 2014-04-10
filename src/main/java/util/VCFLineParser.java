@@ -49,7 +49,7 @@ public class VCFLineParser extends PipelineObject implements VariantLineReader  
 		
 		private String currentFormatStr = null;
 		
-		
+		private boolean parseAllInfoTokens = false; //If true, we create annotations / properties for every token in the info field
 		
 		public VCFLineParser() {
 			sourceFile = null;
@@ -83,10 +83,14 @@ public class VCFLineParser extends PipelineObject implements VariantLineReader  
 			primeForReading();
 		}
 		
-		
 		public VCFLineParser(File file) throws IOException {
+			this(file, false);
+		}
+		
+		public VCFLineParser(File file, boolean parseInfoToks) throws IOException {
 			setInputStream(new FileInputStream(file));
 			this.sourceFile = file;
+			this.parseAllInfoTokens = parseInfoToks;
 			primeForReading();
 		}
 
@@ -313,7 +317,9 @@ public class VCFLineParser extends PipelineObject implements VariantLineReader  
 					if (logFSScore != null)
 						rec.addProperty(VariantRec.LOGFS_SCORE, logFSScore);
 					
-					
+					if (parseAllInfoTokens) {
+						addAllInfoTokens(rec);
+					}
 				}
 				catch (Exception ex) {
 					System.err.println("ERROR: could not parse variant from line : " + currentLine + "\n Exception: " + ex.getCause() + " " + ex.getMessage());
@@ -326,6 +332,28 @@ public class VCFLineParser extends PipelineObject implements VariantLineReader  
 		
 
 		
+		/**
+		 * Add all info items as properties / annotations. This is likely to be kinda slow. 
+		 * @param rec
+		 */
+		private void addAllInfoTokens(VariantRec rec) {
+			String[] infoToks = lineToks[7].split(";");
+			for(int i=0; i<infoToks.length; i++) {
+				String[] bits = infoToks[i].split("=");
+				if (bits.length == 2) {
+					
+					try {
+						double val = Double.parseDouble(bits[1]);
+						rec.addProperty(bits[0], val);
+						continue;
+					}
+					catch (NumberFormatException ex) {
+						//no sweat
+					}
+					rec.addAnnotation(bits[0], bits[1]);
+				}
+			}
+		}
 
 		/**
 		 * Read one more line of input, returns false if line cannot be read
