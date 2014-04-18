@@ -50,9 +50,9 @@ public class FreeBayes extends IOOperator {
 	public void performOperation() throws OperationFailedException {
 		
 		ReferenceFile refBuf = (ReferenceFile) this.getInputBufferForClass(ReferenceFile.class);
+		FileBuffer outputVCF = this.getOutputBufferForClass(VCFFile.class);
 		List<FileBuffer> inputBuffers = this.getAllInputBuffersForClass(BAMFile.class);
 		FileBuffer inputBED = this.getInputBufferForClass(BEDFile.class);
-		String baseName = inputBuffers.get(0).getAbsolutePath().substring(0, inputBuffers.get(0).getAbsolutePath().lastIndexOf('.'));
 		Logger.getLogger(Pipeline.primaryLoggerName).info("Freebayes is looking for SNPs with reference " + refBuf.getFilename() + " in source BAM file of " + inputBuffers.get(0).getFilename() + "." );
 
 		if(inputBED != null) {
@@ -68,7 +68,7 @@ public class FreeBayes extends IOOperator {
 				+ " --fasta-reference " + refBuf.getAbsolutePath()
 				+ inputBAM
 				+  " -m " + minMapScore + " -q " + minBaseScore + " -U " + readMismatchLimit + " -Q " + mismatchQualityMin
-				+ bedFilePath + " -v " + baseName + ".allvariants.vcf " + extraOptions;
+				+ bedFilePath + " -v " + outputVCF.getAbsolutePath() + " " + extraOptions;
 		executeCommand(command);
 
 	}
