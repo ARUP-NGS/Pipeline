@@ -42,7 +42,6 @@ public class VariantUploader extends Operator {
 			throw new OperationFailedException("No variant pool specified", this);
 		}
 		
-		logger.info("variants.size(): " + variants.size());
         List<VariantRec> vars;
 		if(variants.size() == 0){
 			vars = new ArrayList<VariantRec>();
@@ -52,9 +51,7 @@ public class VariantUploader extends Operator {
 		}
 		JSONObject json = new JSONObject();
 		try {        
-			logger.info("Uploading variants for sample " + sampleId);
-			System.out.println("Uploading variants for sample " + sampleId);
-			System.err.println("Uploading variants for sample " + sampleId);
+			logger.info("Uploading " + variants.size() + " variants for sample " + sampleId);
 			json.put("sample.id", Integer.parseInt(sampleId));
 		
 			JSONArray list = new JSONArray();
@@ -98,9 +95,9 @@ public class VariantUploader extends Operator {
 	@Override
 	public void initialize(NodeList children) {
 		
-		uploadURL = this.getPipelineProperty(VARIANT_UPLOAD_URL);
+		uploadURL = this.getAttribute(VARIANT_UPLOAD_URL);
 		if (uploadURL == null) {
-			uploadURL = this.getAttribute(VARIANT_UPLOAD_URL);
+			uploadURL = this.getPipelineProperty(VARIANT_UPLOAD_URL);
 		}
 		if (uploadURL == null) {
 			throw new IllegalArgumentException("VariantUploader requires variant.upload.url to be specified");
