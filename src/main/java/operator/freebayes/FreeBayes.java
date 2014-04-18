@@ -3,21 +3,18 @@ package operator.freebayes;
 import java.io.File;
 import java.util.List;
 import java.util.logging.Logger;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 
-import buffer.BAMFile;
-import buffer.FileBuffer;
-import buffer.ReferenceFile;
-import buffer.BEDFile;
-import buffer.VCFFile;
 import operator.IOOperator;
 import operator.OperationFailedException;
 
 import org.w3c.dom.NodeList;
 
 import pipeline.Pipeline;
+import buffer.BAMFile;
+import buffer.BEDFile;
+import buffer.FileBuffer;
+import buffer.ReferenceFile;
+import buffer.VCFFile;
 
 /**
  * Uses Boston College's awesome FreeBayes
@@ -52,7 +49,7 @@ public class FreeBayes extends IOOperator {
 		ReferenceFile refBuf = (ReferenceFile) this.getInputBufferForClass(ReferenceFile.class);
 		List<FileBuffer> inputBuffers = this.getAllInputBuffersForClass(BAMFile.class);
 		FileBuffer inputBED = this.getInputBufferForClass(BEDFile.class);
-		String baseName = inputBuffers.get(0).getAbsolutePath().substring(0, inputBuffers.get(0).getAbsolutePath().lastIndexOf('.'));
+		String baseName = this.getOutputBufferForClass(VCFFile.class).getAbsolutePath();
 		Logger.getLogger(Pipeline.primaryLoggerName).info("Freebayes is looking for SNPs with reference " + refBuf.getFilename() + " in source BAM file of " + inputBuffers.get(0).getFilename() + "." );
 
 		if(inputBED != null) {
@@ -64,11 +61,15 @@ public class FreeBayes extends IOOperator {
 			inputBAM = " -b " + inputBuffers.get(0).getAbsolutePath();
 		}
 		
+		if (extraOptions == null || extraOptions.equals("null")) {
+			extraOptions = "";
+		}
+		
 		String command = freeBayesPath
 				+ " --fasta-reference " + refBuf.getAbsolutePath()
 				+ inputBAM
 				+  " -m " + minMapScore + " -q " + minBaseScore + " -U " + readMismatchLimit + " -Q " + mismatchQualityMin
-				+ bedFilePath + " -v " + baseName + ".allvariants.vcf " + extraOptions;
+				+ bedFilePath + " -v " + baseName + " " + extraOptions;
 		executeCommand(command);
 
 	}
@@ -127,7 +128,7 @@ public class FreeBayes extends IOOperator {
 		}
 		
 		if(EXTRA_OPTIONS != null) {
-					this.extraOptions = extraAttr;
+			this.extraOptions = extraAttr;
 		}
 
 	}

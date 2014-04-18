@@ -103,15 +103,16 @@ public class BamWindow {
 	 * Advance the current position by the given number of bases
 	 * @param bases
 	 */
-	public void advanceBy(int bases) {
+	public boolean advanceBy(int bases) {
 		int newTarget = currentPos + bases;
 		if (! hasMoreReadsInCurrentContig()) {
 			if (DEBUG)
 				System.out.println("No more reads in contig : " + currentContig);
-			return;
+			return false;
 		}
 		
 		advanceTo(currentContig, newTarget);
+		return true;
 	}
 	
 	public int windowSize() {
@@ -231,13 +232,9 @@ public class BamWindow {
 		recordIt = samReader.queryOverlapping(contig, 1, length);
 		
 		//Going to a new contig, clear current queue
-		
-		try {
-			nextRecord = recordIt.next();
-		}
-		catch (NoSuchElementException ex) {
-			nextRecord = null;
-		}
+		nextRecord = recordIt.hasNext() 
+				? recordIt.next()
+				: null;
 		
 		if (nextRecord != null)
 			currentContig = contig;
@@ -284,21 +281,16 @@ public class BamWindow {
 		records.push(new MappedRead(nextRecord));
 		
 		//Find next suitable record
-		try {
-			nextRecord = recordIt.next();
-		}
-		catch(NoSuchElementException ex) {
-			nextRecord = null;
-		}
+		nextRecord = recordIt.hasNext() 
+				? recordIt.next()
+				: null;
+		
 		
 		//Automagically skip unmapped reads and reads with unmapped mates
-		while(nextRecord != null && (nextRecord.getMappingQuality()==0 || nextRecord.getMateUnmappedFlag())) {
-			try {
-				nextRecord = recordIt.next();
-			}
-			catch (NoSuchElementException ex) {
-				nextRecord = null;
-			}
+		while(nextRecord != null && (nextRecord.getMappingQuality()==0)) {
+			nextRecord = recordIt.hasNext() 
+					? recordIt.next()
+					: null;
 		}
 	}
 
