@@ -37,6 +37,10 @@ public class DBNSFPAnnotator extends Annotator {
 		Logger.getLogger(Pipeline.primaryLoggerName).info("dbNSFP annotator annotated " + annotated + " of " + examined + " variants found");
 	}
 	
+	public void setDBNSFPPath(String path) {
+		reader = new DBNSFPReader(path);
+	}
+	
 	@Override
 	public void annotateVariant(VariantRec var) {
 		examined++;
