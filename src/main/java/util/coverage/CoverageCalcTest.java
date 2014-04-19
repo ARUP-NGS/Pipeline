@@ -73,6 +73,55 @@ public class CoverageCalcTest {
 		return overallDepths;
 	}
 	
+	public static double getMean(int[] depths) {
+		double tot = 0;
+		double sum = 0;
+		for(int i=0; i<depths.length; i++) {
+			sum += depths[i];
+			tot += i*depths[i];
+		}
+		
+		return tot / sum;
+	}
+	
+	public static double getMedian(int[] depths) {
+		double sum = 0;
+		for(int i=0; i<depths.length; i++) {
+			sum += depths[i];
+		}
+		
+		sum /= 2.0;
+		for(int i=0; i<depths.length; i++) {
+			sum -= depths[i];
+			if (sum <= 0) {
+				return i;
+			}
+		}
+		
+		throw new IllegalStateException("This should never happen");
+	}
+	
+	/**
+	 * Converts the raw depth counts into an array where the value at index i is the fraction of bases with coverage > i
+	 * @param depths
+	 * @return
+	 */
+	public static double[] convertCountsToProportions(int[] depths) {
+		int total = 0;
+		
+		double[] cdf = new double[depths.length];
+		for(int i=0; i<depths.length; i++) {
+			total += depths[i];
+			cdf[i] = total;
+		}
+		
+		for(int i=0; i<cdf.length; i++) {
+			cdf[i] = 100.0 - 100.0*cdf[i]/(double)total;
+		}
+		
+		return cdf;
+	}
+	
 	public void summarize(int[] depths, PrintStream out) {
 		int total = 0;
 		
