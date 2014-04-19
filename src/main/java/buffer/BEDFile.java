@@ -42,8 +42,6 @@ public class BEDFile extends IntervalsFile {
 	 * @throws IOException 
 	 */
 	public void buildIntervalsMap(boolean stripChr) throws IOException {
-		Logger logger = Logger.getLogger(Pipeline.primaryLoggerName);
-		//logger.info("Building intervals map for BED file " + getFilename());
 		BufferedReader reader = new BufferedReader(new FileReader(getAbsolutePath()));
 		String line = reader.readLine();
 		intervals = new HashMap<String, List<Interval>>();
@@ -77,12 +75,6 @@ public class BEDFile extends IntervalsFile {
 		reader.close();
 		sortAllContigs();
 		
-//		logger.info("Done building intervals map for " + getFilename() + " Interval count: " + this.getIntervalCount() + " extent: " + this.getExtent());
-//		for(String contig : intervals.keySet()) {
-//			List<Interval> list = intervals.get(contig);
-//			int tot = countSize(list);
-//			System.out.println(contig + "\t :" + list.size() + "\t" + tot);
-//		}
 	}
 	
 	/**

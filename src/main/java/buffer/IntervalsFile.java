@@ -272,6 +272,7 @@ public abstract class IntervalsFile extends FileBuffer {
 		public int compare(Interval o1, Interval o2) {
 			return o1.begin - o2.begin;
 		}
+
 		
 	}
 	
