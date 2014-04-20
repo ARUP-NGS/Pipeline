@@ -25,7 +25,7 @@ public class DepthOfCoverage extends IOOperator {
 	public static final String PATH = "path";
 	public static final String THREADS = "threads";
 	public static final String JVM_ARGS="jvmargs";
-	protected String defaultGATKPath = "~/GenomeAnalysisTK/GenomeAnalysisTK.jar";
+	protected String defaultGATKPath = "~/GenomeAnalysisTK-1.6/GenomeAnalysisTK.jar";
 	protected String gatkPath = defaultGATKPath;
 	final static int[] cutoffs = new int[]{5, 8, 10, 15, 20, 50};
 	private DOCMetrics metrics = null;

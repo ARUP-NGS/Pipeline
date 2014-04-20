@@ -12,7 +12,9 @@ import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Logger;
 
+import pipeline.Pipeline;
 import buffer.BEDFile;
 import buffer.IntervalsFile;
 import util.Interval;
@@ -69,6 +71,9 @@ public class CoverageCalcTest {
 		System.out.println("All jobs have been submitted, approx task count is: " + pool.getTaskCount());
 		pool.shutdown();
 		pool.awaitTermination(10, TimeUnit.DAYS);
+		
+		//System.out.println("All tasks have completed...");
+
 		
 		return overallDepths;
 	}
@@ -181,6 +186,7 @@ public class CoverageCalcTest {
 		private String chr;
 		private List<Interval> subIntervals;
 		private boolean done = false;
+		private Exception error = null;
 		
 		public CovCalculator(File inputBam, String chr, List<Interval> subIntervals, int[] depths) {
 			this.inputBam = inputBam;
@@ -191,17 +197,33 @@ public class CoverageCalcTest {
 		
 		@Override
 		public void run() {
-			BamWindow window = new BamWindow(inputBam);
-			for(Interval interval : subIntervals) {
-				CoverageCalcTest.calculateDepthHistogram(window, chr, interval.begin, interval.end, depths);
+			try {
+				BamWindow window = new BamWindow(inputBam);
+
+				System.out.println("Starting chr " + chr + " " + subIntervals.size() + " subintervals");
+				for(Interval interval : subIntervals) {
+					CoverageCalcTest.calculateDepthHistogram(window, chr, interval.begin, interval.end, depths);
+				}
+				System.out.println("Done with chr " + chr + " " + subIntervals.size() + " subintervals");
+				window.close();
+				done = true;
 			}
-			System.out.println("Done with chr " + chr + " " + subIntervals.size() + " subintervals");
-			window.close();
-			done = true;
+			catch (Exception ex) {
+				this.error = ex;
+				Logger.getLogger(Pipeline.primaryLoggerName).severe("Exception in coverage calculation task: " + ex.getLocalizedMessage());
+			}
 		}
 		
 		public boolean isDone() {
 			return done;
+		}
+		
+		public boolean isError() {
+			return error != null;
+		}
+		
+		public Exception getException() {
+			return error;
 		}
 		
 		public int[] getDepths() {

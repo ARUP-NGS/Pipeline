@@ -52,10 +52,16 @@ public class FastDepthOfCoverage extends IOOperator {
 				covAboveCutoffs[i] = covs[cutoffs[i]];
 			}
 			
+			for(int i=0; i<covs.length; i++) {
+				System.out.println(i + "\t" + covs[i]);
+			}
 			metrics.setMeanCoverage(mean);
 			metrics.setCoverageProportions(covs);
 			metrics.setCutoffs(cutoffs);
 			metrics.setFractionAboveCutoff(covAboveCutoffs);
+			
+			
+			System.out.println("Mean depth: " + mean);
 			
 		} catch (IOException e) {
 			e.printStackTrace();
