@@ -12,6 +12,9 @@ import net.sf.samtools.SAMFileReader.ValidationStringency;
 import net.sf.samtools.SAMRecord;
 import operator.IOOperator;
 import operator.OperationFailedException;
+
+import org.apache.commons.lang.ArrayUtils;
+
 import pipeline.Pipeline;
 import buffer.BAMFile;
 import buffer.BAMMetrics;
@@ -90,7 +93,8 @@ public class BamMetrics extends IOOperator {
 		Histogram[] posHisto = null; 
 		boolean paired;
 		
-		final int baseSubSample = 4; //Only count 1 of every this many bases
+		final int baseSubSample = 1; //Only count 1 of every this many bases
+		final int readSubSample = 10; //Only look at 1 out of this many reads for getting base quality info
 		
 		for (final SAMRecord samRecord : inputSam) {
 			readCount++;
@@ -108,49 +112,50 @@ public class BamMetrics extends IOOperator {
 			if (samRecord.getDuplicateReadFlag())
 				dupCount++;
 			
-			byte[] baseQuals = samRecord.getBaseQualities();
-			if (samRecord.getSecondOfPairFlag()) {
-				for(int i=0; i<baseQuals.length/2; i++) {
-					byte tmp = baseQuals[i];
-					int secondPos = baseQuals.length-i-1;
-					baseQuals[i] = baseQuals[secondPos];
-					baseQuals[secondPos] = tmp;
-				}
-			}
-//			int[] baseQuals = new int[rawBaseQuals.length];
-//			for(int i=0; i<baseQuals.length; i++) {
-//				baseQuals[i] = (int)rawBaseQuals[i];
-//			}
-			
-			if (posHisto == null) {
-				posHisto = new Histogram[ Math.max(100, baseQuals.length) ];
-				System.out.println("Creating new position histogram array with length : " + posHisto.length);
-				for(int i=0; i<posHisto.length; i++)
-					posHisto[i] = new Histogram(0, 40, 40);
-			}
 			
 			
-			int start = readCount % baseSubSample;
-			for(int i=start; i<baseQuals.length; i+=baseSubSample) {
-				final int bq = (int) baseQuals[i];
-				if (bq > 30)
-					basesAbove30+=baseSubSample;
-				if (bq > 20)
-					basesAbove20+=baseSubSample;
-				if (bq > 10)
-					basesAbove10+=baseSubSample;
-				//int bq = (int)baseQuals[i];
-				baseQHisto.addValue( bq );
+			
+			
+			//For a subset of reads we look at each base in the read to compute the
+			//distribution of base qualities, etc. 
+			boolean countEachBase = readCount % readSubSample == 0;
+			if (countEachBase) {
+				byte[] baseQuals = samRecord.getBaseQualities();
 				
-				if (i < posHisto.length) {
-					int index = i;
-					if (paired && samRecord.getSecondOfPairFlag()) //invert for reverse orientation
-						index = posHisto.length - i -1;
-					posHisto[index].addValue( bq );
+				if (posHisto == null) {
+					posHisto = new Histogram[ Math.max(100, baseQuals.length) ];
+					for(int i=0; i<posHisto.length; i++)
+						posHisto[i] = new Histogram(0, 40, 40);
 				}
-			}
+				
+				
+				if (samRecord.getSecondOfPairFlag()) {
+					ArrayUtils.reverse(baseQuals);
+				}
+
+				for(int i=0; i<baseQuals.length; i+=baseSubSample) {
+					final int bq = (int) baseQuals[i];
+					if (bq > 30)
+						basesAbove30+=baseSubSample;
+					if (bq > 20)
+						basesAbove20+=baseSubSample;
+					if (bq > 10)
+						basesAbove10+=baseSubSample;
+					//int bq = (int)baseQuals[i];
+					baseQHisto.addValue( bq );
+
+					if (i < posHisto.length) {
+						int index = i;
+						if (paired && samRecord.getSecondOfPairFlag()) //invert for reverse orientation
+							index = posHisto.length - i -1;
+						posHisto[index].addValue( bq );
+					}
+				}
+				
+				totalBaseCount += readSubSample*baseQuals.length;
+			}//if we count examine each base in this read
 			
-			totalBaseCount += baseQuals.length;
+			
 			if(paired){
 				int insertSize = Math.abs( samRecord.getInferredInsertSize() );
 				if (insertSize > 10000) {

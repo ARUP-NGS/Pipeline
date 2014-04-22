@@ -3,14 +3,13 @@ package operator.bamutils;
 import java.io.IOException;
 import java.util.logging.Logger;
 
-import buffer.BAMFile;
-import buffer.BEDFile;
-import buffer.DOCMetrics;
-import buffer.FileBuffer;
 import operator.IOOperator;
 import operator.OperationFailedException;
 import pipeline.Pipeline;
-import util.coverage.CoverageCalcTest;
+import util.coverage.CoverageCalculator;
+import buffer.BAMFile;
+import buffer.BEDFile;
+import buffer.DOCMetrics;
 
 /**
  * This class computes a 'DOCMetrics' (Depth Of Coverage Metrics) object
@@ -35,7 +34,7 @@ public class FastDepthOfCoverage extends IOOperator {
 		
 		
 		try {
-			CoverageCalcTest covCalc = new CoverageCalcTest(bam.getFile(), intervals);
+			CoverageCalculator covCalc = new CoverageCalculator(bam.getFile(), intervals);
 			covCalc.setThreadCount( getPipelineOwner().getThreadCount() );
 			
 			int[] depthHistogram = covCalc.computeOverallCoverage();
@@ -43,8 +42,8 @@ public class FastDepthOfCoverage extends IOOperator {
 			
 			//The depth histogram is an un-normalized raw counts of the number of bases with a certain read depth
 			//for instance, the 10th position in the list of the number of bases found with read depths = 10 
-			double mean = CoverageCalcTest.getMean(depthHistogram);
-			double[] covs = CoverageCalcTest.convertCountsToProportions(depthHistogram);
+			double mean = CoverageCalculator.getMean(depthHistogram);
+			double[] covs = CoverageCalculator.convertCountsToProportions(depthHistogram);
 			
 			int[] cutoffs = new int[]{1, 10, 15, 20, 25, 50, 100};
 			double[] covAboveCutoffs = new double[cutoffs.length];
@@ -52,9 +51,6 @@ public class FastDepthOfCoverage extends IOOperator {
 				covAboveCutoffs[i] = covs[cutoffs[i]];
 			}
 			
-			for(int i=0; i<covs.length; i++) {
-				System.out.println(i + "\t" + covs[i]);
-			}
 			metrics.setMeanCoverage(mean);
 			metrics.setCoverageProportions(covs);
 			metrics.setCutoffs(cutoffs);

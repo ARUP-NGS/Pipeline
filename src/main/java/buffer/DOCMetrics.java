@@ -32,9 +32,9 @@ public class DOCMetrics extends FileBuffer implements JSONString {
 			obj = new JSONObject();
 			obj.put("mean.coverage", meanCoverage);
 			obj.put("coverage.cutoffs", cutoffs);
-			obj.put("fraction.above.cov.cutoff", fractionAboveCutoff);
+			obj.put("fraction.above.cov.cutoff", toPrecision(fractionAboveCutoff, 4));
 			if (coverageProportions != null)
-				obj.put("fraction.above.index", coverageProportions);
+				obj.put("fraction.above.index", toPrecision(coverageProportions, 4));
 			
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
@@ -52,6 +52,17 @@ public class DOCMetrics extends FileBuffer implements JSONString {
 		return coverageProportions;
 	}
 
+	public static double[] toPrecision(double[] vals, int precision) {
+		for(int i=0; i<vals.length; i++) {
+			vals[i] = toPrecision(vals[i], precision);
+		}
+		return vals;
+	}
+	
+	public static double toPrecision(double val, int precision) {
+		double mul = Math.pow(10.0, precision);
+		return Math.round(val*mul)/mul;
+	}
 	
 	
 	public String getSourceFile() {

@@ -3,7 +3,6 @@ package util.coverage;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.io.PrintWriter;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -15,19 +14,19 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 import pipeline.Pipeline;
-import buffer.BEDFile;
-import buffer.IntervalsFile;
 import util.Interval;
 import util.bamWindow.BamWindow;
+import buffer.BEDFile;
+import buffer.IntervalsFile;
 
-public class CoverageCalcTest {
+public class CoverageCalculator {
 	
 	
 	protected File inputBam = null;
 	protected IntervalsFile intervals;
 	private int threads = Runtime.getRuntime().availableProcessors();
 	
-	public CoverageCalcTest(File inputBam, IntervalsFile intervals) throws IOException {
+	public CoverageCalculator(File inputBam, IntervalsFile intervals) throws IOException {
 		this.inputBam = inputBam;
 		this.intervals = intervals;
 		if (! intervals.isMapCreated()) {
@@ -154,7 +153,7 @@ public class CoverageCalcTest {
 		IntervalsFile intervals = new BEDFile(new File(args[1]));
 		
 		Date start = new Date();
-		CoverageCalcTest covCalc = new CoverageCalcTest(inputBam, intervals);
+		CoverageCalculator covCalc = new CoverageCalculator(inputBam, intervals);
 		int[] depths = covCalc.computeOverallCoverage();
 		
 		
@@ -200,11 +199,9 @@ public class CoverageCalcTest {
 			try {
 				BamWindow window = new BamWindow(inputBam);
 
-				System.out.println("Starting chr " + chr + " " + subIntervals.size() + " subintervals");
 				for(Interval interval : subIntervals) {
-					CoverageCalcTest.calculateDepthHistogram(window, chr, interval.begin, interval.end, depths);
+					CoverageCalculator.calculateDepthHistogram(window, chr, interval.begin, interval.end, depths);
 				}
-				System.out.println("Done with chr " + chr + " " + subIntervals.size() + " subintervals");
 				window.close();
 				done = true;
 			}
@@ -246,6 +243,8 @@ public class CoverageCalcTest {
 	 * Actually perform the depth computation. This examines each position in the interval and sees how many reads
 	 * map to it, and for each position increments the depths array at index (depth) by one. For instance, if
 	 * there are X reads mapping some position, depths[X] is incremented by one. 
+	 * Modified: Not this examines only every Z (=4) positions, and increments depth by Z at each one. This is way faster but not exactly
+	 * correct (although its asymptotically correct) for smaller regions. 
 	 * @param bam
 	 * @param chr
 	 * @param start
@@ -254,13 +253,24 @@ public class CoverageCalcTest {
 	 */
 	public static void calculateDepthHistogram(BamWindow bam, String chr, int start, int end, int[] depths) {
 		int advance = 4;
+		
+		//If this is a tiny interval just look at each base, this allows us to look at single sites accurately
+		if (advance > (end-start)) {
+			advance = 1;
+		}
 		bam.advanceTo(chr, start);
 		
-		boolean cont = bam.hasMoreReadsInCurrentContig();
+		//Skip all processing if there are no more reads in this contig
+		if (! bam.hasMoreReadsInCurrentContig()) {
+			depths[0] += (end-start); //all zeros 
+			return;
+		}
+		
+		boolean cont = true;
 		while(cont && bam.getCurrentPosition() < end) {
 			int depth = bam.size();
 			if (depth < depths.length) {
-				depths[depth]++;
+				depths[depth]+=advance; //We assume this base and the next 'advance' bases all have the same coverage
 			}
 			cont = bam.advanceBy(advance);
 		}

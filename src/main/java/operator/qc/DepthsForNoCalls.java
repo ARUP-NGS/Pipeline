@@ -70,6 +70,7 @@ public class DepthsForNoCalls extends IOOperator {
 			command = command + " -R " + reference.getAbsolutePath() + 
 					" -I " + inputBAM.getAbsolutePath() + 
 					" -T DepthOfCoverage" +
+					" -rf BadCigar " +
 					" -L " + noCallBED.getAbsolutePath() +
 					" --omitDepthOutputAtEachBase " +
 					" -o nocallDepths ";

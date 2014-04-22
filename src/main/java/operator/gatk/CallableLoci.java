@@ -77,6 +77,7 @@ public class CallableLoci extends CommandOperator {
 		String command = "java " + defaultMemOptions + " " + jvmARGStr + " -jar " + gatkPath;
 		command = command + " -R " + reference + " -I " + inputFile + " -T CallableLoci ";
 		command = command + " --minDepth " + minDepth;
+		command = command + " -rf BadCigar ";
 		command = command + " -o " + outputFile.getAbsolutePath();
 		command = command + " -summary " + outputFile.getFilename() + ".summary ";
 		if (bedFile != null)

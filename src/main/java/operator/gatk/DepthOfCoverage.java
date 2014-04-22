@@ -93,6 +93,7 @@ public class DepthOfCoverage extends IOOperator {
 		command = command + " -R " + referenceFile.getAbsolutePath() + 
 				" -I " + inputPath + 
 				" -T DepthOfCoverage" +
+				" -rf BadCigar " +	//Dont fail on reads with bad cigar strings, which SNAP sometimes produces
 				" --omitDepthOutputAtEachBase ";
 		for(int i=0; i<cutoffs.length; i++) {
 			command = command + " -ct " + cutoffs[i];
