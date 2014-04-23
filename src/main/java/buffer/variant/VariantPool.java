@@ -118,16 +118,18 @@ public class VariantPool extends Operator  {
 		}
 		if (inputVariants != null) {
 			varLineReader.setFile(inputVariants.getFile());
-			varLineReader.advanceLine();
+			//varLineReader.advanceLine(); // I think this shouldn't be here - setFile already primes the reader, currentLine should then be ready
 		}
 		//int lineNumber = 0;
 		do {
 			VariantRec rec = varLineReader.toVariantRec();
+			
 			if (rec == null) {
 				if (varLineReader.getCurrentLine() != null && varLineReader.getCurrentLine().length()>0)
 					System.err.println("Warning, could not import variant from line: " + varLineReader.getCurrentLine() );
 			}
 			else {
+				System.out.println("Imported variant : " + rec.toSimpleString());
 				this.addRecordNoSort(rec);
 			}
 			//lineNumber++;
@@ -214,7 +216,7 @@ public class VariantPool extends Operator  {
 		}
 		
 		while(index < varList.size() && varList.get(index).getStart()==pos) {
-			if (varList.get(index).getAlt().equals(alt) && varList.get(index).getRef().equals(ref)) {
+			if (varList.get(index).containsAlt(alt) && varList.get(index).getRef().equals(ref)) {
 				return varList.get(index);
 			}
 			index++;
@@ -223,6 +225,8 @@ public class VariantPool extends Operator  {
 		//No alt matches found
 		return null;
 	}
+	
+	
 	
 	/**
 	 * Returns true if this pool contains any kind of variant at the given contig and position

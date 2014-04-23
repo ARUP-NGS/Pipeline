@@ -72,6 +72,9 @@ public class FreeBayes extends IOOperator {
 				+  " -m " + minMapScore + " -q " + minBaseScore + " -U " + readMismatchLimit + " -Q " + mismatchQualityMin
 				+ bedFilePath + " -v " + outputVCF.getAbsolutePath() + " " + extraOptions;
 
+		Logger.getLogger(Pipeline.primaryLoggerName).info(this.getObjectLabel() + " is executing: " + command);
+
+		
 		executeCommand(command);
 
 	}
