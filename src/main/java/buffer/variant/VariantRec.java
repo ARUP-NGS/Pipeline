@@ -111,6 +111,22 @@ public class VariantRec {
 	}
 	
 	/**
+	 * True if any of the alt alleles in this variant rec matches the given alt
+	 * the 'alt alleles' are those returned by getAllAlts(), which splits the usual getAlt() on ','
+	 * @param alt
+	 * @return
+	 */
+	public boolean containsAlt(String alt) {	
+		String[] alts = getAllAlts();
+		for(int i=0; i<alts.length; i++) {
+			if (alt.equals(alts[i])) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	/**
 	 * Set the start and end positions for this variant
 	 * @param start
 	 * @param end

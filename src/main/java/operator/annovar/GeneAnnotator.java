@@ -38,6 +38,9 @@ public class GeneAnnotator extends AnnovarAnnotator {
 			splicingThreshold = Integer.parseInt(splicingThreshAttr);
 		}
 		
+		
+		
+		
 		String command = "perl " + annovarPath + "annotate_variation.pl -geneanno --buildver " + buildVer + " --splicing_threshold " + splicingThreshold +  " " + annovarInputFile.getAbsolutePath() + " --outfile " + annovarPrefix + " " + annovarPath + "humandb/";
 		executeCommand(command);
 		
@@ -89,7 +92,7 @@ public class GeneAnnotator extends AnnovarAnnotator {
 			VariantRec rec = findVariant(contig, pos, ref, alt);  //Make sure we match alt
 			if (rec == null) {
 				errorVars++;
-				if (lastFewErrors.size() < 10)
+				if (lastFewErrors.size() < 250)
 					lastFewErrors.add("Variant not found : " + line);
 				line = reader.readLine();
 				continue;

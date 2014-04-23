@@ -21,7 +21,7 @@ public class TestFastDOC {
 	 * Test the new util.CoverageCalculator tool
 	 */
 	@Test
-	public void TestFastDOC() {
+	public void TestFastDOCComputations() {
 		
 		
 		BAMFile testBam = new BAMFile(new File("src/test/java/testbams/tinybam.bam"));
