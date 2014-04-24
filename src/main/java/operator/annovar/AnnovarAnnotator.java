@@ -146,40 +146,28 @@ public abstract class AnnovarAnnotator extends Annotator {
 
 		contig = contig.replace("chr", "");
 		VariantRec rec = variants.findRecord(contig, pos, ref, alt);
-		if (rec != null)
+		if (rec != null) {
 			return rec;
+		}
 
 
 		int modPos = pos;
-		if (alt.length() != ref.length()) {
-			//Remove initial characters if they are equal and add one to start position
-			if (alt.charAt(0) == ref.charAt(0)) {
-				alt = alt.substring(1);
-				if (alt.length()==0)
-					alt = "-";
-				ref = ref.substring(1);
-				if (ref.length()==0)
-					ref = "-";
-			}
+		int matches = VCFLineParser.findNumberOfInitialMatchingBases(ref, alt);
+		if (matches > 0) {
+			alt = alt.substring(matches);
+			ref = ref.substring(matches);
+			if (alt.length()==0)
+				alt = "-";
+			if (ref.length()==0)
+				ref = "-";
+			modPos+=matches;
 		}
 		
-		if (alt.equals("-") || ref.equals("-"))
-			modPos++;
-		
-		
-		if (modPos > pos)
+				
+		if (modPos > pos) {
 			rec = variants.findRecord(contig, modPos, ref, alt);
-		if (rec == null) {
-			return null;
 		}
-		
-		if (alt.equals(rec.getAlt())) {
-			return rec;
-		}
-		else {
-			System.err.println("Variant found at modified position, but alt allele is still wrong");
-			return null;
-		}
+		return rec;
 	}
 	
 	public void createAnnovarInput(VariantPool vars, AnnovarInputFile destination) {
