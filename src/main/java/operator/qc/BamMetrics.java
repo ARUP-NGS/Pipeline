@@ -12,9 +12,6 @@ import net.sf.samtools.SAMFileReader.ValidationStringency;
 import net.sf.samtools.SAMRecord;
 import operator.IOOperator;
 import operator.OperationFailedException;
-
-import org.apache.commons.lang.ArrayUtils;
-
 import pipeline.Pipeline;
 import buffer.BAMFile;
 import buffer.BAMMetrics;
@@ -27,6 +24,7 @@ import buffer.TextBuffer;
  * @author brendan
  *
  */
+/* Hello! */
 public class BamMetrics extends IOOperator {
 
 	@Override
@@ -130,7 +128,12 @@ public class BamMetrics extends IOOperator {
 				
 				
 				if (samRecord.getSecondOfPairFlag()) {
-					ArrayUtils.reverse(baseQuals);
+					//ArrayUtils.reverse(baseQuals);
+					for(int i=0; i<baseQuals.length/2; i++) {
+						byte tmp = baseQuals[i];
+						baseQuals[i] = baseQuals[baseQuals.length-i];
+						baseQuals[baseQuals.length-i] = tmp;
+					}
 				}
 
 				for(int i=0; i<baseQuals.length; i+=baseSubSample) {
