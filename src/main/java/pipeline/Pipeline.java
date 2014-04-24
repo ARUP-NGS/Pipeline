@@ -299,6 +299,16 @@ public class Pipeline {
 	}
 	
 	/**
+	 * Call this if you want no logging whatsoever, useful for tests
+	 */
+	public void stopAllLogging() {
+		Handler[] handlers = primaryLogger.getHandlers();
+		for(int i=0; i<handlers.length; i++) {
+			primaryLogger.removeHandler(handlers[i]);
+		}
+	}
+	
+	/**
 	 * Attempt to read, parse, and create the objects as specified in the document
 	 * @throws PipelineDocException
 	 * @throws ObjectCreationException
