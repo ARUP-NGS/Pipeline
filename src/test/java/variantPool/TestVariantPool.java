@@ -3,19 +3,19 @@ package variantPool;
 import java.io.File;
 import java.io.IOException;
 
-import junit.framework.Assert;
-
+import org.junit.Assert;
 import org.junit.Test;
 
 import buffer.VCFFile;
 import buffer.variant.VariantPool;
 
-public class VariantPoolTests {
 
-	
+public class TestVariantPool {
 	
 	@Test
 	public void TestVariantPoolCreation() {
+		
+		System.err.println("\n\n\n\n\nTesting variant pool creation!!!\n\n\n\n\n");
 		
 		File emptyVCF = new File("src/test/java/testvcfs/empty.vcf");
 		File freebayesVCF = new File("src/test/java/testvcfs/freebayes.single.vcf");
