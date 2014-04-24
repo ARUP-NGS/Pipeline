@@ -39,8 +39,6 @@ public class GeneAnnotator extends AnnovarAnnotator {
 		}
 		
 		
-		
-		
 		String command = "perl " + annovarPath + "annotate_variation.pl -geneanno --buildver " + buildVer + " --splicing_threshold " + splicingThreshold +  " " + annovarInputFile.getAbsolutePath() + " --outfile " + annovarPrefix + " " + annovarPath + "humandb/";
 		executeCommand(command);
 		
@@ -89,6 +87,10 @@ public class GeneAnnotator extends AnnovarAnnotator {
 			String ref = toks[5];
 			String alt = toks[6];
 			
+			//Fix weird issue with annovar where when it converts indels the position is incremented as much as we think it should be
+			if (ref.equals("-")) {
+				pos++;
+			}
 			VariantRec rec = findVariant(contig, pos, ref, alt);  //Make sure we match alt
 			if (rec == null) {
 				errorVars++;
@@ -176,7 +178,6 @@ public class GeneAnnotator extends AnnovarAnnotator {
 		lastFewErrors.clear();
 		while(line != null) {
 			if (line.length()>1) {
-				logger.info("Line: " + line);
 				String[] toks = line.split("\\t");
 				String exonicFunc = toks[1];
 				String ref = toks[6];
@@ -188,6 +189,12 @@ public class GeneAnnotator extends AnnovarAnnotator {
 	
 				String contig = toks[3];
 				int pos = Integer.parseInt( toks[4] );
+				
+				//Fix weird issue with annovar where when it converts indels the position is incremented as much as we think it should be
+				if (ref.equals("-")) {
+					pos++;
+				}
+				
 				VariantRec rec = findVariant(contig, pos, ref, alt);
 				
 				// We should split by comma, find which has the NM # (string.contains)
