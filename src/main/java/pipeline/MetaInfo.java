@@ -44,7 +44,9 @@ public class MetaInfo {
 			Logger.getLogger(Pipeline.primaryLoggerName).warning("Could not obtain jar url, no way find its creation date: " + e1.getLocalizedMessage());
 		} catch (IOException e) {
 			Logger.getLogger(Pipeline.primaryLoggerName).warning("Error loading jar url: " + e.getLocalizedMessage());
-			e.printStackTrace();
+		}
+		catch(Exception ex) {
+			Logger.getLogger(Pipeline.primaryLoggerName).warning("Error loading jar info: " + ex.getLocalizedMessage());
 		}
 		
 		return -1l;

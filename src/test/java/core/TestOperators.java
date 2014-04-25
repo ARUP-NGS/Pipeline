@@ -2,10 +2,11 @@ package core;
 
 import java.io.File;
 
-import org.junit.Assert;
+import junit.framework.TestCase;
 import operator.OperationFailedException;
 import operator.Operator;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import pipeline.ObjectHandler;
@@ -18,7 +19,7 @@ import pipeline.PipelineObject;
  * @author brendan
  *
  */
-public class TestOperators {
+public class TestOperators extends TestCase  {
 	
 	/**
 	 * Make sure we can parse a few simple pipeline input files and that errors are thrown
@@ -34,6 +35,7 @@ public class TestOperators {
 		
 		try {
 			ppl.initializePipeline();
+			ppl.stopAllLogging();
 		} catch (Exception ex) {
 			ex.printStackTrace();
 			Assert.assertTrue(false);
@@ -55,6 +57,7 @@ public class TestOperators {
 		try {
 			ppl = new Pipeline(brokenInputFile, propertiesFile.getAbsolutePath());
 			ppl.initializePipeline();
+			ppl.stopAllLogging();
 			Assert.assertTrue(false);
 		} catch (Exception ex) {
 			//this is expected - we want to see an exception thrown for this one
@@ -64,6 +67,7 @@ public class TestOperators {
 		try {
 			ppl = new Pipeline(brokenInputFile, propertiesFile.getAbsolutePath());
 			ppl.initializePipeline();
+			ppl.stopAllLogging();
 			Assert.assertTrue(false);
 		} catch (Exception ex) {
 			//this is expected - we want to see an exception thrown for this one
@@ -95,6 +99,7 @@ public class TestOperators {
 		
 		try {
 			ppl.initializePipeline();
+			ppl.stopAllLogging();
 		} catch (Exception ex) {
 			ex.printStackTrace();
 			Assert.assertTrue(false);
@@ -119,6 +124,7 @@ public class TestOperators {
 		File propertiesFile = new File("src/test/java/core/inputFiles/testProperties.xml");
 		
 		Pipeline ppl = new Pipeline(testInputFile, propertiesFile.getAbsolutePath());
+		ppl.stopAllLogging();
 		Assert.assertTrue(ppl.getProperty("propKey") != null);
 		Assert.assertTrue(ppl.getProperty("propKey").equals("value"));
 		Assert.assertTrue(ppl.getProperty("noKeyHere") == null);
@@ -137,6 +143,7 @@ public class TestOperators {
 		File propertiesFile = new File("src/test/java/core/inputFiles/testProperties.xml");
 		
 		Pipeline ppl = new Pipeline(testInputFile, propertiesFile.getAbsolutePath());
+
 		CounterListener listener = new CounterListener();
 		
 		try {
