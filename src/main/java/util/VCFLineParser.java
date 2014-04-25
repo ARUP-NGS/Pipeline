@@ -47,6 +47,8 @@ public class VCFLineParser extends PipelineObject implements VariantLineReader  
 		private int sampleColumn = -1; //Column that stores information for the given sample
 		protected File sourceFile;
 		
+		private boolean stripInitialMatchingBases = true;
+		
 		private String currentFormatStr = null;
 		
 		private boolean parseAllInfoTokens = false; //If true, we create annotations / properties for every token in the info field
@@ -229,6 +231,15 @@ public class VCFLineParser extends PipelineObject implements VariantLineReader  
 			return toVariantRec(true);
 		}
 
+		public static int findNumberOfInitialMatchingBases(String ref, String alt) {
+			int i;
+			for(i=0; i<Math.min(ref.length(), alt.length()); i++) {
+				if (ref.charAt(i) != alt.charAt(i)) {
+					return i;
+				}
+			}
+			return i; 
+		}
 		
 		/**
 		 * Convert current line into a variant record
@@ -261,17 +272,20 @@ public class VCFLineParser extends PipelineObject implements VariantLineReader  
 					int start = getStart();
 					int end = ref.length();
 
-					if (alt.length() != ref.length()) {
-						//Remove initial characters if they are equal and add one to start position
-						if (alt.charAt(0) == ref.charAt(0)) {
-							alt = alt.substring(1);
-							ref = ref.substring(1);
+					if ( (alt.length() != ref.length()) && stripInitialMatchingBases) {
+						//Remove initial characters if they are equal and add that many bases to start position
+						//Warning: Indels may no longer be left-aligned after this procedure
+						int matches = findNumberOfInitialMatchingBases(ref, alt);
+						if (matches > 0) {
+							alt = alt.substring(matches);
+							ref = ref.substring(matches);
 							if (alt.length()==0)
 								alt = "-";
 							if (ref.length()==0)
 								ref = "-";
-							start++;
+							start+=matches;
 						}
+						
 
 						if (ref.equals("-"))
 							end = start;
@@ -793,6 +807,13 @@ public class VCFLineParser extends PipelineObject implements VariantLineReader  
 			currentFormatStr = formatStr;
 		}
 
+		public boolean isStripInitialMatchingBases() {
+			return stripInitialMatchingBases;
+		}
+
+		public void setStripInitialMatchingBases(boolean stripInitialMatchingBases) {
+			this.stripInitialMatchingBases = stripInitialMatchingBases;
+		}
 		
 		//Pipeline Object implementation : Currently, don't do anything
 		
@@ -864,6 +885,9 @@ public class VCFLineParser extends PipelineObject implements VariantLineReader  
 			}
 		}
 		
+
+		
+
 
 		private Map<String, String> attributes = new HashMap<String, String>();
 

@@ -2043,7 +2043,12 @@ public class VarUtils {
 			BEDFile bedFile = new BEDFile(new File(args[1]));
 			bedFile.buildIntervalsMap();
 			VariantPool trueVars = getPool(new File(args[2]));
-			VariantPool qVars = getPool(new File(args[3]));
+			
+			//Don't strip initial matching bases from the vcf, this screws up the position
+			//and will break ROC calculation
+			VCFLineParser vcfReader = new VCFLineParser(new File(args[3]));
+			vcfReader.setStripInitialMatchingBases(false);
+			VariantPool qVars = new VariantPool(vcfReader);
 						
 			double minQuality = Double.MAX_VALUE;
 			double maxQuality = 0.0;

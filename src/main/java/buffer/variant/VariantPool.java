@@ -129,7 +129,6 @@ public class VariantPool extends Operator  {
 					System.err.println("Warning, could not import variant from line: " + varLineReader.getCurrentLine() );
 			}
 			else {
-				System.out.println("Imported variant : " + rec.toSimpleString());
 				this.addRecordNoSort(rec);
 			}
 			//lineNumber++;

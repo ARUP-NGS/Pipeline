@@ -7,14 +7,13 @@ import java.io.IOException;
 import java.io.PrintStream;
 
 import org.junit.Assert;
-
 import org.junit.Test;
 
 import util.VarUtils;
 import buffer.VCFFile;
 import buffer.variant.VariantPool;
 
-public class VarUtilsTests {
+public class TestVarUtils  {
 
 	@Test
 	public void testIntersection() {
@@ -142,18 +141,6 @@ public class VarUtilsTests {
 			output.close();
 			result = new VariantPool(new VCFFile(outputFile));
 			Assert.assertTrue(result.size()==0);			
-			
-			//Subtract an empty vcf from one with a few vars
-			args = new String[]{"subtract", "src/test/java/varUtils/testdata/different_allele.vcf",
-			"src/test/java/varUtils/testdata/a.vcf"};
-			output = new PrintStream(new FileOutputStream(outputFile));
-			System.setOut(output);
-			VarUtils.main(args);
-			output.close();
-			result = new VariantPool(new VCFFile(outputFile));
-			Assert.assertTrue(result.size()==4);
-			
-			
 			
 			System.err.println("Subtraction tests passed.");
 		} catch (FileNotFoundException e) {
