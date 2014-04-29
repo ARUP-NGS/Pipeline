@@ -3,9 +3,12 @@ package operator.variant;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.logging.Logger;
 
 import operator.OperationFailedException;
@@ -35,7 +38,7 @@ public class SplicingPredictionAnnotator extends Annotator {
 	public static final String SPLICINGPREDICTION_PATH = "splicingprediction.path"; //path to spliceingPrediction/ folder (not script)
 	
 	
-	CSVFile csvFile = null;
+	//CSVFile csvFile = null;
 	String SpliceScriptPath = null;
 	
 	/**
@@ -48,8 +51,25 @@ public class SplicingPredictionAnnotator extends Annotator {
 			throw new OperationFailedException("splicingPrediction path not specified", this);
 		}
 		
+		//First write chrom, pos, ref, & alt for all variants to a (tmp) CSV file
+		String csvPath = this.getProjectHome() + "splicedata" + ("" + (10000.0*Math.random())).substring(0, 4) + ".csv";
+		File data = new File(csvPath);
+		data.deleteOnExit();
+		try {
+			PrintStream dataStream = new PrintStream(new FileOutputStream(data));
+			//Loop through chromosomes
+			for(String contig : variants.getContigs()) {
+				for(VariantRec rec : variants.getVariantsForContig(contig)) {
+					dataStream.println(rec.getContig() + "\t" + rec.getStart() + "\t" + rec.getEnd() + "\t" + rec.getRef() + "\t" + rec.getAlt());
+				}
+			}
+			dataStream.close();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+		
 		//Run scoreSpliceSites on CSV file, i.e. annotation must have been previously done (outputs to standard out)
-		String command = BashBuilder(csvFile.getAbsolutePath());
+		String command = BashBuilder(csvPath);
 		executeCommand(command);
 		
 		//Now read in re-annotated CSV necessary for annotating variants
@@ -219,18 +239,6 @@ public class SplicingPredictionAnnotator extends Annotator {
 	
 	public void initialize(NodeList children) {
 		super.initialize(children);
-		
-		//Annotated CSV file is a required arg
-		for(int i=0; i<children.getLength(); i++) {
-			Node child = children.item(i);
-			if (child.getNodeType() == Node.ELEMENT_NODE) {
-				Element el = (Element)child;
-				PipelineObject obj = getObjectFromHandler(el.getNodeName());			
-				if (obj instanceof CSVFile) {
-					csvFile = (CSVFile)obj;
-				}
-				}
-		}
 		
 		//Check to see if the required splicingPrediction path has been specified
 		SpliceScriptPath = this.getAttribute(SPLICINGPREDICTION_PATH);
