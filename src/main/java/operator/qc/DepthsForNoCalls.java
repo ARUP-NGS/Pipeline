@@ -66,7 +66,7 @@ public class DepthsForNoCalls extends IOOperator {
 			
 			
 			//Now run DepthOfCoverageWalker on the BED
-			String command = "java -Xmx4g " + jvmARGStr + " -jar " + gatkPath;
+			String command = "java -Xmx8g " + jvmARGStr + " -jar " + gatkPath;
 			command = command + " -R " + reference.getAbsolutePath() + 
 					" -I " + inputBAM.getAbsolutePath() + 
 					" -T DepthOfCoverage" +

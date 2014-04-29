@@ -10,6 +10,7 @@ import java.net.URL;
 import json.JSONObject;
 
 public class HttpUtils {
+	
 	public static String HttpPostJSON(String url, JSONObject js) throws IOException{
 		String content = js.toString();
 		URL add = new URL(url);
@@ -26,8 +27,36 @@ public class HttpUtils {
 		out.close();
 		
 		BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-		String response = br.readLine();
+		StringBuilder response = new StringBuilder();
+		
+		String line = br.readLine();
+		while(line != null) {
+			response.append(line);
+			line = br.readLine();
+		}
+		
 		br.close();
-		return response;
+		return response.toString();
+	}
+	
+	public static String HttpGet(String url) throws IOException {
+		URL add = new URL(url);
+		HttpURLConnection conn = (HttpURLConnection) add.openConnection();
+		conn.setRequestMethod("GET");
+		conn.setRequestProperty("Content-Type", "text/text");
+		conn.setDoOutput(true);
+		OutputStream out = conn.getOutputStream();
+		out.close();
+		
+		BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+		StringBuilder response = new StringBuilder();
+		String line = br.readLine();
+		while(line != null) {
+			response.append(line);
+			line = br.readLine();
+		}
+		
+		br.close();
+		return response.toString();
 	}
 }
