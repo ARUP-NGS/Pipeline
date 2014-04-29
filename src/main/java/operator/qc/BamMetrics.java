@@ -128,11 +128,10 @@ public class BamMetrics extends IOOperator {
 				
 				
 				if (samRecord.getSecondOfPairFlag()) {
-					//ArrayUtils.reverse(baseQuals);
 					for(int i=0; i<baseQuals.length/2; i++) {
 						byte tmp = baseQuals[i];
-						baseQuals[i] = baseQuals[baseQuals.length-i];
-						baseQuals[baseQuals.length-i] = tmp;
+						baseQuals[i] = baseQuals[baseQuals.length-i-1];
+						baseQuals[baseQuals.length-i-1] = tmp;
 					}
 				}
 
