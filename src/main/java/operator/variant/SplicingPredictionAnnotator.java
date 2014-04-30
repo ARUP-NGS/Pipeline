@@ -38,7 +38,6 @@ public class SplicingPredictionAnnotator extends Annotator {
 	public static final String SPLICINGPREDICTION_PATH = "splicingprediction.path"; //path to spliceingPrediction/ folder (not script)
 	
 	
-	//CSVFile csvFile = null;
 	String SpliceScriptPath = null;
 	
 	/**
@@ -51,7 +50,7 @@ public class SplicingPredictionAnnotator extends Annotator {
 			throw new OperationFailedException("splicingPrediction path not specified", this);
 		}
 		
-		//First write chrom, pos, ref, & alt for all variants to a (tmp) CSV file
+		//First write chrom, pos, end, ref, & alt for all variants to a (tmp) CSV file
 		String csvPath = this.getProjectHome() + "splicedata" + ("" + (10000.0*Math.random())).substring(0, 4) + ".csv";
 		File data = new File(csvPath);
 		data.deleteOnExit();
