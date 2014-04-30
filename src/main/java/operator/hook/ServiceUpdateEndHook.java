@@ -1,19 +1,10 @@
 package operator.hook;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.net.InetAddress;
-import java.net.URL;
-import java.net.URLConnection;
 import java.net.UnknownHostException;
 
 import json.JSONException;
 import json.JSONObject;
-
-import org.w3c.dom.NodeList;
-
 import operator.Operator;
 import util.HttpUtils;
 
@@ -28,7 +19,8 @@ import util.HttpUtils;
  *
  */
 public class ServiceUpdateEndHook extends OperatorEndHook implements IOperatorEndHook {
-	protected static final String serviceURL = "http://ngs-webapp-dev/Dispatcher/UpdateService";
+	
+	protected static final String service = "/Dispatcher/UpdateService";
 	protected static final String success = "\"Success\"";
 	
 	protected String opCanName;
@@ -87,16 +79,11 @@ public class ServiceUpdateEndHook extends OperatorEndHook implements IOperatorEn
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
-		if(!HttpUtils.HttpPostJSON(serviceURL, obj).equals(success)){
+		if(!HttpUtils.HttpPostJSON(serverURL + service, obj).equals(success)){
 			throw new Exception("Error posting to the .NET service for End Hook");
 		}
 	}
 
-	@Override
-	public void initialize(NodeList children) {
-		// TODO Auto-generated method stub
-		
-	}
 
 	@Override
 	public void initHook(Operator op) {

@@ -1,19 +1,14 @@
 package operator.hook;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.net.InetAddress;
-import java.net.URL;
-import java.net.URLConnection;
 import java.net.UnknownHostException;
-
-import org.w3c.dom.NodeList;
 
 import json.JSONException;
 import json.JSONObject;
 import operator.Operator;
+
+import org.w3c.dom.NodeList;
+
 import util.HttpUtils;
 
 /**
@@ -27,8 +22,11 @@ import util.HttpUtils;
  *
  */
 public class ServiceUpdateStartHook extends OperatorStartHook implements IOperatorStartHook{
-	protected static final String serviceURL = "http://ngs-webapp-dev/Dispatcher/UpdateService";
+	
+	protected static final String service = "/Dispatcher/UpdateService";
 	protected static final String success = "\"Success\"";
+	
+	protected String serverURL = null;
 	
 	protected String opCanName;
 	protected String opName;
@@ -87,15 +85,24 @@ public class ServiceUpdateStartHook extends OperatorStartHook implements IOperat
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
-		if(!HttpUtils.HttpPostJSON(serviceURL, obj).equals(success)){
+		
+		if(!HttpUtils.HttpPostJSON(serverURL + service, obj).equals(success)){
 			throw new Exception("Error posting to the .NET service for Start Hook");
 		}
 	}
 
 	@Override
 	public void initialize(NodeList children) {
-		// TODO Auto-generated method stub
-		
+		//Make sure there's a server URL specified
+		if (serverURL == null) {
+			serverURL = this.getAttribute("server.url");
+		}
+		if (serverURL == null) {
+			serverURL = this.getPipelineProperty("server.url");
+		}
+		if (serverURL == null) {
+				throw new IllegalArgumentException("No server url specified (use server.url attribute)");
+		}
 	}
 
 	@Override
