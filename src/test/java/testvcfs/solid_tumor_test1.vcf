@@ -81,6 +81,7 @@
 ##contig=<ID=chrY,length=59373566,assembly=hg19>
 ##fileDate=20131231
 ##phasing=none
+##Mark loves VCFs.
 ##reference=/results/referenceLibrary/tmap-f3/hg19/hg19.fasta
 ##reference=file:///results/referenceLibrary/tmap-f3/hg19/hg19.fasta
 ##source=Torrent Unified Variant Caller (Extension of freeBayes)
