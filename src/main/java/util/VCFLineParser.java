@@ -423,25 +423,30 @@ public class VCFLineParser extends PipelineObject implements VariantLineReader  
 		 * @return
 		 */
 		public Integer getDepth() {
-			String info = lineToks[7];
+			if (lineToks != null) {
+				String info = lineToks[7];
 			
-			String target = "DP";
-			int index = info.indexOf(target);
-			if (index < 0) {
-				//Attempt to get DP from INFO tokens...
-				Integer dp = getDepthFromInfo();
-				return dp;
-			}
+				String target = "DP";
+				int index = info.indexOf(target);
+				if (index < 0) {
+					//Attempt to get DP from INFO tokens...
+					Integer dp = getDepthFromInfo();
+					return dp;
+				}
 			
-			//System.out.println( info.substring(index, index+10) + " ...... " + info.substring(index+target.length()+1, info.indexOf(';', index)));
-			try {
-				Integer value = Integer.parseInt(info.substring(index+target.length()+1, info.indexOf(';', index)));
-				return value;
+				//System.out.println( info.substring(index, index+10) + " ...... " + info.substring(index+target.length()+1, info.indexOf(';', index)));
+				try {
+					Integer value = Integer.parseInt(info.substring(index+target.length()+1, info.indexOf(';', index)));
+					return value;
+				}
+				catch (NumberFormatException nfe) {
+					//Logger.getLogger(Pipeline.primaryLoggerName).warning("Could not parse depth from vcf line: " );
+				}
+				return null;
 			}
-			catch (NumberFormatException nfe) {
-				//Logger.getLogger(Pipeline.primaryLoggerName).warning("Could not parse depth from vcf line: " );
+			else {
+				return -1;
 			}
-			return null;
 		}
 		
 
@@ -511,29 +516,35 @@ public class VCFLineParser extends PipelineObject implements VariantLineReader  
 		 * 
 		 */
 		public boolean isHetero() {
-			updateFormatIfNeeded();
+			if (lineToks != null) {
 			
-			if (formatToks == null)
-				return false;
-			if (gtCol < 0) {
-				return false;
-			}
+				updateFormatIfNeeded();
 			
-			String[] formatValues = lineToks[sampleColumn].split(":");
-			String GTStr = formatValues[gtCol];
-			
-			if (GTStr.length() != 3) {
-				throw new IllegalStateException("Wrong number of characters in string for is hetero... (got " + GTStr + ", but length should be 3)");
-			}
-
-			if (GTStr.charAt(1) == '/' || GTStr.charAt(1) == '|') {
-				if (GTStr.charAt(0) != GTStr.charAt(2))
-					 return true;
-				else
+				if (formatToks == null)
 					return false;
+				if (gtCol < 0) {
+					return false;
+				}
+			
+				String[] formatValues = lineToks[sampleColumn].split(":");
+				String GTStr = formatValues[gtCol];
+			
+				if (GTStr.length() != 3) {
+					throw new IllegalStateException("Wrong number of characters in string for is hetero... (got " + GTStr + ", but length should be 3)");
+				}
+				
+				if (GTStr.charAt(1) == '/' || GTStr.charAt(1) == '|') {
+					if (GTStr.charAt(0) != GTStr.charAt(2))
+						return true;
+					else
+						return false;
+				}
+				else {
+					throw new IllegalStateException("Genotype separator char does not seem to be normal (found " + GTStr.charAt(1) + ")");
+				}
 			}
 			else {
-				throw new IllegalStateException("Genotype separator char does not seem to be normal (found " + GTStr.charAt(1) + ")");
+				return false;
 			}
 			
 		}
@@ -551,15 +562,20 @@ public class VCFLineParser extends PipelineObject implements VariantLineReader  
 		 * @return
 		 */
 		public boolean isPhased() {
-			updateFormatIfNeeded();
+			if (lineToks != null) {
+				updateFormatIfNeeded();
 			
-			if (formatToks == null)
-				return false;
+				if (formatToks == null)
+					return false;
 			
-			String[] formatValues = lineToks[sampleColumn].split(":");
-			String GTStr = formatValues[gtCol];
-			if (GTStr.charAt(1) == '|') {
-				return true;
+				String[] formatValues = lineToks[sampleColumn].split(":");
+				String GTStr = formatValues[gtCol];
+				if (GTStr.charAt(1) == '|') {
+					return true;
+				}
+				else {
+					return false;
+				}
 			}
 			else {
 				return false;
@@ -610,22 +626,27 @@ public class VCFLineParser extends PipelineObject implements VariantLineReader  
 		 * @return
 		 */
 		public Double getGenotypeQuality() {
-			updateFormatIfNeeded();
+			if (lineToks != null) {
 			
-			if (formatToks == null || gqCol < 0)
+				updateFormatIfNeeded();
+			
+				if (formatToks == null || gqCol < 0)
+					return 0.0;
+			
+				String[] formatValues = lineToks[sampleColumn].split(":");
+				String GQStr = formatValues[gqCol];
+				try {
+					Double gq = Double.parseDouble(GQStr);
+					return gq;
+				}
+				catch (NumberFormatException ex) {
+					System.err.println("Could not parse genotype quality from " + GQStr);
+					return null;
+				}
+			}
+			else {
 				return 0.0;
-			
-			String[] formatValues = lineToks[sampleColumn].split(":");
-			String GQStr = formatValues[gqCol];
-			try {
-				Double gq = Double.parseDouble(GQStr);
-				return gq;
-			}
-			catch (NumberFormatException ex) {
-				System.err.println("Could not parse genotype quality from " + GQStr);
-				return null;
-			}
-			
+			}			
 		}
 		
 		private Double getVQSR() {
@@ -717,50 +738,61 @@ public class VCFLineParser extends PipelineObject implements VariantLineReader  
 		 * @return
 		 */
 		public Integer getVariantDepth() {
-			return getVariantDepth(0);
+			if (lineToks != null) {
+				return getVariantDepth(0);
+			} 
+			else {
+				return -1;
+			}
+			
 		}
 		
 		/**
-		 * Returns the depth of the whichth variant allele, as parsed from the INFO string for this sample
+		 * Returns the depth of the which variant allele, as parsed from the INFO string for this sample
 		 * @return
 		 */
 		public Integer getVariantDepth(int which) {
-			updateFormatIfNeeded();
+			if (lineToks != null) {
+				updateFormatIfNeeded();
 			
-			if (formatToks == null)
-				return 1;
+				if (formatToks == null)
+					return -1; 
 			
-			//if adCol specified (from GATK), use it. Otherwise, try aoCol (from IonTorrent). If there's not that either, return null;
-			boolean depthFromAD = true;
-			int colIndex = adCol;
-			if (colIndex < 0) {
-				depthFromAD = false;
-				colIndex = aoCol;
-			}
-			if (colIndex < 0)
-				return null;
-				
-			//Confusing logic below to parse var depth (alt depth) from both GATK and IonTorrent-style vcfs...
-			String[] formatValues = lineToks[sampleColumn].split(":");
-			String adStr = formatValues[colIndex];
-			try {
-				String[] depths = adStr.split(",");
-				if (depthFromAD) {
-					if (depths.length==1) 
-						return 0;
-					else 
-						return Integer.parseInt(depths[which+1]); 
+				//if adCol specified (from GATK), use it. Otherwise, try aoCol (from IonTorrent or FreeBayes). If there's not that either, return null;
+				boolean depthFromAD = true;
+				int colIndex = adCol;
+				if (colIndex < 0) {
+					depthFromAD = false;
+					colIndex = aoCol;
 				}
-				else {
-					Integer altReadDepth = Integer.parseInt(depths[which]);
-					return altReadDepth;
-				}
+				if (colIndex < 0)
+					return null;
 				
+				//Confusing logic below to parse var depth (alt depth) from both GATK and IonTorrent-style vcfs...
+				String[] formatValues = lineToks[sampleColumn].split(":");
+				String adStr = formatValues[colIndex];
+				try {
+					String[] depths = adStr.split(",");
+					if (depthFromAD) {
+						if (depths.length==1) 
+							return 0;
+						else 
+							return Integer.parseInt(depths[which+1]); 
+					}
+					else {
+						Integer altReadDepth = Integer.parseInt(depths[which]);
+						return altReadDepth;
+					}
+				
+				}
+				catch (NumberFormatException ex) {
+					System.err.println("Could not parse alt depth from " + adStr);
+					return null;
+				}
 			}
-			catch (NumberFormatException ex) {
-				System.err.println("Could not parse alt depth from " + adStr);
-				return null;
-			}
+			else {
+				return -1;
+			}										
 		}
 		
 		/**

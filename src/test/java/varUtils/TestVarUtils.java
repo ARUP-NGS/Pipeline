@@ -25,8 +25,8 @@ public class TestVarUtils  {
 		System.err.println("Testing varUtils intersection...");
 		try {
 			//Intersect a file from itself. Result should be entire contents of file 
-			args = new String[]{"intersect", "src/test/java/varUtils/testdata/a.vcf",
-			"src/test/java/varUtils/testdata/a.vcf"};
+			args = new String[]{"intersect", "src/test/java/testdata/a.vcf",
+			"src/test/java/testdata/a.vcf"};
 			//Direct system.out to a file so we can read it. 
 			File outputFile = new File("varutils.test.out");
 
@@ -42,8 +42,8 @@ public class TestVarUtils  {
 			
 			
 			//Very simple
-			args = new String[]{"intersect", "src/test/java/varUtils/testdata/a.vcf",
-			"src/test/java/varUtils/testdata/b.vcf"};
+			args = new String[]{"intersect", "src/test/java/testdata/a.vcf",
+			"src/test/java/testdata/b.vcf"};
 			//Direct system.out to a file so we can read it. 
 			outputFile = new File("varutils.test.out");
 
@@ -58,8 +58,8 @@ public class TestVarUtils  {
 			Assert.assertTrue(result.size()==2);
 			
 			//Order reversed, should give same result as above
-			args = new String[]{"intersect", "src/test/java/varUtils/testdata/b.vcf",
-			"src/test/java/varUtils/testdata/a.vcf"};
+			args = new String[]{"intersect", "src/test/java/testdata/b.vcf",
+			"src/test/java/testdata/a.vcf"};
 			//Direct system.out to a file so we can read it. 
 			outputFile = new File("varutils.test.out");
 
@@ -99,8 +99,8 @@ public class TestVarUtils  {
 			System.err.println("Testing varUtils subtraction...");
 			
 			//Subtract a file from itself. Result should be empty. 
-			args = new String[]{"subtract", "src/test/java/varUtils/testdata/a.vcf",
-			"src/test/java/varUtils/testdata/a.vcf"};
+			args = new String[]{"subtract", "src/test/java/testdata/a.vcf",
+			"src/test/java/testdata/a.vcf"};
 			//Direct system.out to a file so we can read it. 
 			File outputFile = new File("varutils.test.out");
 			output = new PrintStream(new FileOutputStream(outputFile));
@@ -113,8 +113,8 @@ public class TestVarUtils  {
 			Assert.assertTrue(result.size()==0);
 			
 			//Simple subtraction
-			args = new String[]{"subtract", "src/test/java/varUtils/testdata/a.vcf",
-			"src/test/java/varUtils/testdata/b.vcf"};
+			args = new String[]{"subtract", "src/test/java/testdata/a.vcf",
+			"src/test/java/testdata/b.vcf"};
 			output = new PrintStream(new FileOutputStream(outputFile));
 			System.setOut(output);
 			VarUtils.main(args);
@@ -123,8 +123,8 @@ public class TestVarUtils  {
 			Assert.assertTrue(result.size()==2);
 			
 			//Subtract an empty vcf from one with a few vars
-			args = new String[]{"subtract", "src/test/java/varUtils/testdata/a.vcf",
-			"src/test/java/varUtils/testdata/empty.vcf"};
+			args = new String[]{"subtract", "src/test/java/testdata/a.vcf",
+			"src/test/java/testdata/empty.vcf"};
 			output = new PrintStream(new FileOutputStream(outputFile));
 			System.setOut(output);
 			VarUtils.main(args);
@@ -133,8 +133,8 @@ public class TestVarUtils  {
 			Assert.assertTrue(result.size()==4);
 			
 			
-			args = new String[]{"subtract", "src/test/java/varUtils/testdata/empty.vcf",
-			"src/test/java/varUtils/testdata/b.vcf"};
+			args = new String[]{"subtract", "src/test/java/testdata/empty.vcf",
+			"src/test/java/testdata/b.vcf"};
 			output = new PrintStream(new FileOutputStream(outputFile));
 			System.setOut(output);
 			VarUtils.main(args);
