@@ -25,7 +25,7 @@ public class TestVariantPool {
 		
 		try {
 			VariantPool pool = new VariantPool(new VCFFile(emptyVCF));
-			Assert.assertTrue(pool.size() == 0);
+			Assert.assertTrue(pool.size() == 0); 
 		} catch (IOException e) {
 			e.printStackTrace();
 			Assert.fail();
