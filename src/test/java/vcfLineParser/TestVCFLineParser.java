@@ -1,24 +1,18 @@
 package vcfLineParser;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.List;
-
-import operator.variant.FPComputer;
-
 import org.junit.Assert;
 import org.junit.Test;
 
 import util.VCFLineParser;
 import buffer.VCFFile;
-import buffer.variant.CSVLineReader;
-import buffer.variant.VariantLineReader;
-import buffer.variant.VariantPool;
-import buffer.variant.VariantRec;
+
+/**
+ * Unit test for VCFLine parser
+ * @author elainegee
+ *
+ */
 
 public class TestVCFLineParser {
 	
