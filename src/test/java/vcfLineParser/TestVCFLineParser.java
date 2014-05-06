@@ -134,7 +134,7 @@ public class TestVCFLineParser {
 					
 					// Check genotype quality
 					Double genotypeQual = reader.getGenotypeQuality();
-					Assert.assertTrue(genotypeQual.equals(0.0));
+					Assert.assertTrue(genotypeQual.equals(-1.0));
 					
 					// Check depth
 					Integer depth = reader.getDepth();
@@ -331,7 +331,7 @@ public class TestVCFLineParser {
 					
 					// Check genotype quality
 					Double genotypeQual = reader.getGenotypeQuality();
-					Assert.assertTrue(genotypeQual.equals(0.0));
+					Assert.assertTrue(genotypeQual.equals(-1.0));
 					
 					// Check depth
 					Integer depth = reader.getDepth();
@@ -398,7 +398,7 @@ public class TestVCFLineParser {
 					
 					// Check genotype quality
 					Double genotypeQual = reader.getGenotypeQuality();
-					Assert.assertTrue(genotypeQual==0.0);
+					Assert.assertTrue(genotypeQual==-1.0);
 					
 					// Check depth
 					Integer depth = reader.getDepth();
@@ -444,7 +444,7 @@ public class TestVCFLineParser {
 					
 					// Check genotype quality
 					Double genotypeQual = reader.getGenotypeQuality();
-					Assert.assertTrue(genotypeQual==0.0);
+					Assert.assertTrue(genotypeQual==-1.0);
 					
 					// Check depth
 					Integer depth = reader.getDepth();
@@ -490,7 +490,7 @@ public class TestVCFLineParser {
 					
 					// Check genotype quality
 					Double genotypeQual = reader.getGenotypeQuality();
-					Assert.assertTrue(genotypeQual==0.0);
+					Assert.assertTrue(genotypeQual==-1.0);
 					
 					// Check depth
 					Integer depth = reader.getDepth();
@@ -533,7 +533,7 @@ public class TestVCFLineParser {
 					
 					// Check genotype quality
 					Double genotypeQual = reader.getGenotypeQuality();
-					Assert.assertTrue(genotypeQual==0.0);
+					Assert.assertTrue(genotypeQual==-1.0);
 					
 					// Check depth
 					Integer depth = reader.getDepth();

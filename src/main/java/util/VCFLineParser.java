@@ -631,7 +631,7 @@ public class VCFLineParser extends PipelineObject implements VariantLineReader  
 				updateFormatIfNeeded();
 			
 				if (formatToks == null || gqCol < 0)
-					return 0.0;
+					return -1.0;
 			
 				String[] formatValues = lineToks[sampleColumn].split(":");
 				String GQStr = formatValues[gqCol];
@@ -645,7 +645,7 @@ public class VCFLineParser extends PipelineObject implements VariantLineReader  
 				}
 			}
 			else {
-				return 0.0;
+				return -1.0;
 			}			
 		}
 		
