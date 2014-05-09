@@ -29,7 +29,6 @@ import buffer.ReferenceFile;
  */
 public class Bowtie2Align extends IOOperator {
 	
-	public static final String JVM_ARGS="jvmargs";
 	public static final String BOWTIE2_DIR = "bowtie2.dir";
 	public static final String SAMTOOLS_PATH = "samtools.path";
 	public static final String BOWTIE2_STYLE = "bowtie2.style";
