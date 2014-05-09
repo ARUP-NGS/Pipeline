@@ -1,0 +1,68 @@
+#contig	start 	 end 	 ref 	 alt 	 quality 	 depth 	 zygosity 	 genotype.quality 	 var.depth	 gene	 nm.number	 cdot	 pdot	 depth	 exon.number	 variant.type	 exon.function	 pop.freq	 amr.freq	 exomes5400.frequency	 rsnum	 ARUP.freq	 ARUP.overall.freq	 ARUP.freq.details	 varbin.bin	 svm.effect.prediction	 sift.score	 pp.score	 phylop.score	 mt.score	 gerp.score	 lrt.score	 siphy.score	 mut.assessor.score	 hgmd.hit	 haloplex.freq	 splicing.all	 splicing.topnm	 splicing.topnmdiff	 omim.disease	 omim.disease.ids	 hgmd.info
+1	10198	1	T	A	48.4491	2.0	hom	-1.0	2.0	NONE	-	-	-	2.0	-	intergenic	-	-	-	-	-	-	0.0	Total samples: 0	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+1	10231	10232	C	-	0.0675009	2.0	hom	-1.0	2.0	NONE	-	-	-	2.0	-	intergenic	-	-	-	-	-	-	0.0	Total samples: 0	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+1	11863	1	C	A	32.3821	7.0	het	-1.0	2.0	DDX11L1	-	-	-	7.0	-	upstream	-	-	-	-	-	-	0.0	Total samples: 0	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+1	11922	1	T	A	144.12	14.0	het	-1.0	6.0	DDX11L1	-	-	-	14.0	-	ncRNA_exonic	-	-	-	-	-	-	0.0	Total samples: 0	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+1	12198	1	G	C	474.105	47.0	het	-1.0	17.0	DDX11L1	-	-	-	47.0	-	ncRNA_exonic	-	-	-	-	-	-	0.0	Total samples: 0	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+1	12383	1	G	A	100.357	9.0	het	-1.0	4.0	DDX11L1	-	-	-	9.0	-	ncRNA_intronic	-	-	-	-	-	-	0.0	Total samples: 0	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+1	12783	1	G	A	198.766	13.0	het	-1.0	8.0	DDX11L1	-	-	-	13.0	-	ncRNA_intronic	-	-	-	-	-	-	0.0	Total samples: 0	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+1	13116	3	TGA	GGG	131.532	9.0	het	-1.0	6.0	DDX11L1	-	-	-	9.0	-	ncRNA_intronic	-	-	-	-	-	-	0.0	Total samples: 0	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+1	13302	1	C	T	0.0	17.0	het	-1.0	10.0	DDX11L1	-	-	-	17.0	-	ncRNA_exonic	-	0.11	0.08	-	rs180734498	-	0.0	Total samples: 0	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+1	13327	1	G	C	0.0	7.0	het	-1.0	6.0	DDX11L1	-	-	-	7.0	-	ncRNA_exonic	-	0.03	0.03	-	rs144762171	-	0.0	Total samples: 0	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+1	13657	13659	AG	-	4.21722	15.0	het	-1.0	6.0	DDX11L1	-	-	-	15.0	-	ncRNA_exonic	-	-	-	-	-	-	0.0	Total samples: 0	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+1	13896	1	C	A	72.1266	10.0	het	-1.0	4.0	DDX11L1	-	-	-	10.0	-	ncRNA_exonic	-	-	-	-	-	-	0.0	Total samples: 0	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+1	13958	13959	C	-	0.00694368	3.0	het	-1.0	2.0	DDX11L1	-	-	-	3.0	-	ncRNA_exonic	-	-	-	-	-	-	0.0	Total samples: 0	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+1	13980	1	T	C	0.0	2.0	hom	-1.0	2.0	DDX11L1	-	-	-	2.0	-	ncRNA_exonic	-	0.02	0.02	-	rs151276478	-	0.0	Total samples: 0	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+1	14248	1	T	G	203.503	46.0	het	-1.0	10.0	DDX11L1	-	-	-	46.0	-	ncRNA_exonic	-	-	-	-	-	-	0.0	Total samples: 0	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+1	14673	1	G	C	497.534	69.0	het	-1.0	20.0	WASH7P	-	-	-	69.0	-	ncRNA_exonic	-	-	-	-	-	-	0.013392857142857142	Samples: 112 Hets: 3 Homs: 0	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+1	14699	1	C	G	411.034	51.0	het	-1.0	19.0	WASH7P	-	-	-	51.0	-	ncRNA_exonic	-	-	-	-	-	-	0.008928571428571428	Samples: 112 Hets: 2 Homs: 0	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+1	14907	1	A	G	1991.57	85.0	het	-1.0	72.0	WASH7P	-	-	-	85.0	-	ncRNA_intronic	-	-	-	-	-	-	0.0	Total samples: 0	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+1	14930	1	A	G	2684.27	95.0	hom	-1.0	90.0	WASH7P	-	-	-	95.0	-	ncRNA_intronic	-	-	-	-	-	-	0.0	Total samples: 0	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+1	15118	1	A	G	730.01	41.0	het	-1.0	27.0	WASH7P	-	-	-	41.0	-	ncRNA_intronic	-	-	-	-	-	-	0.0	Total samples: 0	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+1	15211	1	T	G	371.337	18.0	het	-1.0	14.0	WASH7P	-	-	-	18.0	-	ncRNA_intronic	-	-	-	-	-	-	0.0	Total samples: 0	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+1	15274	1	A	T	193.625	7.0	hom	-1.0	6.0	WASH7P	-	-	-	7.0	-	ncRNA_intronic	-	-	-	-	-	-	0.0	Total samples: 0	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+1	15956	1	G	A	55.5986	4.0	hom	-1.0	3.0	WASH7P	NR_024540	c.1081-9C>T	-	4.0	exon10	ncRNA_splicing	-	-	-	-	-	-	0.0	Total samples: 0	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+1	16014	1	C	T	69.312	7.0	het	-1.0	3.0	WASH7P	-	-	-	7.0	-	ncRNA_intronic	-	-	-	-	-	-	0.0	Total samples: 0	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+1	16288	1	C	G	40.1303	13.0	het	-1.0	3.0	WASH7P	-	-	-	13.0	-	ncRNA_intronic	-	-	-	-	-	-	0.0	Total samples: 0	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+1	16298	1	C	T	253.715	9.0	hom	-1.0	9.0	WASH7P	-	-	-	9.0	-	ncRNA_intronic	-	-	-	-	-	-	0.0	Total samples: 0	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+1	16378	1	T	C	361.49	19.0	het	-1.0	13.0	WASH7P	-	-	-	19.0	-	ncRNA_intronic	-	-	-	-	-	-	0.0	Total samples: 0	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+1	16534	1	C	T	708.861	46.0	het	-1.0	23.0	WASH7P	-	-	-	46.0	-	ncRNA_intronic	-	-	-	-	-	-	0.0	Total samples: 0	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+1	16571	1	G	A	714.97	47.0	het	-1.0	26.0	WASH7P	-	-	-	47.0	-	ncRNA_intronic	-	-	-	-	-	-	0.0	Total samples: 0	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+1	16949	1	A	C	4117.35	530.0	het	-1.0	153.0	WASH7P	-	-	-	530.0	-	ncRNA_exonic	-	-	-	-	-	-	0.004464285714285714	Samples: 112 Hets: 1 Homs: 0	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+1	17379	1	G	A	909.463	165.0	het	-1.0	38.0	WASH7P	-	-	-	165.0	-	ncRNA_intronic	-	-	-	-	-	-	0.008928571428571428	Samples: 112 Hets: 2 Homs: 0	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+1	18164	1	T	C	1020.9	102.0	het	-1.0	35.0	WASH7P	-	-	-	102.0	-	ncRNA_intronic	-	-	-	-	-	-	0.0	Total samples: 0	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+1	19858	1	C	T	40.7019	4.0	het	-1.0	3.0	WASH7P	-	-	-	4.0	-	ncRNA_intronic	-	-	-	-	-	-	0.0	Total samples: 0	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+1	19865	1	G	T	31.9586	5.0	het	-1.0	2.0	WASH7P	-	-	-	5.0	-	ncRNA_intronic	-	-	-	-	-	-	0.0	Total samples: 0	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+1	20304	1	G	C	48.7813	10.0	het	-1.0	3.0	WASH7P	-	-	-	10.0	-	ncRNA_intronic	-	-	-	-	-	-	0.0	Total samples: 0	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+1	20321	1	A	C	155.879	15.0	het	-1.0	6.0	WASH7P	-	-	-	15.0	-	ncRNA_intronic	-	-	-	-	-	-	0.0	Total samples: 0	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+1	20467	1	C	T	246.094	47.0	het	-1.0	13.0	WASH7P	-	-	-	47.0	-	ncRNA_intronic	-	-	-	-	-	-	0.0	Total samples: 0	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+1	20512	1	G	T	931.717	79.0	het	-1.0	31.0	WASH7P	-	-	-	79.0	-	ncRNA_intronic	-	-	-	-	-	-	0.0	Total samples: 0	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+1	20813	1	A	G	297.15	48.0	het	-1.0	12.0	WASH7P	-	-	-	48.0	-	ncRNA_intronic	-	-	-	-	-	-	0.0	Total samples: 0	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+1	20914	1	A	C	24.087	9.0	het	-1.0	2.0	WASH7P	-	-	-	9.0	-	ncRNA_intronic	-	-	-	-	-	-	0.0	Total samples: 0	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+1	20960	1	C	A	29.4314	5.0	het	-1.0	2.0	WASH7P	-	-	-	5.0	-	ncRNA_intronic	-	-	-	-	-	-	0.0	Total samples: 0	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+1	21121	1	G	A	44.6256	3.0	hom	-1.0	2.0	WASH7P	-	-	-	3.0	-	ncRNA_intronic	-	-	-	-	-	-	0.0	Total samples: 0	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+1	21319	1	G	A	8.60248	8.0	het	-1.0	2.0	WASH7P	-	-	-	8.0	-	ncRNA_intronic	-	-	-	-	-	-	0.0	Total samples: 0	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+1	21480	1	A	T	36.7117	4.0	het	-1.0	2.0	WASH7P	-	-	-	4.0	-	ncRNA_intronic	-	-	-	-	-	-	0.0	Total samples: 0	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+1	21503	1	G	T	26.7341	3.0	het	-1.0	2.0	WASH7P	-	-	-	3.0	-	ncRNA_intronic	-	-	-	-	-	-	0.0	Total samples: 0	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+1	24302	1	C	G	168.969	39.0	het	-1.0	9.0	WASH7P	-	-	-	39.0	-	ncRNA_intronic	-	-	-	-	-	-	0.0	Total samples: 0	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+1	24308	1	C	G	268.173	41.0	het	-1.0	12.0	WASH7P	-	-	-	41.0	-	ncRNA_intronic	-	-	-	-	-	-	0.0	Total samples: 0	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+1	24348	24350	GG	-	265.141	63.0	het	-1.0	14.0	WASH7P	-	-	-	63.0	-	ncRNA_intronic	-	-	-	-	-	-	0.0	Total samples: 0	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+1	24786	1	G	A	87.5529	18.0	het	-1.0	5.0	WASH7P	-	-	-	18.0	-	ncRNA_exonic	-	-	-	-	-	-	0.0	Total samples: 0	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+1	26348	1	C	A	26.3865	3.0	het	-1.0	2.0	WASH7P	-	-	-	3.0	-	ncRNA_intronic	-	-	-	-	-	-	0.0	Total samples: 0	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+1	29939	1	G	C	114.708	9.0	het	-1.0	5.0	WASH7P	-	-	-	9.0	-	upstream	-	-	-	-	-	-	0.0	Total samples: 0	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+1	29958	1	A	G	88.3537	11.0	het	-1.0	4.0	WASH7P	-	-	-	11.0	-	upstream	-	-	-	-	-	-	0.0	Total samples: 0	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+1	30028	1	C	T	377.237	35.0	het	-1.0	14.0	WASH7P	-	-	-	35.0	-	upstream	-	-	-	-	-	-	0.0	Total samples: 0	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+1	30037	1	T	C	389.244	33.0	het	-1.0	14.0	WASH7P	-	-	-	33.0	-	upstream	-	-	-	-	-	-	0.0	Total samples: 0	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+1	30089	1	T	C	227.571	34.0	het	-1.0	10.0	WASH7P	-	-	-	34.0	-	upstream	-	-	-	-	-	-	0.0	Total samples: 0	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+1	30411	1	G	T	2694.15	305.0	het	-1.0	91.0	WASH7P	-	-	-	305.0	-	intergenic	-	-	-	-	-	-	0.0	Total samples: 0	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+1	30548	1	T	G	157.331	52.0	het	-1.0	11.0	WASH7P	-	-	-	52.0	-	intergenic	-	-	-	-	-	-	0.0	Total samples: 0	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+1	30923	1	G	T	0.0	1.0	hom	-1.0	1.0	WASH7P	-	-	-	1.0	-	intergenic	-	0.73	0.8	-	rs140337953	-	0.0	Total samples: 0	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+1	34408	1	T	A	38.1255	3.0	het	-1.0	2.0	FAM138A,FAM138F	-	-	-	3.0	-	downstream	-	-	-	-	-	-	0.0	Total samples: 0	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+1	34634	34635	T	-	4.04109E-5	8.0	het	-1.0	2.0	FAM138A,FAM138F	-	-	-	8.0	-	ncRNA_exonic	-	-	-	-	-	-	0.0	Total samples: 0	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+1	34771	1	G	C	144.179	10.0	het	-1.0	6.0	FAM138A,FAM138F	-	-	-	10.0	-	ncRNA_exonic	-	-	-	-	-	-	0.0	Total samples: 0	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+1	36128	1	G	A	30.3804	5.0	het	-1.0	2.0	FAM138A,FAM138F	-	-	-	5.0	-	upstream	-	-	-	-	-	-	0.0	Total samples: 0	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+1	36354	1	A	G	0.9104	6.0	het	-1.0	2.0	FAM138A,FAM138F	-	-	-	6.0	-	upstream	-	-	-	-	-	-	0.0	Total samples: 0	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+1	42202	1	C	A	63.0196	2.0	hom	-1.0	2.0	FAM138A	-	-	-	2.0	-	intergenic	-	-	-	-	-	-	0.0	Total samples: 0	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+19	10665691	5	TTGAC	CTGAT,CTGAC	439.999	18.0	het	-1.0	9.0	KRI1	-	-	-	18.0	-	intronic	-	-	-	-	-	-	0.6607142857142857	Samples: 112 Hets: 38 Homs: 55	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+19	14104702	14104704	TA	A	381.768	66.0	het	-1.0	20.0	RFX1	-	-	-	66.0	-	splicing	-	-	-	-	-	-	0.004464285714285714	Samples: 112 Hets: 1 Homs: 0	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+8	133978711	133978712	C	GTG,G	276.864	13.0	het	-1.0	7.0	TG	-	-	-	13.0	-	intronic	-	-	-	-	-	-	0.5223214285714286	Samples: 112 Hets: 57 Homs: 30	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Thyroid dyshormonogenesis 3; {Autoimmune thyroid disease, susceptibility to, 3}	274700; 608175	true
