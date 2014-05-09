@@ -235,7 +235,8 @@ public class VCFLineParser extends PipelineObject implements VariantLineReader  
 		 * Calculates the number of shared bases between the ref sequence & string array of all alternate alleles
 		 * @return
 		 */
-		public static int findNumberOfInitialMatchingBases(String ref, String[] altToks) {
+		public static int findNumberOfInitialMatchingBases(String ref, String alt) {
+			String[] altToks = alt.split(",");
 			int AltCount = altToks.length;
 			String shortestAlt = altToks[0];
 			// find shortest alt allele
@@ -299,7 +300,7 @@ public class VCFLineParser extends PipelineObject implements VariantLineReader  
 					if (stripInitialMatchingBases) {
 						String[] altToks = alt.split(",");
 						int altCount = altToks.length;
-						int matches = findNumberOfInitialMatchingBases(ref, altToks);						
+						int matches = findNumberOfInitialMatchingBases(ref, alt);						
 						if (matches > 0) {	
 							// Trim Ref
 							ref = ref.substring(matches);
