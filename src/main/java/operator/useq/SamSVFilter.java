@@ -10,7 +10,7 @@ import buffer.BAMFile;
 
 /**
  * Implements USeq's SamFilter program.
- * Parses a SAM file into spanning, single, and soft-masked alignment groups.
+ * Parses a BAM file into spanning, single, and soft-masked alignment groups.
  * Also generates counts for each possible translocation
  *
  *   
