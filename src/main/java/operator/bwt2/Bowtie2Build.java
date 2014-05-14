@@ -1,20 +1,8 @@
 package operator.bwt2;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-
-import static java.lang.System.out;
-
-import org.apache.tools.ant.types.CommandlineJava.SysProperties;
-import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
-
 import pipeline.Pipeline;
-import pipeline.PipelineXMLConstants;
 
 /**
  * For Bowtie2's "2" algorithm

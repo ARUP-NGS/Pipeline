@@ -1,0 +1,5 @@
+#contig	start 	 end 	 ref 	 alt 	 quality 	 depth 	 zygosity 	 genotype.quality 	 var.depth	 gene	 nm.number	 cdot	 pdot	 depth	 exon.number	 variant.type	 exon.function	 pop.freq	 amr.freq	 exomes5400.frequency	 rsnum	 ARUP.freq	 ARUP.overall.freq	 ARUP.freq.details	 varbin.bin	 svm.effect.prediction	 sift.score	 pp.score	 phylop.score	 mt.score	 gerp.score	 lrt.score	 siphy.score	 mut.assessor.score	 hgmd.hit	 haloplex.freq	 splicing.all	 splicing.topnm	 splicing.topnmdiff	 omim.disease	 omim.disease.ids	 hgmd.info
+1	10	1	C	G	14.29	2.0	hom	5.97	2.0	NONE	-	-	-	2.0	-	intergenic	-	-	-	-	-	-	0.0	Total samples: 0	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+1	20	1	C	G	14.29	2.0	hom	5.97	2.0	NONE	-	-	-	2.0	-	intergenic	-	-	-	-	-	-	0.0	Total samples: 0	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+2	30	1	C	G	14.29	2.0	hom	5.97	2.0	NONE	-	-	-	2.0	-	intergenic	-	-	-	-	-	-	0.0	Total samples: 0	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+2	40	1	C	G	14.29	2.0	hom	5.97	2.0	NONE	-	-	-	2.0	-	intergenic	-	-	-	-	-	-	0.0	Total samples: 0	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-

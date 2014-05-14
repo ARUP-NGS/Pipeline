@@ -231,11 +231,33 @@ public class VCFLineParser extends PipelineObject implements VariantLineReader  
 			return toVariantRec(true);
 		}
 
+		/**
+		 * Calculates the number of shared bases between the ref sequence & string array of all alternate alleles
+		 * @return
+		 */
 		public static int findNumberOfInitialMatchingBases(String ref, String alt) {
-			int i;
-			for(i=0; i<Math.min(ref.length(), alt.length()); i++) {
-				if (ref.charAt(i) != alt.charAt(i)) {
-					return i;
+			String[] altToks = alt.split(",");
+			int AltCount = altToks.length;
+			String shortestAlt = altToks[0];
+			// find shortest alt allele
+			for(int j=0; j< AltCount; j++) {
+				if (shortestAlt.length() > altToks[j].length()){
+					shortestAlt = altToks[j];
+				}
+			}
+			// find length of matching bases across all alleles
+			int i;						
+			for(i=0; i<Math.min(ref.length(), shortestAlt.length()); i++) {
+				int validAlts = 0;
+				char refchar = ref.charAt(i);
+				for (int j=0; j< AltCount; j++) {
+					String testAlt = altToks[j];					
+					if (refchar == testAlt.charAt(i)) {
+						validAlts++;
+					}
+				}
+				if (validAlts - AltCount != 0) {
+					return i;							
 				}
 			}
 			return i; 
@@ -271,26 +293,47 @@ public class VCFLineParser extends PipelineObject implements VariantLineReader  
 					String alt = getAlt();
 					int start = getStart();
 					int end = ref.length();
+					
 
-					if ( (alt.length() != ref.length()) && stripInitialMatchingBases) {
-						//Remove initial characters if they are equal and add that many bases to start position
-						//Warning: Indels may no longer be left-aligned after this procedure
-						int matches = findNumberOfInitialMatchingBases(ref, alt);
-						if (matches > 0) {
-							alt = alt.substring(matches);
+					//Remove initial characters if they are equal (across all alt alleles) and add that many bases to start position
+					//Warning: Indels may no longer be left-aligned after this procedure
+					if (stripInitialMatchingBases) {
+						String[] altToks = alt.split(",");
+						int altCount = altToks.length;
+						int matches = findNumberOfInitialMatchingBases(ref, alt);						
+						if (matches > 0) {	
+							// Trim Ref
 							ref = ref.substring(matches);
-							if (alt.length()==0)
-								alt = "-";
-							if (ref.length()==0)
+							if (ref.length()==0) {
 								ref = "-";
+							}
+							// Trim Alt Alleles
+							String TrimmedAlt = new String();
+							for (int i=0; i< altCount; i++) {	
+								altToks[i] = altToks[i].substring(matches); 
+								if (i!=0){
+									TrimmedAlt += ",";
+								}
+								if (altToks[i].length()==0){								
+									TrimmedAlt += "-";
+								} 
+								else {
+									TrimmedAlt += altToks[i];
+								}								
+							}
+							alt = TrimmedAlt;
+							
+							//Update start position
 							start+=matches;
+							
+							//Update end position
+							if (ref.equals("-")) {
+								end = start;
+							}
+							else {
+								end = start + ref.length();
+							}								
 						}
-						
-
-						if (ref.equals("-"))
-							end = start;
-						else
-							end = start + ref.length();
 					}
 
 					rec = new VariantRec(contig, start, end,  ref, alt, getQuality(), isHetero() );

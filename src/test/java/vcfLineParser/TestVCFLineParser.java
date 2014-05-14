@@ -2,11 +2,13 @@ package vcfLineParser;
 
 import java.io.File;
 import java.io.IOException;
+
 import org.junit.Assert;
 import org.junit.Test;
 
 import util.VCFLineParser;
 import buffer.VCFFile;
+import buffer.variant.VariantRec;
 
 /**
  * Unit test for VCFLine parser
@@ -415,9 +417,13 @@ public class TestVCFLineParser {
 					boolean phase = reader.isPhased();
 					Assert.assertFalse(phase);
 				}
-				// Check second variant (multiple alleles)
+				// Check second variant (multiple alternate alleles)
 				else if (i==2) {
-
+					VariantRec rec = reader.toVariantRec();
+					// Check alt (via VariantRec)
+					String RecAlt = rec.getAlt();
+					Assert.assertTrue(RecAlt.equals("GTG,G"));					
+					
 					//Chech contig
 					String contig = reader.getContig();
 					Assert.assertTrue(contig.equals("8")); 

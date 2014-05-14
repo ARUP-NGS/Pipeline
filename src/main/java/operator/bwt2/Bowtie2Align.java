@@ -25,11 +25,10 @@ import buffer.ReferenceFile;
  *
  *   
  * @author Daniel
- * Heavily stealing^H^H^H^H^H^H^H^Hborrowing from brendan
+ * 
  */
 public class Bowtie2Align extends IOOperator {
 	
-	public static final String JVM_ARGS="jvmargs";
 	public static final String BOWTIE2_DIR = "bowtie2.dir";
 	public static final String SAMTOOLS_PATH = "samtools.path";
 	public static final String BOWTIE2_STYLE = "bowtie2.style";
@@ -74,17 +73,6 @@ public class Bowtie2Align extends IOOperator {
 		int threads = this.getPipelineOwner().getThreadCount();
 		
 		Logger.getLogger(Pipeline.primaryLoggerName).info("Bowtie2 is aligning " + inputBuffers.get(0).getFilename() + " and " + inputBuffers.get(1).getFilename() + " with " + threads + " threads");
-		
-		String jvmARGStr = properties.get(JVM_ARGS);
-		if (jvmARGStr == null || jvmARGStr.length()==0) {
-			jvmARGStr = (String) getPipelineProperty(JVM_ARGS);
-		}
-		//If it's still null then be sure to make it the empty string
-		if (jvmARGStr == null || jvmARGStr.length()==0) {
-			jvmARGStr = "";
-		}
-		if (!jvmARGStr.contains("java.io.tmpdir"))
-				jvmARGStr =jvmARGStr + " -Djava.io.tmpdir=" + System.getProperty("java.io.tmpdir");
 		
 		// This is where the command is made
 		// Note that -p  has been substituted for -t
