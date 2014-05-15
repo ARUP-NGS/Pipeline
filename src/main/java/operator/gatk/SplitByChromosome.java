@@ -1,7 +1,6 @@
 package operator.gatk;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -9,11 +8,11 @@ import java.util.logging.Logger;
 
 import operator.IOOperator;
 import operator.OperationFailedException;
-import operator.StringPipeHandler;
 import pipeline.Pipeline;
 import pipeline.PipelineXMLConstants;
 import buffer.BAMFile;
 import buffer.FileBuffer;
+import buffer.GlobFileBuffer;
 import buffer.MultiFileBuffer;
 import buffer.ReferenceFile;
 
@@ -58,6 +57,9 @@ public class SplitByChromosome extends IOOperator {
 			throw new OperationFailedException("No input BAM file found", this);
 		
 		outputFiles = (MultiFileBuffer) getOutputBufferForClass(MultiFileBuffer.class);
+		if (outputFiles instanceof GlobFileBuffer) {
+			((GlobFileBuffer)outputFiles).findFiles();
+		}
 		
 		Object propsPath = getPipelineProperty(PipelineXMLConstants.GATK_PATH);
 		if (propsPath != null)
@@ -87,6 +89,7 @@ public class SplitByChromosome extends IOOperator {
 		for(int i=0; i<chromsToMake.length; i++) {
 			String contig = chromsToMake[i];
 			Split job = new Split(contig);
+			Logger.getLogger(Pipeline.primaryLoggerName).info("Split operator is submitting split job for chromosome " + contig);		
 			threadPool.submit(job);
 		}
 
@@ -127,37 +130,6 @@ public class SplitByChromosome extends IOOperator {
 		outputFiles.addFile(outputFile);
 	}
 	
-	/**
-	 * Execute the given system command in it's own process
-	 * @param command
-	 * @throws OperationFailedException
-	 */
-	protected void executeCommand(String command) throws OperationFailedException {
-		Runtime r = Runtime.getRuntime();
-		Process p;
-
-		try {
-			p = r.exec(command);
-			Thread errorHandler = new StringPipeHandler(p.getErrorStream(), System.err);
-			errorHandler.start();
-
-			try {
-				if (p.waitFor() != 0) {
-					throw new OperationFailedException("Task terminated with nonzero exit value : " + System.err.toString() + " command was: " + command, this);
-				}
-			} catch (InterruptedException e) {
-				throw new OperationFailedException("Task was interrupted : " + System.err.toString() + "\n" + e.getLocalizedMessage(), this);
-			}
-
-
-		}
-		catch (IOException e1) {
-			throw new OperationFailedException("Task encountered an IO exception : " + System.err.toString() + "\n" + e1.getLocalizedMessage(), this);
-		}
-	}
-	
-
-	
 	
 	public class Split implements Runnable {
 
@@ -169,24 +141,25 @@ public class SplitByChromosome extends IOOperator {
 		
 		@Override
 		public void run() {
-			String inputPath = inputBam.getAbsolutePath();
-			int index = inputPath.lastIndexOf(".");
-			String prefix = inputPath;
-			if (index>0)
-				prefix = inputPath.substring(0, index);
-			String outputPath = prefix + ".c" + contig + ".bam";
-			
-			String command = "java -Xmx4g " + jvmARGStr + " -jar " + gatkPath + 
-					" -R " + referencePath + 
-					" -I " + inputBam.getAbsolutePath() + 
-					" -T PrintReads " +
-					" -o " + outputPath +
-					" -L " + contig;
-	
-
 			try {
-				Logger.getLogger(Pipeline.primaryLoggerName).info("Split operator is executing command " + command);		
 
+				Logger.getLogger(Pipeline.primaryLoggerName).info("Split operator is running for contig " + contig);
+				String inputPath = inputBam.getAbsolutePath();
+				int index = inputPath.lastIndexOf(".");
+				String prefix = inputPath;
+				if (index>0)
+					prefix = inputPath.substring(0, index);
+				String outputPath = prefix + ".c" + contig + ".bam";
+				String command = "java -Xmx4g " + jvmARGStr + " -jar " + gatkPath + 
+						" -R " + referencePath + 
+						" -I " + inputBam.getAbsolutePath() + 
+						" -T PrintReads " +
+						" -o " + outputPath +
+						" -L " + contig;
+
+				System.out.println("Running command: "+ command);
+
+				Logger.getLogger(Pipeline.primaryLoggerName).info("Split operator is executing command " + command);		
 				executeCommand(command);
 				addOutputFile(new BAMFile(new File(outputPath), contig));
 
