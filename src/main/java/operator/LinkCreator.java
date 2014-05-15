@@ -12,7 +12,9 @@ import pipeline.PipelineObject;
 import buffer.BAMFile;
 
 /**
- * Just creates a symbolic link from one dir to the BAM file in a results directory
+ * Just creates a symbolic link from one dir to the BAM file in a results directory.
+ * This is most often used to create a link from somewhere that a web server is looking
+ * at, such as /var/www/html/ to a bam file so the bam can be loaded into IGV remotely. 
  * @author brendan
  *
  */
@@ -23,19 +25,34 @@ public class LinkCreator extends Operator {
 	public static final String RESULT_DIR = "result.dir";
 
 	private String webRoot = "/var/www/html/";
-	private String resultDir = "bamlinks/";
+	private String resultDir = "results/";
 	private BAMFile finalBam = null;
 	private String sampleID = null;
-	
+	private String linkName = null;
 
 	@Override
 	public void performOperation() throws OperationFailedException {
-		String linkName = sampleID + ("" + System.currentTimeMillis()).substring(6) + ".bam"; 
+		linkName = sampleID + ("" + System.currentTimeMillis()).substring(6) + ".bam"; 
 		String linkTarget = finalBam.getAbsolutePath();
 
 		createLink(linkTarget, webRoot +  resultDir + linkName );
 		createLink(linkTarget + ".bai", webRoot +  resultDir + linkName + ".bai" );
 	}
+	
+	/**
+	 * Returns the name of the link created, relative to the 'web root'
+	 * For instance, if the full symbolic link is /var/www/html/results/file.bam, this
+	 * function will return results/file.bam . Use getWebRoot to obtain the web root portion 
+	 * @return
+	 */
+	public String getLinkName() {
+		return linkName;
+	}
+	
+	public String getWebRoot() {
+		return webRoot;
+	}
+	
 	
 	/**
 	 * Create and execute a process that makes a symbolic link to the target from the linkName
