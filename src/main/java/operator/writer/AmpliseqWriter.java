@@ -1,7 +1,5 @@
 package operator.writer;
 
-import gene.Gene;
-
 import java.io.PrintStream;
 
 import operator.variant.MedDirWriter;
@@ -42,11 +40,11 @@ public class AmpliseqWriter extends MedDirWriter {
 		//Write header for file
 		StringBuilder builder = new StringBuilder();
 		String[] keys = getKeys();
-		builder.append(keys[0]);
-		for(int i=1; i<keys.length; i++) {
+		builder.append("\tchrom\tpos\tref\talt\tnm.number");
+		for(int i=0; i<keys.length; i++) {
 			builder.append("\t" + keys[i]);
 		}
-		builder.append("\tchrom\tpos\tref\talt\tnm.number");
+		
 		outputStream.println(builder.toString());
 	}
 	
@@ -79,17 +77,18 @@ public class AmpliseqWriter extends MedDirWriter {
 		String[] altAlleles = rec.getAllAlts();
 		for(String alt : altAlleles){
 			builder.setLength(0);
-			builder.append( createGeneHyperlink(rec.getAnnotation(VariantRec.GENE_NAME)) );
+			builder.append(chrom + "\t" + pos + "\t" + end + "\t" + refAllele + "\t" + alt + "\t" + rec.getAnnotation(VariantRec.NM_NUMBER));
+//			builder.append( createGeneHyperlink(rec.getAnnotation(VariantRec.GENE_NAME)) );
 //			builder.append("," + chrom + "," + pos + "," + refAllele + "," + alt);
 
-			for(int i=1; i<keys.length; i++) {
+			for(int i=0; i<keys.length; i++) {
 				val = rec.getPropertyOrAnnotation(keys[i]).trim();
 				if(val == null){
 					val = "-";
 				}
 				builder.append("\t" + val);
 			}
-			builder.append("\t" + chrom + "\t" + pos + "\t" + end + "\t" + refAllele + "\t" + alt + "\t" + rec.getAnnotation(VariantRec.NM_NUMBER));
+			
 			//write string to stream
 			outputStream.println( builder.toString() );
 		}
