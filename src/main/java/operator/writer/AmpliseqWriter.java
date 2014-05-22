@@ -89,7 +89,7 @@ public class AmpliseqWriter extends MedDirWriter {
 				}
 				builder.append("\t" + val);
 			}
-			builder.append("\t" + chrom + "\t" + pos + "\t" + end + "\t" + refAllele + "\t" + alt + "\t" + rec.getAnnotation(VariantRec.NM_NUMBER));
+			builder.append("\t" + chrom + "\t" + pos + "\t" + refAllele + "\t" + alt + "\t" + rec.getAnnotation(VariantRec.NM_NUMBER));
 			//write string to stream
 			outputStream.println( builder.toString() );
 		}
