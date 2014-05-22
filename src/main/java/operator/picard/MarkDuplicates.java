@@ -46,7 +46,7 @@ public class MarkDuplicates extends CommandOperator {
 	public void initialize(NodeList children) {
 		super.initialize(children);
 		
-		String rmDup = this.getAttribute(PICARD_REMOVE_DUPLICATES);
+		rmDup = this.getAttribute(PICARD_REMOVE_DUPLICATES);
 		if(rmDup == null) {
 			rmDup = this.getPipelineProperty(PICARD_REMOVE_DUPLICATES);
 		}
