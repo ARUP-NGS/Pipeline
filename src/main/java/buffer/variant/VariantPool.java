@@ -41,7 +41,8 @@ import buffer.VCFFile;
 public class VariantPool extends Operator  {
 	
 	public static final String ALL_GENES = "all.genes"; //If specified as attribute, include all genes one variant per gene
-
+	public static final String STRIPINITIALMATCHINGBASEPARAM = "strip.initial.matching.bases"; //if specified as attribute, otherwise default to true (i.e. will strip)
+	
 	protected Map<String, List<VariantRec>>  vars = new HashMap<String, List<VariantRec>>();
 	private VariantRec qRec = new VariantRec("?", 0, 0, "x", "x", 0.0, false);
 	private boolean operationPerformed = false; //Set to true when performOperation called, avoids loading variants multiple times
@@ -105,6 +106,14 @@ public class VariantPool extends Operator  {
 
 	public VariantPool(VCFFile file) throws IOException {
 		this.varLineReader = new VCFLineParser(file);
+		
+		//Get attribute for trimming initial matching bases (defaults to true)
+		String stripStr = this.getAttribute(STRIPINITIALMATCHINGBASEPARAM);
+		if (stripStr != null) {
+			((VCFLineParser) this.varLineReader).setStripInitialMatchingBases(Boolean.parseBoolean(stripStr));
+		} else {
+			((VCFLineParser) this.varLineReader).setStripInitialMatchingBases(true); //default to trim bases
+		}
 		importFromVariantReader();
 	}
 	
@@ -120,6 +129,7 @@ public class VariantPool extends Operator  {
 			varLineReader.setFile(inputVariants.getFile());
 			//varLineReader.advanceLine(); // I think this shouldn't be here - setFile already primes the reader, currentLine should then be ready
 		}
+		
 		//int lineNumber = 0;
 		do {
 			VariantRec rec = varLineReader.toVariantRec();
@@ -1168,6 +1178,15 @@ public class VariantPool extends Operator  {
 		if (inputVariants instanceof VCFFile) {
 			try {
 				this.varLineReader = new VCFLineParser( (VCFFile)inputVariants );
+				
+				//Get attribute for trimming initial matching bases (defaults to true)
+				String stripStr = this.getAttribute(STRIPINITIALMATCHINGBASEPARAM);
+				if (stripStr != null) {
+					((VCFLineParser) this.varLineReader).setStripInitialMatchingBases(Boolean.parseBoolean(stripStr));
+				} else {
+					((VCFLineParser) this.varLineReader).setStripInitialMatchingBases(true); //default to trim bases
+				}
+				
 				importFromVariantReader();
 			} catch (IOException e) {
 				e.printStackTrace();

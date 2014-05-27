@@ -47,7 +47,7 @@ public class VCFLineParser extends PipelineObject implements VariantLineReader  
 		private int sampleColumn = -1; //Column that stores information for the given sample
 		protected File sourceFile;
 		
-		private boolean stripInitialMatchingBases = true;
+		private boolean stripInitialMatchingBases = true; //defaults to true (i.e. will trim)
 		
 		private String currentFormatStr = null;
 		
@@ -268,7 +268,7 @@ public class VCFLineParser extends PipelineObject implements VariantLineReader  
 		 * @param stripChr If true, strip 'chr' from contig name, if false do not alter contig name
 		 * @return A new variant record containing the information in this vcf line
 		 */
-		public VariantRec toVariantRec(boolean stripChr) {
+		public VariantRec toVariantRec(boolean stripChr) {			
 			if (! isPrimed()) {
 				try {
 					primeForReading();
@@ -928,6 +928,7 @@ public class VCFLineParser extends PipelineObject implements VariantLineReader  
 				}
 			}
 			
+			
 			//Get name of input file...
 			String fileName = this.getAttribute("filename");
 
@@ -960,10 +961,6 @@ public class VCFLineParser extends PipelineObject implements VariantLineReader  
 			}
 		}
 		
-
-		
-
-
 		private Map<String, String> attributes = new HashMap<String, String>();
 
 
