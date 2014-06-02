@@ -32,7 +32,7 @@ public class LinkCreator extends Operator {
 
 	@Override
 	public void performOperation() throws OperationFailedException {
-		linkName = sampleID + ("" + System.currentTimeMillis()).substring(6) + ".bam"; 
+		linkName = finalBam.getFilename(); 
 		String linkTarget = finalBam.getAbsolutePath();
 
 		createLink(linkTarget, webRoot +  resultDir + linkName );

@@ -14,13 +14,9 @@ import java.util.logging.Logger;
 import operator.OperationFailedException;
 import operator.annovar.Annotator;
 
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import pipeline.Pipeline;
-import pipeline.PipelineObject;
-import buffer.CSVFile;
 import buffer.variant.VariantRec;
 
 
@@ -53,7 +49,7 @@ public class SplicingPredictionAnnotator extends Annotator {
 		//First write chrom, pos, end, ref, & alt for all variants to a (tmp) CSV file
 		String csvPath = this.getProjectHome() + "splicedata" + ("" + (10000.0*Math.random())).substring(0, 4) + ".csv";
 		File data = new File(csvPath);
-		data.deleteOnExit();
+		//data.deleteOnExit();
 		try {
 			PrintStream dataStream = new PrintStream(new FileOutputStream(data));
 			//Loop through chromosomes
@@ -65,6 +61,7 @@ public class SplicingPredictionAnnotator extends Annotator {
 			dataStream.close();
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
+			throw new OperationFailedException("Uh-oh, could not find file!", this);
 		}
 		
 		//Run scoreSpliceSites on CSV file, i.e. annotation must have been previously done (outputs to standard out)

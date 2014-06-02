@@ -6,8 +6,10 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -26,6 +28,7 @@ import buffer.CSVFile;
 import buffer.FileBuffer;
 import buffer.InstanceLogFile;
 import buffer.MultiFileBuffer;
+import buffer.ReviewDirSubDir;
 import buffer.TextBuffer;
 import buffer.VCFFile;
 
@@ -53,6 +56,9 @@ public class ReviewDirGenerator extends Operator {
 	BEDFile capture = null;
 	private boolean createJSONVariants = true; //If true, create a compressed json variants file
 	
+	//Stores a list of all additional subdirs to be included in  the results directory. 
+	List<ReviewDirSubDir> subdirs = new ArrayList<ReviewDirSubDir>();
+	
 	@Override
 	public void performOperation() throws OperationFailedException {
 		Logger.getLogger(Pipeline.primaryLoggerName).info("Creating GenomicsReview directory in " + rootPath);
@@ -69,11 +75,35 @@ public class ReviewDirGenerator extends Operator {
 		createDir(rootPath, "array");
 		createDir(rootPath, "bed");
 		
-
 		Map<String, String> manifest = new HashMap<String, String>();
 		
+		for(ReviewDirSubDir subdir : subdirs) {
+			createDir(rootPath, subdir.getDirName());
+			File dest = new File(rootPath + "/" + subdir.getDirName() + "/" + subdir.getSubdirFile().getFilename());
+			
+			if (subdir.copy()) {
+				Logger.getLogger(Pipeline.primaryLoggerName).info("Copying " + subdir.getSubdirFile().getAbsolutePath() + " to " + dest.getAbsolutePath());
+				try {
+					copyTextFile(subdir.getSubdirFile().getFile(), dest);
+				} catch (IOException e) {
+					e.printStackTrace();
+					throw new OperationFailedException("Error copying file to destination " + dest.getAbsolutePath() + ": " + e.getLocalizedMessage(), this);
+				}
+			} 
+			else {
+				Logger.getLogger(Pipeline.primaryLoggerName).info("Moving " + subdir.getSubdirFile().getAbsolutePath() + " to " + dest.getAbsolutePath());
+				moveFile(subdir.getSubdirFile().getFile(), new File(rootPath + "/" + subdir.getDirName()));	
+			}
+			
+			if (subdir.getManifestKey() != null) {
+				manifest.put(subdir.getManifestKey(), subdir.getManifestValue());
+			}
+		}
+
+		
+		
 		//This should happen before files get moved around
-		createSampleManifest("sampleManifest.txt");
+		createSampleManifest(manifest, "sampleManifest.txt");
 		
 		if (qcReport != null) {
 			File dest = new File(rootPath +"/qc/");
@@ -147,7 +177,7 @@ public class ReviewDirGenerator extends Operator {
 	
 	
 	
-	private void createSampleManifest(String filename) {
+	private void createSampleManifest(Map<String, String> manifestEntries, String filename) {
 		File manifestFile = new File(rootPath + "/" +filename);
 		try {
 			manifestFile.createNewFile();
@@ -168,7 +198,7 @@ public class ReviewDirGenerator extends Operator {
 			if (variantFile != null) {
 				writer.write("vcf.file=var/" + variantFile.getFilename() + "\n");
 				//WARNING: Bad code here. This should be updated to make sure we're getting the correct
-				//link location from the status finalizer, which actually creates this link
+				//link location from the status finalizer or LinkCreator, which actually creates this link
 				writer.write("vcf.link=results/" + variantFile.getFilename() + "\n");
 			}
 			if (finalBAM != null) {
@@ -203,6 +233,11 @@ public class ReviewDirGenerator extends Operator {
 				for(FileBuffer fqBuf : fastqs2.getFileList()) {
 					writer.write("fastq.2.src=" +  fqBuf.getAbsolutePath() + "\n");
 				}
+			}
+			
+			for(String key : manifestEntries.keySet()) {
+				String val = manifestEntries.get(key);
+				writer.write(key + "=" +  val + "\n");
 			}
 			
 			writer.close();
@@ -302,6 +337,11 @@ public class ReviewDirGenerator extends Operator {
 			Node iChild = children.item(i);
 			if (iChild.getNodeType() == Node.ELEMENT_NODE) {
 				PipelineObject obj = getObjectFromHandler(iChild.getNodeName());
+				
+				if (obj instanceof ReviewDirSubDir) {
+					subdirs.add((ReviewDirSubDir)obj);
+				}
+				
 				if (obj instanceof BAMFile) {
 					finalBAM = (BAMFile)obj;
 				}

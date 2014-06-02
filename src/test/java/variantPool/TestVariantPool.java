@@ -14,9 +14,6 @@ public class TestVariantPool {
 	
 	@Test
 	public void TestVariantPoolCreation() {
-		
-		System.err.println("\n\n\n\n\nTesting variant pool creation!!!\n\n\n\n\n");
-		
 		File emptyVCF = new File("src/test/java/testvcfs/empty.vcf");
 		File freebayesVCF = new File("src/test/java/testvcfs/freebayes.single.vcf");
 		File gatkVCF = new File("src/test/java/testvcfs/gatksingle.vcf");

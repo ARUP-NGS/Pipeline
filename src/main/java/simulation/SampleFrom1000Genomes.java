@@ -20,7 +20,12 @@ public class SampleFrom1000Genomes {
 		
 		BufferedReader reader = new BufferedReader(new FileReader(origVCF));
 		String line = reader.readLine();
+		System.out.println(line);
 		while(line != null) {
+			if (line.startsWith("#") || line.length() == 0) {
+				line = reader.readLine();
+				continue;
+			}
 			String[] toks = line.split("\t");
 			String chr = toks[0];
 			String pos = toks[1];
@@ -33,7 +38,9 @@ public class SampleFrom1000Genomes {
 				String af = line.substring(index+3, next);
 				Double val = Double.parseDouble(af);
 				
-				System.out.println(chr + "\t" + pos + "\t" + ref + "\t" + alt + "\t" + val);
+				if (Math.random() < val) {				
+					System.out.println(chr + "\t" + pos + "\t.\t" + ref + "\t" + alt + "\t1.0\tPASS\t.");
+				}
 			}
 			line = reader.readLine();
 		}

@@ -2,12 +2,11 @@ package operator.samtools;
 
 import java.io.File;
 
-import buffer.BAMFile;
-import buffer.FileBuffer;
 import operator.CommandOperator;
 import operator.OperationFailedException;
-import pipeline.Pipeline;
 import pipeline.PipelineXMLConstants;
+import buffer.BAMFile;
+import buffer.FileBuffer;
 
 /**
  * Use samtools to sort the given input file

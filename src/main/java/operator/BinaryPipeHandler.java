@@ -37,7 +37,6 @@ public class BinaryPipeHandler extends Thread {
 					bytesRead = inpStr.read(data);
 					count++;
 				}
-				System.out.println("Binary pipe handler has reached end, quitting!");
 				writer.close();
 			} catch (IOException e) {
 				// TODO Auto-generated catch block

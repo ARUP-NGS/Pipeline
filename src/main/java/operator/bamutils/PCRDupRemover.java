@@ -37,7 +37,7 @@ public class PCRDupRemover extends IOOperator {
 
 		
 		long reads = 0;
-		
+		long readsWritten = 0;
 		for(String contig : window.getContigs()) {
 			System.out.println("Processing contig " + contig);
 			window.advanceToContig(contig);
@@ -45,17 +45,17 @@ public class PCRDupRemover extends IOOperator {
 			int contigLength = window.getContigMap().get(contig);
 			while(window.getCurrentPosition() < contigLength && window.hasMoreReadsInCurrentContig()) {
 				
-				int windowSize = window.windowSize();
-				if (windowSize == 0) {
-					windowSize = 100;
+				int windowExtent = window.extent();
+				if (windowExtent == 0) {
+					windowExtent = 100;
 				}
 				reads += window.size();
 				
 				//System.out.println("Advancing by " + windowSize + " from " + contig + ": " + window.getCurrentPosition());
-				processWindow(window, writer);
+				readsWritten += processWindow(window, writer);
 				
 				try {
-					window.advanceBy(windowSize);
+					window.advanceBy(windowExtent-5);
 				}
 				catch (IllegalArgumentException ex) {
 					//dont sweat it, but 
@@ -64,7 +64,8 @@ public class PCRDupRemover extends IOOperator {
 				}
 			}
 		}
-		
+		System.out.println("Read " + reads + " total reads");
+		System.out.println("Wrote " + readsWritten + " total reads");
 		reader.close();
 		writer.close();
 		window.close();
@@ -76,26 +77,29 @@ public class PCRDupRemover extends IOOperator {
 	 * @param window
 	 * @param writer
 	 */
-	private static void processWindow(BamWindow window, SAMFileWriter writer) {
+	private static int processWindow(BamWindow window, SAMFileWriter writer) {
 		Iterator<MappedRead> it = window.getIterator();
 		
 		//The reads are sorted by start position, so to identify groups of reads that share the same start
 		
 		int prevStartPos = -1;
+		int readsWritten = 0;
 		List<MappedRead> readsSharingStartPos = new ArrayList<MappedRead>(128);
 		while(it.hasNext()) {
 			MappedRead read = it.next();
-			if (read.getRecord().getAlignmentStart() == prevStartPos || readsSharingStartPos.size() == 0) {
-				readsSharingStartPos.add(read);
+			int startPos = read.getRecord().getAlignmentStart();
+			System.out.println("Read start " + read.getRecord().getAlignmentStart());
+			
+			if (startPos != prevStartPos && readsSharingStartPos.size()>0) { 
+				System.out.println("Processing new set of " + readsSharingStartPos.size() + " reads");
+				readsWritten += processSameStartReads(readsSharingStartPos, writer);
+				readsSharingStartPos.clear();
 			}
-			else {
-				if (readsSharingStartPos.size() > 2) {
-					processSameStartReads(readsSharingStartPos, writer);
-				}
-			}
-			prevStartPos = read.getRecord().getAlignmentStart();
+			
+			readsSharingStartPos.add(read);
+			prevStartPos = startPos;
 		}
-		
+		return readsWritten;
 	}
 
 	/**
@@ -104,17 +108,26 @@ public class PCRDupRemover extends IOOperator {
 	 * @param readsSharingStartPos
 	 * @param writer
 	 */
-	private static void processSameStartReads(
+	private static int processSameStartReads(
 			List<MappedRead> reads, SAMFileWriter writer) {
-		
-		//Not sure! How about we just remove half, randomly? 
-		 
+	
+		//Sanity check, make sure they all have the same start position
+		int pos = reads.get(0).getRecord().getAlignmentStart();
 		for(MappedRead read : reads) {
-			if (Math.random() < 0.5) {
-				writer.addAlignment(read.getRecord());
+			if (read.getRecord().getAlignmentStart() != pos) {
+				System.out.println("Whoa!");
 			}
 		}
 		
+		//Not sure! How about we just remove half, randomly? 
+		int readsWritten = 0;
+		for(MappedRead read : reads) {
+			if (Math.random() < 1.5) {
+				writer.addAlignment(read.getRecord());
+				readsWritten++;
+			}
+		}
+		return readsWritten;
 	}
 
 

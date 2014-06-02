@@ -1945,7 +1945,8 @@ public class VarUtils {
 				
 				boolean subtract = false;
 				for(VariantPool pool : pools) {
-					if (pool.findRecordNoWarn(var.getContig(), var.getStart()) != null) {
+					if (pool.findOverlappingRecord(var) != null) {
+					//if (pool.findRecordNoWarn(var.getContig(), var.getStart()) != null) {
 						subtract = true;
 						break;
 					}

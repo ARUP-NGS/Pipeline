@@ -89,16 +89,42 @@ public class MutateSequence {
 		throw new IllegalArgumentException("Unknown base found : " + curChar);
 	}
 
+	public static List<MutRec> applyMutantsFromFile(String contig, VCFFile variants) throws IOException {
+		VCFLineParser reader = new VCFLineParser(variants);
+		List<MutRec> muts = new ArrayList<MutRec>();
+		
+		contig = contig.split(" ")[0];
+		
+		
+		do {
+			if (! contig.equals( reader.getContig() )) {
+				continue;
+			}
+			
+			MutRec rec = new MutRec();
+			rec.ref = reader.getRef();
+			rec.alt = reader.getAlt();
+			rec.pos = reader.getStart();
+
+			muts.add(rec);
+			
+		} while(reader.advanceLine());
+		
+		return muts;
+	}
+	
 	/**
 	 * Takes mutations found in the given file and applies them to the this sequence
 	 * @param seq
 	 * @param variants
 	 * @throws IOException 
 	 */
-	public static List<MutRec> applyMutantsFromFile(String contig, StringBuilder seq, VCFFile variants, boolean firstStrand) throws IOException {
+	public static List<MutRec> applyMutantsFromFile(String contig, StringBuilder seq, VCFFile variants) throws IOException {
 		VCFLineParser reader = new VCFLineParser(variants);
 		List<MutRec> muts = new ArrayList<MutRec>();
 		int count = 0;
+		
+		contig = contig.split(" ")[0];
 		
 		int n = 0;
 		while(seq.charAt(n) == 'N') {
@@ -117,7 +143,7 @@ public class MutateSequence {
 				continue;
 			if (reader.getRef().length()==1 && reader.getAlt().length()==1 && (!reader.getAlt().equals("."))) {
 				//If we doing strand 1, only write if first is alt
-				if (firstStrand && reader.firstIsAlt()) {
+				//if (firstStrand && reader.firstIsAlt()) {
 					if (seq.length()>(pos+2)) {
 						MutRec rec = new MutRec();
 						rec.ref = "" + seq.charAt(pos-1-OFFSET); // 
@@ -141,32 +167,32 @@ public class MutateSequence {
 						break;
 					}
 					
-				}
+				//}
 				
 				//If we're doing strand two, only write if second is alt
-				if ((!firstStrand) && (reader.secondIsAlt())) {
-					if (seq.length()>(pos+2)) {
-						MutRec rec = new MutRec();
-						rec.ref = "" + seq.charAt(pos-1-OFFSET); // 
-						rec.alt = reader.getAlt();
-						rec.pos = pos;
-						
-						if (! reader.getRef().equalsIgnoreCase(rec.ref)) {
-							System.err.println("Uh-oh, reference from VCF does not match reference sequence at pos " + pos);
-							System.err.println("VCF ref: " + reader.getRef() + " actual seq:" + rec.ref + " pos on seq:" + (pos+1-OFFSET) );
-						}
-						
-						if (count % 100 == 0)
-							System.out.println("Applied: " + count + " mutations,... mutating " + pos + " from " + rec.ref + " to " + rec.alt);
-						count++;
-						
-						seq.replace(pos-1, pos, reader.getAlt());
-						muts.add(rec);
-					}
-					else {
-						System.err.println("Warning, file includes variant at site " + (pos+1) + " but seq is only " + seq.length() + " bases long");
-					}
-				}
+//				if ((!firstStrand) && (reader.secondIsAlt())) {
+//					if (seq.length()>(pos+2)) {
+//						MutRec rec = new MutRec();
+//						rec.ref = "" + seq.charAt(pos-1-OFFSET); // 
+//						rec.alt = reader.getAlt();
+//						rec.pos = pos;
+//						
+//						if (! reader.getRef().equalsIgnoreCase(rec.ref)) {
+//							System.err.println("Uh-oh, reference from VCF does not match reference sequence at pos " + pos);
+//							System.err.println("VCF ref: " + reader.getRef() + " actual seq:" + rec.ref + " pos on seq:" + (pos+1-OFFSET) );
+//						}
+//						
+//						if (count % 100 == 0)
+//							System.out.println("Applied: " + count + " mutations,... mutating " + pos + " from " + rec.ref + " to " + rec.alt);
+//						count++;
+//						
+//						seq.replace(pos-1, pos, reader.getAlt());
+//						muts.add(rec);
+//					}
+//					else {
+//						System.err.println("Warning, file includes variant at site " + (pos+1) + " but seq is only " + seq.length() + " bases long");
+//					}
+//				}
 
 			}
 			
@@ -431,7 +457,7 @@ public class MutateSequence {
 			StringBuilder seq = new StringBuilder();
 			String contig = null;
 			
-			contig = line.replace(">", "").trim();
+			contig = line.replace(">", "").trim().split(" ")[0];
 			line = reader.readLine();
 			
 			
@@ -441,7 +467,7 @@ public class MutateSequence {
 				if (line != null && line.contains(">")) {
 					contigs.put(contig, seq);
 					System.out.println("Found contig: " + contig + " of length: " + seq.length());
-					contig = line.replace(">", "").trim(); //New contig
+					contig = line.replace(">", "").trim().split(" ")[0]; //New contig
 					
 					seq = new StringBuilder();
 					line = reader.readLine();
@@ -465,7 +491,7 @@ public class MutateSequence {
 				if (vcfMuts != null) {
 					System.err.println("Applying mutants from file : " + vcfMuts.getName());
 					VCFFile mutFile = new VCFFile(vcfMuts);
-					List<MutRec> fileMuts = applyMutantsFromFile(key, contSeq, mutFile, false);
+					List<MutRec> fileMuts = applyMutantsFromFile(key, contSeq, mutFile /*, false */);
 					mutants.addAll(fileMuts);
 					System.err.println("Added " + fileMuts.size() + " variants from file");
 				}

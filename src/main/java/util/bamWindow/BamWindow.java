@@ -91,7 +91,7 @@ public class BamWindow {
 	 * @return
 	 */
 	public Iterator<MappedRead> getIterator() {
-		return records.iterator();
+		return records.descendingIterator(); //iterator();
 	}
 	
 	public boolean hasReadsInRegion(String chr, int start, int end) {
@@ -115,7 +115,7 @@ public class BamWindow {
 		return true;
 	}
 	
-	public int windowSize() {
+	public int extent() {
 		int size = size();
 		if (size == 0) {
 			return 0;

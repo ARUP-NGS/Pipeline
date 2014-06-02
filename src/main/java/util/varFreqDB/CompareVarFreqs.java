@@ -219,8 +219,9 @@ public class CompareVarFreqs {
 				}
 			} catch (ManifestParseException e) {
 				System.err.println("Warning: Skipping file : " + args[i]  + " : " + e.getLocalizedMessage());
-			} catch (IOException e) {
+			} catch (Exception e) {
 				// TODO Auto-generated catch block
+				System.err.println("Error in file : " + args[i]  + " : " + e.getLocalizedMessage() + " skipping it.");
 				e.printStackTrace();
 			}	
 		}

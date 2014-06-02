@@ -6,9 +6,6 @@ import java.net.UnknownHostException;
 import json.JSONException;
 import json.JSONObject;
 import operator.Operator;
-
-import org.w3c.dom.NodeList;
-
 import util.HttpUtils;
 
 /**
@@ -26,7 +23,6 @@ public class ServiceUpdateStartHook extends OperatorStartHook implements IOperat
 	protected static final String service = "/Dispatcher/UpdateService";
 	protected static final String success = "\"Success\"";
 	
-	protected String serverURL = null;
 	
 	protected String opCanName;
 	protected String opName;
@@ -91,19 +87,7 @@ public class ServiceUpdateStartHook extends OperatorStartHook implements IOperat
 		}
 	}
 
-	@Override
-	public void initialize(NodeList children) {
-		//Make sure there's a server URL specified
-		if (serverURL == null) {
-			serverURL = this.getAttribute("server.url");
-		}
-		if (serverURL == null) {
-			serverURL = this.getPipelineProperty("server.url");
-		}
-		if (serverURL == null) {
-				throw new IllegalArgumentException("No server url specified (use server.url attribute)");
-		}
-	}
+	
 
 	@Override
 	public void initHook(Operator op) {
