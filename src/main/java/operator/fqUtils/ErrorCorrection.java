@@ -57,7 +57,7 @@ public class ErrorCorrection extends CommandOperator {
 			lighter = properties.get(LIGHTER);
 		}
 		String parameters = " -t " + threads + " -k " + knum + " " + genomeSize + " " + alpha;
-		String commandStr = lighter + " -r " + inputFastq + parameters;
+		String commandStr = lighter + " -r " + inputFastq + parameters + " -all";
 		return commandStr;
 	}
 
