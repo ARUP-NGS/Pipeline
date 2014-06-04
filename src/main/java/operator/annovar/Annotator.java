@@ -72,6 +72,24 @@ public abstract class Annotator extends Operator {
 			
 		cleanup();
 	}
+
+	/**
+	 * Add the given annotation to the variant, appending it (after a semicolon) after the existing
+	 * annotation if there is one already for the key, otherwise just creating it as usual. 
+	 * @param var
+	 * @param key
+	 * @param value
+	 */
+	protected static void appendAnnotation(VariantRec var, String key, String value) {
+		String existing = var.getAnnotation(key);
+		if (existing == null) {
+			var.addAnnotation(key, value);
+		}
+		else {
+			var.addAnnotation(key, existing + "; " + value);
+		}
+	}
+
 	
 	/**
 	 * This method is called prior to annotation of the variants. It's a no-op by default,

@@ -4,11 +4,8 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import util.Interval;
 
@@ -19,10 +16,8 @@ import util.Interval;
  * @author brendan
  *
  */
-public class ExonLookupService {
+public class ExonLookupService extends AbstractIntervalContainer {
 
-	
-	private Map<String, List<Interval>> exonMap = null;
 	
 	/**
 	 * Read all info from file into exonMap
@@ -64,37 +59,15 @@ public class ExonLookupService {
 		reader.close();
 		
 		//Sort all intervals within contigs by start position. 
-		if (exonMap != null) {
-			for(String contig : exonMap.keySet()) {
-				List<Interval> intervals = exonMap.get(contig);
+		if (allIntervals != null) {
+			for(String contig : allIntervals.keySet()) {
+				List<Interval> intervals = allIntervals.get(contig);
 				Collections.sort(intervals);
 			}
 		}
 	}
 	
-	public String[] getInfoForRange(String contig, int start, int end) {
-		if (exonMap == null) {
-			throw new IllegalStateException("Exon information has not been initialized");
-		}
-		
-		List<Interval> intervals = exonMap.get(contig);
-		
-		if (intervals == null) {
-			return new String[]{};
-		}
-		
-		//Find all intervals that contain pos and store their info in a list
-		List<String> exons = new ArrayList<String>(4);
-		for(Interval inter : intervals) {
-			if (inter.intersects(start, end)) {
-				exons.add( inter.getInfo() != null 
-						? inter.getInfo().toString()
-						: "");
-			}
-		}
-		
-		return exons.toArray(new String[exons.size()]);
-	}
+	
 
 	/**
 	 * The primary function of this class: returns a list of genes, NMs, and exons intersecting 
@@ -103,37 +76,18 @@ public class ExonLookupService {
 	 * @param pos
 	 * @return
 	 */
-	public String[] getInfoForPosition(String contig, int pos) {
-		return getInfoForRange(contig, pos, pos+1);
+	public Object[] getInfoForPosition(String contig, int pos) {
+		return getIntervalObjectsForRange(contig, pos, pos+1);
 	}
 	
-	/**
-	 * Add a new interval to the exonMap, creating a new contig - and a new map - if necessary. 
-	 * @param contig
-	 * @param start
-	 * @param end
-	 * @param desc
-	 */
-	private void addInterval(String contig, int start, int end, String desc) {
-		if (exonMap == null) {
-			exonMap = new HashMap<String, List<Interval>>();
-		}
-		
-		List<Interval> intervals = exonMap.get(contig);
-		if (intervals == null) {
-			intervals = new ArrayList<Interval>(1024);
-			exonMap.put(contig, intervals);
-		}
-		
-		intervals.add(new Interval(start, end, desc));
-	}
+
 	
 	
 	public static void main(String[] agrs) throws IOException {
 		ExonLookupService es = new ExonLookupService();
 		es.buildExonMap(new File("/home/brendan/resources/features20130508.bed"));
 		
-		String[] infos = es.getInfoForRange("15", 48937000, 48938200);
+		Object[] infos = es.getIntervalObjectsForRange("15", 48937000, 48938200);
 		
 		for(int i=0; i<infos.length; i++) {
 			System.out.println(infos[i]);

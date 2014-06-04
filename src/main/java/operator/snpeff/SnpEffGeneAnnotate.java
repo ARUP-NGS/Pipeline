@@ -169,16 +169,7 @@ public class SnpEffGeneAnnotate extends Annotator {
 		appendAnnotation(var, VariantRec.VARIANT_TYPE, topHit.changeType.replace("_CODING", ""));
 	}
 	
-	private static void appendAnnotation(VariantRec var, String key, String value) {
-		String existing = var.getAnnotation(key);
-		if (existing == null) {
-			var.addAnnotation(key, value);
-		}
-		else {
-			var.addAnnotation(key, existing + "; " + value);
-		}
-	}
-
+	
 	private static int calculateRank(String changeType) {
 		if (changeType == null || changeType.length()==0) {
 			return 0;
