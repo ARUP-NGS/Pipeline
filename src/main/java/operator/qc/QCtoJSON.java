@@ -199,9 +199,9 @@ public class QCtoJSON extends Operator {
 								cov = Double.parseDouble(toks[4]);
 							}
 							
-							String[] features = new String[]{};
+							Object[] features = new String[]{};
 							if (featureLookup != null) {
-								features = featureLookup.getInfoForRange(contig, (int)startPos, (int)endPos);							
+								features = featureLookup.getIntervalObjectsForRange(contig, (int)startPos, (int)endPos);							
 							}
 							String featureStr = QCReport.mergeStrings(features);
 							if (length > 1 && (featureStr.contains("exon"))) {
