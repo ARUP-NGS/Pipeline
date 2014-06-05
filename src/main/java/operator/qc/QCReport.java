@@ -928,9 +928,9 @@ public class QCReport extends Operator {
 										cause = cause.toLowerCase();
 										cause  = ("" + cause.charAt(0)).toUpperCase() + cause.substring(1);
 
-										String[] features = new String[]{};
+										Object[] features = new String[]{};
 										if (featureLookup != null) {
-											features = featureLookup.getInfoForRange(contig, (int)startPos, (int)endPos);							
+											features = featureLookup.getIntervalObjectsForRange(contig, (int)startPos, (int)endPos);							
 										}
 										String featureStr = mergeStrings(features);
 										if (length > 1 && (featureStr.contains("exon"))) {
@@ -981,7 +981,7 @@ public class QCReport extends Operator {
 	 * @param features
 	 * @return
 	 */
-	 static String mergeStrings(String[] features) {
+	 static String mergeStrings(Object[] features) {
 		if (features.length == 0) {
 			return "";
 		}
@@ -990,7 +990,7 @@ public class QCReport extends Operator {
 		List<String> uniq = new ArrayList<String>();
 		for(int i=0; i<features.length; i++) {
 			if (! uniq.contains(features[i])) {
-				uniq.add(features[i]);
+				uniq.add(features[i].toString());
 			}
 		}
 		

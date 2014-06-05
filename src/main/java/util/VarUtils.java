@@ -2073,9 +2073,9 @@ public class VarUtils {
 			if (minQuality < 0.0) {
 				minQuality = -0.0;
 			}
-			if (maxQuality > 1000.0) {
-				maxQuality = 1000.0;
-			}
+//			if (maxQuality > 1000.0) {
+//				maxQuality = 1000.0;
+//			}
 			
 			if (minQuality == 0.0) {
 				minQuality = 0.000001;

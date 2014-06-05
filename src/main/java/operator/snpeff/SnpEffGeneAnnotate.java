@@ -31,9 +31,11 @@ public class SnpEffGeneAnnotate extends Annotator {
 	public static final String SNPEFF_DIR = "snpeff.dir";
 	public static final String SNPEFF_GENOME = "snpeff.genome";
 	public static final String PERFORM_MITO_SUB = "perform.mito.sub";	
+	public static final String UPDOWNSTREAM_LENGTH = "updownstream.length";
 	
 	protected String snpEffDir = null;
 	protected String snpEffGenome = null;
+	protected int updownStreamLength = 1000;
 	protected boolean performMitoSub = false; //If true, do a substitution of mito chr name to 
 	
 	private Map<String, List<SnpEffInfo> > annos = null;
@@ -68,7 +70,7 @@ public class SnpEffGeneAnnotate extends Annotator {
 
 
 		//Next, run snpeff using the input file we just made
-		String command = "java -Xmx8g -jar " + snpEffDir + "/snpEff.jar -c " + snpEffDir + "/snpEff.config " + snpEffGenome + " -hgvs -nostats -i txt -o txt " + input.getAbsolutePath(); 
+		String command = "java -Xmx8g -jar " + snpEffDir + "/snpEff.jar -c " + snpEffDir + "/snpEff.config " + snpEffGenome + " -hgvs -nostats -ud " + updownStreamLength + " -i txt -o txt " + input.getAbsolutePath(); 
 		Logger.getLogger(Pipeline.primaryLoggerName).info("Executing command: " + command);
 		try {
 			
@@ -300,6 +302,11 @@ public class SnpEffGeneAnnotate extends Annotator {
 		String performMitoSubStr = this.getAttribute(PERFORM_MITO_SUB);
 		if (performMitoSubStr != null) {
 			performMitoSub = Boolean.parseBoolean(performMitoSubStr);
+		}
+		
+		String updownStreamStr = this.getAttribute(UPDOWNSTREAM_LENGTH);
+		if (updownStreamStr != null) {
+			updownStreamLength = Integer.parseInt(updownStreamStr);
 		}
 		
 		String nmDefs = this.getAttribute(NM_DEFS);
