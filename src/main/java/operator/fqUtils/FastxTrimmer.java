@@ -1,7 +1,10 @@
 package operator.fqUtils;
 
+import java.util.logging.Logger;
+
 import operator.CommandOperator;
 import operator.OperationFailedException;
+import pipeline.Pipeline;
 import buffer.FastQFile;
 
 public class FastxTrimmer extends CommandOperator {
@@ -14,8 +17,13 @@ public class FastxTrimmer extends CommandOperator {
 		String outputFastq = getOutputBufferForClass(FastQFile.class)
 				.getAbsolutePath();
 
-		String trim = properties.get(TRIM_NUM);
+		String trim = getAttribute(TRIM_NUM);
+		if (trim == null) {
+			Logger.getLogger(Pipeline.primaryLoggerName).info("Last nucleotide to keep has not been set. Please set it - 30 is typical.");
+			throw new OperationFailedException("Number of nucleotides to keep is required for FastxTrimmer operator", null);
+		}
 		String fastxTrim = getPipelineProperty(FASTX_TK);
+		
 		String command_str = fastxTrim + " -l " + trim + " -i " 
 				+ inputFastq + " -o " + outputFastq;
 		return command_str;
