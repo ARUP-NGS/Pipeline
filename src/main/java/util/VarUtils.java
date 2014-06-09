@@ -590,6 +590,8 @@ public class VarUtils {
 		if (firstArg.equals("tkgComp") || firstArg.equals("tgkComp")) {
 			performTKGComp(args);
 			return;
+	
+		
 		}
 		
 		if (firstArg.equals("snpFilter")) {
@@ -851,6 +853,11 @@ public class VarUtils {
 			return;
 		}
 			
+		
+		if (firstArg.equals("combineVCFSamples")) {
+			performCombineSampleVCFs(args);
+			return;
+		}
 		
 		//General filter, second arg must match a column header, third arg is value for filter
 		if (firstArg.equals("filter") || firstArg.equals("ufilter")) {
@@ -2220,6 +2227,55 @@ public class VarUtils {
 		return;
 	}
 
+	private static void performCombineSampleVCFs(String[] args) {
+		if (args.length < 2) {
+			System.out.println("Enter the names of two VCF files to merge");
+			return;
+		}
+		
+		VariantPool poolA;
+		VariantPool poolB;
+		VariantPool poolFinal = new VariantPool();
+		try {
+			poolA = getPool(new File(args[1]));
+			poolB = getPool(new File(args[2]));
+			
+			for(String contig : poolA.getContigs()) {
+				for(VariantRec varA : poolA.getVariantsForContig(contig)) {
+					boolean isInB = poolB.findRecord(varA.getContig(), varA.getStart(), varA.getRef(), varA.getAlt()) != null;
+					
+					//Variant is homozygous
+					if (isInB) {
+						poolFinal.addRecord(new VariantRec(contig, varA.getStart(), varA.getEnd(), varA.getRef(), varA.getAlt(), 100.0, false));
+					}
+					else {
+						poolFinal.addRecord(new VariantRec(contig, varA.getStart(), varA.getEnd(), varA.getRef(), varA.getAlt(), 100.0, true));
+					}
+					
+				}
+			}
+			
+			
+			for(String contig : poolB.getContigs()) {
+				for(VariantRec varB : poolB.getVariantsForContig(contig)) {
+					boolean isInA = poolA.findRecord(varB.getContig(), varB.getStart(), varB.getRef(), varB.getAlt()) != null;
+					if (! isInA) {
+						poolFinal.addRecord(new VariantRec(contig, varB.getStart(), varB.getEnd(), varB.getRef(), varB.getAlt(), 100.0, true));
+					}
+				}
+			}
+			
+
+			poolFinal.sortAllContigs();
+			poolFinal.listAll(System.out);
+			
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
+	
 	private static void performMergeBED(String[] args) {
 		if (args.length < 2) {
 			System.out.println("Enter the names of two bed files to combine");

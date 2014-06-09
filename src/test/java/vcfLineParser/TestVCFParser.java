@@ -2,6 +2,7 @@ package vcfLineParser;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Set;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -27,6 +28,13 @@ public class TestVCFParser {
 		
 		try {
 			VCFParser parser = new VCFParser(freebayesVCF);
+			
+			Assert.assertNotNull(parser.getCreator());
+			Assert.assertTrue(parser.getCreator().startsWith("freeBayes"));
+			
+			Set<String> samples = parser.getSamples();
+			Assert.assertTrue(samples.size() ==1);
+			Assert.assertTrue(samples.iterator().next().equals("sample"));
 			
 			HeaderEntry entry = parser.getHeaderEntry("NS");
 			Assert.assertNotNull(entry);
@@ -60,6 +68,13 @@ public class TestVCFParser {
 		
 		try {
 			VCFParser parser = new VCFParser(gatkVCF);
+			
+			Assert.assertNotNull(parser.getCreator());
+			Assert.assertTrue(parser.getCreator().startsWith("GATK"));
+			
+			Set<String> samples = parser.getSamples();
+			Assert.assertTrue(samples.size() ==1);
+			Assert.assertTrue(samples.iterator().next().equals("sample"));
 			
 			HeaderEntry entry = parser.getHeaderEntry("MQ");
 			Assert.assertNotNull(entry);

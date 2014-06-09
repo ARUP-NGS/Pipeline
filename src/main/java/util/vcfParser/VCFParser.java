@@ -6,6 +6,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import buffer.variant.VariantLineReader;
 import buffer.variant.VariantRec;
@@ -22,7 +23,7 @@ import buffer.variant.VariantRec;
  *
  */
 public class VCFParser implements VariantLineReader {
-
+	
 	protected Map<String, HeaderEntry> headerItems = null; //Stores info about FORMAT and INFO fields from header
 	protected Map<String, String> headerProperties = null; //Stores generic key=value pairs from header, not FORMAT or INFO 
 	
@@ -30,11 +31,14 @@ public class VCFParser implements VariantLineReader {
 	
 	private BufferedReader reader = null;
 	
+	private String creator = null; //Tool that created this vcf, usually GATK / UG, FreeBayes, etc. 
+	
 	private int altIndex = 0; //Index of alt allele for the current line
 	private String currentLine = null;
 	private String[] currentLineToks = null; //current line split on tabs
-	private int altsInCurrentLine = 1;
-	
+	private int altsInCurrentLine = 1; //Total number of alts found on current line
+	private int sampleIndex = 0; //Designates the index of the sample we want, defaulting to the first sample listed 
+	private Map<String, Integer> sampleIndexes = null;
 	
 	public VCFParser(File source) throws IOException {
 		setFile(source);
@@ -44,7 +48,24 @@ public class VCFParser implements VariantLineReader {
 	}
 	
 	/**
-	 * Read the header of the file but do not parse any variants
+	 * Create a new vcf parser that only returns variants for the sample name provided
+	 * @param source
+	 * @param sampleName
+	 * @throws IOException
+	 */
+	public VCFParser(File source, String sampleName) throws IOException {
+		setFile(source);
+		reader = new BufferedReader(new FileReader(source));
+		parseHeader();
+		
+		if (! sampleIndexes.containsKey(sampleName)) {
+			throw new IllegalArgumentException("Sample " + sampleName + " not found in this vcf.");
+		}
+		sampleIndex = sampleIndexes.get(sampleName);
+	}
+	
+	/**
+	 * Read the header of the file, including the list of samples, but do not parse any variants
 	 * @throws IOException 
 	 */
 	public void parseHeader() throws IOException {
@@ -53,6 +74,7 @@ public class VCFParser implements VariantLineReader {
 		}
 		headerItems = new HashMap<String, HeaderEntry>();
 		headerProperties = new HashMap<String, String>();
+		sampleIndexes = new HashMap<String, Integer>();
 		String line = reader.readLine();
 		while(line != null && line.startsWith("##")) {
 			if (line.startsWith("##INFO") || line.startsWith("##FORMAT")) {
@@ -73,6 +95,47 @@ public class VCFParser implements VariantLineReader {
 		if (! line.toUpperCase().startsWith("#CHR")) {
 			throw new IOException("Didn't find expected next line starting with #CHROM");
 		}
+		
+		
+		//Parse samples
+		String[] toks = line.split("\t");
+		for(int i=9; i<toks.length; i++) {
+			sampleIndexes.put(toks[i].trim(), i-9);
+		}
+		
+		//Infer creator. Freebayes & ion torrent define a source= field in the header
+		//but GATK does not
+		creator =  headerProperties.get("source");
+		if (creator == null) {
+			if (headerProperties.containsKey("UnifiedGenotyper")) {
+				creator = "GATK / UnifiedGenotyper";
+			}
+		}
+		
+	}
+	
+	/**
+	 * Names of all samples found in this VCF
+	 * @return
+	 */
+	public Set<String> getSamples() {
+		return sampleIndexes.keySet();
+	}
+	
+	/**
+	 * A string representing the creator of this VCF, usually "GATK / UnifiedGenotyper", "FreeBayes", etc. 
+	 * @return
+	 */
+	public String getCreator() {
+		return creator;
+	}
+	
+	/**
+	 * The reference used to call variants, from the reference=  header field
+	 * @return
+	 */
+	public String getReference() {
+		return headerProperties.get("reference");
 	}
 	
 	/**
