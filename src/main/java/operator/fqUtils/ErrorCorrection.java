@@ -1,7 +1,5 @@
 package operator.fqUtils;
 
-
-
 /**
  * Implements lighter, an error correction program for Illumina reads
  * @author daniel
