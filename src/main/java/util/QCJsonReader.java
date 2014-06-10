@@ -246,9 +246,62 @@ public class QCJsonReader {
 			return;
 		}
 		
+		if (command.startsWith("emit")) {
+			paths.remove(0); //remove first element, it's the emit string
+			performEmit(args[1], paths, System.out);
+			return;
+		}
+		
 		System.err.println("Unrecognized command");
 		
 	}
+
+	/**
+	 * Emit a single qc metric with no other output. The 
+	 * @param paths
+	 * @param out
+	 * @param converter
+	 */
+	public static void performEmit(String metric, List<String> paths, PrintStream out) {
+		for(String path : paths) {
+			try {
+				JSONObject obj = toJSONObj(path);
+				
+				String[] mPath = metric.split(":");
+				boolean lastIsArray = false;
+				try {
+					Integer index = Integer.parseInt(mPath[mPath.length-1]);
+					lastIsArray = true;
+					for(int i=0; i<mPath.length-2; i++){
+						obj = obj.getJSONObject(mPath[i]);
+					}
+					JSONArray array = obj.getJSONArray(mPath[mPath.length-2]);
+					out.println(path + ":\t" + array.get(index).toString());
+				} catch (NumberFormatException ex) {
+					//No big deal, just not an array index
+				}
+				
+				if (!lastIsArray) {
+					for(int i=0; i<mPath.length-1; i++){
+						obj = obj.getJSONObject(mPath[i]);
+					}
+
+					out.println(path + ":\t" + obj.get(mPath[mPath.length-1]).toString());
+				}
+				
+				
+				
+				
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
+
 	
 	/**
 	 * Create a table of data from the given input paths that is formatted just like the prereview data table
