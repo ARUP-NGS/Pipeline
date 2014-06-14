@@ -46,6 +46,11 @@ public abstract class Annotator extends Operator {
 		return false;
 	}
 	
+	
+	public VariantPool getVariants() {
+		return variants;
+	}
+	
 	public void performOperation() throws OperationFailedException {
 		if (variants == null)
 			throw new OperationFailedException("No variant pool specified", this);
@@ -106,6 +111,9 @@ public abstract class Annotator extends Operator {
 	
 	@Override
 	public void initialize(NodeList children) {
+		if (children == null) {
+			return;
+		}
 		for(int i=0; i<children.getLength(); i++) {
 			Node child = children.item(i);
 			if (child.getNodeType() == Node.ELEMENT_NODE) {

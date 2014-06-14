@@ -44,7 +44,7 @@ public class SnpEffGeneAnnotate extends Annotator {
 	public void prepare() {
 		
 		//First we have to build an input file
-		File input = new File(this.getProjectHome() + "/snpeff.input");
+		File input = new File(this.getProjectHome() + "/snpeff.input.vcf");
 		File outputFile = new File("snpeff.output");
 		int varsWritten = 0;
 		
@@ -53,6 +53,9 @@ public class SnpEffGeneAnnotate extends Annotator {
 			outputFile.createNewFile();
 
 			BufferedWriter writer = new BufferedWriter(new FileWriter(input));
+			writer.write("##fileformat=VCFv4.1\n");
+			writer.write("#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	sample\n");
+			
 			for(String contig: variants.getContigs()) {
 				for(VariantRec rec: variants.getVariantsForContig(contig)) {
 					String varStr = convertVar(rec);		
@@ -70,7 +73,7 @@ public class SnpEffGeneAnnotate extends Annotator {
 
 
 		//Next, run snpeff using the input file we just made
-		String command = "java -Xmx8g -jar " + snpEffDir + "/snpEff.jar -c " + snpEffDir + "/snpEff.config " + snpEffGenome + " -hgvs -nostats -ud " + updownStreamLength + " -i txt -o txt " + input.getAbsolutePath(); 
+		String command = "java -Xmx8g -jar " + snpEffDir + "/snpEff.jar -c " + snpEffDir + "/snpEff.config " + snpEffGenome + " -hgvs -nostats -ud " + updownStreamLength + " " + input.getAbsolutePath(); 
 		Logger.getLogger(Pipeline.primaryLoggerName).info("Executing command: " + command);
 		try {
 			
@@ -82,6 +85,7 @@ public class SnpEffGeneAnnotate extends Annotator {
 		}
 		
 		//Finally, parse the output file and read it into memory so we can quickly annotate the variants
+		//If there are tons and tons of variants, this might break. 
 		annos = new HashMap<String, List<SnpEffInfo>>();
 		try {
 			BufferedReader reader = new BufferedReader(new FileReader(outputFile));
@@ -91,16 +95,17 @@ public class SnpEffGeneAnnotate extends Annotator {
 					line = reader.readLine();
 					continue;
 				}
-				SnpEffInfo info = parseOutputLine(line);
+				List<SnpEffInfo> newInfos = parseOutputLineVCF(line);
 				String[] toks = line.split("\t");
 				
-				String varKey = convertVar(toks[0], Integer.parseInt(toks[1]),toks[2], toks[3]);
+				String varKey = convertVar(toks[0], Integer.parseInt(toks[1]),toks[3], toks[4]);
 				List<SnpEffInfo> infos = annos.get(varKey);
 				if (infos == null) {
 					infos = new ArrayList<SnpEffInfo>();
-					annos.put(varKey, infos);
+					annos.put(varKey, newInfos);
+				} else {
+					infos.addAll(newInfos);
 				}
-				infos.add(info);
 				
 				line = reader.readLine();
 			}
@@ -207,8 +212,8 @@ public class SnpEffGeneAnnotate extends Annotator {
 	private static String convertVar(String chr, int pos, String ref, String alt) {
 		String cont = chr;
 		if (alt.contains(",")) {
-			String var1 = convertVar(chr, pos, ref, alt.split(",")[0]);
-			String var2 = convertVar(chr, pos, ref, alt.split(",")[1]);
+			String var1 = convertVar(chr, pos, ref, alt.split(",", 2)[0]);
+			String var2 = convertVar(chr, pos, ref, alt.split(",", 2)[1]);
 			return var1 + "\n" + var2;
 		}
 		
@@ -216,13 +221,22 @@ public class SnpEffGeneAnnotate extends Annotator {
 			cont = "NC_012920";
 		}
 
+		if (ref.equals("*")) {
+			ref = "-";
+		}
+		alt = alt.replace("+", "");
+		alt = alt.replace("DEL", "-");
+		
+		
+		
 		if (alt.equals("-")) {
-			return cont + "\t" + (pos-1) + "\t" + ref + "\tN";
+			ref = ref.replace("-", "");
+			return cont + "\t" + (pos-1) + "\t.\tG" + ref + "\tG\t.\t.\t.";
 		} else {
 			if (ref.equals("-")) {
-				return cont + "\t" + (pos-1) + "\tG\tG" + alt;
+				return cont + "\t" + (pos-1) + "\t.\tG\tG" + alt + "\t.\t.\t.";
 			} else {
-				return cont + "\t" + pos + "\t" + ref + "\t" + alt;	
+				return cont + "\t" + pos + "\t.\t" + ref + "\t" + alt + "\t.\t.\t.";	
 			}
 		}		
 	}
@@ -257,41 +271,130 @@ public class SnpEffGeneAnnotate extends Annotator {
 		return convertVar(rec.getContig(), rec.getStart(), rec.getRef(), rec.getAlt());
 	}
 	
-	private SnpEffInfo parseOutputLine(String line) {
+	/**
+	 * 
+	 * ##INFO=<ID=EFF,Number=.,Type=String,Description="Predicted effects for this variant.Format: 'Effect ( Effect_Impact | Functional_Class | Codon_Change | Amino_Acid_Change| Amino_Acid_length | Gene_Name | Transcript_BioType | Gene_Coding | Transcript_ID | Exon_Rank  | Genotype_Number [ | ERRORS | WARNINGS ] )' ">
+	 *  0: Effect_Impact 
+	 *  1: Functional_Class 
+	 *  2: Codon_Change 
+	 *  3: Amino_Acid_Change
+	 *  4: Amino_Acid_length 
+	 *  5: Gene_Name
+	 *  6: Transcript_BioType 
+	 *  7: Gene_Coding 
+	 *  8: Transcript_ID 
+	 *  9: Exon_Rank  
+	 *  10: Genotype_Number 
+	 *  11: ERRORS 
+	 *  12: WARNINGS 
+	 * @param line
+	 * @return
+	 */
+	private List<SnpEffInfo> parseOutputLineVCF(String line) {
 		String[] toks = line.split("\t");
-		SnpEffInfo info = new SnpEffInfo();
-		if (toks.length < 2) {
-			return info;
-		}
-		info.gene = toks[10];
-		info.transcript = toks[12];
-		info.exon = toks[14];
-		info.changeType = toks[15];
-		
-		info.pDot = "";
-		info.cDot = "";
-		if (!info.changeType.equals("INTERGENIC") && toks.length>16) {
-			if (toks[16].length()>0) {
-				String[] cp = toks[16].split("/");
-				if (cp.length > 1) {
-					info.pDot = cp[0];
-					info.cDot = cp[1];
-				}
-				else {
-					info.cDot = toks[16];
-				}
-			}	
+		if (toks.length < 8) {
+			return new ArrayList<SnpEffInfo>();
 		}
 		
-		return info;
+		//SNPEFF stuff appears in the INFO field, that's column index 7
+		String[] effs = toks[7].split(";");
+		String eff = null;
+		for(int i=0; i<effs.length; i++) {
+			if (effs[i].startsWith("EFF=")) {
+				eff = effs[i];
+				break;
+			}
+		}
+		
+		List<SnpEffInfo> infoList = parseInfoFromToken(eff);
+		return infoList;	
 	}
+	
+	private List<SnpEffInfo> parseInfoFromToken(String token) {
+		if (! token.startsWith("EFF=")) {
+			throw new IllegalArgumentException("This doesn't look like a SnpEff info token.");
+		}
+		
+		List<SnpEffInfo> infos = new ArrayList<SnpEffInfo>();
+		
+		String[] toks = token.replace("EFF=", "").split(",");
+		for(int i=0; i<toks.length; i++) {
+			String tok = toks[i];
+			int firstParenIndex = tok.indexOf("(");
+			if (firstParenIndex <0) {
+				continue;
+			}
+			
+			SnpEffInfo info = new SnpEffInfo();
+			String effect = tok.substring(0, firstParenIndex);
+			tok = tok.replace("(", "").replace(")", "");
+			String[] bits = tok.split("\\|");
+			
+			String cp = bits[3];
+			String[] cpParts = cp.split("/");
+			String cdot = "";
+			String pdot = "";
+			if (cp.length()>0 && cpParts.length > 1) {
+				pdot = cpParts[0];
+				cdot = cpParts[1];
+			}
+			
+			String gene = bits[5];
+			String exonNum = bits[9];
+			String transcriptID = bits[8];
+			
+			info.cDot = cdot;
+			info.pDot = pdot;
+			info.changeType = effect;
+			info.exon = exonNum;
+			info.gene = gene;
+			info.transcript = transcriptID;
+			infos.add(info);
+		}
+		
+		return infos;
+	}
+	
+//	private SnpEffInfo parseOutputLineTXT(String line) {
+//		String[] toks = line.split("\t");
+//		SnpEffInfo info = new SnpEffInfo();
+//		if (toks.length < 2) {
+//			return info;
+//		}
+//		info.gene = toks[10];
+//		info.transcript = toks[12];
+//		info.exon = toks[14];
+//		info.changeType = toks[15];
+//		
+//		info.pDot = "";
+//		info.cDot = "";
+//		if (!info.changeType.equals("INTERGENIC") && toks.length>16) {
+//			if (toks[16].length()>0) {
+//				String[] cp = toks[16].split("/");
+//				if (cp.length > 1) {
+//					info.pDot = cp[0];
+//					info.cDot = cp[1];
+//				}
+//				else {
+//					info.cDot = toks[16];
+//				}
+//			}	
+//		}
+//		
+//		
+//		return info;
+//	}
 	
 	public void initialize(NodeList children) {
 		super.initialize(children);
-
+		
 		snpEffDir = this.getPipelineProperty(SNPEFF_DIR);
+		
 		if (snpEffDir == null) {
-			throw new IllegalArgumentException("No path to snpEff dir specified, use " + SNPEFF_DIR);
+			snpEffDir = this.getAttribute(SNPEFF_DIR);
+			if (snpEffDir == null) {
+				throw new IllegalArgumentException("No path to snpEff dir specified, use " + SNPEFF_DIR);
+			}
 		}
 		
 		snpEffGenome = this.getAttribute(SNPEFF_GENOME);
