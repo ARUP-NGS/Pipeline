@@ -120,7 +120,7 @@ public class ReviewDirSubDir extends PipelineObject {
 		manifestKey = properties.get(MANIFEST_KEY);
 		String copyStr = properties.get(COPY);
 		if (copyStr != null) {
-			copy =Boolean.parseBoolean(COPY);
+			copy =Boolean.parseBoolean(copyStr);
 		}
 		
 	}
