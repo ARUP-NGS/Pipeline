@@ -29,7 +29,7 @@ public class ConvertPileupVCF extends PipedCommandOp {
 		
 		String inputPath = getInputBufferForClass(BCFFile.class).getAbsolutePath();
 				
-		//Ouput handled automagically!
+		//Output handled automagically!
 		String command = bcftoolsPath + " view -N -cvg " + inputPath;
 		return command;
 	}

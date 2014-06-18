@@ -64,20 +64,32 @@ public class DepthsForNoCalls extends IOOperator {
 		try {
 			BEDFile noCallBED = getNoCallBED();
 			
+			File outputFile = new File( noCallDepths.getAbsolutePath() );
+			outputFile.createNewFile();
+			noCallDepths.setFile(outputFile);
 			
-			//Now run DepthOfCoverageWalker on the BED
-			String command = "java -Xmx8g " + jvmARGStr + " -jar " + gatkPath;
-			command = command + " -R " + reference.getAbsolutePath() + 
-					" -I " + inputBAM.getAbsolutePath() + 
-					" -T DepthOfCoverage" +
-					" -rf BadCigar " +
-					" -L " + noCallBED.getAbsolutePath() +
-					" --omitDepthOutputAtEachBase " +
-					" -o nocallDepths ";
+			int noCallSize = noCallBED.getIntervalCount();
 			
+			//If there are zero no-call regions GATK will break, so identify this
+			//and abort if necessary
+			if (noCallSize < 1) {
+				Logger.getLogger(Pipeline.primaryLoggerName).info("No call BED file is empty, assuming zero no-call regions and aborting.");
+				return;
+			}
 			
-			Logger.getLogger(Pipeline.primaryLoggerName).info("Running depth of coverage tool for no-call regions...");
-			executeCommand(command);
+				//Now run DepthOfCoverageWalker on the BED
+				String command = "java -Xmx8g " + jvmARGStr + " -jar " + gatkPath;
+				command = command + " -R " + reference.getAbsolutePath() + 
+						" -I " + inputBAM.getAbsolutePath() + 
+						" -T DepthOfCoverage" +
+						" -rf BadCigar " +
+						" -L " + noCallBED.getAbsolutePath() +
+						" --omitDepthOutputAtEachBase " +
+						" -o nocallDepths ";
+
+
+				Logger.getLogger(Pipeline.primaryLoggerName).info("Running depth of coverage tool for no-call regions...");
+				executeCommand(command);
 			
 			
 			//We now want to parse "nocallDepths.sample_interval_summary"
@@ -86,9 +98,7 @@ public class DepthsForNoCalls extends IOOperator {
 				throw new OperationFailedException("No interval summary file found, an error must have occurred", this);
 			}
 			
-			File outputFile = new File( noCallDepths.getAbsolutePath() );
-			outputFile.createNewFile();
-			noCallDepths.setFile(outputFile);
+			
 			
 			BufferedWriter writer = new BufferedWriter(new FileWriter(outputFile));
 			

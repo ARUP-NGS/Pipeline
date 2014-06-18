@@ -210,6 +210,15 @@ public class VCFParser implements VariantLineReader {
 		return currentLine != null;
 	}
 
+	/**
+	 * Returns true if the currentLineToks represent a variant that is
+	 * has a genotype that is not ./. or 0/0 
+	 * @return
+	 */
+	private boolean isVariant() {
+		
+	}
+	
 	@Override
 	public String getCurrentLine() throws IOException {
 		return currentLine;

@@ -47,7 +47,7 @@ public class MultiConvertBam extends MultiOperator {
 		BAMFile outputBAM = new BAMFile(new File(outputPath), inputBuffer.getContig());
 		addOutputFile(outputBAM);
 		
-		//Ouput handled automagically!
+		//Output handled automagically!
 		String command1 = samtoolsPath + " view " + refPath + " -Sb " + inputPath + " -o " + outputPath;
 		String command2 = samtoolsPath + " index " + outputPath;
 		return new String[]{command1, command2};

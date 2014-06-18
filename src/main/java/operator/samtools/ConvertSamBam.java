@@ -33,8 +33,6 @@ public class ConvertSamBam extends PipedCommandOp {
 			samtoolsPath = samUserPath;
 		}
 		
-		
-		
 		String inputPath = getInputBufferForClass(SAMFile.class).getAbsolutePath();
 		FileBuffer reference = getInputBufferForClass(ReferenceFile.class);
 		String refPath = "";
@@ -45,7 +43,7 @@ public class ConvertSamBam extends PipedCommandOp {
 			Logger.getLogger(Pipeline.primaryLoggerName).warning("No reference file provided for BAM conversion, not using reference");
 		}
 		
-		//Ouput handled automagically!
+		//Output handled automagically!
 		String command = samtoolsPath + " view " + refPath + " -Sb " + inputPath;
 		return command;
 	}

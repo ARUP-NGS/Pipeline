@@ -23,7 +23,7 @@ public class CallableLoci extends CommandOperator {
 	public static final String JVM_ARGS="jvmargs";
 	protected String defaultGATKPath = "~/GenomeAnalysisTK/GenomeAnalysisTK.jar";
 	protected String gatkPath = defaultGATKPath;
-	protected int minDepth = -1; //-1 is the GATK default
+	protected int minDepth = 10; //-1 is the GATK default
 	
 	@Override
 	public boolean requiresReference() {

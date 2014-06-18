@@ -54,7 +54,7 @@ public class Simulator extends PipedCommandOp {
 			samtoolsPath = samtoolsPath + "/misc/";
 		}
 		
-		//Ouput handled automagically!
+		//Output handled automagically!
 		String command = samtoolsPath + "wgsim -r " + mutationRate + " -R " + indelRate + " -N " + readPairs + " " + inputPath + " " + outputReads1 + " " + outputReads2;
 		return command;
 	}

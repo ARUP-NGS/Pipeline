@@ -47,7 +47,7 @@ public class SamtoolsPileup extends PipedCommandOp {
 			outputTypeStr = " -g ";
 		}
 		
-		//Ouput handled automagically!
+		//Output handled automagically!
 		String command = samtoolsPath + " mpileup -C50 -E " + outputTypeStr + " -f " + refPath + " " + inputPath;
 		return command;
 	}

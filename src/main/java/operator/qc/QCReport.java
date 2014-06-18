@@ -71,6 +71,8 @@ public class QCReport extends Operator {
 
 	public static final String QC_STYLE_SHEET = "qc.style.sheet";
 	
+	public static final String EMIT_ALL_REGIONS = "emit.all.regions";
+	
 	DOCMetrics rawCoverageMetrics = null;
 	DOCMetrics finalCoverageMetrics = null;
 	BAMMetrics rawBAMMetrics = null;
@@ -81,6 +83,8 @@ public class QCReport extends Operator {
 	CSVFile noCallCSV = null;
 	File outputDir = null; //Directory containing qc info
 
+	private boolean emitAllRegions = false;
+	
 	/**
 	 * Return directory containing qc output, will be null before report is written
 	 * @return
@@ -917,7 +921,7 @@ public class QCReport extends Operator {
 						if (toks.length == 4) {
 							if (! toks[3].equals("CALLABLE")) {
 								
-								noCallIntervals++;
+								
 									try {
 										String contig = toks[0];
 										long startPos = Long.parseLong(toks[1]);
@@ -937,6 +941,7 @@ public class QCReport extends Operator {
 											regions.add(Arrays.asList(new String[]{"chr" + toks[0] + ":" + toks[1] + " - " + toks[2], "" + length, cause, featureStr}) );
 										}
 										noCallPositions += length;
+										noCallIntervals++;
 									} catch (NumberFormatException nfe) {
 										//dont stress it
 									}
@@ -952,7 +957,11 @@ public class QCReport extends Operator {
 					//So sort it to prioritize the important ones and then add them to the "flagT" for
 					//formatting and output
 					Collections.sort(regions, new RegionComparator());
-					for(int i=0; i<Math.min(250, regions.size()); i++) {
+					int maxNum = 250;
+					if (emitAllRegions) {
+						maxNum =Integer.MAX_VALUE;
+					}
+					for(int i=0; i<Math.min(maxNum, regions.size()); i++) {
 						flagT.addRow( regions.get(i) );
 					}
 					
@@ -1064,7 +1073,10 @@ public class QCReport extends Operator {
 			throw new IllegalArgumentException("No final BAM metrics objects specified");
 		}
 			
-
+		String emitRegionsStr = this.getAttribute(EMIT_ALL_REGIONS);
+		if (emitRegionsStr != null) {
+			emitAllRegions = Boolean.parseBoolean(emitRegionsStr);
+		}
 	}
 
 	/**
