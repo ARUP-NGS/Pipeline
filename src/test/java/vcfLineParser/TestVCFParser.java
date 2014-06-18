@@ -55,7 +55,7 @@ public class TestVCFParser {
 			Assert.assertTrue(entry.id.equals("QR"));
 			Assert.assertTrue(entry.type.equals("Integer"));
 			
-			
+			System.err.println("\tVCFParser tests passed on single-sample FreeBayes VCF.");
 			
 			
 		} catch (IOException e) {
@@ -94,7 +94,8 @@ public class TestVCFParser {
 			Assert.assertTrue(entry.id.equals("GT"));
 			Assert.assertTrue(entry.type.equals("String"));
 			Assert.assertTrue(entry.number.equals("1"));
-			
+
+			System.err.println("\tVCFParser tests passed on single-sample GATK VCF.");
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -105,13 +106,41 @@ public class TestVCFParser {
 	
 	@Test
 	public void TestParseVariants() {
+		System.err.println("here");
 		try {
 			VCFParser parser = new VCFParser(complexVCF);
-			
-			while(parser.advanceLine()) {
+			int i=0;
+	
+			//Go through file
+			while(parser.advanceLine()) {	
+
 				VariantRec var = parser.toVariantRec();
-				System.out.println(var.toSimpleString());
+				System.out.println(var.toSimpleString());		
+				
+				// Check first variant, first alt
+				if (i == 0) {
+					Integer depth = parser.getDepth();
+					Assert.assertTrue(depth==18);
+
+					Integer varDepth = parser.getVariantDepth();
+					System.out.println(depth);
+					Assert.assertTrue(varDepth==9);
+				}
+				
+/*				// Check first variant, second alt
+				if (i == 1) {
+					Integer depth = parser.getDepth();
+					Assert.assertTrue(depth==18);
+
+					Integer varDepth = parser.getVariantDepth();
+					Assert.assertTrue(varDepth==19);
+				}*/
+				
+				i++;
+										
 			}
+			
+			System.err.println("\tVCFParser tests passed on a complex VCF.");
 		} catch (IOException e) {
 			e.printStackTrace();
 			Assert.assertTrue(false);

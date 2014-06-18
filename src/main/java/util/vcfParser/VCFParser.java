@@ -17,15 +17,17 @@ import buffer.variant.VariantRec;
  * 	1. Reads single variants at a time, even when a single vcf line has multiple variants
  * 	2. Handles multi-sample VCF input easily
  * 	3. Provide access to VCF header information
- *  4. Automatically parse information from info and format fields correctly
+ *  4. Automatically parse information from info and format fields correctly, even for multi-allelic sites
  *  5. Thorough testing and validation  
- * @author brendan
+ * @author brendan + elainegee
  *
  */
 public class VCFParser implements VariantLineReader {
 	
 	protected Map<String, HeaderEntry> headerItems = null; //Stores info about FORMAT and INFO fields from header
-	protected Map<String, String> headerProperties = null; //Stores generic key=value pairs from header, not FORMAT or INFO 
+	protected Map<String, String> headerProperties = null; //Stores generic key=value pairs from header, not FORMAT or INFO
+	protected Map<String, String> sampleMetrics = null; //Stores generic key=value pairs FORMAT or INFO, not header 
+	
 	
 	protected File source = null;
 	
@@ -238,8 +240,50 @@ public class VCFParser implements VariantLineReader {
 		
 		VariantRec var = new VariantRec(chr, pos, pos+alt.length(), ref, alt);
 		var.setQuality(quality);
+	
+		//@elainegee
+		// Create sampleMetrics dictionary containing INFO & FORMAT field data, keyed by annotation
+		sampleMetrics = createSampleMetricsDict(); //Stores sample-specific key=value pairs from VCF entry from FORMAT & INFO, not header	
+
+		// Get certain values
+		Integer depth = getDepth();
+		if (depth != null) {
+			var.addProperty(VariantRec.DEPTH, new Double(depth));
+		}
+	
+		Integer altDepth = getVariantDepth();
+		if (altDepth != null) {
+			var.addProperty(VariantRec.VAR_DEPTH, new Double(altDepth));
+		}
+		/**
+		Double genotypeQuality = getGenotypeQuality();
+		if (genotypeQuality != null) 
+			var.addProperty(VariantRec.GENOTYPE_QUALITY, genotypeQuality);
+
+		Double vqsrScore = getVQSR();
+		if (vqsrScore != null)
+			var.addProperty(VariantRec.VQSR, vqsrScore);
+
+		Double fsScore = getStrandBiasScore();
+		if (fsScore != null)
+			var.addProperty(VariantRec.FS_SCORE, fsScore);
+		
+		Double rpScore = getRPScore();
+		if (rpScore != null)
+			var.addProperty(VariantRec.RP_SCORE, rpScore);
+		
+				Double logFSScore = getLogFSScore();
+		if (logFSScore != null)
+			var.addProperty(VariantRec.LOGFS_SCORE, logFSScore);
+	
+		*/
+		//#############EG stop
+		
+		
 		
 		return var;
+		
+
 	}
 
 	
@@ -265,4 +309,128 @@ public class VCFParser implements VariantLineReader {
 			return entryType + ": ID=" + id + " " + description; 
 		}
 	}
+	
+	//###########EG start2
+	/**
+	 *  Return key-value pairs in final sampleMetrics dictionary containing metrics from both INFO & FORMAT fields
+	 *  @author elainegee
+	 */
+	public HashMap<String, String> createSampleMetricsDict(){
+		// Create dictionaries from key-value pairs from INFO & FORMAT fields
+		HashMap<String, String> finalDict = createINFODict();
+		HashMap<String, String>  formatDict = createFORMATDict();
+
+		// Add information from FORMAT dictionary into final dictionary to return
+		for (Map.Entry<String, String> entry: formatDict.entrySet()){
+			String key = entry.getKey();
+			String valueStr=entry.getValue();
+
+			//Add value if key not already in dictionary. otherwise check if values are the same
+			if (finalDict.get(key) != null && !finalDict.get(key).equals(valueStr)) {
+				throw new IllegalStateException("Two different values for VCF field '" + key + "'.");
+			} else {
+				finalDict.put(key, valueStr);
+			}
+		}
+		return finalDict;
+
+	}
+
+	
+	/**
+	 *  Creates a dictionary of INFO key-value pairs by storing info from column 8 in VCF format 4.1
+	 *  @author elainegee
+	 */
+	public HashMap<String, String> createINFODict(){
+		HashMap<String, String> dict = new HashMap<String, String>();
+		//Tokenize INFO keys & values
+		String[] infoToks = currentLineToks[7].split(";"); //INFO key-value pairs
+
+		//Add data to dictionary
+		for (int i=0; i < infoToks.length; i++)  {
+			String[] infoData = infoToks[i].split("=");	
+			dict.put(infoData[0], infoData[1]);
+		}
+		//Return INFO-only dictionary
+		return dict;
+	}
+	
+	/**
+	 *  Creates a dictionary of FORMAT key-value pairs by storing FORMAT strings (column 10 in VCF format 4.1, sample-specific values) 
+	 *  according to FORMAT key (column 9 in VCF format 4.1)
+	 *  @author elainegee
+	 */
+	public HashMap<String, String> createFORMATDict(){
+		HashMap<String, String> dict = new HashMap<String, String>();
+		//Tokenize FORMAT keys & values
+		String[] formatKeys = currentLineToks[8].split(":"); //FORMAT keys
+		String[] formatData = currentLineToks[9].split(":"); //sample-specific FORMAT values
+
+		//Add data to dictionary		
+		for (int i=0; i < formatKeys.length; i++)  {
+			dict.put(formatKeys[i], formatData[i]);
+		} 
+		//Return FORMAT-only dictionary
+		return dict;
+	}
+	
+	/**
+	 * Looks up annotation specified by annoStr in sampleMetrics dictionary.
+	 * @author elainegee
+	 * @return
+	 */
+	private String getSampleMetricsStr(String annoStr){
+		String outStr = sampleMetrics.get(annoStr);
+		return outStr;
+	}
+	
+	/** 
+	 * Converts string (output of sampleMetrics dictionary) to integer. 
+	 * @author elainegee
+	 * @return
+	 */
+	private static Integer convertStr2Int(String AnnoOutStr){
+		try {
+			Integer outInt = Integer.parseInt(AnnoOutStr);
+			return outInt;
+		} catch (NumberFormatException nfe) {
+			return -1; //-1 indicates no data found
+		}	
+
+	}
+	
+	/**
+	 * Total read depth at locus from INFO column, identified by "DP" and specified for the particular ALT
+	 * @author elainegee
+	 * @return
+	 */
+	public Integer getDepth(){
+		//Get DP from sampleMetrics dictionary
+		String depthStr = getSampleMetricsStr("DP");
+		Integer dp = convertStr2Int(depthStr);
+		return dp;				
+	}
+	
+	/**
+	 * Alternate allelet count, identified by "AD" or "AO", specified for the particular ALT
+	 * @author elainegee
+	 * @return
+	 */
+	public Integer getVariantDepth(){
+		String AnnoStr = null;
+		if (creator == "FreeBayes"){
+			AnnoStr = "AO";
+		} else {
+			AnnoStr = "AD";
+		}
+
+		//Get alternate allele count from sampleMetrics dictionary
+		String varDepthStr = getSampleMetricsStr(AnnoStr);
+		String[] varDepthToks = varDepthStr.split(",");
+		System.out.println(varDepthToks[altIndex]);
+		Integer vardp = convertStr2Int(varDepthToks[altIndex]);
+		return vardp;				
+	}
+	
+	//###########EG stop2
 }
