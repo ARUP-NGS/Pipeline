@@ -6,9 +6,6 @@ import java.io.FileOutputStream;
 import operator.CommandOperator;
 import operator.IOOperator;
 import operator.OperationFailedException;
-import operator.PipedCommandOp;
-
-import org.apache.log4j.Logger;
 
 import pipeline.Pipeline;
 import buffer.BAMFile;
