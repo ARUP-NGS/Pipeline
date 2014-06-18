@@ -6,12 +6,19 @@ import java.io.IOException;
 
 import operator.IOOperator;
 import operator.OperationFailedException;
-import operator.PipedCommandOp;
 import operator.StringPipeHandler;
-import pipeline.Pipeline;
 import pipeline.PipelineXMLConstants;
+import buffer.FastQFile;
+import buffer.FileBuffer;
+import buffer.ReferenceFile;
+import buffer.SAIFile;
 
-public class BWAAligner extends IOOperator {
+/*
+ * @author daniel
+ * Adds control of output SAI file to the run xml.
+ */
+
+public class BWAalnD extends IOOperator {
 	
 	public static final String PATH = "path";
 	public static final String THREADS = "threads";
@@ -23,9 +30,33 @@ public class BWAAligner extends IOOperator {
 	public boolean requiresReference() {
 		return true;
 	}
+	@Override
+	public void performOperation() throws OperationFailedException {
 	
-	}
+		Object propsPath = getPipelineProperty(PipelineXMLConstants.BWA_PATH);
+		if (propsPath != null)
+			pathToBWA = propsPath.toString();
+		
+		String bwaPathAttr = properties.get(PATH);
+		if (bwaPathAttr != null) {
+			pathToBWA = bwaPathAttr;
+		}
+		
+		String threadsAttr = properties.get(THREADS);
+		if (threadsAttr != null) {
+			threads = Integer.parseInt(threadsAttr);
+		}
+		
+		FileBuffer saiAttr = this.getOutputBufferForClass(SAIFile.class);
+		File saiPath = saiAttr.getFile();
+		FileBuffer reference = this.getInputBufferForClass(ReferenceFile.class);
+		String referencePath = reference.getAbsolutePath();
+		FileBuffer reads = this.getInputBufferForClass(FastQFile.class);
+		String readsPath = reads.getAbsolutePath();
+		String command_str = pathToBWA + " aln -t " + threads + " " + referencePath + " " + readsPath;
+		executeCommandCaptureOutput(command_str, saiPath);
 
+	}
 	protected void executeCommandCaptureOutput(final String command, File outputFile) throws OperationFailedException {
 		Runtime r = Runtime.getRuntime();
 		final Process p;
@@ -68,4 +99,6 @@ public class BWAAligner extends IOOperator {
 			throw new OperationFailedException("Task encountered an IO exception : " + System.err.toString() + "\n" + e1.getLocalizedMessage(), this);
 		}
 	}
+
+
 }
