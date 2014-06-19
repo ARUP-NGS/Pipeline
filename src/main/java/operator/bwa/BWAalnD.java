@@ -22,14 +22,13 @@ public class BWAalnD extends IOOperator {
 	protected String pathToBWA = "bwa";
 	protected int defaultThreads = 4;
 	protected int threads = defaultThreads;
-
+	String defaultBWAPath = "bwa";
 	@Override
 	public boolean requiresReference() {
 		return true;
 	}
 	@Override
 	public void performOperation() throws OperationFailedException {
-	
 		Object propsPath = getPipelineProperty(PipelineXMLConstants.BWA_PATH);
 		if (propsPath != null)
 			pathToBWA = propsPath.toString();
@@ -43,7 +42,6 @@ public class BWAalnD extends IOOperator {
 		if (threadsAttr != null) {
 			threads = Integer.parseInt(threadsAttr);
 		}
-		
 		FileBuffer saiAttr = this.getOutputBufferForClass(SAIFile.class);
 		File saiPath = saiAttr.getFile();
 		FileBuffer reference = this.getInputBufferForClass(ReferenceFile.class);
@@ -51,6 +49,7 @@ public class BWAalnD extends IOOperator {
 		FileBuffer reads = this.getInputBufferForClass(FastQFile.class);
 		String readsPath = reads.getAbsolutePath();
 		String command_str = pathToBWA + " aln -t " + threads + " " + referencePath + " " + readsPath;
+		System.out.println(command_str);
 		executeCommandCaptureOutput(command_str, saiPath);
 
 	}
