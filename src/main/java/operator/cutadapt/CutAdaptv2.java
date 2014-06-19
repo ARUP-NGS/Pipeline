@@ -73,9 +73,9 @@ public class CutAdaptv2 extends IOOperator {
 		}
 		FileBuffer outputFile = this.getOutputBufferForClass(FastQFile.class);
 		String outputFilename = outputFile.getAbsolutePath();
-		String command = cutAdaptPath + " -a " + adapterString + " " + cutOpts + " "
+		String command = cutAdaptPath + " -a " + adapterString + " -o " + outputFilename + " " + cutOpts + " "
 				+ inputFastq.getAbsolutePath();
-		executeCommandCaptureOutput(command, outputFile.getFile());
+		executeCommand(command);
 
 	}
 
