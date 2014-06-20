@@ -44,8 +44,8 @@ public class BWASamse extends IOOperator {
 
 		String command = pathToBWA + " samse -f " + outputPrefix + ".sam " + referencePath + " " + readsSAI + " " + readsPath;
 		executeCommand(command); // BWA Alignment
-		String Sam2Bam = samPath + " view -Sbh " + outputPrefix + ".sam";
-		executeCommandCaptureOutput(Sam2Bam, outputPath); //Converting sam to bam
+		String Sam2Bam = samPath + " view -Sbh -o " + outputPrefix + ".bam " + outputPrefix + ".sam";
+		executeCommand(Sam2Bam); //Converting sam to bam
 	}
 
 
