@@ -8,8 +8,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-//import org.junit.Assert;
-
 import buffer.variant.VariantLineReader;
 import buffer.variant.VariantRec;
 
@@ -229,7 +227,7 @@ public class VCFParser implements VariantLineReader {
 	@Override
 	public VariantRec toVariantRec() {
 		String chr = currentLineToks[0].toUpperCase().replace("CHR","");
-		int pos = getPos(); //Integer.parseInt(currentLineToks[1]);
+		int pos = getPos(); 
 		String ref = getRef();
 		String alt = getAlt(); 
 		
