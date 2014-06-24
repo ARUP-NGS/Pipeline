@@ -17,15 +17,17 @@ import buffer.variant.VariantRec;
  * 	1. Reads single variants at a time, even when a single vcf line has multiple variants
  * 	2. Handles multi-sample VCF input easily
  * 	3. Provide access to VCF header information
- *  4. Automatically parse information from info and format fields correctly
+ *  4. Automatically parse information from info and format fields correctly, even for multi-allelic sites
  *  5. Thorough testing and validation  
- * @author brendan
+ * @author brendan + elainegee
  *
  */
 public class VCFParser implements VariantLineReader {
 	
 	protected Map<String, HeaderEntry> headerItems = null; //Stores info about FORMAT and INFO fields from header
-	protected Map<String, String> headerProperties = null; //Stores generic key=value pairs from header, not FORMAT or INFO 
+	protected Map<String, String> headerProperties = null; //Stores generic key=value pairs from header, not FORMAT or INFO
+	protected Map<String, String> sampleMetrics = null; //Stores generic key=value pairs FORMAT or INFO, not header 
+	
 	
 	protected File source = null;
 	
@@ -39,6 +41,8 @@ public class VCFParser implements VariantLineReader {
 	private int altsInCurrentLine = 1; //Total number of alts found on current line
 	private int sampleIndex = 0; //Designates the index of the sample we want, defaulting to the first sample listed 
 	private Map<String, Integer> sampleIndexes = null;
+	
+	private boolean stripInitialMatchingBases = true; //defaults to true (i.e. will trim)
 	
 	public VCFParser(File source) throws IOException {
 		setFile(source);
@@ -103,15 +107,14 @@ public class VCFParser implements VariantLineReader {
 			sampleIndexes.put(toks[i].trim(), i-9);
 		}
 		
-		//Infer creator. Freebayes & ion torrent define a source= field in the header
+		//Infer creator. FreeBayes (*freeBayes*) & ion torrent (*Torrent*freeBayes*) define a source= field in the header
 		//but GATK does not
 		creator =  headerProperties.get("source");
 		if (creator == null) {
 			if (headerProperties.containsKey("UnifiedGenotyper")) {
 				creator = "GATK / UnifiedGenotyper";
-			}
+			} 	
 		}
-		
 	}
 	
 	/**
@@ -208,14 +211,7 @@ public class VCFParser implements VariantLineReader {
 		return currentLine != null;
 	}
 
-	/**
-	 * Returns true if the currentLineToks represent a variant that is
-	 * has a genotype that is not ./. or 0/0 
-	 * @return
-	 */
-	private boolean isVariant() {
-		
-	}
+	
 	
 	@Override
 	public String getCurrentLine() throws IOException {
@@ -227,14 +223,13 @@ public class VCFParser implements VariantLineReader {
 		// TODO Auto-generated method stub
 		return null;
 	}
-
+	
 	@Override
 	public VariantRec toVariantRec() {
-		
 		String chr = currentLineToks[0].toUpperCase().replace("CHR","");
-		int pos = Integer.parseInt(currentLineToks[1]);
-		String ref = currentLineToks[3];
-		String alt = currentLineToks[4].split(",")[altIndex];
+		int pos = getPos(); 
+		String ref = getRef();
+		String alt = getAlt(); 
 		
 		String qualStr = currentLineToks[5];
 		double quality = -1;
@@ -247,11 +242,83 @@ public class VCFParser implements VariantLineReader {
 		
 		VariantRec var = new VariantRec(chr, pos, pos+alt.length(), ref, alt);
 		var.setQuality(quality);
+	
+		//@author elainegee start
+		//Remove initial characters if they are equal and add that many bases to start position
+		//Warning: Indels may no longer be left-aligned after this procedure
+		if (stripInitialMatchingBases) {
+			int matches = findNumberOfInitialMatchingBases(ref, alt);						
+			if (matches > 0) {	
+				// Trim Ref
+				ref = ref.substring(matches);
+				if (ref.length()==0) {
+					ref = "-";
+				}
+				// Trim Alt 			
+				alt = alt.substring(matches); 
+				if (alt.length()==0){								
+					alt = "-";
+				} 
+				
+				//Update start position
+				pos+=matches;
+				
+				//Update end position
+				Integer end=null;
+				if (ref.equals("-")) {
+					end = pos;
+				}
+				else {
+					end = pos + ref.length();
+				}
+				
+				var.setPosition(chr, pos, end);
+				
+			}
+		}
+		
+
+		
+		// Create sampleMetrics dictionary containing INFO & FORMAT field data, keyed by annotation
+		sampleMetrics = createSampleMetricsDict(); //Stores sample-specific key=value pairs from VCF entry from FORMAT & INFO, not header	
+
+		// Get certain values					
+		Integer depth = getDepth();
+		if (depth != null) {
+			var.addProperty(VariantRec.DEPTH, new Double(depth));
+		}
+	
+		Integer altDepth = getVariantDepth();
+		if (altDepth != null) {
+			var.addProperty(VariantRec.VAR_DEPTH, new Double(altDepth));
+		}
+
+		Double genotypeQuality = getGenotypeQuality();
+		if (genotypeQuality != null) {
+			var.addProperty(VariantRec.GENOTYPE_QUALITY, genotypeQuality);
+		}
+		
+		Double vqsrScore = getVQSR();
+		if (vqsrScore != null) {
+			var.addProperty(VariantRec.VQSR, vqsrScore);
+		}
+
+		Double fsScore = getStrandBiasScore();
+		if (fsScore != null) {
+			var.addProperty(VariantRec.FS_SCORE, fsScore);
+		}
+		
+		Double rpScore = getRPScore();
+		if (rpScore != null){
+			var.addProperty(VariantRec.RP_SCORE, rpScore);
+		}
+		
+		//@author elainegee stop
 		
 		return var;
-	}
+		
 
-	
+	}
 	
 	
 	public enum EntryType {
@@ -274,4 +341,402 @@ public class VCFParser implements VariantLineReader {
 			return entryType + ": ID=" + id + " " + description; 
 		}
 	}
+	
+	/**
+	 * Returns whether initial matching bases between REF & ALT are stripped
+	 */
+	public boolean isStripInitialMatchingBases() {
+		return stripInitialMatchingBases;
+	}	
+	
+	/**
+	 * Sets boolean for determining whether to strip matching bases between REF & ALT 
+	 */
+	public void setStripInitialMatchingBases(boolean stripInitialMatchingBases) {
+		this.stripInitialMatchingBases = stripInitialMatchingBases;
+	}
+	
+	
+	/**
+	 * Calculates the number of shared bases between the ref sequence & alternate allele
+	 * @author elainegee 
+	 * @return
+	 */
+	public static int findNumberOfInitialMatchingBases(String ref, String alt) {
+		String[] altToks = alt.split(",");
+		int AltCount = altToks.length;
+		String shortestAlt = altToks[0];
+		// find shortest alt allele
+		for(int j=0; j< AltCount; j++) {
+			if (shortestAlt.length() > altToks[j].length()){
+				shortestAlt = altToks[j];
+			}
+		}
+		// find length of matching bases across all alleles
+		int i;						
+		for(i=0; i<Math.min(ref.length(), shortestAlt.length()); i++) {
+			int validAlts = 0;
+			char refchar = ref.charAt(i);
+			for (int j=0; j< AltCount; j++) {
+				String testAlt = altToks[j];					
+				if (refchar == testAlt.charAt(i)) {
+					validAlts++;
+				}
+			}
+			if (validAlts - AltCount != 0) {
+				return i;							
+			}
+		}
+		return i; 
+	}
+	
+	/**
+	 *  Return key-value pairs in final sampleMetrics dictionary containing metrics from both INFO & FORMAT fields
+	 *  @author elainegee
+	 */
+	public HashMap<String, String> createSampleMetricsDict(){
+		// Create dictionaries from key-value pairs from INFO & FORMAT fields
+		HashMap<String, String> finalDict = createINFODict();
+		HashMap<String, String>  formatDict = createFORMATDict();
+
+		// Add information from FORMAT dictionary into final dictionary to return
+		for (Map.Entry<String, String> entry: formatDict.entrySet()){
+			String key = entry.getKey();
+			String valueStr=entry.getValue();
+
+			//Add value if key not already in dictionary. otherwise check if values are the same
+			if (finalDict.get(key) != null && !finalDict.get(key).equals(valueStr)) {
+				if (key.equals("DP")) {
+					//use the filtered read depth in the FORMAT field
+					finalDict.put(key, valueStr);
+				} else {
+					throw new IllegalStateException("Two different values for VCF field '" + key + "': " + finalDict.get(key) + ", " + valueStr + ".");
+				}
+			} else {
+				finalDict.put(key, valueStr);
+			}
+		}
+		return finalDict;
+
+	}
+
+	
+	/**
+	 *  Creates a dictionary of INFO key-value pairs by storing info from column 8 in VCF format 4.1
+	 *  @author elainegee
+	 */
+	public HashMap<String, String> createINFODict(){
+		HashMap<String, String> dict = new HashMap<String, String>();
+		//Tokenize INFO keys & values
+		String[] infoToks = currentLineToks[7].split(";"); //INFO key-value pairs
+		//Add data to dictionary
+		for (int i=0; i < infoToks.length; i++)  {
+			String[] infoData = infoToks[i].split("=");
+			String valueStr = null;
+			if (infoData.length == 1) {
+				valueStr = infoData[0];
+			} else {
+				valueStr = infoData[1];
+			}
+			dict.put(infoData[0], valueStr);
+		}
+		//Return INFO-only dictionary
+		return dict;
+	}
+	
+	/**
+	 *  Creates a dictionary of FORMAT key-value pairs by storing FORMAT strings (column 10 in VCF format 4.1, sample-specific values) 
+	 *  according to FORMAT key (column 9 in VCF format 4.1)
+	 *  @author elainegee
+	 */
+	public HashMap<String, String> createFORMATDict(){
+		HashMap<String, String> dict = new HashMap<String, String>();
+		//Tokenize FORMAT keys & values
+		String[] formatKeys = currentLineToks[8].split(":"); //FORMAT keys
+		String[] formatData = currentLineToks[9].split(":"); //sample-specific FORMAT values
+
+		//Add data to dictionary		
+		for (int i=0; i < formatKeys.length; i++)  {
+			dict.put(formatKeys[i], formatData[i]);
+		} 
+		//Return FORMAT-only dictionary
+		return dict;
+	}
+	
+	/**
+	 * Looks up annotation specified by annoStr in sampleMetrics dictionary.
+	 * @author elainegee
+	 * @return
+	 */
+	private String getSampleMetricsStr(String annoStr){
+		String outStr = sampleMetrics.get(annoStr);
+		return outStr;
+	}
+	
+	/** 
+	 * Converts string (output of sampleMetrics dictionary) to integer. 
+	 * @author elainegee
+	 * @return
+	 */
+	private static Integer convertStr2Int(String AnnoOutStr){
+		try {
+			Integer outInt = Integer.parseInt(AnnoOutStr);
+			return outInt;
+		} catch (NumberFormatException nfe) {
+			return -1; //-1 indicates no data found
+		}	
+	}
+	
+	/** 
+	 * Converts string (output of sampleMetrics dictionary) to double. 
+	 * @author elainegee
+	 * @return
+	 */
+	private static Double convertStr2Double(String AnnoOutStr){
+		try {
+			Double outDouble = Double.parseDouble(AnnoOutStr);
+			return outDouble;
+		} catch (NumberFormatException nfe) {
+			return -1.0; //-1.0 indicates no data found
+		} catch (NullPointerException npe) {
+			return -1.0; //-1.0 indicates no data found
+		}
+	}
+	
+	/**
+	 * Variant position
+	 * @author elainegee
+	 * @return
+	 */
+	public Integer getPos() {
+		if (currentLineToks != null) {
+			return Integer.parseInt(currentLineToks[1]);
+		} else {
+			return -1;
+		}		
+	}
+	
+	/**
+	 * Reference sequence for variant
+	 * @author elainegee
+	 * @return
+	 */
+	public String getRef() {
+		if (currentLineToks != null) {
+			return currentLineToks[3];
+		} else {
+			return "?";
+		}
+	}		
+
+	/**
+	 * Alternate sequence for variant
+	 * @author elainegee
+	 * @return
+	 */
+	public String getAlt() {
+		if (currentLineToks != null) {
+			return currentLineToks[4].split(",")[altIndex];
+		} else {
+			return "?";
+		}
+	}	
+	
+	/**
+	 * Total read depth at locus from INFO column, identified by "DP" and specified for the particular ALT
+	 * @author elainegee
+	 * @return
+	 */
+	public Integer getDepth(){
+		//Get DP from sampleMetrics dictionary
+		String AnnoStr = null;
+		if (creator.contains("Torrent")){
+			AnnoStr = "FDP"; //Flow evaluator metrics reflect the corrected base calls based on model of ref, alt called by FreeBayes, & original base call
+		} else {
+			AnnoStr = "DP";
+		}
+		String depthStr = getSampleMetricsStr(AnnoStr);
+		Integer dp = convertStr2Int(depthStr);
+		return dp;				
+	}
+	
+	/**
+	 * Alternate allele count, identified by "AD" (GATK) or "AO" (FreeBayes) or 
+	 * "FAO" (IonTorrent), specified for the particular ALT
+	 * @author elainegee
+	 * @return
+	 */
+	public Integer getVariantDepth(){
+		String AnnoStr = null;
+		Integer AnnoIdx = null;
+		if (creator.startsWith("freeBayes")){
+			AnnoStr = "AO";
+			AnnoIdx = altIndex; //AO doesn't contain depth for REF, which is stored in RO
+		} else if (creator.startsWith("Torrent")){
+			AnnoStr = "FAO";
+			AnnoIdx = altIndex; //FAO only contains infor for alternate allele
+		} else {
+			AnnoStr = "AD";
+			AnnoIdx = altIndex + 1; //AD contains depth for REF
+		}
+		//Get alternate allele count from sampleMetrics dictionary	
+		String varDepthStr = getSampleMetricsStr(AnnoStr);
+		String[] varDepthToks = varDepthStr.split(",");
+		Integer vardp = convertStr2Int(varDepthToks[AnnoIdx]);
+		return vardp;				
+	}
+	
+	/**
+	 * Genotype quality, identified by "GQ"
+	 * @author elainegee
+	 * @return
+	 */
+	public Double getGenotypeQuality(){
+		//Get GQ from sampleMetrics dictionary
+		String genoQualStr = getSampleMetricsStr("GQ");
+		Double gq = convertStr2Double(genoQualStr);
+		return gq;	
+	}
+
+	/**
+	 * Log odds ratio of being a true variant vs. being falsed under trained Gaussian 
+	 * mixture model, identified by "VQSLOD"
+	 * @author elainegee
+	 * @return
+	 */
+	public Double getVQSR(){
+		//Get VQSLOD from sampleMetrics dictionary
+		String vqsrStr = getSampleMetricsStr("VQSLOD");
+		Double vqsr = convertStr2Double(vqsrStr);
+		return vqsr;	
+	}
+		
+	/**
+	 * Strand Bias detected by Fisher's exact test, identified by "FS" (GATK) or STB (IonTorrent)
+	 * @author elainegee
+	 * @return
+	 */
+	public Double getStrandBiasScore(){
+		String AnnoStr = null;
+		if (creator.contains("Torrent")){
+			AnnoStr = "STB";
+		} else {
+			AnnoStr = "FS";
+		}
+		//Get FS from sampleMetrics dictionary
+		String sbStr = getSampleMetricsStr(AnnoStr);
+		Double sb = convertStr2Double(sbStr);
+		return sb;	
+	}
+	
+	/**
+	 * Alt vs. Ref Read position bias Z-score from Wilcoxon rank sum test, identified by "ReadPosRankSum"
+	 * @author elainegee
+	 * @return
+	 */
+	public Double getRPScore(){
+		//Get ReadPosRankSum from sampleMetrics dictionary
+		String rpStr = getSampleMetricsStr("ReadPosRankSum");
+		Double rp = convertStr2Double(rpStr);
+		return rp;	
+	}
+	
+	
+	/**
+	 * Returns the genotype delimiter, if properly separated
+	 * @author elainegee
+	 * @return
+	 */
+	public String getGTDelimitor() {
+		//Get GT from sampleMetrics dictionary
+		String genoQualStr = getSampleMetricsStr("GT");
+		if (!genoQualStr.equals(null)) {
+			if (genoQualStr.contains("|")) {
+				return "|";
+			} else if (genoQualStr.contains("/"))  {
+				return "/";
+			} else {
+				throw new IllegalStateException("Genotype separator char does not seem to be normal (i.e. | or /).");
+			}
+		} else {
+			throw new IllegalStateException("No genotype ('GT') specified in VCF.");
+		}
+	}
+	
+	/**
+	 * Returns true if the genotype is not ./. or 0/0 
+	 * @author elainegee
+	 * @return
+	 */
+	public boolean isVariant() {
+		//Determine if GT delimiter is valid
+		String delim=null;
+		try {
+			delim = getGTDelimitor();			
+		} catch (IllegalStateException ise) {
+			throw new IllegalStateException ("Error processing request:", ise);
+		}
+		//Get GT from sampleMetrics dictionary
+		String genoQualStr = getSampleMetricsStr("GT");
+		
+		String[] GQToks = genoQualStr.split(delim);
+		if ((GQToks[0].equals(".") && GQToks[1].equals(".")) || (GQToks[0].equals("0") && GQToks[1].equals("0"))) {
+			return false;
+		} else {
+			return true;
+		}				
+	}
+	
+	/**
+	 * Determine if variant is heterozygous
+	 * @author elainegee
+	 * @return
+	 */
+	public boolean isHetero() {
+		//Get GT from sampleMetrics dictionary
+		String genoQualStr = getSampleMetricsStr("GT");
+		try {
+			String delim = getGTDelimitor();
+			String[] gtToks = genoQualStr.split(delim);
+		
+			String refGT = gtToks[0]; //Allele1 genotype
+			String altGT = gtToks[1]; //Allele2 genotype
+			if (refGT.equals(altGT)) {
+				return false;
+			} else {
+				return true;
+			}
+		} catch (IllegalStateException ise) {
+			throw new IllegalStateException ("Error processing request:", ise);
+		}
+	}
+		
+	/**
+	 * Determine if variant is homozygous
+	 * @author elainegee
+	 * @return
+	 */
+	public boolean isHomo() {
+		return ! isHetero();
+	}
+	
+	/**
+	 * Returns true if the phasing separator is "|" and not "/" 
+	 * @author elainegee
+	 * @return
+	 */
+	public boolean isPhased() {
+		//Get GT from sampleMetrics dictionary
+		try {
+			String delim = getGTDelimitor();
+			if (delim.equals("|")) {
+				return true;
+			} else {
+				return false;
+			}
+		} catch (IllegalStateException ise) {
+			throw new IllegalStateException ("Error processing request:", ise);
+		}
+	}
+					
 }

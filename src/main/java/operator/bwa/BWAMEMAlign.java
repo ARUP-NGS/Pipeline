@@ -48,7 +48,7 @@ public class BWAMEMAlign extends IOOperator {
 		
 		List<FileBuffer> inputBuffers = this.getAllInputBuffersForClass(FastQFile.class);
 		
-		FileBuffer outputBAMBuffer = this.getOutputBufferForClass(BAMFile.class);
+		File outputBAMBuffer = this.getOutputBufferForClass(BAMFile.class).getFile();
 		if (outputBAMBuffer == null) {
 			throw new OperationFailedException("No output BAM file found", this);
 		}
