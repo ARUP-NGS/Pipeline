@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Writer;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -17,6 +18,7 @@ public class FastaReader {
 	final File sourceFile;
 	
 	private Map<String, Integer> contigSizes;
+	private String[] contigs;
 	
 	public FastaReader(File file) throws IOException {
 		this.sourceFile = file;
@@ -30,6 +32,23 @@ public class FastaReader {
 	 */
 	public Map<String, Integer> getContigSizes() {
 		return contigSizes;
+	}
+	
+	/**
+	 * Returns a string array of all contig names
+	 * @author elainegee
+	 * @return
+	 */
+	public String[] getContigs() {
+		Map<String, Integer> ContigSizeMap = getContigSizes();
+		String[] contigs = new String[ContigSizeMap.size()];
+		Integer i=0;
+		for (String key: ContigSizeMap.keySet()) {
+			contigs[i] = key;
+			i++;
+		}
+		Arrays.sort(contigs); //NOTE: This sorts as a string by alphanumerical order, NOT by numerical value
+		return contigs;
 	}
 	
 	/**
