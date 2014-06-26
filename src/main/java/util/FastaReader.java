@@ -47,7 +47,7 @@ public class FastaReader {
 			contigs[i] = key;
 			i++;
 		}
-		Arrays.sort(contigs); //NOTE: This sorts as a string by alphanumerical order, NOT by numerical value
+		Arrays.sort(contigs); //NOTE: This sorts as a string by alphanumerical order  and NOT by numerical value, i.e. i.e. 1, 10, 11, ...
 		return contigs;
 	}
 	
@@ -64,27 +64,38 @@ public class FastaReader {
 		System.err.flush();
 		
 		String contig = null;
-		int contSize = 0;
+		int contSize = 0; //initialize length of contig sequence
 		while(currentLine != null) {
-			if (currentLine.startsWith(">")) {
+			if (currentLine.startsWith(">")) {	
+				//Write contig & contig size for previous value 
 				if (contig != null) {
 					System.out.println("Putting contig : " + contig + " with size : " + contSize);
 					contigSizes.put(contig, contSize);
 				}
 				
-				String chrStr = currentLine.trim().replace(">", "").replace("chr", "");
+				//Parse new contig name from header
+				String chrStr = currentLine.trim().replace(">", "").replace("chr", ""); //remove chr from contig header
 				int endPos = chrStr.indexOf(" ");
 				if (endPos > 0) {
 					chrStr = chrStr.substring(0, endPos);
 				}
 				contig = chrStr;
-				contSize = 0;
+				
+				//reset contig size counter for new contig
+				contSize = 0; 				
+				
 			}
 			else {
-				contSize += currentLine.trim().length();
+				//count length of contig from sequence
+				contSize += currentLine.trim().length(); 
 			}
 			
 			currentLine = reader.readLine();
+		}
+		//Write last contig & contig size  
+		if (contig != null) {
+			System.out.println("Putting contig : " + contig + " with size : " + contSize);
+			contigSizes.put(contig, contSize);
 		}
 		
 		System.err.println(".done");
