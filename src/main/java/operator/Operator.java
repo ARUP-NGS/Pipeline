@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
+import json.JSONException;
 import operator.hook.IOperatorEndHook;
 import operator.hook.IOperatorStartHook;
 import pipeline.Pipeline;
@@ -62,7 +63,7 @@ public abstract class Operator extends PipelineObject {
 		return state;
 	}
 	
-	public void operate() throws OperationFailedException {
+	public void operate() throws OperationFailedException, JSONException, IOException {
 		state = State.Started;
 
 		// Perform the start hooks
@@ -156,5 +157,5 @@ public abstract class Operator extends PipelineObject {
 		}
 	}
 	
-	public abstract void performOperation() throws OperationFailedException;
+	public abstract void performOperation() throws OperationFailedException, JSONException, IOException;
 }

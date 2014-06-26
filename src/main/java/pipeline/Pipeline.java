@@ -23,6 +23,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import json.JSONException;
 import operator.OperationFailedException;
 import operator.Operator;
 import operator.hook.OperatorEndHook;
@@ -433,8 +434,10 @@ public class Pipeline {
 	 * @throws PipelineDocException If there are errors in document structure
 	 * @throws ObjectCreationException If errors arise regarding instantiation of particular objects
 	 * @throws OperationFailedException 
+	 * @throws IOException 
+	 * @throws JSONException 
 	 */
-	public void execute() throws OperationFailedException {
+	public void execute() throws OperationFailedException, JSONException, IOException {
 		startTime = new Date();
 		
 		primaryLogger.info("Executing pipeline");
@@ -601,7 +604,7 @@ public class Pipeline {
 		System.out.println("Compile date: " + new Date(MetaInfo.getManifestModifiedTime()));
 	}
 	
-	public static void main(String[] args) {
+	public static void main(String[] args) throws JSONException, IOException {
 		
 		ArgumentParser argParser = new ArgumentParser();
 		argParser.parse(args);
