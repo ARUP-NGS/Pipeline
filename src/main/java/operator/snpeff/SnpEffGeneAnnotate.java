@@ -306,16 +306,25 @@ public class SnpEffGeneAnnotate extends Annotator {
 			}
 		}
 		
-		List<SnpEffInfo> infoList = parseInfoFromToken(eff);
+		
+		List<SnpEffInfo> infoList;
+		if (eff != null) {
+			infoList = parseInfoFromToken(eff);
+		}
+		else {
+			infoList = new ArrayList<SnpEffInfo>();
+		}
 		return infoList;	
 	}
 	
 	private List<SnpEffInfo> parseInfoFromToken(String token) {
+		List<SnpEffInfo> infos = new ArrayList<SnpEffInfo>();
+		
 		if (! token.startsWith("EFF=")) {
 			throw new IllegalArgumentException("This doesn't look like a SnpEff info token.");
 		}
 		
-		List<SnpEffInfo> infos = new ArrayList<SnpEffInfo>();
+		
 		
 		String[] toks = token.replace("EFF=", "").split(",");
 		for(int i=0; i<toks.length; i++) {

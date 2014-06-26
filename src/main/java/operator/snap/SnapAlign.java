@@ -28,7 +28,7 @@ public class SnapAlign extends IOOperator {
 	public static final String SAMPLE = "sample";
 	public static final String EXTRA_OPTIONS = "extra.snap";
 	
-	private String defaultRG = "${SAMPLE}\tPL:ILLUMINA";
+	private String defaultRG = "ID:${SAMPLE}\tSM:${SAMPLE}\tPL:ILLUMINA";
 	
 	String samtoolsPath = null;
 	String snapIndexPath = null;
@@ -96,7 +96,7 @@ public class SnapAlign extends IOOperator {
 				+ " -t " + threads
 				+ " -o " + outputBAMBuffer.getAbsolutePath()
 				+ extraOptions;
-		//String arg1 = " -rg \"" + readGroup + "\"";
+				//+ " -rg \"" + readGroup + "\"";
 		executeCommand(command1);
 	}
 	
