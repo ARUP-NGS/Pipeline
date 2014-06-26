@@ -1,17 +1,20 @@
 package operator.oncology;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 import java.lang.IllegalArgumentException;
 
+import json.JSONObject;
 import operator.IOOperator;
 import operator.OperationFailedException;
 import operator.StringPipeHandler;
@@ -155,8 +158,30 @@ public class OncologyUtils extends IOOperator {
 		//4c. Ratio Fractions
 		
 		/* 5. Write results to JSON
-		 * 
+		 * Stores results in a Hashmap (keys: "summary", "rna.ratio", & "rna.fusion" that is written to JSON
+		 * @author elainegee
 		 */
+	    JSONObject json = new JSONObject();
+		Map<String, Object> results = new HashMap<String, Object>();
+		
+		results.put( "summary", "contig-specific info" );
+		results.put( "rna.ratio", "contig-specificinfo" );
+		results.put( "rna.fusion", "fractions" );
+
+	    json.putAll(results);
+	    System.out.printf( "JSON: %s", json.toString(2) );
+	    
+		File dest = new File(destDir.getAbsolutePath() + "/" + rna_report.json.gz);
+		
+		//Get the json string, then compress it to a byte array
+		String str = json.toString();			
+		byte[] bytes = compressGZIP(str);
+		
+		BufferedOutputStream writer = new BufferedOutputStream(new FileOutputStream(dest));
+		writer.write(bytes);
+		writer.close();
+	    
+	    
 		return;
 	}
 
