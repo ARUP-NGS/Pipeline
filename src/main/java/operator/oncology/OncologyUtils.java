@@ -8,12 +8,10 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
-import java.util.zip.GZIPOutputStream;
 import java.lang.IllegalArgumentException;
 
 import json.JSONException;
@@ -25,52 +23,53 @@ import pipeline.Pipeline;
 import util.FastaReader;
 import util.bamUtil.ReadCounter;
 import util.CompressGZIP;
-import pipeline.PipelineXMLConstants;
 import buffer.BAMFile;
 import buffer.FastQFile;
-import buffer.FastaBuffer;
 import buffer.FileBuffer;
 import buffer.ReferenceFile;
 
 /*
  * @author daniel
- * Counts the number of records for fastq or sam files. 
- * Contains countLines from StackOverflow question 453018
+ * Calculates ratios and counts for alignments to multiple custom reference files. 
+ * 
  * 
 */
 public class OncologyUtils extends IOOperator {
 		
 	public static final String SAMTOOLS_PATH = "samtools.path";
 	public static String defaultSamPath = "samtools";
-	List<FileBuffer> FastqBuffers = this.getAllInputBuffersForClass(FastQFile.class); // Should contain 4 files
-	List<FileBuffer> BamBuffers = this.getAllInputBuffersForClass(BAMFile.class);
-	List<FileBuffer> CustomRefBuffers = this.getAllInputBuffersForClass(FastaBuffer.class);
 
 	@Override
-	public void performOperation() throws OperationFailedException, JSONException {
+	public void performOperation() throws OperationFailedException, JSONException, IOException {
 		
 		Logger logger = Logger.getLogger(Pipeline.primaryLoggerName);
 		logger.info("Beginning utilities: Checking Arguments");
 		System.out.println("Beginning utilities: Checking Arguments.");
 		
+		List<FileBuffer> FastqBuffers = this.getAllInputBuffersForClass(FastQFile.class); // Should contain 4 files
+		List<FileBuffer> BamBuffers = this.getAllInputBuffersForClass(BAMFile.class);
+		List<FileBuffer> CustomRefBuffers = this.getAllInputBuffersForClass(ReferenceFile.class);
+		
 		if(FastqBuffers.size() != 4) {
+			System.out.println(FastqBuffers.size() + " fastq files provided.");
 			throw new IllegalArgumentException("4 Fastq files required as input.");
 		}
 	
 		
 		if(BamBuffers.size() != 4) {
+			System.out.println(BamBuffers.size() + " bam files provided.");
 			throw new IllegalArgumentException("4 BAM files required as input.");
 		}
 		
 		
 		if(CustomRefBuffers.size() != 2) {
-			throw new IllegalArgumentException("2 Reference files required as input.");
+			System.out.println(CustomRefBuffers.size() + " fasta reference files provided.");
+			throw new IllegalArgumentException("2 fasta reference files required as input.");
 		}
 		
 		logger.info("Counting reads in Fastq Files");
 		System.out.println("Counting reads in Fastq Files");
 		long InFq = -1337;
-		//TODO: check for the fastq file not having a numebre of lines divisible by 4
 		try {
 			InFq = countLines(FastqBuffers.get(0).getAbsolutePath())/4;
 		} catch (IOException e1) {
@@ -90,7 +89,7 @@ public class OncologyUtils extends IOOperator {
 		}
 		long Trim90Fq = -1337;
 		try {
-			Trim90Fq = countLines(FastqBuffers.get(2).getAbsolutePath())/4;
+			Trim90Fq = countLines(FastqBuffers.get(3).getAbsolutePath())/4;
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
@@ -100,9 +99,6 @@ public class OncologyUtils extends IOOperator {
 		 */
 		logger.info("Counting records in BAM Files");
 		System.out.println("Counting records in BAM Files");
-		/*
-		 *  From here until "3.", this is a quick fix around the lack of a countReadsByChromosome function. 
-		 */
 		String samtoolsPath = defaultSamPath;
 		String samtoolsAttr = getPipelineProperty(SAMTOOLS_PATH);
 		if(samtoolsAttr != null) {
@@ -110,13 +106,13 @@ public class OncologyUtils extends IOOperator {
 		}
 		
 		String command_str = samtoolsPath + " view -c " + BamBuffers.get(0).getAbsolutePath();
-		long ratioMapped = Integer.parseInt(executeCommandOutputToString(command_str));
+		long ratioMapped = Integer.parseInt(executeCommandOutputToString(command_str).replaceAll("[^\\d.]", ""));
 		String command_str1 = samtoolsPath + " view -c " + BamBuffers.get(1).getAbsolutePath();
-		long ratioUnmapped = Integer.parseInt(executeCommandOutputToString(command_str1));
+		long ratioUnmapped = Integer.parseInt(executeCommandOutputToString(command_str1).replaceAll("[^\\d.]", ""));
 		String command_str2 = samtoolsPath + " view -c " + BamBuffers.get(2).getAbsolutePath();
-		long fusionMapped = Integer.parseInt(executeCommandOutputToString(command_str2));
+		long fusionMapped = Integer.parseInt(executeCommandOutputToString(command_str2).replaceAll("[^\\d.]", ""));
 		String command_str3 = samtoolsPath + " view -c " + BamBuffers.get(3).getAbsolutePath();
-		long fusionUnmapped = Integer.parseInt(executeCommandOutputToString(command_str3));
+		long fusionUnmapped = Integer.parseInt(executeCommandOutputToString(command_str3).replaceAll("[^\\d.]", ""));
 		long short40 = InFq - Trim40Fq;
 		long short90 = UnmappedFq - Trim90Fq; 
 		//Get map containing # of reads per contig
@@ -126,25 +122,17 @@ public class OncologyUtils extends IOOperator {
 		 * 3. Get list of "chromosomes"
 		 */
 		FastaReader FusionRef = null;
-		String[] FusionContigs = new String[0];
-		try {
-			FusionRef = new FastaReader(CustomRefBuffers.get(0).getFile());
-			FusionContigs = FusionRef.getContigs();
-		}
-		catch (IOException e) {
-			e.printStackTrace();
-		}
+		FusionRef = new FastaReader(CustomRefBuffers.get(0).getFile());
+		String[] FusionContigs = FusionRef.getContigs();
 		int fusionLength = FusionContigs.length;
+		System.out.println("Fusion Map has " + fusionLength + " chromosomes, as far as we have gone");
+		
 		FastaReader RatioRef = null;
-		String[] RatioContigs = new String[0];//TODO: Make size of the RatioContigs array so that I can use that for the next loop
-		try {
-			RatioRef = new FastaReader(CustomRefBuffers.get(1).getFile());
-			RatioContigs = RatioRef.getContigs();
-		}
-		catch (IOException e) {
-			e.printStackTrace();
-		}
+		RatioRef = new FastaReader(CustomRefBuffers.get(1).getFile());
+		String[] RatioContigs = RatioRef.getContigs();
 		int ratioLength = RatioContigs.length;
+		System.out.println("Ratio Map has " + ratioLength + " chromosomes, as far as we have gone");
+		
 		/*
 		 * 4. Calculate ratios as needed
 		 */
@@ -187,7 +175,7 @@ public class OncologyUtils extends IOOperator {
 		 */
 	    //Build summary map
 		Map<String, Object> summary = new HashMap<String, Object>();
-		summary.put("fraction of reads mapped to raio reference", fracRatioMapped);
+		summary.put("fraction of reads mapped to ratio reference", fracRatioMapped);
 		summary.put("fraction of reads mapped to fusion reference", fracFusionMapped);
 		summary.put("fraction of reads filtered out for lengths < 40", fracShort40Mapped);
 		summary.put("fraction of reads unmapped to ratio reference filtered out for lengths < 90", fracShort90Mapped);
