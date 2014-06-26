@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import buffer.VCFFile;
 import buffer.variant.VariantLineReader;
 import buffer.variant.VariantRec;
 
@@ -51,6 +52,10 @@ public class VCFParser implements VariantLineReader {
 		parseHeader();
 	}
 	
+	public VCFParser(VCFFile file) throws IOException {
+		this(file.getFile());
+	}
+	
 	/**
 	 * Create a new vcf parser that only returns variants for the sample name provided
 	 * @param source
@@ -67,6 +72,8 @@ public class VCFParser implements VariantLineReader {
 		}
 		sampleIndex = sampleIndexes.get(sampleName);
 	}
+	
+
 	
 	/**
 	 * Read the header of the file, including the list of samples, but do not parse any variants

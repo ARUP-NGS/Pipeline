@@ -26,7 +26,7 @@ import org.w3c.dom.NodeList;
 
 import pipeline.Pipeline;
 import pipeline.PipelineObject;
-import util.VCFLineParser;
+import util.vcfParser.VCFParser;
 import buffer.BEDFile;
 import buffer.CSVFile;
 import buffer.FileBuffer;
@@ -92,7 +92,7 @@ public class VariantPool extends Operator  {
 	 * 
 	 *
 	 * THIS BADLY NEEDS TO BE GENERALIZED SO THAT DIFFERENT TYPES OF CSV FILES
-	 * CAN BE PARSED AND TURNED INTO VARIANT RECS - LIKE A VCFLINEPARSER, BUT FOR
+	 * CAN BE PARSED AND TURNED INTO VARIANT RECS - LIKE A VCFPARSER, BUT FOR
 	 * CSV'S AND WITH DIFFERENT SUBCLASSES
 	 * 
 	 * @param file
@@ -105,14 +105,14 @@ public class VariantPool extends Operator  {
 	}
 
 	public VariantPool(VCFFile file) throws IOException {
-		this.varLineReader = new VCFLineParser(file);
+		this.varLineReader = new VCFParser(file);
 		
 		//Get attribute for trimming initial matching bases (defaults to true)
 		String stripStr = this.getAttribute(STRIPINITIALMATCHINGBASEPARAM);
 		if (stripStr != null) {
-			((VCFLineParser) this.varLineReader).setStripInitialMatchingBases(Boolean.parseBoolean(stripStr));
+			((VCFParser) this.varLineReader).setStripInitialMatchingBases(Boolean.parseBoolean(stripStr));
 		} else {
-			((VCFLineParser) this.varLineReader).setStripInitialMatchingBases(true); //default to trim bases
+			((VCFParser) this.varLineReader).setStripInitialMatchingBases(true); //default to trim bases
 		}
 		importFromVariantReader();
 	}
@@ -1177,14 +1177,14 @@ public class VariantPool extends Operator  {
 		
 		if (inputVariants instanceof VCFFile) {
 			try {
-				this.varLineReader = new VCFLineParser( (VCFFile)inputVariants );
+				this.varLineReader = new VCFParser( (VCFFile)inputVariants );
 				
 				//Get attribute for trimming initial matching bases (defaults to true)
 				String stripStr = this.getAttribute(STRIPINITIALMATCHINGBASEPARAM);
 				if (stripStr != null) {
-					((VCFLineParser) this.varLineReader).setStripInitialMatchingBases(Boolean.parseBoolean(stripStr));
+					((VCFParser) this.varLineReader).setStripInitialMatchingBases(Boolean.parseBoolean(stripStr));
 				} else {
-					((VCFLineParser) this.varLineReader).setStripInitialMatchingBases(true); //default to trim bases
+					((VCFParser) this.varLineReader).setStripInitialMatchingBases(true); //default to trim bases
 				}
 				
 				importFromVariantReader();
