@@ -57,9 +57,10 @@ public class FreeBayes extends IOOperator {
 			bedFilePath = " -t " + inputBED.getAbsolutePath();
 		}
 		
-		String inputBAM = null;
-		if( inputBuffers.get(0) != null) {
-			inputBAM = " -b " + inputBuffers.get(0).getAbsolutePath();
+		String inputBAMs = "";
+		List<FileBuffer> inputBAMBuffers = this.getAllInputBuffersForClass(BAMFile.class);
+		for(FileBuffer bamBuffer : inputBAMBuffers) {
+			inputBAMs = inputBAMs + " -b " + bamBuffer.getAbsolutePath();
 		}
 		
 		if (extraOptions == null || extraOptions.equals("null")) {
@@ -68,7 +69,7 @@ public class FreeBayes extends IOOperator {
 		
 		String command = freeBayesPath
 				+ " --fasta-reference " + refBuf.getAbsolutePath()
-				+ inputBAM
+				+ inputBAMs
 				+  " -m " + minMapScore + " -q " + minBaseScore + " -U " + readMismatchLimit + " -Q " + mismatchQualityMin
 				+ bedFilePath + " -v " + outputVCF.getAbsolutePath() + " " + extraOptions;
 
@@ -76,7 +77,6 @@ public class FreeBayes extends IOOperator {
 
 		
 		executeCommand(command);
-
 	}
 
 	@Override
