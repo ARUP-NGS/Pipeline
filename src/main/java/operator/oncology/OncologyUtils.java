@@ -8,12 +8,15 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
+import java.util.zip.GZIPOutputStream;
 import java.lang.IllegalArgumentException;
 
+import json.JSONException;
 import json.JSONObject;
 import operator.IOOperator;
 import operator.OperationFailedException;
@@ -21,6 +24,7 @@ import operator.StringPipeHandler;
 import pipeline.Pipeline;
 import util.FastaReader;
 import util.bamUtil.ReadCounter;
+import util.CompressGZIP;
 import pipeline.PipelineXMLConstants;
 import buffer.BAMFile;
 import buffer.FastQFile;
@@ -43,7 +47,7 @@ public class OncologyUtils extends IOOperator {
 	List<FileBuffer> CustomRefBuffers = this.getAllInputBuffersForClass(FastaBuffer.class);
 
 	@Override
-	public void performOperation() throws OperationFailedException {
+	public void performOperation() throws OperationFailedException, JSONException {
 		
 		Logger logger = Logger.getLogger(Pipeline.primaryLoggerName);
 		logger.info("Beginning utilities: Checking Arguments");
@@ -181,22 +185,38 @@ public class OncologyUtils extends IOOperator {
 		 * Stores results in a Hashmap (keys: "summary", "rna.ratio", & "rna.fusion" that is written to JSON
 		 * @author elainegee
 		 */
-	    JSONObject json = new JSONObject();
-		Map<String, Object> results = new HashMap<String, Object>();
-		
-		results.put( "summary", "contig-specific info" );
-		results.put( "rna.ratio", "contig-specificinfo" );
-		results.put( "rna.fusion", "fractions" );
+	    //Build summary map
+		Map<String, Object> summary = new HashMap<String, Object>();
+		summary.put("fraction of reads mapped to raio reference", fracRatioMapped);
+		summary.put("fraction of reads mapped to fusion reference", fracFusionMapped);
+		summary.put("fraction of reads filtered out for lengths < 40", fracShort40Mapped);
+		summary.put("fraction of reads unmapped to ratio reference filtered out for lengths < 90", fracShort90Mapped);
+		summary.put("fration of unmapped reads", fracUnmapped);
 
-	    json.putAll(results);
+		//Build rna ratio map
+		Map<String, Object> rnaRatio = new HashMap<String, Object>();
+		rnaRatio = buildFractionCountMap(RatioContigs, ratioCounts, ratioFrac);
+		
+		//Build rna fusion map
+		Map<String, Object> rnaFusion = new HashMap<String, Object>();
+		rnaFusion = buildFractionCountMap(FusionContigs, fusionCounts, fusionFrac);
+		
+		//Build final results map to be converted to JSON
+		Map<String, Object> finalResults = new HashMap<String, Object>();
+		finalResults.put( "summary", summary );
+		finalResults.put( "rna.ratio", rnaRatio );
+		finalResults.put( "rna.fusion", rnaFusion );
+
+		//Convert final results to JSON
+	    JSONObject json = new JSONObject(finalResults);
 	    System.out.printf( "JSON: %s", json.toString(2) );
 	    
-		File dest = new File(destDir.getAbsolutePath() + "/" + rna_report.json.gz);
-		
 		//Get the json string, then compress it to a byte array
 		String str = json.toString();			
-		byte[] bytes = compressGZIP(str);
+		byte[] bytes = CompressGZIP.compressGZIP(str);
 		
+		// Write compresssed JSON to file
+		File dest = new File(getProjectHome() + "/rna_report.json.gz");
 		BufferedOutputStream writer = new BufferedOutputStream(new FileOutputStream(dest));
 		writer.write(bytes);
 		writer.close();
@@ -205,6 +225,26 @@ public class OncologyUtils extends IOOperator {
 		return;
 	}
 
+	/**
+	 * Synthesizes fraction & count information and return a map keyed by contig
+	 * @author elainegee
+	 * @return
+	 */
+	private Map<String, Object> buildFractionCountMap(String[] contigs, long[] counts, double[] fractions ) {
+		Map<String, Object> results = new HashMap<String, Object>();
+		Map<String, Object> contigResults = new HashMap<String, Object>();
+		// Pull out information for each contig
+		for (int i=0; i < contigs.length; i++) {
+			//Store fraction info
+			contigResults.put("fraction", fractions[i]);
+			//Store count info
+			contigResults.put("count", counts[i]);
+			//Store fraction/count map into final result
+			results.put(contigs[i], contigResults);	
+		}
+		return results;
+	}
+	
 	
 	public static long countLines(String filename) throws IOException {
 	    InputStream is = new BufferedInputStream(new FileInputStream(filename));
