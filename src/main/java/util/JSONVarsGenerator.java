@@ -31,10 +31,13 @@ import buffer.variant.VariantRec;
  */
 public class JSONVarsGenerator {
 
-	
-	
-	
-	public static void createJSONVariants(VariantPool variants, File dest) throws JSONException, IOException {
+	/**
+	 * Create a JSON object representing the given variants.
+	 * @param variants
+	 * @return
+	 * @throws JSONException
+	 */
+	public static JSONObject createJSONVariants(VariantPool variants) throws JSONException{
 		JSONObject jsonResponse = new JSONObject();
 		
 		AnnotatedVarsJsonConverter converter = new AnnotatedVarsJsonConverter();
@@ -60,10 +63,23 @@ public class JSONVarsGenerator {
 		}
 		
 		
-		jsonResponse.put("variant.list", jsonVarList);
+		jsonResponse.put("variant.list", jsonVarList);		
+		return jsonResponse;
+	}
+	
+	/**
+	 * Create a json representation of the variant pool and all of the annotations & properties in
+	 * all of the variants, then write the json to the given file.
+	 * @param variants
+	 * @param dest
+	 * @throws JSONException
+	 * @throws IOException
+	 */
+	public static void createJSONVariants(VariantPool variants, File dest) throws JSONException, IOException {
+		JSONObject jsonVars = createJSONVariants(variants);
 
 		//Get the json string, then compress it to a byte array
-		String str = jsonResponse.toString();			
+		String str = jsonVars.toString();			
 		byte[] bytes = compressGZIP(str);
 
 //		if (dest.exists()) {
