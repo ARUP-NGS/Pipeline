@@ -170,14 +170,21 @@ public class OncologyUtils extends IOOperator {
 		double[] fusionFrac = new double[fusionLength];
 		double[] ratioFrac = new double[ratioLength];
 		
+		int houseKeepingReads = 0;
+		
 		for(int i=0;i<fusionLength;i++) {
 			fusionCounts[i]=fusionMap.get(FusionContigs[i]);
 			fusionFrac[i]=(double)fusionCounts[i]/fusionMapped;
+			if(i>=fusionLength-5) {
+				houseKeepingReads+=(int)fusionCounts[i];
+			}
 		}
 		for(int i=0;i<ratioLength;i++) {
 			ratioCounts[i]=ratioMap.get(RatioContigs[i]);
 			ratioFrac[i]=(double)ratioCounts[i]/ratioMapped;
 		}
+		/*
+		 * Old, unnormalized way of comparing 3' and 5'.
 		double[] ratioForRatio = new double[ratioLength/2];
 		for(int i=0;i<ratioLength;i++){
 			if(i%2==0){
@@ -186,8 +193,17 @@ public class OncologyUtils extends IOOperator {
 					ratioForRatio[i/2]=tempVar;
 			}
 		}
+		*/
 		
-		
+		//Normalized comparison
+		double[] ratioForRatio = new double[ratioLength/2];
+		for(int i=0;i<ratioLength;i++){
+			if(i%2==0){
+					double tempVar = ((double)ratioCounts[i+1]-(double)ratioCounts[i+1])/houseKeepingReads;
+					//System.out.println(tempVar + " is the ratio we're trying to capture.");
+					ratioForRatio[i/2]=tempVar;
+			}
+		}
 		/* 5. Write results to JSON
 		 * Stores results in a Hashmap (keys: "summary", "rna.ratio", & "rna.fusion" that is written to JSON
 		 * @author elainegee
@@ -320,5 +336,5 @@ public class OncologyUtils extends IOOperator {
 			throw new OperationFailedException("Task encountered an IO exception : " + System.err.toString() + "\n" + e1.getLocalizedMessage(), this);
 		}
 	}	
-	
+
 }
