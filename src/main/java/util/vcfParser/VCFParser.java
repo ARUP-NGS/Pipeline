@@ -2,6 +2,7 @@ package util.vcfParser;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
@@ -193,8 +194,9 @@ public class VCFParser implements VariantLineReader {
 	public void setFile(File file) throws IOException {
 		headerItems = null;
 		this.source = file;
+		//currentLine = reader.readLine(); //EG
 	}
-
+	
 	/**
 	 * This actually advances to the next variant to be read, which doesn't involve advancing to
 	 * the next line if there are more alts to read on the current line

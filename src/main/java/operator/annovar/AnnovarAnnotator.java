@@ -16,7 +16,7 @@ import org.w3c.dom.NodeList;
 import pipeline.Pipeline;
 import pipeline.PipelineObject;
 import pipeline.PipelineXMLConstants;
-import util.VCFLineParser;
+import util.vcfParser.VCFParser;
 import buffer.AnnovarInputFile;
 import buffer.CSVFile;
 import buffer.VCFFile;
@@ -152,7 +152,7 @@ public abstract class AnnovarAnnotator extends Annotator {
 
 
 		int modPos = pos;
-		int matches = VCFLineParser.findNumberOfInitialMatchingBases(ref, alt);
+		int matches = VCFParser.findNumberOfInitialMatchingBases(ref, alt);
 		if (matches > 0) {
 			alt = alt.substring(matches);
 			ref = ref.substring(matches);
@@ -192,7 +192,7 @@ public abstract class AnnovarAnnotator extends Annotator {
 	public void createAnnovarInput(VCFFile inputFile, AnnovarInputFile destination) {
 		try {
 			BufferedWriter writer = new BufferedWriter(new FileWriter(destination.getAbsolutePath()));
-			VCFLineParser reader = new VCFLineParser(inputFile.getFile());
+			VCFParser reader = new VCFParser(inputFile.getFile());
 			do {
 				VariantRec rec = reader.toVariantRec();
 				writeVariantToAnnovarInput(rec, writer);
