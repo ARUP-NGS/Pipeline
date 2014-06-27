@@ -15,13 +15,6 @@ import java.util.Set;
 import java.util.logging.Logger;
 import java.lang.IllegalArgumentException;
 
-import org.apache.commons.collections4.map.DefaultedMap;
-
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
-
 import json.JSONException;
 import json.JSONObject;
 import operator.IOOperator;
@@ -141,7 +134,7 @@ public class OncologyUtils extends IOOperator {
 		System.out.println("ratio BAM should be this file: " + BamBuffers.get(0).getAbsolutePath());
 		Map<String, Long> bamRatioMap = ReadCounter.countReadsByChromosome((BAMFile)BamBuffers.get(0),1);
 		Set<String> keysRatio = bamRatioMap.keySet();
-		Map<String, Long> ratioMap = new DefaultedMap("0");
+		Map<String, Long> ratioMap = new HashMap<String, Long>();
 		for(String contig:RatioContigs) {
 			ratioMap.put(contig,(long)0);
 		}
@@ -153,7 +146,7 @@ public class OncologyUtils extends IOOperator {
 		System.out.println("fusion BAM should be this file: " + BamBuffers.get(2).getAbsolutePath());
 		Map<String, Long> bamFusionMap = ReadCounter.countReadsByChromosome((BAMFile)BamBuffers.get(2),1);
 		Set<String> keysFusion = bamFusionMap.keySet();
-		Map<String, Long> fusionMap = new DefaultedMap("0");
+		Map<String, Long> fusionMap = new HashMap<String, Long>();
 		for(String contig:FusionContigs) {
 			fusionMap.put(contig,(long)0);
 		}
@@ -226,13 +219,15 @@ public class OncologyUtils extends IOOperator {
 	    System.out.printf( "JSON: %s", json.toString(2) );
 	    
 		//Get the json string, then compress it to a byte array
-		//Make the JSON string human-readable
-		Gson gson = new GsonBuilder().setPrettyPrinting().create();
+		String str = json.toString();
+	    
+		//Makes the JSON string human-readable. Requires GSON library.
+		/*Gson gson = new GsonBuilder().setPrettyPrinting().create();
 		JsonParser jp = new JsonParser();
 		JsonElement je = jp.parse(json.toString());
-		String prettyJsonString = gson.toJson(je);
-
-		byte[] bytes = CompressGZIP.compressGZIP(prettyJsonString);
+		String str = gson.toJson(je);
+		*/
+		byte[] bytes = CompressGZIP.compressGZIP(str);
 		
 		// Write compresssed JSON to file
 		//File dest = new File(getProjectHome() + "/rna_report.json.gz");
