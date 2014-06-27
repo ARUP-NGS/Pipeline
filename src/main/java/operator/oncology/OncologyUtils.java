@@ -251,9 +251,9 @@ public class OncologyUtils extends IOOperator {
 	 */
 	private Map<String, Object> buildFractionCountMap(String[] contigs, long[] counts, double[] fractions ) {
 		Map<String, Object> results = new HashMap<String, Object>();
-		Map<String, Object> contigResults = new HashMap<String, Object>();
 		// Pull out information for each contig
 		for (int i=0; i < contigs.length; i++) {
+			Map<String, Object> contigResults = new HashMap<String, Object>();
 			//Store fraction info
 			contigResults.put("fraction", fractions[i]);
 			//Store count info
