@@ -146,7 +146,8 @@ public class OncologyUtils extends IOOperator {
 			ratioMap.put(contig,(long)0);
 		}
 		for(String key:keysRatio) {
-			ratioMap.put(key, (long)bamRatioMap.get(key));
+			System.out.println(key + " is the key with value " + bamRatioMap.get(key).toString());
+			ratioMap.put(key, bamRatioMap.get(key));
 		}
 		
 		System.out.println("fusion BAM should be this file: " + BamBuffers.get(2).getAbsolutePath());
@@ -157,7 +158,8 @@ public class OncologyUtils extends IOOperator {
 			fusionMap.put(contig,(long)0);
 		}
 		for(String key:keysFusion) {
-			ratioMap.put(key, (long)bamFusionMap.get(key));
+			//System.out.println(key + " is the key with value " + bamFusionMap.get(key).toString());
+			fusionMap.put(key, bamFusionMap.get(key));
 		}
 		
 		/*
@@ -186,12 +188,9 @@ public class OncologyUtils extends IOOperator {
 		double[] ratioForRatio = new double[ratioLength/2];
 		for(int i=0;i<ratioLength;i++){
 			if(i%2==0){
-				try {
-					ratioForRatio[i/2]=(double)ratioCounts[i]/ratioCounts[i+1];
-				}
-				finally {
-					ratioForRatio[i/2]=1000;
-				}
+					double tempVar = (double)ratioCounts[i]/(double)ratioCounts[i+1];
+					//System.out.println(tempVar + " is the ratio we're trying to capture.");
+					ratioForRatio[i/2]=tempVar;
 			}
 		}
 		
@@ -227,7 +226,6 @@ public class OncologyUtils extends IOOperator {
 	    System.out.printf( "JSON: %s", json.toString(2) );
 	    
 		//Get the json string, then compress it to a byte array
-		String str = json.toString();
 		//Make the JSON string human-readable
 		Gson gson = new GsonBuilder().setPrettyPrinting().create();
 		JsonParser jp = new JsonParser();
