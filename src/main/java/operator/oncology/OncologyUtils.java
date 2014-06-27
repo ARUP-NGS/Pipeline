@@ -11,8 +11,16 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 import java.lang.IllegalArgumentException;
+
+import org.apache.commons.collections4.map.DefaultedMap;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
 
 import json.JSONException;
 import json.JSONObject;
@@ -26,6 +34,7 @@ import util.CompressGZIP;
 import buffer.BAMFile;
 import buffer.FastQFile;
 import buffer.FileBuffer;
+import buffer.JSONBuffer;
 import buffer.ReferenceFile;
 
 /*
@@ -93,9 +102,22 @@ public class OncologyUtils extends IOOperator {
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
+
+		/*
+		 * 2. Get list of "chromosomes"
+		 */
+		FastaReader FusionRef = null;
+		FusionRef = new FastaReader(CustomRefBuffers.get(0).getFile());
+		String[] FusionContigs = FusionRef.getContigs();
+		int fusionLength = FusionContigs.length;
+		
+		FastaReader RatioRef = null;
+		RatioRef = new FastaReader(CustomRefBuffers.get(1).getFile());
+		String[] RatioContigs = RatioRef.getContigs();
+		int ratioLength = RatioContigs.length;
 		
 		/*
-		 *  2. Count records for all 4 bam files
+		 *  3. Count records for all 4 bam files
 		 */
 		logger.info("Counting records in BAM Files");
 		System.out.println("Counting records in BAM Files");
@@ -116,22 +138,29 @@ public class OncologyUtils extends IOOperator {
 		long short40 = InFq - Trim40Fq;
 		long short90 = UnmappedFq - Trim90Fq; 
 		//Get map containing # of reads per contig
-		Map<String, Long> ratioMap = ReadCounter.countReadsByChromosome((BAMFile)BamBuffers.get(0),1);
-		Map<String, Long> fusionMap = ReadCounter.countReadsByChromosome((BAMFile)BamBuffers.get(1),1);
-		/*
-		 * 3. Get list of "chromosomes"
-		 */
-		FastaReader FusionRef = null;
-		FusionRef = new FastaReader(CustomRefBuffers.get(0).getFile());
-		String[] FusionContigs = FusionRef.getContigs();
-		int fusionLength = FusionContigs.length;
-		System.out.println("Fusion Map has " + fusionLength + " chromosomes, as far as we have gone");
+		System.out.println("ratio BAM should be this file: " + BamBuffers.get(0).getAbsolutePath());
+		Map<String, Long> bamRatioMap = ReadCounter.countReadsByChromosome((BAMFile)BamBuffers.get(0),1);
+		Set<String> keysRatio = bamRatioMap.keySet();
+		Map<String, Long> ratioMap = new DefaultedMap("0");
+		for(String contig:RatioContigs) {
+			ratioMap.put(contig,(long)0);
+		}
+		for(String key:keysRatio) {
+			System.out.println(key + " is the key with value " + bamRatioMap.get(key).toString());
+			ratioMap.put(key, bamRatioMap.get(key));
+		}
 		
-		FastaReader RatioRef = null;
-		RatioRef = new FastaReader(CustomRefBuffers.get(1).getFile());
-		String[] RatioContigs = RatioRef.getContigs();
-		int ratioLength = RatioContigs.length;
-		System.out.println("Ratio Map has " + ratioLength + " chromosomes, as far as we have gone");
+		System.out.println("fusion BAM should be this file: " + BamBuffers.get(2).getAbsolutePath());
+		Map<String, Long> bamFusionMap = ReadCounter.countReadsByChromosome((BAMFile)BamBuffers.get(2),1);
+		Set<String> keysFusion = bamFusionMap.keySet();
+		Map<String, Long> fusionMap = new DefaultedMap("0");
+		for(String contig:FusionContigs) {
+			fusionMap.put(contig,(long)0);
+		}
+		for(String key:keysFusion) {
+			//System.out.println(key + " is the key with value " + bamFusionMap.get(key).toString());
+			fusionMap.put(key, bamFusionMap.get(key));
+		}
 		
 		/*
 		 * 4. Calculate ratios as needed
@@ -159,12 +188,9 @@ public class OncologyUtils extends IOOperator {
 		double[] ratioForRatio = new double[ratioLength/2];
 		for(int i=0;i<ratioLength;i++){
 			if(i%2==0){
-				try {
-					ratioForRatio[i/2]=(double)ratioCounts[i]/ratioCounts[i+1];
-				}
-				finally {
-					ratioForRatio[i/2]=1000;
-				}
+					double tempVar = (double)ratioCounts[i]/(double)ratioCounts[i+1];
+					//System.out.println(tempVar + " is the ratio we're trying to capture.");
+					ratioForRatio[i/2]=tempVar;
 			}
 		}
 		
@@ -179,7 +205,7 @@ public class OncologyUtils extends IOOperator {
 		summary.put("fraction of reads mapped to fusion reference", fracFusionMapped);
 		summary.put("fraction of reads filtered out for lengths < 40", fracShort40Mapped);
 		summary.put("fraction of reads unmapped to ratio reference filtered out for lengths < 90", fracShort90Mapped);
-		summary.put("fration of unmapped reads", fracUnmapped);
+		summary.put("fraction of unmapped reads", fracUnmapped);
 
 		//Build rna ratio map
 		Map<String, Object> rnaRatio = new HashMap<String, Object>();
@@ -200,15 +226,20 @@ public class OncologyUtils extends IOOperator {
 	    System.out.printf( "JSON: %s", json.toString(2) );
 	    
 		//Get the json string, then compress it to a byte array
-		String str = json.toString();			
-		byte[] bytes = CompressGZIP.compressGZIP(str);
+		//Make the JSON string human-readable
+		Gson gson = new GsonBuilder().setPrettyPrinting().create();
+		JsonParser jp = new JsonParser();
+		JsonElement je = jp.parse(json.toString());
+		String prettyJsonString = gson.toJson(je);
+
+		byte[] bytes = CompressGZIP.compressGZIP(prettyJsonString);
 		
 		// Write compresssed JSON to file
-		File dest = new File(getProjectHome() + "/rna_report.json.gz");
+		//File dest = new File(getProjectHome() + "/rna_report.json.gz");
+		File dest = this.getOutputBufferForClass(JSONBuffer.class).getFile();
 		BufferedOutputStream writer = new BufferedOutputStream(new FileOutputStream(dest));
 		writer.write(bytes);
 		writer.close();
-	    
 	    
 		return;
 	}
