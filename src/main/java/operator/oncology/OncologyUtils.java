@@ -14,7 +14,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 import java.lang.IllegalArgumentException;
+
 import org.apache.commons.collections4.map.DefaultedMap;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
 
 import json.JSONException;
 import json.JSONObject;
@@ -28,6 +34,7 @@ import util.CompressGZIP;
 import buffer.BAMFile;
 import buffer.FastQFile;
 import buffer.FileBuffer;
+import buffer.JSONBuffer;
 import buffer.ReferenceFile;
 
 /*
@@ -220,11 +227,18 @@ public class OncologyUtils extends IOOperator {
 	    System.out.printf( "JSON: %s", json.toString(2) );
 	    
 		//Get the json string, then compress it to a byte array
-		String str = json.toString();			
-		byte[] bytes = CompressGZIP.compressGZIP(str);
+		String str = json.toString();
+		//Make the JSON string human-readable
+		Gson gson = new GsonBuilder().setPrettyPrinting().create();
+		JsonParser jp = new JsonParser();
+		JsonElement je = jp.parse(json.toString());
+		String prettyJsonString = gson.toJson(je);
+
+		byte[] bytes = CompressGZIP.compressGZIP(prettyJsonString);
 		
 		// Write compresssed JSON to file
-		File dest = new File(getProjectHome() + "/rna_report.json.gz");
+		//File dest = new File(getProjectHome() + "/rna_report.json.gz");
+		File dest = this.getOutputBufferForClass(JSONBuffer.class).getFile();
 		BufferedOutputStream writer = new BufferedOutputStream(new FileOutputStream(dest));
 		writer.write(bytes);
 		writer.close();
