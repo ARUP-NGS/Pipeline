@@ -6,7 +6,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.zip.GZIPOutputStream;
 
 import json.AnnotatedVarsJsonConverter;
@@ -30,6 +31,9 @@ import buffer.variant.VariantRec;
  */
 public class JSONVarsGenerator {
 
+	
+	
+	
 	public static void createJSONVariants(VariantPool variants, File dest) throws JSONException, IOException {
 		JSONObject jsonResponse = new JSONObject();
 		
@@ -37,19 +41,20 @@ public class JSONVarsGenerator {
 
 		JSONArray jsonVarList = new JSONArray();
 		
-		List<String> keys = new ArrayList<String>();
+		Set<String> keys = new HashSet<String>();
 		
 		//Danger: could create huge json object if variant list is big
-		boolean first = true;
 		for(String contig : variants.getContigs()) {
 			for(VariantRec var : variants.getVariantsForContig(contig)) {
-				if (first) {
 					keys.addAll(var.getAnnotationKeys());
 					keys.addAll(var.getPropertyKeys());
-					converter.setKeys(keys);
-					first = false;
-				}
-				
+			}
+		}
+		
+		converter.setKeys(new ArrayList<String>(keys));
+		
+		for(String contig : variants.getContigs()) {
+			for(VariantRec var : variants.getVariantsForContig(contig)) {
 				jsonVarList.put( converter.toJSON(var) );				
 			}
 		}
