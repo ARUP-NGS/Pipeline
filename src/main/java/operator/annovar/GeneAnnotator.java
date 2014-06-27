@@ -243,8 +243,7 @@ public class GeneAnnotator extends AnnovarAnnotator {
 						rec.addAnnotation(VariantRec.CDOT, cDot);
 					rec.addAnnotation(VariantRec.PDOT, pDot);
 				}
-				else {
-					System.out.println(contig + "," + pos + "," +  ref + "," + alt + "," + exonicFunc + "," +  NM + "," + exonNum + "," + cDot + "," + pDot); //EG						
+				else {						
 					errorVars++;
 					if (lastFewErrors.size() < 10)
 						lastFewErrors.add("Variant not found : " + line);
