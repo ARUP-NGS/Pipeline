@@ -249,9 +249,6 @@ public class VCFParser implements VariantLineReader {
 			//we tolerate it if we can't parse quality...
 		}
 		
-		VariantRec var = new VariantRec(chr, pos, pos+alt.length(), ref, alt);
-		var.setQuality(quality);
-	
 		//@author elainegee start
 		//Remove initial characters if they are equal and add that many bases to start position
 		//Warning: Indels may no longer be left-aligned after this procedure
@@ -271,21 +268,23 @@ public class VCFParser implements VariantLineReader {
 				
 				//Update start position
 				pos+=matches;
-				
-				//Update end position
-				Integer end=null;
-				if (ref.equals("-")) {
-					end = pos;
-				}
-				else {
-					end = pos + ref.length();
-				}
-				
-				var.setPosition(chr, pos, end);
+								
+		//		var.setPosition(chr, pos, end);
 				
 			}
 		}
 		
+		//Update end position
+		Integer end=null;
+		if (alt.equals("-")) {
+			end = pos;
+		}
+		else {
+			end = pos + ref.length();
+		}
+		
+		VariantRec var = new VariantRec(chr, pos, end, ref, alt);
+		var.setQuality(quality);
 
 		
 		// Create sampleMetrics dictionary containing INFO & FORMAT field data, keyed by annotation
