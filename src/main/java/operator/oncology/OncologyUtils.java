@@ -58,9 +58,9 @@ public class OncologyUtils extends IOOperator {
 		}
 	
 		
-		if(BamBuffers.size() != 4) {
+		if(BamBuffers.size() != 5) {
 			System.out.println(BamBuffers.size() + " bam files provided.");
-			throw new IllegalArgumentException("4 BAM files required as input.");
+			throw new IllegalArgumentException("5 BAM files required as input.");
 		}
 		
 		
@@ -125,6 +125,10 @@ public class OncologyUtils extends IOOperator {
 		String command_str3 = samtoolsPath + " view -c " + BamBuffers.get(3).getAbsolutePath();
 		logger.info(command_str3);
 		long fusionUnmapped = Integer.parseInt(executeCommandOutputToString(command_str3).replaceAll("[^\\d.]", ""));
+		String command_str4 = samtoolsPath + " view -c " + BamBuffers.get(4).getAbsolutePath();
+		logger.info(command_str4);
+		long filterFusion = Integer.parseInt(executeCommandOutputToString(command_str4).replaceAll("[^\\d.]", ""));
+		long filteredFromFusion = fusionMapped - filterFusion;
 		long short40 = InFq - Trim40Fq;
 		long short90 = UnmappedFq - Trim90Fq; 
 		//Get map containing # of reads per contig
@@ -154,13 +158,15 @@ public class OncologyUtils extends IOOperator {
 		 * 4. Calculate ratios as needed
 		 */
 		
-		double fracRatioMapped = (float) ratioMapped/InFq;
+		double fracRatioMapped = (double) ratioMapped/InFq;
 		System.out.println("Printing fracRatioMapped " + fracRatioMapped + " ratioMapped " + ratioMapped + " InFq " + InFq);
-		double fracFusionMapped = (float) fusionMapped/InFq;
+		double fracFusionMapped = (double) fusionMapped/InFq;
 		System.out.println("Printing fracFusionMapped " + fracFusionMapped + " fusionMapped " + fusionMapped + " InFq " + InFq);
-		double fracShort40Mapped = (float) short40/InFq;
-		double fracShort90Mapped = (float) short90/InFq;
-		double fracUnmapped = (float) fusionUnmapped/InFq;
+		double fracFilterFusion = (double) filterFusion/InFq;
+		double fracRemovedFilterFusion = (double) filteredFromFusion/InFq;
+		double fracShort40Mapped = (double) short40/InFq;
+		double fracShort90Mapped = (double) short90/InFq;
+		double fracUnmapped = (double) fusionUnmapped/InFq;
 		
 		long[] fusionCounts = new long[fusionLength];
 		long[] ratioCounts = new long[ratioLength];
@@ -209,14 +215,18 @@ public class OncologyUtils extends IOOperator {
 		Map<String, Object> summary = new HashMap<String, Object>();
 		summary.put("fraction of reads mapped to ratio reference", fracRatioMapped);
 		summary.put("fraction of reads mapped to fusion reference", fracFusionMapped);
+		summary.put("fraction of reads mapped to fusion reference passing filter", fracFilterFusion);
 		summary.put("fraction of reads filtered out for lengths < 40", fracShort40Mapped);
 		summary.put("fraction of reads unmapped to ratio reference filtered out for lengths < 90", fracShort90Mapped);
+		summary.put("fraction of reads filtered from fusion BAM by location", fracRemovedFilterFusion);
 		summary.put("fraction of unmapped reads", fracUnmapped);
 		
 		summary.put("count of reads mapped to ratio reference", ratioMapped);
 		summary.put("count of reads mapped to fusion reference", fusionMapped);
+		summary.put("count of reads mapped to fusion reference passing filter",filterFusion);
 		summary.put("count of reads filtered out for lengths < 40", short40);
 		summary.put("count of reads unmapped to ratio reference filtered out for lengths < 90", short90);
+		summary.put("count of reads filtered from fusion BAM by location",filteredFromFusion);
 		summary.put("count of unmapped reads", fusionUnmapped);
 
 		//Build rna ratio map
