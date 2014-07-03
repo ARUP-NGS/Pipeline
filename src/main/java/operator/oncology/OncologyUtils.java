@@ -71,31 +71,20 @@ public class OncologyUtils extends IOOperator {
 		
 		logger.info("Counting reads in Fastq Files");
 		System.out.println("Counting reads in Fastq Files");
-		long InFq = -1337;
-		try {
-			InFq = countLines(FastqBuffers.get(0).getAbsolutePath())/4;
-		} catch (IOException e1) {
-			e1.printStackTrace();
-		}
-		long Trim40Fq = -1337;
-		try {
-			Trim40Fq = countLines(FastqBuffers.get(1).getAbsolutePath())/4;
-		} catch (IOException e1) {
-			e1.printStackTrace();
-		}
-		long UnmappedFq = -1337;
-		try {
-			UnmappedFq = countLines(FastqBuffers.get(2).getAbsolutePath())/4;
-		} catch (IOException e1) {
-			e1.printStackTrace();
-		}
-		long Trim90Fq = -1337;
-		try {
-			Trim90Fq = countLines(FastqBuffers.get(3).getAbsolutePath())/4;
-		} catch (IOException e1) {
-			e1.printStackTrace();
-		}
-
+		long InFq = Integer.parseInt(executeCommandOutputToString("wc -l " + FastqBuffers.get(0).getAbsolutePath()).split(" ")[0])/4;
+		long Trim40Fq = Integer.parseInt(executeCommandOutputToString("wc -l " + FastqBuffers.get(1).getAbsolutePath()).split(" ")[0])/4;
+		long UnmappedFq = Integer.parseInt(executeCommandOutputToString("wc -l " + FastqBuffers.get(2).getAbsolutePath()).split(" ")[0])/4;
+		long Trim90Fq = Integer.parseInt(executeCommandOutputToString("wc -l " + FastqBuffers.get(3).getAbsolutePath()).split(" ")[0])/4;
+		System.out.println("InFq string is ... " + executeCommandOutputToString("wc -l " + FastqBuffers.get(0).getAbsolutePath()));
+		System.out.println("Trim40Fq string is ... " + executeCommandOutputToString("wc -l " + FastqBuffers.get(1).getAbsolutePath()));
+		System.out.println("UnmappedFq string is ... " + executeCommandOutputToString("wc -l " + FastqBuffers.get(2).getAbsolutePath()));
+		System.out.println("Trim90Fq string is ... " + executeCommandOutputToString("wc -l " + FastqBuffers.get(3).getAbsolutePath()));
+		/*Trim90Fq = countLines(FastqBuffers.get(3).getAbsolutePath())/4;
+		long InFq = countLines(FastqBuffers.get(0).getAbsolutePath())/4;
+		long Trim40Fq = countLines(FastqBuffers.get(1).getAbsolutePath())/4;
+		long UnmappedFq = countLines(FastqBuffers.get(2).getAbsolutePath())/4;
+		*/
+		
 		/*
 		 * 2. Get list of "chromosomes"
 		 */
@@ -131,7 +120,6 @@ public class OncologyUtils extends IOOperator {
 		long short40 = InFq - Trim40Fq;
 		long short90 = UnmappedFq - Trim90Fq; 
 		//Get map containing # of reads per contig
-		System.out.println("ratio BAM should be this file: " + BamBuffers.get(0).getAbsolutePath());
 		Map<String, Long> bamRatioMap = ReadCounter.countReadsByChromosome((BAMFile)BamBuffers.get(0),1);
 		Set<String> keysRatio = bamRatioMap.keySet();
 		Map<String, Long> ratioMap = new HashMap<String, Long>();
@@ -143,7 +131,6 @@ public class OncologyUtils extends IOOperator {
 			ratioMap.put(key, bamRatioMap.get(key));
 		}
 		
-		System.out.println("fusion BAM should be this file: " + BamBuffers.get(2).getAbsolutePath());
 		Map<String, Long> bamFusionMap = ReadCounter.countReadsByChromosome((BAMFile)BamBuffers.get(2),1);
 		Set<String> keysFusion = bamFusionMap.keySet();
 		Map<String, Long> fusionMap = new HashMap<String, Long>();
@@ -160,7 +147,9 @@ public class OncologyUtils extends IOOperator {
 		 */
 		
 		double fracRatioMapped = (float) ratioMapped/InFq;
+		System.out.println("Printing fracRatioMapped " + fracRatioMapped + " ratioMapped " + ratioMapped + " InFq " + InFq);
 		double fracFusionMapped = (float) fusionMapped/InFq;
+		System.out.println("Printing fracFusionMapped " + fracFusionMapped + " fusionMapped " + fusionMapped + " InFq " + InFq);
 		double fracShort40Mapped = (float) short40/InFq;
 		double fracShort90Mapped = (float) short90/InFq;
 		double fracUnmapped = (float) fusionUnmapped/InFq;
@@ -215,6 +204,12 @@ public class OncologyUtils extends IOOperator {
 		summary.put("fraction of reads filtered out for lengths < 40", fracShort40Mapped);
 		summary.put("fraction of reads unmapped to ratio reference filtered out for lengths < 90", fracShort90Mapped);
 		summary.put("fraction of unmapped reads", fracUnmapped);
+		
+		summary.put("count of reads mapped to ratio reference", ratioMapped);
+		summary.put("count of reads mapped to fusion reference", fusionMapped);
+		summary.put("count of reads filtered out for lengths < 40", short40);
+		summary.put("count of reads unmapped to ratio reference filtered out for lengths < 90", short90);
+		summary.put("count of unmapped reads", fusionUnmapped);
 
 		//Build rna ratio map
 		Map<String, Object> rnaRatio = new HashMap<String, Object>();
@@ -232,7 +227,7 @@ public class OncologyUtils extends IOOperator {
 
 		//Convert final results to JSON
 	    JSONObject json = new JSONObject(finalResults);
-	    System.out.printf( "JSON: %s", json.toString(2) );
+	    //System.out.printf( "JSON: %s", json.toString(2) );
 	    
 		//Get the json string, then compress it to a byte array
 		String str = json.toString();
