@@ -121,12 +121,20 @@ public class OncologyUtils extends IOOperator {
 		}
 		
 		String command_str = samtoolsPath + " view -c " + BamBuffers.get(0).getAbsolutePath();
+		logger.info("Counting reads in BAM #1");
+		logger.info(command_str);
 		long ratioMapped = Integer.parseInt(executeCommandOutputToString(command_str).replaceAll("[^\\d.]", ""));
 		String command_str1 = samtoolsPath + " view -c " + BamBuffers.get(1).getAbsolutePath();
+		logger.info("Counting reads in BAM #2");
+		logger.info(command_str1);
 		long ratioUnmapped = Integer.parseInt(executeCommandOutputToString(command_str1).replaceAll("[^\\d.]", ""));
 		String command_str2 = samtoolsPath + " view -c " + BamBuffers.get(2).getAbsolutePath();
+		logger.info("Counting reads in BAM #3");
+		logger.info(command_str2);
 		long fusionMapped = Integer.parseInt(executeCommandOutputToString(command_str2).replaceAll("[^\\d.]", ""));
+		logger.info("Counting reads in BAM #4");
 		String command_str3 = samtoolsPath + " view -c " + BamBuffers.get(3).getAbsolutePath();
+		logger.info(command_str3);
 		long fusionUnmapped = Integer.parseInt(executeCommandOutputToString(command_str3).replaceAll("[^\\d.]", ""));
 		long short40 = InFq - Trim40Fq;
 		long short90 = UnmappedFq - Trim90Fq; 
