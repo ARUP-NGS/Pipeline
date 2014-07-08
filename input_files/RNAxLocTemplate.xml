@@ -106,7 +106,7 @@
       <passMatchTermBam />
   </input>
   <output>
-      <MTSBam class="buffer.BAMFile" filename="WorkDir/basename.MSTP.bam" />
+      <MTSBam class="buffer.BAMFile" filename="WorkDir/basename.MapSortTermPass.bam" />
   </output>
 </SortTermMap>
 
@@ -115,7 +115,7 @@
       <unmappedTermBam />
   </input>
   <output>
-      <UTSBam class="buffer.BAMFile" filename="WorkDir/basename.UST.bam" />
+      <UTSBam class="buffer.BAMFile" filename="WorkDir/basename.UnmapSortTerm.bam" />
   </output>
 </SortTermUnmapped>
 
@@ -150,7 +150,7 @@
     <unmappedTermFastq />
   </input>
   <output>
-      <unmappedTermFastqTrim class="buffer.FastQFile" filename="WorkDir/basename.unmappedTerm.filtered.fastq" />
+      <unmappedTermFastqTrim class="buffer.FastQFile" filename="WorkDir/basename.unmappedTerm.filter90.fastq" />
   </output>
 </TrimUnmapped>
 
@@ -207,8 +207,8 @@
     <mappedFusionBam /> 
   </input>
   <output>
-    <passMappedFusBam class="buffer.BAMFile" filename="WorkDir/basename.FusMP.bam" />
-    <failMappedFusBam class="buffer.BAMFile" filename="WorkDir/basename.FusMF.bam" />
+    <passMappedFusBam class="buffer.BAMFile" filename="WorkDir/basename.FusMapPass.bam" />
+    <failMappedFusBam class="buffer.BAMFile" filename="WorkDir/basename.FusMapFail.bam" />
   </output>
 </FracFilterFusion>
 
@@ -218,7 +218,7 @@
   </input>
   <output>
     <passMatchFusBam class="buffer.BAMFile" filename="WorkDir/basename.FusMatchPass.bam" />
-    <failMatchFusBam class="buffer.BAMFile" filename="WorkDir/basename.FusMatchFailbam" />
+    <failMatchFusBam class="buffer.BAMFile" filename="WorkDir/basename.FusMatchFail.bam" />
   </output>
 </MatchFilterFusion>
 
@@ -228,7 +228,7 @@
     <fusionBreakpointBed1 />
   </input>
   <output>
-      <filterFusionBam1 class="buffer.BAMFile" filename="WorkDir/basename.filter1.fusion.bam" />
+      <filterFusionBam1 class="buffer.BAMFile" filename="WorkDir/basename.bedfilter1.fusion.bam" />
   </output>
 </FilterBamByBed1>
 
@@ -238,7 +238,7 @@
     <fusionBreakpointBed2 />
   </input>
   <output>
-      <filterFusionBam class="buffer.BAMFile" filename="WorkDir/basename.filter.fusion.bam" />
+      <filterFusionBam class="buffer.BAMFile" filename="WorkDir/basename.bedfilter.fusion.bam" />
   </output>
 </FilterBamByBed2>
 
