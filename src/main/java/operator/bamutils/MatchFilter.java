@@ -44,9 +44,13 @@ public class MatchFilter extends BAMClassifier {
 							+ Float.toString(defaultFrac));
 			fraction = defaultFrac;
 		}
-
-		int mismatchCount = SequenceUtil.countMismatches(read,
-				SequenceUtil.makeReferenceFromAlignment(read, true));
+		byte[] refSequence = SequenceUtil.makeReferenceFromAlignment(read, false);
+		int mismatchCount = 0;
+		for(int i=0;i<read.getReadLength();i++){
+			if(refSequence[i]!=read.getReadBases()[i]) {
+				mismatchCount+=1;
+			}
+		}
 		if ((float) mismatchCount / read.getReadLength() > (1 - fraction)) {
 			return false;
 		} else

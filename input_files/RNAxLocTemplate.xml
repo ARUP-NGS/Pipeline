@@ -90,10 +90,20 @@
   </output>
 </FracFilter>
 
+<MatchFilter class="operator.bamutils.MatchFilter" fraction="0.667">
+  <input>
+    <passMappedTermBam /> 
+  </input>
+  <output>
+    <passMatchTermBam class="buffer.BAMFile" filename="WorkDir/basename.match.pass.bam" />
+    <failMatchTermBam class="buffer.BAMFile" filename="WorkDir/basename.match.fail.bam" />
+  </output>
+</MatchFilter>
+
 <!-- Sorting and Indexing Parsed BAM files -->
 <SortTermMap class="operator.samtools.Sort">
   <input>
-      <passMappedTermBam />
+      <passMatchTermBam />
   </input>
   <output>
       <MTSBam class="buffer.BAMFile" filename="WorkDir/basename.MSTP.bam" />
@@ -202,9 +212,19 @@
   </output>
 </FracFilterFusion>
 
+<MatchFilterFusion class="operator.bamutils.MatchFilter" fraction="0.667">
+  <input>
+    <passMappedFusBam /> 
+  </input>
+  <output>
+    <passMatchFusBam class="buffer.BAMFile" filename="WorkDir/basename.FusMatchPass.bam" />
+    <failMatchFusBam class="buffer.BAMFile" filename="WorkDir/basename.FusMatchFailbam" />
+  </output>
+</MatchFilterFusion>
+
 <FilterBamByBed1 class="operator.bamutils.RegionFilter">
   <input>
-    <passMappedFusBam />
+    <passMatchFusBam />
     <fusionBreakpointBed1 />
   </input>
   <output>
@@ -250,6 +270,10 @@
     <mappedFusionBam />
     <unmappedFusionBam />
     <filterFusionBam />
+    <passMappedTermBam />
+    <passMatchTermBam />
+    <passMappedFusBam />
+    <passMatchFusBam />
     <fusionReference />
     <termReference />
   </input>
