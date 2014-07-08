@@ -148,6 +148,9 @@ public class SnpEffGeneAnnotate extends Annotator {
 			return;
 		}
 		
+		boolean hasPreferredNM = false;
+		boolean isUsingPreferredNM = false;
+		
 		SnpEffInfo topHit = infoList.get(0);
 		int topRank = calculateRank(topHit.changeType);
 		for(SnpEffInfo info : infoList) {
@@ -156,9 +159,11 @@ public class SnpEffGeneAnnotate extends Annotator {
 			
 			//First check to see if it's in the nmMap. If so, it gets a really high rank
 			if (nmMap.containsKey(info.gene)) {
+				hasPreferredNM = true;
 				String preferredNM = nmMap.get(info.gene);
 				if (info.transcript.startsWith(preferredNM)) {
 					infoRank = 1000;
+					isUsingPreferredNM = true;
 				}
 			}
 			
@@ -174,6 +179,9 @@ public class SnpEffGeneAnnotate extends Annotator {
 		appendAnnotation(var, VariantRec.NM_NUMBER, topHit.transcript);
 		appendAnnotation(var, VariantRec.GENE_NAME, topHit.gene);
 		appendAnnotation(var, VariantRec.VARIANT_TYPE, topHit.changeType.replace("_CODING", ""));
+		if (hasPreferredNM && (!isUsingPreferredNM)) {
+			var.addAnnotation(VariantRec.NON_PREFERRED_TRANSCRIPT, "true");
+		}
 	}
 	
 	
