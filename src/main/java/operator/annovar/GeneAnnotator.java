@@ -91,6 +91,8 @@ public class GeneAnnotator extends AnnovarAnnotator {
 			if (ref.equals("-")) {
 				pos++;
 			}
+			boolean hasPreferredNM = false; //Gets set to true if there's a preferred NM specified for this variant
+			boolean isUsingPreferredNM = false; //Set to true if we're using the preferred NM
 			VariantRec rec = findVariant(contig, pos, ref, alt);  //Make sure we match alt
 			if (rec == null) {
 				errorVars++;
@@ -130,10 +132,11 @@ public class GeneAnnotator extends AnnovarAnnotator {
 						}
 						
 						String nm = nmTok[0];
-						
 						if(nmMap.containsKey(gene)){ // if the user has specifed a specific nm #, get it
+							hasPreferredNM = true;
 							if(nm.equals(nmMap.get(gene))){
 								nmRec = i;
+								isUsingPreferredNM = true;
 								Logger.getLogger(Pipeline.primaryLoggerName).info("Using transcript " + nm + " for gene " + gene);
 							}
 						}
@@ -146,6 +149,10 @@ public class GeneAnnotator extends AnnovarAnnotator {
 					rec.addAnnotation(VariantRec.EXON_NUMBER, exon);
 					rec.addAnnotation(VariantRec.CDOT, cdot);
 					rec.addAnnotation(VariantRec.NM_NUMBER, nm);
+					
+					if (hasPreferredNM && (!isUsingPreferredNM)) {
+						rec.addAnnotation(VariantRec.NON_PREFERRED_TRANSCRIPT, "true");
+					}
 				}
 			}
 			
