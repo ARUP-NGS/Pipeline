@@ -146,7 +146,7 @@ public class OncologyUtils extends IOOperator {
 		long mismatchFilterFusionCount = passMappedFusion - passMatchFusion;
 		
 		//Get map containing # of reads per contig
-		Map<String, Long> bamRatioMap = ReadCounter.countReadsByChromosome((BAMFile)BamBuffers.get(0),1);
+		Map<String, Long> bamRatioMap = ReadCounter.countReadsByChromosome((BAMFile)BamBuffers.get(6),1);
 		Set<String> keysRatio = bamRatioMap.keySet();
 		Map<String, Long> ratioMap = new HashMap<String, Long>();
 		for(String contig:RatioContigs) {
@@ -157,7 +157,7 @@ public class OncologyUtils extends IOOperator {
 			ratioMap.put(key, bamRatioMap.get(key));
 		}
 		
-		Map<String, Long> bamFusionMap = ReadCounter.countReadsByChromosome((BAMFile)BamBuffers.get(2),1);
+		Map<String, Long> bamFusionMap = ReadCounter.countReadsByChromosome((BAMFile)BamBuffers.get(8),1);
 		Set<String> keysFusion = bamFusionMap.keySet();
 		Map<String, Long> fusionMap = new HashMap<String, Long>();
 		for(String contig:FusionContigs) {

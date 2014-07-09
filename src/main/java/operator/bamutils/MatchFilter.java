@@ -1,7 +1,6 @@
 package operator.bamutils;
 
 import net.sf.samtools.SAMRecord;
-import net.sf.samtools.util.SequenceUtil;
 
 /**
  * Splits a BAM file into one of two output files - one BAM for "fail" reads
