@@ -9,11 +9,7 @@
 <termReference class="buffer.ReferenceFile" filename="/mnt/research1/reference/lungmelanoma_v4_driver_terminal_ratios.fasta" />
 <fusionBreakpointBed1 class="buffer.BEDFile" filename="/mnt/research1/reference/Breakpoints.start.bed" />
 <fusionBreakpointBed2 class="buffer.BEDFile" filename="/mnt/research1/reference/Breakpoints.end.bed" />
-<!--fusionBed class="buffer.BEDFile" filename="/yggdrasil/workspace/LungMel/sarcoma.bed" /-->
-<!--KnownDBSNP class="buffer.VCFFile" filename="/yggdrasil/workspace/LungMel/dbsnp_132.b37.vcf" />
-<HapMap class="buffer.VCFFile" filename="/yggdrasil/workspace/LungMel/hapmap_3.3.b37.sites.vcf" />
-<Omni class="buffer.VCFFile" filename="/yggdrasil/workspace/LungMel/1000G_omni2.5.b37.sites.vcf" /-->
-    <reads class="buffer.FastQFile" filename="${INPUTFILE}" />
+<reads class="buffer.FastQFile" filename="${INPUTFILE}" />
 
 <WranglerLogger class="operator.StatusLogger" />
 

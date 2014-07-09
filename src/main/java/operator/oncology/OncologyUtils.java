@@ -110,6 +110,7 @@ public class OncologyUtils extends IOOperator {
 			samtoolsPath = samtoolsAttr;
 		}
 		
+		//TODO: Create external operator to complete this task
 		String command_str = samtoolsPath + " view -c " + BamBuffers.get(0).getAbsolutePath();
 		logger.info("Counting reads in BAM #1");
 		logger.info(command_str);
@@ -157,7 +158,7 @@ public class OncologyUtils extends IOOperator {
 			ratioMap.put(key, bamRatioMap.get(key));
 		}
 		
-		Map<String, Long> bamFusionMap = ReadCounter.countReadsByChromosome((BAMFile)BamBuffers.get(8),1);
+		Map<String, Long> bamFusionMap = ReadCounter.countReadsByChromosome((BAMFile)BamBuffers.get(4),1);
 		Set<String> keysFusion = bamFusionMap.keySet();
 		Map<String, Long> fusionMap = new HashMap<String, Long>();
 		for(String contig:FusionContigs) {
@@ -227,6 +228,7 @@ public class OncologyUtils extends IOOperator {
 		 */
 	    //Build summary map
 		Map<String, Object> summary = new HashMap<String, Object>();
+		//TODO: Rename the keys for these Map/JSON entries
 		summary.put("fraction of reads mapped to ratio reference", fracRatioMapped);
 		summary.put("fraction of reads mapped to fusion reference", fracFusionMapped);
 		summary.put("fraction of reads mapped to fusion reference passing fraction filter", fracFilterFusion);
