@@ -51,11 +51,12 @@ public class MatchFilter extends BAMClassifier {
 			}
 		}
 		*/
-		int mismatchCount = (int) read.getAttribute("NM");
-		if ((float) mismatchCount / read.getReadLength() > (1 - fraction)) {
+		Integer mismatchCount = (Integer) read.getAttribute("NM");
+		if ((double) mismatchCount / (double)read.getReadLength() > (1 - fraction)) {
 			return false;
-		} else
+		} else {
 			return true;
+		}
 	}
 
 }
