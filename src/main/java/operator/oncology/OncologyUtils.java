@@ -29,6 +29,7 @@ import buffer.FastQFile;
 import buffer.FileBuffer;
 import buffer.JSONBuffer;
 import buffer.ReferenceFile;
+import operator.bamutils.*;
 
 /*
  * @author daniel
@@ -109,7 +110,6 @@ public class OncologyUtils extends IOOperator {
 		if(samtoolsAttr != null) {
 			samtoolsPath = samtoolsAttr;
 		}
-		
 		//TODO: Create external operator to complete this task
 		String command_str = samtoolsPath + " view -c " + BamBuffers.get(0).getAbsolutePath();
 		logger.info("Counting reads in BAM #1");
