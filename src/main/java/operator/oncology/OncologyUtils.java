@@ -135,11 +135,15 @@ public class OncologyUtils extends IOOperator {
 		long short90 = UnmappedFq - Trim90Fq; 
 		String command_str5 = samtoolsPath + " view -c " + BamBuffers.get(5).getAbsolutePath();
 		long passMappedRatio = Integer.parseInt(executeCommandOutputToString(command_str5).replaceAll("[^\\d.]", "")); //Number of records in mapped ratio bam which passed the FracAlign filter
+		logger.info(command_str5);
 		String command_str6 = samtoolsPath + " view -c " + BamBuffers.get(6).getAbsolutePath();
+		logger.info(command_str6);
 		long passMatchRatio = Integer.parseInt(executeCommandOutputToString(command_str6).replaceAll("[^\\d.]", "")); //Number of records in passMappedRatio bam which also passed the mismatch filter
 		String command_str7 = samtoolsPath + " view -c " + BamBuffers.get(7).getAbsolutePath();
+		logger.info(command_str7);
 		long passMappedFusion = Integer.parseInt(executeCommandOutputToString(command_str7).replaceAll("[^\\d.]", "")); //Number of records in mapped fusion bam which passed the FracAlign filter
 		String command_str8 = samtoolsPath + " view -c " + BamBuffers.get(8).getAbsolutePath();
+		logger.info(command_str8);
 		long passMatchFusion = Integer.parseInt(executeCommandOutputToString(command_str8).replaceAll("[^\\d.]", "")); //Number of records in passMappedFusion bam which also passed the mismatch filter
 		long mapFilterRatioCount = ratioMapped - passMappedRatio;
 		long mismatchFilterRatioCount = passMappedRatio - passMatchRatio;
