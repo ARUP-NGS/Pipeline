@@ -58,9 +58,9 @@ public class OncologyUtils extends IOOperator {
 		}
 	
 		
-		if(BamBuffers.size() != 5) {
+		if(BamBuffers.size() != 9) {
 			System.out.println(BamBuffers.size() + " bam files provided.");
-			throw new IllegalArgumentException("5 BAM files required as input.");
+			throw new IllegalArgumentException("9 BAM files required as input.");
 		}
 		
 		
@@ -75,11 +75,11 @@ public class OncologyUtils extends IOOperator {
 		long Trim40Fq = Integer.parseInt(executeCommandOutputToString("wc -l " + FastqBuffers.get(1).getAbsolutePath()).split(" ")[0])/4;
 		long UnmappedFq = Integer.parseInt(executeCommandOutputToString("wc -l " + FastqBuffers.get(2).getAbsolutePath()).split(" ")[0])/4;
 		long Trim90Fq = Integer.parseInt(executeCommandOutputToString("wc -l " + FastqBuffers.get(3).getAbsolutePath()).split(" ")[0])/4;
-		*/
 		System.out.println("InFq string is ... " + executeCommandOutputToString("wc -l " + FastqBuffers.get(0).getAbsolutePath()));
 		System.out.println("Trim40Fq string is ... " + executeCommandOutputToString("wc -l " + FastqBuffers.get(1).getAbsolutePath()));
 		System.out.println("UnmappedFq string is ... " + executeCommandOutputToString("wc -l " + FastqBuffers.get(2).getAbsolutePath()));
 		System.out.println("Trim90Fq string is ... " + executeCommandOutputToString("wc -l " + FastqBuffers.get(3).getAbsolutePath()));
+		*/
 		long Trim90Fq = countLines(FastqBuffers.get(3).getAbsolutePath())/4;
 		long InFq = countLines(FastqBuffers.get(0).getAbsolutePath())/4;
 		long Trim40Fq = countLines(FastqBuffers.get(1).getAbsolutePath())/4;
@@ -110,6 +110,7 @@ public class OncologyUtils extends IOOperator {
 			samtoolsPath = samtoolsAttr;
 		}
 		
+		//TODO: Create external operator to complete this task
 		String command_str = samtoolsPath + " view -c " + BamBuffers.get(0).getAbsolutePath();
 		logger.info("Counting reads in BAM #1");
 		logger.info(command_str);
@@ -132,8 +133,21 @@ public class OncologyUtils extends IOOperator {
 		long filteredFromFusion = fusionMapped - filterFusion;
 		long short40 = InFq - Trim40Fq;
 		long short90 = UnmappedFq - Trim90Fq; 
+		String command_str5 = samtoolsPath + " view -c " + BamBuffers.get(5).getAbsolutePath();
+		long passMappedRatio = Integer.parseInt(executeCommandOutputToString(command_str5).replaceAll("[^\\d.]", "")); //Number of records in mapped ratio bam which passed the FracAlign filter
+		String command_str6 = samtoolsPath + " view -c " + BamBuffers.get(6).getAbsolutePath();
+		long passMatchRatio = Integer.parseInt(executeCommandOutputToString(command_str6).replaceAll("[^\\d.]", "")); //Number of records in passMappedRatio bam which also passed the mismatch filter
+		String command_str7 = samtoolsPath + " view -c " + BamBuffers.get(7).getAbsolutePath();
+		long passMappedFusion = Integer.parseInt(executeCommandOutputToString(command_str7).replaceAll("[^\\d.]", "")); //Number of records in mapped fusion bam which passed the FracAlign filter
+		String command_str8 = samtoolsPath + " view -c " + BamBuffers.get(8).getAbsolutePath();
+		long passMatchFusion = Integer.parseInt(executeCommandOutputToString(command_str8).replaceAll("[^\\d.]", "")); //Number of records in passMappedFusion bam which also passed the mismatch filter
+		long mapFilterRatioCount = ratioMapped - passMappedRatio;
+		long mismatchFilterRatioCount = passMappedRatio - passMatchRatio;
+		long mapFilterFusionCount = fusionMapped - passMappedFusion;
+		long mismatchFilterFusionCount = passMappedFusion - passMatchFusion;
+		
 		//Get map containing # of reads per contig
-		Map<String, Long> bamRatioMap = ReadCounter.countReadsByChromosome((BAMFile)BamBuffers.get(0),1);
+		Map<String, Long> bamRatioMap = ReadCounter.countReadsByChromosome((BAMFile)BamBuffers.get(6),1);
 		Set<String> keysRatio = bamRatioMap.keySet();
 		Map<String, Long> ratioMap = new HashMap<String, Long>();
 		for(String contig:RatioContigs) {
@@ -144,7 +158,7 @@ public class OncologyUtils extends IOOperator {
 			ratioMap.put(key, bamRatioMap.get(key));
 		}
 		
-		Map<String, Long> bamFusionMap = ReadCounter.countReadsByChromosome((BAMFile)BamBuffers.get(2),1);
+		Map<String, Long> bamFusionMap = ReadCounter.countReadsByChromosome((BAMFile)BamBuffers.get(4),1);
 		Set<String> keysFusion = bamFusionMap.keySet();
 		Map<String, Long> fusionMap = new HashMap<String, Long>();
 		for(String contig:FusionContigs) {
@@ -214,21 +228,38 @@ public class OncologyUtils extends IOOperator {
 		 */
 	    //Build summary map
 		Map<String, Object> summary = new HashMap<String, Object>();
+		//TODO: Rename the keys for these Map/JSON entries
 		summary.put("fraction of reads mapped to ratio reference", fracRatioMapped);
 		summary.put("fraction of reads mapped to fusion reference", fracFusionMapped);
-		summary.put("fraction of reads mapped to fusion reference passing filter", fracFilterFusion);
+		summary.put("fraction of reads mapped to fusion reference passing fraction filter", fracFilterFusion);
 		summary.put("fraction of reads filtered out for lengths < 40", fracShort40Mapped);
 		summary.put("fraction of reads unmapped to ratio reference filtered out for lengths < 90", fracShort90Mapped);
 		summary.put("fraction of reads filtered from fusion BAM by location", fracRemovedFilterFusion);
 		summary.put("fraction of unmapped reads", fracUnmapped);
+		summary.put("fraction of reads mapped to ratio reference passing map filter.",(double)passMappedRatio/InFq);
+		summary.put("fraction of reads mapped to fusion reference passing map filter.",(double)passMappedFusion/InFq);
+		summary.put("fraction of reads mapped to ratio reference passing both map and mismatch filters.",(double)passMatchRatio/InFq);
+		summary.put("fraction of reads mapped to fusion reference passing both map and mismatch filters.",(double)passMatchFusion/InFq);
+		summary.put("fraction of reads mapped to ratio reference failing map filter.",(double)mapFilterRatioCount/InFq);
+		summary.put("fraction of reads mapped to fusion reference failing map filter.",(double)mapFilterFusionCount/InFq);
+		summary.put("fraction of reads mapped to ratio reference failing match filter.",(double)mismatchFilterRatioCount/InFq);
+		summary.put("fraction of reads mapped to fusion reference failing match filter.",(double)mismatchFilterFusionCount/InFq);		
 		
 		summary.put("count of reads mapped to ratio reference", ratioMapped);
 		summary.put("count of reads mapped to fusion reference", fusionMapped);
-		summary.put("count of reads mapped to fusion reference passing filter",filterFusion);
+		summary.put("count of reads mapped to fusion reference passing all filters",filterFusion);
 		summary.put("count of reads filtered out for lengths < 40", short40);
 		summary.put("count of reads unmapped to ratio reference filtered out for lengths < 90", short90);
-		summary.put("count of reads filtered from fusion BAM by location",filteredFromFusion);
+		summary.put("count of reads filtered from fusion BAM by location",filteredFromFusion-mapFilterFusionCount-mismatchFilterFusionCount);
 		summary.put("count of unmapped reads", fusionUnmapped);
+		summary.put("count of reads mapped to ratio reference passing map filter.",passMappedRatio);
+		summary.put("count of reads mapped to fusion reference passing map filter.",passMappedFusion);
+		summary.put("count of reads mapped to ratio reference passing both map and mismatch filters.",passMatchRatio);
+		summary.put("count of reads mapped to fusion reference passing both map and mismatch filters.",passMatchFusion);
+		summary.put("count of reads mapped to ratio reference failing map filter.", mapFilterRatioCount);
+		summary.put("count of reads mapped to fusion reference failing map filter.", mapFilterFusionCount);
+		summary.put("count of reads mapped to ratio reference failing match filter.", mismatchFilterRatioCount);
+		summary.put("count of reads mapped to fusion reference failing match filter.", mismatchFilterFusionCount);
 
 		//Build rna ratio map
 		Map<String, Object> rnaRatio = new HashMap<String, Object>();
