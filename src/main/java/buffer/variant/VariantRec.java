@@ -602,6 +602,17 @@ public class VariantRec {
 	public static final String TAUFP_SCORE = "taufp.score";
 	public static final String VQSR = "vqsr.score";
 	public static final String EXOMES_FREQ = "exomes5400.frequency";
+	public static final String EXOMES_FREQ_EA = "exomes5400.EA.frequency";
+	public static final String EXOMES_FREQ_AA = "exomes5400.AA.frequency";
+	
+	public static final String EXOMES_EA_HOMREF = "exomes5400.EA.homref";
+	public static final String EXOMES_EA_HET = "exomes5400.EA.het";
+	public static final String EXOMES_EA_HOMALT = "exomes5400.EA.homalt";
+	
+	public static final String EXOMES_AA_HOMREF = "exomes5400.AA.homref";
+	public static final String EXOMES_AA_HET = "exomes5400.AA.het";
+	public static final String EXOMES_AA_HOMALT = "exomes5400.AA.homalt";
+	
 	public static final String HGMD_INFO = "hgmd.info";
 	public static final String SAMPLE_COUNT = "sample.count";	
 	public static final String EFFECT_RELEVANCE_PRODUCT = "effect.rel.product";
@@ -619,6 +630,7 @@ public class VariantRec {
 	public static final String SPLICING_TOPNM = "splicing.topnm";
 	public static final String SPLICING_TOPNMDIFF = "splicing.topnmdiff";
 	public static final String HOTSPOT_ID = "hotspot.id";
+	public static final String NON_PREFERRED_TRANSCRIPT = "non.preferred.transcript";
 	
 }
 
