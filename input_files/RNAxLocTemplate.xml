@@ -7,8 +7,8 @@
 
 <fusionReference class="buffer.ReferenceFile" filename="/mnt/research1/reference/lungmelanoma_v4_fusions.fasta" />
 <termReference class="buffer.ReferenceFile" filename="/mnt/research1/reference/lungmelanoma_v4_driver_terminal_ratios.fasta" />
-<fusionBreakpointBed1 class="buffer.BEDFile" filename="/mnt/research1/reference/Breakpoints.start.bed" />
-<fusionBreakpointBed2 class="buffer.BEDFile" filename="/mnt/research1/reference/Breakpoints.end.bed" />
+<fusionBreakpointBed1 class="buffer.BEDFile" filename="/mnt/research1/reference/lungMelanomaBreakpoints.start.bed" />
+<fusionBreakpointBed2 class="buffer.BEDFile" filename="/mnt/research1/reference/lungMelanomaBreakpoints.end.bed" />
 <reads class="buffer.FastQFile" filename="${INPUTFILE}" />
 
 <WranglerLogger class="operator.StatusLogger" />
@@ -76,7 +76,7 @@
   </output>
 </SplitTerm>
 
-<FracFilter class="operator.bamutils.FracAlignFilter" fraction="0.5">
+<AmpliconFilterTerm class="operator.bamutils.AmpliconCoverageFilter" bedpath="/mnt/research1/reference/Designed.bed" fraction="0.5">
   <input>
     <mappedTermBam /> 
   </input>
@@ -84,7 +84,7 @@
     <passMappedTermBam class="buffer.BAMFile" filename="${SAMPLE}.mapped.pass.bam" />
     <failMappedTermBam class="buffer.BAMFile" filename="${SAMPLE}.mapped.fail.bam" />
   </output>
-</FracFilter>
+</AmpliconFilterTerm>
 
 <MatchFilter class="operator.bamutils.MatchFilter" fraction="0.667">
   <input>
@@ -198,7 +198,7 @@
   </output>
 </SplitFusion>
 
-<FracFilterFusion class="operator.bamutils.FracAlignFilter" fraction="0.7">
+<AmpliconFilter class="operator.bamutils.AmpliconCoverageFilter" bedpath="/mnt/research1/reference/ampliconDesignLungMel.bed" fraction="0.7">
   <input>
     <mappedFusionBam /> 
   </input>
@@ -206,7 +206,7 @@
     <passMappedFusBam class="buffer.BAMFile" filename="${SAMPLE}.FusMapPass.bam" />
     <failMappedFusBam class="buffer.BAMFile" filename="${SAMPLE}.FusMapFail.bam" />
   </output>
-</FracFilterFusion>
+</AmpliconFilter>
 
 <MatchFilterFusion class="operator.bamutils.MatchFilter" fraction="0.667">
   <input>
