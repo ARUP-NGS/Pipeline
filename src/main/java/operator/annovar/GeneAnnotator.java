@@ -185,7 +185,7 @@ public class GeneAnnotator extends AnnovarAnnotator {
 		lastFewErrors.clear();
 		while(line != null) {
 			if (line.length()>1) {
-				String[] toks = line.split("\\t");
+				String[] toks = line.split("\\t");				
 				String exonicFunc = toks[1];
 				String ref = toks[6];
 				String alt = toks[7];
@@ -250,7 +250,7 @@ public class GeneAnnotator extends AnnovarAnnotator {
 						rec.addAnnotation(VariantRec.CDOT, cDot);
 					rec.addAnnotation(VariantRec.PDOT, pDot);
 				}
-				else {
+				else {						
 					errorVars++;
 					if (lastFewErrors.size() < 10)
 						lastFewErrors.add("Variant not found : " + line);

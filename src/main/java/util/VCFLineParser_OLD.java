@@ -28,7 +28,7 @@ import buffer.variant.VariantRec;
  * @author brendan
  *
  */
-public class VCFLineParser extends PipelineObject implements VariantLineReader  {
+public class VCFLineParser_OLD extends PipelineObject implements VariantLineReader  {
 
 		private BufferedReader reader;
 		private int currentLineNumber = -1;
@@ -53,12 +53,12 @@ public class VCFLineParser extends PipelineObject implements VariantLineReader  
 		
 		private boolean parseAllInfoTokens = false; //If true, we create annotations / properties for every token in the info field
 		
-		public VCFLineParser() {
+		public VCFLineParser_OLD() {
 			sourceFile = null;
 			//No arg constructor, imput stream and sample must be set using setters
 		}
 		
-		public VCFLineParser(File file, String sample) throws IOException {
+		public VCFLineParser_OLD(File file, String sample) throws IOException {
 			setInputStream(new FileInputStream(file));
 			this.sourceFile = file;
 			currentLine = reader.readLine();
@@ -79,17 +79,17 @@ public class VCFLineParser extends PipelineObject implements VariantLineReader  
 		 * @param stream
 		 * @throws IOException
 		 */
-		public VCFLineParser(InputStream stream) throws IOException {
+		public VCFLineParser_OLD(InputStream stream) throws IOException {
 			setInputStream(stream);
 			sourceFile = null;
 			primeForReading();
 		}
 		
-		public VCFLineParser(File file) throws IOException {
+		public VCFLineParser_OLD(File file) throws IOException {
 			this(file, false);
 		}
 		
-		public VCFLineParser(File file, boolean parseInfoToks) throws IOException {
+		public VCFLineParser_OLD(File file, boolean parseInfoToks) throws IOException {
 			setInputStream(new FileInputStream(file));
 			this.sourceFile = file;
 			this.parseAllInfoTokens = parseInfoToks;
@@ -97,7 +97,7 @@ public class VCFLineParser extends PipelineObject implements VariantLineReader  
 		}
 
 		
-		public VCFLineParser(VCFFile file) throws IOException {
+		public VCFLineParser_OLD(VCFFile file) throws IOException {
 			this(file.getFile());
 		}
 		
