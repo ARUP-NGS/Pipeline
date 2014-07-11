@@ -99,6 +99,39 @@ public class ESP6500Annotator extends Annotator {
 					//Don't worry about it, no annotation though
 				}
 			}
+			if (tok.startsWith("EA_GTC=")) {
+				tok = tok.replace("EA_GTC=", "");
+				String[] vals = tok.split(",");
+				try {
+					Double homRef = Double.parseDouble(vals[vals.length-1]);
+					Double het = Double.parseDouble(vals[1]);
+					Double homAlt = Double.parseDouble(vals[0]);
+					double tot = homRef + het + homAlt;
+					var.addProperty(VariantRec.EXOMES_EA_HOMREF, homRef / tot);
+					var.addProperty(VariantRec.EXOMES_EA_HET, het/tot);
+					var.addProperty(VariantRec.EXOMES_EA_HOMALT, homAlt/ tot);
+				}
+				catch(NumberFormatException ex) {
+					//Don't worry about it, no annotation though
+				}
+			}
+			
+			if (tok.startsWith("AA_GTC=")) {
+				tok = tok.replace("AA_GTC=", "");
+				String[] vals = tok.split(",");
+				try {
+					Double homRef = Double.parseDouble(vals[vals.length-1]);
+					Double het = Double.parseDouble(vals[1]);
+					Double homAlt = Double.parseDouble(vals[0]);
+					double tot = homRef + het + homAlt;
+					var.addProperty(VariantRec.EXOMES_AA_HOMREF, homRef / tot);
+					var.addProperty(VariantRec.EXOMES_AA_HET, het/tot);
+					var.addProperty(VariantRec.EXOMES_AA_HOMALT, homAlt/ tot);
+				}
+				catch(NumberFormatException ex) {
+					//Don't worry about it, no annotation though
+				}
+			}
 		}
 		return true;
 	}

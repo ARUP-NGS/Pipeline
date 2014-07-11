@@ -47,7 +47,14 @@ public class VarViewerWriter extends VariantPoolWriter {
 			 VariantRec.HALOPLEX_PANEL_FREQ,
 			 VariantRec.SPLICING_ALL,
 			 VariantRec.SPLICING_TOPNM,
-			 VariantRec.SPLICING_TOPNMDIFF
+			 VariantRec.SPLICING_TOPNMDIFF,
+			 VariantRec.NON_PREFERRED_TRANSCRIPT,
+			 VariantRec.EXOMES_AA_HET,
+			 VariantRec.EXOMES_AA_HOMALT,
+			 VariantRec.EXOMES_AA_HOMREF,
+			 VariantRec.EXOMES_EA_HET,
+			 VariantRec.EXOMES_EA_HOMALT,
+			 VariantRec.EXOMES_EA_HOMREF
 			 }));
 	
 	public final static List<String> geneKeys = new ArrayList<String>( Arrays.asList(new String[]{

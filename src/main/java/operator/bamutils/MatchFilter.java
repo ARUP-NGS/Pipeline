@@ -1,7 +1,6 @@
 package operator.bamutils;
 
 import net.sf.samtools.SAMRecord;
-import net.sf.samtools.util.SequenceUtil;
 
 /**
  * Splits a BAM file into one of two output files - one BAM for "fail" reads
@@ -52,11 +51,12 @@ public class MatchFilter extends BAMClassifier {
 			}
 		}
 		*/
-		int mismatchCount = (int) read.getAttribute("NM");
-		if ((float) mismatchCount / read.getReadLength() > (1 - fraction)) {
+		Integer mismatchCount = (Integer) read.getAttribute("NM");
+		if ((double) mismatchCount / (double)read.getReadLength() > (1 - fraction)) {
 			return false;
-		} else
+		} else {
 			return true;
+		}
 	}
 
 }
