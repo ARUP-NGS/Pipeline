@@ -2,12 +2,14 @@ package util.vcfParser;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import buffer.VCFFile;
 import buffer.variant.VariantLineReader;
 import buffer.variant.VariantRec;
 
@@ -51,6 +53,10 @@ public class VCFParser implements VariantLineReader {
 		parseHeader();
 	}
 	
+	public VCFParser(VCFFile file) throws IOException {
+		this(file.getFile());
+	}
+	
 	/**
 	 * Create a new vcf parser that only returns variants for the sample name provided
 	 * @param source
@@ -67,6 +73,8 @@ public class VCFParser implements VariantLineReader {
 		}
 		sampleIndex = sampleIndexes.get(sampleName);
 	}
+	
+
 	
 	/**
 	 * Read the header of the file, including the list of samples, but do not parse any variants
@@ -186,8 +194,9 @@ public class VCFParser implements VariantLineReader {
 	public void setFile(File file) throws IOException {
 		headerItems = null;
 		this.source = file;
+		//currentLine = reader.readLine(); //EG
 	}
-
+	
 	/**
 	 * This actually advances to the next variant to be read, which doesn't involve advancing to
 	 * the next line if there are more alts to read on the current line
@@ -240,9 +249,6 @@ public class VCFParser implements VariantLineReader {
 			//we tolerate it if we can't parse quality...
 		}
 		
-		VariantRec var = new VariantRec(chr, pos, pos+alt.length(), ref, alt);
-		var.setQuality(quality);
-	
 		//@author elainegee start
 		//Remove initial characters if they are equal and add that many bases to start position
 		//Warning: Indels may no longer be left-aligned after this procedure
@@ -262,21 +268,23 @@ public class VCFParser implements VariantLineReader {
 				
 				//Update start position
 				pos+=matches;
-				
-				//Update end position
-				Integer end=null;
-				if (ref.equals("-")) {
-					end = pos;
-				}
-				else {
-					end = pos + ref.length();
-				}
-				
-				var.setPosition(chr, pos, end);
+								
+		//		var.setPosition(chr, pos, end);
 				
 			}
 		}
 		
+		//Update end position
+		Integer end=null;
+		if (alt.equals("-")) {
+			end = pos;
+		}
+		else {
+			end = pos + ref.length();
+		}
+		
+		VariantRec var = new VariantRec(chr, pos, end, ref, alt);
+		var.setQuality(quality);
 
 		
 		// Create sampleMetrics dictionary containing INFO & FORMAT field data, keyed by annotation

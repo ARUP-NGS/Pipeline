@@ -27,6 +27,7 @@ import operator.variant.CompoundHetFinder;
 import operator.variant.FPComputer;
 import operator.variant.MedDirWriter;
 import util.flatFilesReader.DBNSFPReader;
+import util.vcfParser.VCFParser;
 import buffer.BAMFile;
 import buffer.BAMMetrics;
 import buffer.BEDFile;
@@ -306,7 +307,8 @@ public class VarUtils {
 	private static VariantLineReader getReader(String filename) throws IOException {
 		VariantLineReader reader = null;
 		if (filename.endsWith("vcf")) {
-			reader = new VCFLineParser(new File(filename), true);
+			reader = new VCFParser(new File(filename));
+			//reader = new VCFParser(new File(filename), true);
 		}
 		if (filename.endsWith("csv")) {
 			reader = new CSVLineReader(new File(filename));
@@ -323,7 +325,7 @@ public class VarUtils {
 	 */
 	public static void compareAndEmitVars(File trueMutsFile, File inferredMutsFile) throws IOException {
 		SimpleLineReader tParser = new SimpleLineReader(trueMutsFile);
-		VCFLineParser vParser = new VCFLineParser(new VCFFile(inferredMutsFile));
+		VCFParser vParser = new VCFParser(new VCFFile(inferredMutsFile));
 		
 		VariantRec trueVar = tParser.toVariantRec();
 		VariantRec qVar = vParser.toVariantRec();
@@ -1857,7 +1859,7 @@ public class VarUtils {
 				if (args[i].endsWith(".csv")) 
 					reader = new CSVLineReader(new File(args[i]));
 				else
-					reader = new VCFLineParser(new VCFFile(new File(args[i])));
+					reader = new VCFParser(new VCFFile(new File(args[i])));
 				
 				do {
 					VariantRec rec = reader.toVariantRec();
@@ -2054,7 +2056,7 @@ public class VarUtils {
 			
 			//Don't strip initial matching bases from the vcf, this screws up the position
 			//and will break ROC calculation
-			VCFLineParser vcfReader = new VCFLineParser(new File(args[3]));
+			VCFParser vcfReader = new VCFParser(new File(args[3]));
 			vcfReader.setStripInitialMatchingBases(false);
 			VariantPool qVars = new VariantPool(vcfReader);
 						
