@@ -4,10 +4,9 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 
-import org.apache.tools.ant.types.CommandlineJava.SysProperties;
-
 import net.sf.samtools.SAMRecord;
 import operator.OperationFailedException;
+
 /*
  * 
  * @author daniel
@@ -15,16 +14,16 @@ import operator.OperationFailedException;
  */
 
 public class AmpliconCoverageFilter extends BAMClassifier {
-	
+
 	public static final String BEDPATH = "bedpath";
 	public static final String FRACTION = "fraction";
 	public static final float defaultFrac = (float) 0.9;
 	public String bedFile = null;
-	
+
 	public ReturnRecord processRecord(SAMRecord samRecord)
 			throws NumberFormatException, IOException, OperationFailedException {
 		String bedAttr = this.getAttribute(BEDPATH);
-		if(bedAttr != null) {
+		if (bedAttr != null) {
 			bedFile = bedAttr;
 		}
 		boolean value = readPasses(samRecord);
@@ -51,8 +50,7 @@ public class AmpliconCoverageFilter extends BAMClassifier {
 		int[] intersection = { 1337, 1337 };
 		int ampliconLen = 0;
 		String chrom = read.getReferenceName();
-		BufferedReader br = new BufferedReader(new FileReader(
-				bedFile));
+		BufferedReader br = new BufferedReader(new FileReader(bedFile));
 		String entry;
 		while ((entry = br.readLine()) != null) {
 			String[] line = entry.split("\t");

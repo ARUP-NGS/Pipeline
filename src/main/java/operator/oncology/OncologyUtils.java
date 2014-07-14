@@ -70,15 +70,6 @@ public class OncologyUtils extends IOOperator {
 		
 		logger.info("Counting reads in Fastq Files");
 		System.out.println("Counting reads in Fastq Files");
-		/*long InFq = Integer.parseInt(executeCommandOutputToString("wc -l " + FastqBuffers.get(0).getAbsolutePath()).split(" ")[0])/4;
-		long Trim40Fq = Integer.parseInt(executeCommandOutputToString("wc -l " + FastqBuffers.get(1).getAbsolutePath()).split(" ")[0])/4;
-		long UnmappedFq = Integer.parseInt(executeCommandOutputToString("wc -l " + FastqBuffers.get(2).getAbsolutePath()).split(" ")[0])/4;
-		long Trim90Fq = Integer.parseInt(executeCommandOutputToString("wc -l " + FastqBuffers.get(3).getAbsolutePath()).split(" ")[0])/4;
-		System.out.println("InFq string is ... " + executeCommandOutputToString("wc -l " + FastqBuffers.get(0).getAbsolutePath()));
-		System.out.println("Trim40Fq string is ... " + executeCommandOutputToString("wc -l " + FastqBuffers.get(1).getAbsolutePath()));
-		System.out.println("UnmappedFq string is ... " + executeCommandOutputToString("wc -l " + FastqBuffers.get(2).getAbsolutePath()));
-		System.out.println("Trim90Fq string is ... " + executeCommandOutputToString("wc -l " + FastqBuffers.get(3).getAbsolutePath()));
-		*/
 		long Trim90Fq = countLines(FastqBuffers.get(3).getAbsolutePath())/4;
 		long InFq = countLines(FastqBuffers.get(0).getAbsolutePath())/4;
 		long Trim40Fq = countLines(FastqBuffers.get(1).getAbsolutePath())/4;
