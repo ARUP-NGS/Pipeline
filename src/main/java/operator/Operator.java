@@ -1,5 +1,6 @@
 package operator;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -199,6 +200,46 @@ public abstract class Operator extends PipelineObject {
 			throw new OperationFailedException("Task encountered an IO exception : " + System.err.toString() + "\n" + e1.getLocalizedMessage(), this);
 		}
 	}
+	
+	protected String executeCommandOutputToString(final String command) throws OperationFailedException {
+		Runtime r = Runtime.getRuntime();
+		final Process p;
+		System.out.println("About to execute " + command);
+		try {
+			ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+			
+			p = r.exec(command);
+			
+			final Thread errConsumer = new StringPipeHandler(p.getErrorStream(), System.err);
+			errConsumer.start();
+			
+			final Thread outputConsumer = new StringPipeHandler(p.getInputStream(), outputStream);
+			outputConsumer.start();
+			
+			//If runtime is going down, destroy the process so it won't become orphaned
+			Runtime.getRuntime().addShutdownHook(new Thread() {
+				public void run() {
+					//System.err.println("Invoking shutdown thread, destroying task with command : " + command);
+					p.destroy();
+					errConsumer.interrupt();
+					outputConsumer.interrupt();
+				}
+			});
+		
+			try {
+				if (p.waitFor() != 0) {
+					throw new OperationFailedException("Task terminated with nonzero exit value : " + System.err.toString() + " command was: " + command, this);
+				}
+			} catch (InterruptedException e) {
+				throw new OperationFailedException("Task was interrupted : " + System.err.toString() + "\n" + e.getLocalizedMessage(), this);
+			}
+
+			return outputStream.toString();
+		}
+		catch (IOException e1) {
+			throw new OperationFailedException("Task encountered an IO exception : " + System.err.toString() + "\n" + e1.getLocalizedMessage(), this);
+		}
+	}		
 	
 	public abstract void performOperation() throws OperationFailedException, JSONException, IOException;
 }

@@ -2,7 +2,6 @@ package operator.oncology;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -19,7 +18,6 @@ import json.JSONException;
 import json.JSONObject;
 import operator.IOOperator;
 import operator.OperationFailedException;
-import operator.StringPipeHandler;
 import pipeline.Pipeline;
 import util.FastaReader;
 import util.bamUtil.ReadCounter;
@@ -29,7 +27,7 @@ import buffer.FastQFile;
 import buffer.FileBuffer;
 import buffer.JSONBuffer;
 import buffer.ReferenceFile;
-import operator.bamutils.*;
+import operator.bamutils.CountBAMRecords;
 
 /*
  * @author daniel
@@ -105,46 +103,30 @@ public class OncologyUtils extends IOOperator {
 		 */
 		logger.info("Counting records in BAM Files");
 		System.out.println("Counting records in BAM Files");
-		String samtoolsPath = defaultSamPath;
-		String samtoolsAttr = getPipelineProperty(SAMTOOLS_PATH);
-		if(samtoolsAttr != null) {
-			samtoolsPath = samtoolsAttr;
-		}
 		//TODO: Create external operator to complete this task
-		String command_str = samtoolsPath + " view -c " + BamBuffers.get(0).getAbsolutePath();
-		logger.info("Counting reads in BAM #1");
-		logger.info(command_str);
-		long ratioMapped = Integer.parseInt(executeCommandOutputToString(command_str).replaceAll("[^\\d.]", ""));
-		String command_str1 = samtoolsPath + " view -c " + BamBuffers.get(1).getAbsolutePath();
-		logger.info("Counting reads in BAM #2");
-		logger.info(command_str1);
-		long ratioUnmapped = Integer.parseInt(executeCommandOutputToString(command_str1).replaceAll("[^\\d.]", ""));
-		String command_str2 = samtoolsPath + " view -c " + BamBuffers.get(2).getAbsolutePath();
-		logger.info("Counting reads in BAM #3");
-		logger.info(command_str2);
-		long fusionMapped = Integer.parseInt(executeCommandOutputToString(command_str2).replaceAll("[^\\d.]", ""));
-		logger.info("Counting reads in BAM #4");
-		String command_str3 = samtoolsPath + " view -c " + BamBuffers.get(3).getAbsolutePath();
-		logger.info(command_str3);
-		long fusionUnmapped = Integer.parseInt(executeCommandOutputToString(command_str3).replaceAll("[^\\d.]", ""));
-		String command_str4 = samtoolsPath + " view -c " + BamBuffers.get(4).getAbsolutePath();
-		logger.info(command_str4);
-		long filterFusion = Integer.parseInt(executeCommandOutputToString(command_str4).replaceAll("[^\\d.]", ""));
+		CountBAMRecords something = new CountBAMRecords();
+		long ratioMapped = something.CountRecords(BamBuffers.get(0));
+		logger.info("Finished counting reads in BAM #1: mapped to ratio reference.");
+		long ratioUnmapped = something.CountRecords(BamBuffers.get(1));
+		logger.info("Finished counting reads in BAM #2: unmapped to ratio reference.");
+		long fusionMapped = something.CountRecords(BamBuffers.get(2));
+		logger.info("Finished counting reads in BAM #3: mapped to fusion reference");
+		long fusionUnmapped = something.CountRecords(BamBuffers.get(3));
+		logger.info("Finished counting reads in BAM #4: unmapped to fusion reference.");
+		long filterFusion = something.CountRecords(BamBuffers.get(4));
+		logger.info("Finished counting reads in BAM #5");
+		long passMappedRatio = something.CountRecords(BamBuffers.get(5));
+		logger.info("Finished counting reads in BAM #6");
+		long passMatchRatio = something.CountRecords(BamBuffers.get(6));
+		logger.info("Finished counting reads in BAM #7");
+		long passMappedFusion = something.CountRecords(BamBuffers.get(7));
+		logger.info("Finished counting reads in BAM #8");
+		long passMatchFusion = something.CountRecords(BamBuffers.get(8));
+		logger.info("Finished counting reads in BAM #9. Last BAM!");
+		
 		long filteredFromFusion = fusionMapped - filterFusion;
 		long short40 = InFq - Trim40Fq;
 		long short90 = UnmappedFq - Trim90Fq; 
-		String command_str5 = samtoolsPath + " view -c " + BamBuffers.get(5).getAbsolutePath();
-		long passMappedRatio = Integer.parseInt(executeCommandOutputToString(command_str5).replaceAll("[^\\d.]", "")); //Number of records in mapped ratio bam which passed the FracAlign filter
-		logger.info(command_str5);
-		String command_str6 = samtoolsPath + " view -c " + BamBuffers.get(6).getAbsolutePath();
-		logger.info(command_str6);
-		long passMatchRatio = Integer.parseInt(executeCommandOutputToString(command_str6).replaceAll("[^\\d.]", "")); //Number of records in passMappedRatio bam which also passed the mismatch filter
-		String command_str7 = samtoolsPath + " view -c " + BamBuffers.get(7).getAbsolutePath();
-		logger.info(command_str7);
-		long passMappedFusion = Integer.parseInt(executeCommandOutputToString(command_str7).replaceAll("[^\\d.]", "")); //Number of records in mapped fusion bam which passed the FracAlign filter
-		String command_str8 = samtoolsPath + " view -c " + BamBuffers.get(8).getAbsolutePath();
-		logger.info(command_str8);
-		long passMatchFusion = Integer.parseInt(executeCommandOutputToString(command_str8).replaceAll("[^\\d.]", "")); //Number of records in passMappedFusion bam which also passed the mismatch filter
 		long mapFilterRatioCount = ratioMapped - passMappedRatio;
 		long mismatchFilterRatioCount = passMappedRatio - passMatchRatio;
 		long mapFilterFusionCount = fusionMapped - passMappedFusion;
@@ -200,6 +182,9 @@ public class OncologyUtils extends IOOperator {
 			if(i>=fusionLength-5) {
 				houseKeepingReads+=(int)fusionCounts[i];
 			}
+		}
+		if(houseKeepingReads == 0) {
+			throw new OperationFailedException("Experimental run failed - 0 reads for all control genes.", this);
 		}
 		for(int i=0;i<ratioLength;i++) {
 			ratioCounts[i]=ratioMap.get(RatioContigs[i]);
@@ -345,45 +330,6 @@ public class OncologyUtils extends IOOperator {
 	        is.close();
 	    }
 	}
-	
-	protected String executeCommandOutputToString(final String command) throws OperationFailedException {
-		Runtime r = Runtime.getRuntime();
-		final Process p;
-		System.out.println("About to execute " + command);
-		try {
-			ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-			
-			p = r.exec(command);
-			
-			final Thread errConsumer = new StringPipeHandler(p.getErrorStream(), System.err);
-			errConsumer.start();
-			
-			final Thread outputConsumer = new StringPipeHandler(p.getInputStream(), outputStream);
-			outputConsumer.start();
-			
-			//If runtime is going down, destroy the process so it won't become orphaned
-			Runtime.getRuntime().addShutdownHook(new Thread() {
-				public void run() {
-					//System.err.println("Invoking shutdown thread, destroying task with command : " + command);
-					p.destroy();
-					errConsumer.interrupt();
-					outputConsumer.interrupt();
-				}
-			});
-		
-			try {
-				if (p.waitFor() != 0) {
-					throw new OperationFailedException("Task terminated with nonzero exit value : " + System.err.toString() + " command was: " + command, this);
-				}
-			} catch (InterruptedException e) {
-				throw new OperationFailedException("Task was interrupted : " + System.err.toString() + "\n" + e.getLocalizedMessage(), this);
-			}
 
-			return outputStream.toString();
-		}
-		catch (IOException e1) {
-			throw new OperationFailedException("Task encountered an IO exception : " + System.err.toString() + "\n" + e1.getLocalizedMessage(), this);
-		}
-	}	
 
 }
