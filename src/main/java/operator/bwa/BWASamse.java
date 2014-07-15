@@ -1,7 +1,5 @@
 package operator.bwa;
 
-import java.io.File;
-
 import buffer.FileBuffer;
 import operator.IOOperator;
 import operator.OperationFailedException;
@@ -31,7 +29,6 @@ public class BWASamse extends IOOperator {
 			pathToBWA = propsPath.toString();
 
 		FileBuffer outputFile = this.getOutputBufferForClass(FileBuffer.class);
-		File outputPath = outputFile.getFile();
 		String outputPrefix = outputFile.getAbsolutePath().substring(0, outputFile.getAbsolutePath().lastIndexOf(".bam"));
 		String bwaPathAttr = properties.get(PATH);
 		if (bwaPathAttr != null) {
@@ -43,9 +40,20 @@ public class BWASamse extends IOOperator {
 		String readsPath = inputBuffers.get(2).getAbsolutePath();
 
 		String command = pathToBWA + " samse -f " + outputPrefix + ".sam " + referencePath + " " + readsSAI + " " + readsPath;
-		executeCommand(command); // BWA Alignment
+		try {
+			executeCommand(command); // BWA Alignment
+		}
+		finally {
+			System.out.println("Attempt to align complete.");
+			executeCommand("touch " + outputPrefix + ".sam"); //Touch file to avoid null pointer exceptions being thrown
+		}
 		String Sam2Bam = samPath + " view -Sbh -o " + outputPrefix + ".bam " + outputPrefix + ".sam";
-		executeCommand(Sam2Bam); //Converting sam to bam
+		try {
+			executeCommand(Sam2Bam); //Converting sam to bam
+		} finally {
+			executeCommand("touch " + outputPrefix + ".bam");
+			System.out.println("Attempt to convert ");
+		}
 	}
 
 

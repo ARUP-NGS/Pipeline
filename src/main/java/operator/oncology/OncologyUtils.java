@@ -42,7 +42,7 @@ public class OncologyUtils extends IOOperator {
 
 	@Override
 	public void performOperation() throws OperationFailedException, JSONException, IOException {
-		
+		boolean runFailed = false;
 		Logger logger = Logger.getLogger(Pipeline.primaryLoggerName);
 		logger.info("Beginning utilities: Checking Arguments");
 		System.out.println("Beginning utilities: Checking Arguments.");
@@ -90,7 +90,7 @@ public class OncologyUtils extends IOOperator {
 		int ratioLength = RatioContigs.length;
 		
 		/*
-		 *  3. Count records for all 4 bam files
+		 *  3. Count records for all bam files
 		 */
 		logger.info("Counting records in BAM Files");
 		System.out.println("Counting records in BAM Files");
@@ -149,11 +149,13 @@ public class OncologyUtils extends IOOperator {
 		/*
 		 * 4. Calculate ratios as needed
 		 */
-		
+		logger.info("Now calculating counts for fastq and BAM files.");
 		double fracRatioMapped = (double) ratioMapped/InFq;
 		System.out.println("Printing fracRatioMapped " + fracRatioMapped + " ratioMapped " + ratioMapped + " InFq " + InFq);
+		logger.info("Printing fracRatioMapped " + fracRatioMapped + " ratioMapped " + ratioMapped + " InFq " + InFq);
 		double fracFusionMapped = (double) fusionMapped/InFq;
 		System.out.println("Printing fracFusionMapped " + fracFusionMapped + " fusionMapped " + fusionMapped + " InFq " + InFq);
+		logger.info("Printing fracFusionMapped " + fracFusionMapped + " fusionMapped " + fusionMapped + " InFq " + InFq);
 		double fracFilterFusion = (double) filterFusion/InFq;
 		double fracRemovedFilterFusion = (double) filteredFromFusion/InFq;
 		double fracShort40Mapped = (double) short40/InFq;
@@ -175,31 +177,30 @@ public class OncologyUtils extends IOOperator {
 			}
 		}
 		if(houseKeepingReads == 0) {
-			throw new OperationFailedException("Experimental run failed - 0 reads for all control genes.", this);
+			logger.info("!!!Experimental run failed - 0 reads for all control genes.!!!");
+			runFailed = true;
 		}
 		for(int i=0;i<ratioLength;i++) {
 			ratioCounts[i]=ratioMap.get(RatioContigs[i]);
 			ratioFrac[i]=(double)ratioCounts[i]/ratioMapped;
 		}
-		/*
-		 * Old, unnormalized way of comparing 3' and 5'.
-		double[] ratioForRatio = new double[ratioLength/2];
-		for(int i=0;i<ratioLength;i++){
-			if(i%2==0){
-					double tempVar = (double)ratioCounts[i]/(double)ratioCounts[i+1];
-					//System.out.println(tempVar + " is the ratio we're trying to capture.");
-					ratioForRatio[i/2]=tempVar;
-			}
-		}
-		*/
 		
 		//Normalized comparison
 		double[] ratioForRatio = new double[ratioLength/2];
-		for(int i=0;i<ratioLength;i++){
-			if(i%2==0){
-					double tempVar = ((double)ratioCounts[i+1]-(double)ratioCounts[i+1])/houseKeepingReads;
-					//System.out.println(tempVar + " is the ratio we're trying to capture.");
-					ratioForRatio[i/2]=tempVar;
+		if(!runFailed){
+			
+			for(int i=0;i<ratioLength;i++){
+				if(i%2==0){
+						double tempVar = ((double)ratioCounts[i+1]-(double)ratioCounts[i+1])/houseKeepingReads;
+						//System.out.println(tempVar + " is the ratio we're trying to capture.");
+						ratioForRatio[i/2]=tempVar;
+				}
+			}
+		}
+		else {
+			System.out.println("!!!Run failed. Zero counts for all control genes. Total reads in initial Fastq: " + InFq + ".");
+			for(double value : ratioForRatio) {
+				value = 0;
 			}
 		}
 		/* 5. Write results to JSON
@@ -225,6 +226,7 @@ public class OncologyUtils extends IOOperator {
 		summary.put("fraction of reads mapped to ratio reference failing match filter.",(double)mismatchFilterRatioCount/InFq);
 		summary.put("fraction of reads mapped to fusion reference failing match filter.",(double)mismatchFilterFusionCount/InFq);		
 		
+		summary.put("count of original reads", InFq);
 		summary.put("count of reads mapped to ratio reference", ratioMapped);
 		summary.put("count of reads mapped to fusion reference", fusionMapped);
 		summary.put("count of reads mapped to fusion reference passing all filters",filterFusion);
