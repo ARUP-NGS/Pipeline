@@ -314,23 +314,25 @@
   </output>
 </IndexFailMatchFusion>
 
-<FilterBamByBed1 class="operator.bamutils.RegionFilter">
+<FilterBamByBed1 class="operator.bamutils.BedFilter">
   <input>
     <passMatchFusBam />
     <fusionBreakpointBed1 />
   </input>
   <output>
-      <filterFusionBam1 class="buffer.BAMFile" filename="${WORKSPACE}/${SAMPLE}.bedfilter1.fusion.bam" />
+      <filterFusionBam1 class="buffer.BAMFile" filename="${WORKSPACE}/${SAMPLE}.bedfilter1.PassFusion.bam" />
+      <filterFusionFail class="buffer.BAMFile" filename="${WORKSPACE}/${SAMPLE}.bedfilter1.FailFusion.bam" />
   </output>
 </FilterBamByBed1>
 
-<FilterBamByBed2 class="operator.bamutils.RegionFilter">
+<FilterBamByBed2 class="operator.bamutils.BedFilter">
   <input>
     <filterFusionBam1 />
     <fusionBreakpointBed2 />
   </input>
   <output>
-      <filterFusionBam class="buffer.BAMFile" filename="${WORKSPACE}/${SAMPLE}.bedfilter.fusion.bam" />
+      <filterFusionBam class="buffer.BAMFile" filename="${WORKSPACE}/${SAMPLE}.bedfilter.PassFusion.bam" />
+      <filterFusionFail2 class="buffer.BAMFile" filename="${WORKSPACE}/${SAMPLE}.bedfilter.FailFusion.bam" />
   </output>
 </FilterBamByBed2>
 

@@ -227,6 +227,7 @@ public class OncologyUtils extends IOOperator {
 		summary.put("fraction of reads mapped to fusion reference failing match filter.",(double)mismatchFilterFusionCount/InFq);		
 		
 		summary.put("count of original reads", InFq);
+		summary.put("count for all housekeeping genes", houseKeepingReads);
 		summary.put("count of reads mapped to ratio reference", ratioMapped);
 		summary.put("count of reads mapped to fusion reference", fusionMapped);
 		summary.put("count of reads mapped to fusion reference passing all filters",filterFusion);
