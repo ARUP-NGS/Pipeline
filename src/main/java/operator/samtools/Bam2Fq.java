@@ -10,7 +10,7 @@ import buffer.FileBuffer;
 /*
  * Converts Bam to Fastq
  * Needed for RNA translocation pipeline. 
- * 
+ * @author daniel 
  */
 
 public class Bam2Fq extends IOOperator {

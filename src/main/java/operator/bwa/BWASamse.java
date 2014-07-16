@@ -5,6 +5,11 @@ import operator.IOOperator;
 import operator.OperationFailedException;
 import pipeline.PipelineXMLConstants;
 
+/*
+ * Wrapper for bwa's "old" aln/samse algorithm.
+ * @author daniel
+ */
+
 public class BWASamse extends IOOperator {
 
 	public static final String READ_GROUP = "readgroup";

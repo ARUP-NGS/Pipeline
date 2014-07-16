@@ -59,7 +59,7 @@ public class BedFilter extends BAMClassifier {
 				//System.out.println(line[0]+" " + line[1] + " " + line[2] + " is the bed entry for this chromosome.");
 				//System.out.println(interval[0] + " " + interval[1] + " is the interval for the read.");
 				if(Integer.parseInt(line[2]) < interval[1] && Integer.parseInt(line[1]) > interval[0]) {
-					System.out.println("Read covers region.");
+					//System.out.println("Read covers region.");
 					br.close();
 					return true;
 				}

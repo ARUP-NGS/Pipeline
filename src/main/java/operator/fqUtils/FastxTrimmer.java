@@ -6,7 +6,10 @@ import operator.CommandOperator;
 import operator.OperationFailedException;
 import pipeline.Pipeline;
 import buffer.FastQFile;
-
+/*
+ * Trims fastq records to a directed length
+ * @author daniel
+ */
 public class FastxTrimmer extends CommandOperator {
 	public static final String TRIM_NUM = "trim.num";
     public static final String FASTX_TK = "fastx.tk";

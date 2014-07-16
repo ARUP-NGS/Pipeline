@@ -13,6 +13,7 @@ import buffer.FileBuffer;
 /*
  * MapParse parses a BAM file into two output BAM files - mapped and unmapped
  * This is used in the RNA gene fusion/translocation pipeline.
+ * @author daniel
  */
 
 public class MapParse extends IOOperator {
