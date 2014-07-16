@@ -199,6 +199,7 @@ public class OncologyUtils extends IOOperator {
 		}
 		else {
 			System.out.println("!!!Run failed. Zero counts for all control genes. Total reads in initial Fastq: " + InFq + ".");
+			logger.info("!!!Run failed. Zero counts for all control genes. Total reads in initial Fastq: " + InFq + ".");
 			for(double value : ratioForRatio) {
 				value = 0;
 			}

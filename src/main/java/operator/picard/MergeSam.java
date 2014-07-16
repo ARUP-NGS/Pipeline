@@ -51,7 +51,7 @@ public class MergeSam extends IOOperator {
 		if (jvmAttr != null) {
 			this.jvmargs = jvmAttr;
 		}
-		String command = "java -Xms2G -Xmx20G" + jvmargs + " -jar " + picardDir
+		String command = "java " + jvmargs + " -jar " + picardDir
 				+ "/MergeSamFiles.jar " + fileList + " O="
 				+ outBam.getAbsolutePath()
 				+ " USE_THREADING=true CREATE_INDEX=true MSD=true";

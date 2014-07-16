@@ -5,6 +5,8 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 
+import org.apache.tools.ant.types.CommandlineJava.SysProperties;
+
 import net.sf.samtools.SAMRecord;
 import json.JSONException;
 import operator.IOOperator;
@@ -16,7 +18,7 @@ import buffer.FileBuffer;
 
 /*
  * Returns a BAM file containing all reads in the input BAM file which
- * intersect with the input BED file.
+ * contain the full interval contained within the input BED file.
  * 
  * @author daniel
  * 
@@ -42,21 +44,29 @@ public class BedFilter extends BAMClassifier {
 
 	}
 
-	private boolean readPasses(SAMRecord read) throws IOException {
+	private boolean readPasses(SAMRecord read) throws IOException, OperationFailedException {
 		int[] interval = { read.getAlignmentStart(), read.getAlignmentEnd() };
 		String chrom = read.getReferenceName();
+		if (chrom.contains("CTRL")) {
+			return true;
+		}
 		BufferedReader br = new BufferedReader(new FileReader(bedFile));
 		String entry;
+
 		while ((entry = br.readLine()) != null) {
 			String[] line = entry.split("\t");
 			if (line[0].equals(chrom)) {
-				if(Integer.parseInt(line[2]) < interval[0] || Integer.parseInt(line[1]) > interval[1]) {
-					br.close();
-					return false;
-				}
-				else {
+				//System.out.println(line[0]+" " + line[1] + " " + line[2] + " is the bed entry for this chromosome.");
+				//System.out.println(interval[0] + " " + interval[1] + " is the interval for the read.");
+				if(Integer.parseInt(line[2]) < interval[1] && Integer.parseInt(line[1]) > interval[0]) {
+					System.out.println("Read covers region.");
 					br.close();
 					return true;
+				}
+				else {
+					System.out.println("Read fails to cover region.");
+					br.close();
+					return false;
 				}
 			}
 		}
