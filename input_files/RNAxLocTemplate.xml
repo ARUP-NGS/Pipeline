@@ -177,7 +177,7 @@
   </output>
 </IndexTermUnmapped>
 
-<Bam2Fastq class="operator.samtools.Bam2Fq">
+<Bam2Fastq class="operator.picard.BamToFastq">
   <input>
       <unmappedTermBam />
   </input>
