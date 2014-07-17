@@ -35,7 +35,7 @@ public class BamToFastq extends IOOperator {
 			picardDir = picardDir.substring(0, picardDir.length()-1);
 		}
 		
-		String command = "java -jar -Xmx16G " + picardDir + "/SamToFastq.jar I=" + inputBAM.getAbsolutePath() + " F=" + outputFastq.getAbsolutePath();
+		String command = "java -jar -Xmx16G " + picardDir + "/SamToFastq.jar I=" + inputBAM.getAbsolutePath() + " F=" + outputFastq.getAbsolutePath() + " VALIDATION_STRINGENCY=LENIENT";
 		executeCommand(command);
 		return;
 	}
