@@ -59,6 +59,10 @@ public class BWASamse extends IOOperator {
 			executeCommand("touch " + outputPrefix + ".bam");
 			System.out.println("Attempt to convert ");
 		}
+		//Remove intermediate SAM file
+		String RemoveSam = "rm " + outputPrefix + ".sam";
+		System.out.println("Attempting to remove intermediate SAM file.");
+		executeCommand(RemoveSam);
 	}
 
 

@@ -394,6 +394,7 @@
 <DeleteFiles class="operator.RemoveFile">
   <input>
     <termSAI />
+    <readsTrim />
     <fusionSAI />
     <rawTermBam />
     <sortTermBam />
