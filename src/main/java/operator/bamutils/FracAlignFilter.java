@@ -28,7 +28,6 @@ public class FracAlignFilter extends BAMClassifier {
 	/**
 	 * Fail read if less than a given fraction is mapped.
 	 * 
-	 * @author daniel
 	 *
 	 */
 

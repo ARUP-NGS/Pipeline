@@ -28,7 +28,6 @@ import buffer.FileBuffer;
 public abstract class BAMClassifier extends IOOperator {
 
 	//Created a class for returning both a return value (e.g., Boolean) and an alignment record
-	//@author daniel
 	public class ReturnRecord {
 		public final boolean returnValue;
 		public final SAMRecord samRecord;

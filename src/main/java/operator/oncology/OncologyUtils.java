@@ -172,7 +172,7 @@ public class OncologyUtils extends IOOperator {
 		for(int i=0;i<fusionLength;i++) {
 			fusionCounts[i]=fusionMap.get(FusionContigs[i]);
 			fusionFrac[i]=(double)fusionCounts[i]/fusionMapped;
-			if(i>=fusionLength-5) {
+			if(FusionContigs[i].toUpperCase().contains("CTRL")) {
 				houseKeepingReads+=(int)fusionCounts[i];
 			}
 		}
@@ -191,7 +191,7 @@ public class OncologyUtils extends IOOperator {
 			
 			for(int i=0;i<ratioLength;i++){
 				if(i%2==0){
-						double tempVar = ((double)ratioCounts[i+1]-(double)ratioCounts[i+1])/houseKeepingReads;
+						double tempVar = ((double)ratioCounts[i]-(double)ratioCounts[i+1])/houseKeepingReads;
 						//System.out.println(tempVar + " is the ratio we're trying to capture.");
 						ratioForRatio[i/2]=tempVar;
 				}
@@ -204,6 +204,14 @@ public class OncologyUtils extends IOOperator {
 				value = 0;
 			}
 		}
+		//Grabs every other chromosome
+		String[] RatioContigSets = new String[RatioContigs.length/2];
+		long [] RatioCounts3p5p = new long[RatioContigs.length/2];
+		for(int i = 0; i<RatioContigSets.length;i++){
+			RatioContigSets[i]=RatioContigs[2*i];
+			RatioCounts3p5p[i]=ratioCounts[2*i]+ratioCounts[2*i+1];
+		}
+		
 		/* 5. Write results to JSON
 		 * Stores results in a Hashmap (keys: "summary", "rna.ratio", & "rna.fusion" that is written to JSON
 		 * @author elainegee
@@ -249,6 +257,10 @@ public class OncologyUtils extends IOOperator {
 		Map<String, Object> rnaRatio = new HashMap<String, Object>();
 		rnaRatio = buildFractionCountMap(RatioContigs, ratioCounts, ratioFrac);
 		
+		//Build RNA ratio 
+		Map<String, Object> rnaRatioAdjusted = new HashMap<String, Object>();
+		rnaRatioAdjusted = buildFractionCountMap(RatioContigSets, RatioCounts3p5p, ratioForRatio);
+		
 		//Build rna fusion map
 		Map<String, Object> rnaFusion = new HashMap<String, Object>();
 		rnaFusion = buildFractionCountMap(FusionContigs, fusionCounts, fusionFrac);
@@ -258,6 +270,7 @@ public class OncologyUtils extends IOOperator {
 		finalResults.put( "summary", summary );
 		finalResults.put( "rna.ratio", rnaRatio );
 		finalResults.put( "rna.fusion", rnaFusion );
+		finalResults.put("rna.adjusted.ratio", rnaRatioAdjusted);
 
 		//Convert final results to JSON
 	    JSONObject json = new JSONObject(finalResults);
