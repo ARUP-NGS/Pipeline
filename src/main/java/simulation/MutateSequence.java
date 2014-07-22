@@ -13,7 +13,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import util.VCFLineParser;
+import util.vcfParser.VCFParser;
 import buffer.VCFFile;
 import cern.jet.random.Exponential;
 import cern.jet.random.Poisson;
@@ -90,7 +90,7 @@ public class MutateSequence {
 	}
 
 	public static List<MutRec> applyMutantsFromFile(String contig, VCFFile variants) throws IOException {
-		VCFLineParser reader = new VCFLineParser(variants);
+		VCFParser reader = new VCFParser(variants);
 		List<MutRec> muts = new ArrayList<MutRec>();
 		
 		contig = contig.split(" ")[0];

@@ -784,12 +784,33 @@ public class VarUtils {
 		}
 
 		if (firstArg.equals("buildroc")) {
-			performBuildROC(args, false);
+			performBuildROC(args, new QualityProvider() {
+				public Double getQuality(VariantRec var) {
+					return var.getQuality();
+				}			
+			});
+			return;
+		}
+		
+		if (firstArg.equals("buildrocGQ")) {
+			performBuildROC(args, new QualityProvider() {
+				public Double getQuality(VariantRec var) {
+					Double val = var.getProperty(VariantRec.GENOTYPE_QUALITY);
+					if (val == null) {
+						System.err.println("Variant " + var.toString() + " has no GQ specified");
+					}
+					return val;
+				}			
+			});
 			return;
 		}
 		
 		if (firstArg.equals("buildrocVQSR")) {
-			performBuildROC(args, true);
+			performBuildROC(args, new QualityProvider() {
+					public Double getQuality(VariantRec var) {
+						return var.getProperty(VariantRec.VQSR);
+					}			
+				});
 			return;
 		}
 		
@@ -2041,7 +2062,7 @@ public class VarUtils {
 		}
 	}
 	
-	private static void performBuildROC(String[] args, boolean useVQSR) {
+	private static void performBuildROC(String[] args, QualityProvider qualProvider) {
 		if (args.length != 4) {
 			System.out.println("Enter the name of the BED file, then the TRUE variant then query variant file");
 			return;
@@ -2065,12 +2086,9 @@ public class VarUtils {
 //			//find maximum quality
 			for(String contig : qVars.getContigs()) {
 				for(VariantRec var : qVars.getVariantsForContig(contig)) {
-					double qual = var.getQuality();
-					if (useVQSR) {
-						if (var.getProperty(VariantRec.VQSR) == null) 
-							continue;
-						qual = var.getProperty(VariantRec.VQSR);
-						
+					Double qual = qualProvider.getQuality(var);
+					if (qual == null) { 
+						continue;
 					}
 					if (qual > maxQuality)
 						maxQuality = qual;
@@ -2120,17 +2138,16 @@ public class VarUtils {
 								falseNegatives++;
 								continue;
 							}
-							double qual = qVar.getQuality();
-							if (useVQSR) {
-								if (qVar.getProperty(VariantRec.VQSR) == null) 
-									continue;
-								qual = qVar.getProperty(VariantRec.VQSR);
+							Double qual = qualProvider.getQuality(qVar);
+							if (qual == null) {
+								qual = 0.0;
 							}
 							
 							if (qVar != null && qual >= qCutoff)
 								truePositives++;
-							else 
+							else {
 								falseNegatives++;
+							}
 						}
 					}
 				}
@@ -2138,11 +2155,9 @@ public class VarUtils {
 				//Compute false positives, true negs don't exist!
 				for(String contig : qVars.getContigs()) {
 					for(VariantRec qVar : qVars.getVariantsForContig(contig)) {
-						double qual = qVar.getQuality();
-						if (useVQSR) {
-							if (qVar.getProperty(VariantRec.VQSR) == null) 
-								continue;
-							qual = qVar.getProperty(VariantRec.VQSR);
+						Double qual = qualProvider.getQuality(qVar);
+						if (qual == null) { 
+							qual = 0.0;
 						}
 						if (qual >= qCutoff) {
 							if (bedFile.contains(contig, qVar.getStart())) {
@@ -3249,6 +3264,14 @@ public class VarUtils {
 		,"GL000233.1","GL000204.1","GL000198.1","GL000208.1","GL000191.1","GL000227.1","GL000228.1","GL000214.1","GL000221.1","GL000209.1","GL000218.1","GL000220.1"
 		,"GL000213.1","GL000211.1","GL000199.1","GL000217.1","GL000216.1","GL000215.1","GL000205.1","GL000219.1","GL000224.1","GL000223.1","GL000195.1"
 		,"GL000212.1","GL000222.1","GL000200.1","GL000193.1","GL000194.1","GL000225.1","GL000192.1" };
+	
+	//This is a helper for buildROC, which needs to be able to use different definitions of quality
+	//for building curves. FOr instance, it may need to use VQSR SLOD score, or GQ, or Quality
+	interface QualityProvider {
+		
+		Double getQuality(VariantRec var);
+		
+	}
 }
 
 

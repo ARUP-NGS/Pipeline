@@ -44,7 +44,7 @@ public class TestVariantPool {
 		
 		try {
 			VariantPool pool = new VariantPool(new VCFFile(freebayesVCF));
-			Assert.assertEquals(67, pool.size());
+			Assert.assertEquals(69, pool.size());
 			Assert.assertNotNull(pool.findRecord("1", 36128));
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -55,7 +55,7 @@ public class TestVariantPool {
 		
 		try {
 			VariantPool pool = new VariantPool(new VCFFile(complexVCF));
-			Assert.assertEquals(5, pool.size());
+			Assert.assertEquals(8, pool.size());
 			Assert.assertNotNull(pool.findRecord("19", 10665691));
 			Assert.assertNotNull(pool.findRecord("19", 10665691, "TTGAC", "CTGAT"));
 			Assert.assertNotNull(pool.findRecord("19", 10665691, "TTGAC", "CTGAC"));
