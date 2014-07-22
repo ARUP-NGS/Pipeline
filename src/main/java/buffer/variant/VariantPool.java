@@ -42,6 +42,7 @@ public class VariantPool extends Operator  {
 	
 	public static final String ALL_GENES = "all.genes"; //If specified as attribute, include all genes one variant per gene
 	public static final String STRIPINITIALMATCHINGBASEPARAM = "strip.initial.matching.bases"; //if specified as attribute, otherwise default to true (i.e. will strip)
+	public static final String STRIPTRAILINGMATCHINGBASEPARAM = "strip.trailing.matching.bases"; //if specified as attribute, otherwise default to true (i.e. will strip)
 	
 	protected Map<String, List<VariantRec>>  vars = new HashMap<String, List<VariantRec>>();
 	private VariantRec qRec = new VariantRec("?", 0, 0, "x", "x", 0.0, false);
@@ -114,6 +115,15 @@ public class VariantPool extends Operator  {
 		} else {
 			((VCFParser) this.varLineReader).setStripInitialMatchingBases(true); //default to trim bases
 		}
+		
+		//Get attribute for trimming trailing matching bases (defaults to true)
+		String stripTrailStr = this.getAttribute(STRIPTRAILINGMATCHINGBASEPARAM);
+		if (stripTrailStr != null) {
+			((VCFParser) this.varLineReader).setStripTrailingMatchingBases(Boolean.parseBoolean(stripTrailStr));
+		} else {
+			((VCFParser) this.varLineReader).setStripTrailingMatchingBases(true); //default to trim bases
+		}
+		
 		importFromVariantReader();
 	}
 	

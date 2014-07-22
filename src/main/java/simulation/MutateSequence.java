@@ -104,7 +104,7 @@ public class MutateSequence {
 			MutRec rec = new MutRec();
 			rec.ref = reader.getRef();
 			rec.alt = reader.getAlt();
-			rec.pos = reader.getStart();
+			rec.pos = reader.getPos();
 
 			muts.add(rec);
 			
@@ -120,7 +120,7 @@ public class MutateSequence {
 	 * @throws IOException 
 	 */
 	public static List<MutRec> applyMutantsFromFile(String contig, StringBuilder seq, VCFFile variants) throws IOException {
-		VCFLineParser reader = new VCFLineParser(variants);
+		VCFParser reader = new VCFParser(variants);
 		List<MutRec> muts = new ArrayList<MutRec>();
 		int count = 0;
 		
@@ -138,7 +138,7 @@ public class MutateSequence {
 			if (! contig.equals( reader.getContig() )) 
 				continue;
 			
-			Integer pos = reader.getStart();
+			Integer pos = reader.getPos();
 			if (pos < OFFSET)
 				continue;
 			if (reader.getRef().length()==1 && reader.getAlt().length()==1 && (!reader.getAlt().equals("."))) {

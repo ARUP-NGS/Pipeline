@@ -250,7 +250,8 @@ public class VCFParser implements VariantLineReader {
 		if (currentLineToks == null) {
 			return null;
 		}
-		String chr = currentLineToks[0].toUpperCase().replace("CHR","");
+	//	String chr = currentLineToks[0].toUpperCase().replace("CHR","");
+		String chr = getContig();
 		int pos = getPos(); 
 		String ref = getRef();
 		String alt = getAlt(); 
@@ -425,14 +426,16 @@ public class VCFParser implements VariantLineReader {
 		// find length of initial matching bases across all alleles
 		int i;						
 		for(i=0; i<Math.min(ref.length(), shortestAlt.length()); i++) {
-			int validAlts = 0;
+			int validAlts = 0; // counts number of alts that match
 			char refchar = ref.charAt(i);
+			// loop through each alt
 			for (int j=0; j< AltCount; j++) {
 				String testAlt = altToks[j];					
 				if (refchar == testAlt.charAt(i)) {
 					validAlts++;
 				}
 			}
+			// if not all alts match, then return last matching base index 
 			if (validAlts - AltCount != 0) {
 				return i;							
 			}
@@ -448,15 +451,16 @@ public class VCFParser implements VariantLineReader {
 	 */
 	public static int findNumberOfTrailingMatchingBases(String ref, String alt) {
 		// find length of matching trailing bases 
-		int i;						
+		int i;		
+		int matchBases = 0;
 		for(i=0; i<Math.min(ref.length(), alt.length()); i++) {
-			int validAlts = 0;
-			char refchar = ref.charAt(i);
-			if (refchar == alt.charAt(i)) {
-					validAlts++;
+			if (ref.charAt(ref.length()-i-1) == alt.charAt(alt.length()-i-1)) {
+				matchBases++;
+			} else {
+				return matchBases; //stop loop if no matches
 			}
 		}
-		return i; 
+		return matchBases; 
 	}
 	
 	/**
@@ -576,6 +580,19 @@ public class VCFParser implements VariantLineReader {
 		} catch (NullPointerException npe) {
 			return -1.0; //-1.0 indicates no data found
 		}
+	}
+	
+	/**
+	 * Variant chromosome/contig
+	 * @author elainegee
+	 * @return
+	 */
+	public String getContig() {
+		if (currentLineToks != null) {
+			return currentLineToks[0].toUpperCase().replace("CHR","");
+		} else {
+			return "?";
+		}		
 	}
 	
 	/**

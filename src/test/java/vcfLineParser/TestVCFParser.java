@@ -433,8 +433,11 @@ public class TestVCFParser {
 					Assert.assertTrue(rp.equals(-1.0));
 				}
 				
-				// Check last variant #EG
+				// Check last variant
 				if (i == 20) {					
+					String chrom = parserTorr.getContig();
+					Assert.assertTrue(chrom.equals("11"));
+					
 					Integer pos = parserTorr.getPos();
 					Assert.assertTrue(pos == 108225624);
 						
@@ -523,8 +526,11 @@ public class TestVCFParser {
 					Assert.assertTrue(rp.equals(-1.0));
 				}
 				
-				// Check last variant #EG
-				if (i == 20) {					
+				// Check last variant
+				if (i == 20) {		
+					String chrom = parserTorrStrip.getContig();
+					Assert.assertTrue(chrom.equals("11"));
+					
 					Integer pos = parserTorrStrip.getPos();
 					Assert.assertTrue(pos == 108225624);
 						
