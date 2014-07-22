@@ -21,16 +21,16 @@ import org.w3c.dom.NodeList;
 
 import pipeline.Pipeline;
 import pipeline.PipelineObject;
+import buffer.BEDFile;
 import buffer.variant.VariantPool;
 import buffer.variant.VariantRec;
-import buffer.BEDFile;
 
 /**
  * Uses SnpEff to provide gene annotations for the variants given 
  * @author brendan
  *
  */
-public class SnpEffGeneAnnotate extends Annotator {
+public class SnpEffGeneAnnotateJacob extends Annotator {
 
 	public static final String NM_DEFS = "nm.Definitions";
 	public static final String SNPEFF_DIR = "snpeff.dir";
@@ -134,6 +134,7 @@ public class SnpEffGeneAnnotate extends Annotator {
 			throw new OperationFailedException("Map not initialized", this);
 			
 		}
+		
 		
 		String varStr = convertVar(var);
 		

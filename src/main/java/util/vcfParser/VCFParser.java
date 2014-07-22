@@ -2,7 +2,6 @@ package util.vcfParser;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
@@ -89,7 +88,7 @@ public class VCFParser implements VariantLineReader {
 		headerProperties = new HashMap<String, String>();
 		sampleIndexes = new HashMap<String, Integer>();
 		String line = reader.readLine();
-		while(line != null && line.startsWith("##")) {
+		while(line != null && (line.startsWith("##") || line.trim().length()==0)) {
 			if (line.startsWith("##INFO") || line.startsWith("##FORMAT")) {
 				HeaderEntry entry = parseHeaderItem(line);
 				headerItems.put(entry.id, entry);
@@ -106,7 +105,7 @@ public class VCFParser implements VariantLineReader {
 		
 		//Line should now be at the line immediately prior to the actual variants list
 		if (! line.toUpperCase().startsWith("#CHR")) {
-			throw new IOException("Didn't find expected next line starting with #CHROM");
+			throw new IOException("Didn't find expected next line starting with #CHR (found " + line + ")" );
 		}
 		
 		
@@ -208,6 +207,9 @@ public class VCFParser implements VariantLineReader {
 		if (altIndex == altsInCurrentLine) {
 			
 			currentLine = reader.readLine();
+			while(currentLine != null && currentLine.trim().length()==0) {
+				currentLine = reader.readLine();	
+			}
 			if (currentLine != null) {
 				currentLineToks = currentLine.split("\t");
 				if (currentLineToks.length < 7) {
@@ -230,12 +232,24 @@ public class VCFParser implements VariantLineReader {
 
 	@Override
 	public String getHeader() throws IOException {
-		// TODO Auto-generated method stub
-		return null;
+		if (source == null) {
+			return "No source file set";
+		}
+		StringBuilder strb = new StringBuilder();
+		BufferedReader headerReader = new BufferedReader(new FileReader(source));
+		String line = headerReader.readLine();
+		while(line != null && line.startsWith("#")) {
+			strb.append(line + "\n");
+			line = headerReader.readLine();
+		}
+		return strb.toString();
 	}
 	
 	@Override
 	public VariantRec toVariantRec() {
+		if (currentLineToks == null) {
+			return null;
+		}
 		String chr = currentLineToks[0].toUpperCase().replace("CHR","");
 		int pos = getPos(); 
 		String ref = getRef();
@@ -460,16 +474,22 @@ public class VCFParser implements VariantLineReader {
 			String valueStr=entry.getValue();
 
 			//Add value if key not already in dictionary. otherwise check if values are the same
-			if (finalDict.get(key) != null && !finalDict.get(key).equals(valueStr)) {
-				if (key.equals("DP")) {
-					//use the filtered read depth in the FORMAT field
-					finalDict.put(key, valueStr);
-				} else {
-					throw new IllegalStateException("Two different values for VCF field '" + key + "': " + finalDict.get(key) + ", " + valueStr + ".");
-				}
-			} else {
-				finalDict.put(key, valueStr);
-			}
+			//FreeBayes multisample VCFs have several fields that have the same key in both FORMAT and INFO, but different
+			//values. In general, I think we want the sample-specific fields from the FORMAT to clobber the more general
+			//ones from INFO if there is a conflict, so I'm removing the check here fow now. If there are cases
+			//where we want the INFO, not the FORMAT field, we'll need to be smarter about this
+			finalDict.put(key, valueStr);
+//			if (finalDict.get(key) != null && !finalDict.get(key).equals(valueStr)) {
+//				if (key.equals("DP")) {
+//					//use the filtered read depth in the FORMAT field
+//					finalDict.put(key, valueStr);
+//				} else {
+//					throw new IllegalStateException("Two different values for VCF field '" + key + "': " + finalDict.get(key) + ", " + valueStr + ".");
+//				}
+//				} else {
+//					finalDict.put(key, valueStr);
+//				}
+//				}
 		}
 		return finalDict;
 
@@ -636,6 +656,9 @@ public class VCFParser implements VariantLineReader {
 		}
 		//Get alternate allele count from sampleMetrics dictionary	
 		String varDepthStr = getSampleMetricsStr(AnnoStr);
+		if (varDepthStr == null) {
+			return null;
+		}
 		String[] varDepthToks = varDepthStr.split(",");
 		Integer vardp = convertStr2Int(varDepthToks[AnnoIdx]);
 		return vardp;				
