@@ -49,9 +49,6 @@ public class MarkDuplicates extends CommandOperator {
 		
 		rmDup = this.getAttribute(PICARD_REMOVE_DUPLICATES);
 		if(rmDup == null) {
-			rmDup = this.getPipelineProperty(PICARD_REMOVE_DUPLICATES);
-		}
-		if(rmDup == null) {
 			rmDup = "true";
 		}
 		
