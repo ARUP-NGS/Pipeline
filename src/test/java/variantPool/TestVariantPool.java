@@ -20,7 +20,7 @@ public class TestVariantPool {
 		File solidTumorVCF = new File("src/test/java/testvcfs/solid_tumor_test1.vcf");
 		File complexVCF = new File("src/test/java/testvcfs/complexVars.vcf");
 		
-		/** EG
+	
 		try {
 			VariantPool pool = new VariantPool(new VCFFile(emptyVCF));
 			Assert.assertTrue(pool.size() == 0); 
@@ -51,7 +51,7 @@ public class TestVariantPool {
 			e.printStackTrace();
 			Assert.fail();
 		}
-		*/
+		
 		
 		
 		try {
