@@ -17,13 +17,17 @@ public class TestSnpEff extends TestCase {
 	File inputFile = new File("src/test/java/annotation/testSnpEff.xml");
 	File inputFile2 = new File("src/test/java/annotation/testSnpEff2.xml");
 	File propertiesFile = new File("src/test/java/core/inputFiles/testProperties.xml");
+	File snpEffDir = new File("snpEffDirLink");
 	
 	public void testSnpEff() {
 		
-	
+			if (! snpEffDir.exists()) {
+				throw new IllegalStateException("Can't run this test since you don't have SnpEff installed. You must create a link called 'snpEffDirLink' in the main Pipeline directory to the SnpEff directory to use this.");
+			}
+		
 			try {
 				Pipeline ppl = new Pipeline(inputFile, propertiesFile.getAbsolutePath());
-				ppl.setProperty("snpeff.dir", "/home/brendan/snpEff_3_6/");
+				ppl.setProperty("snpeff.dir", snpEffDir.getAbsolutePath());
 				ppl.initializePipeline();
 				ppl.stopAllLogging();
 				
