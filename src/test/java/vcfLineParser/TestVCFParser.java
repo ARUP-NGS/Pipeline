@@ -389,9 +389,15 @@ public class TestVCFParser {
 			Assert.assertTrue(false);
 		}
 		
-		//Check fields for solid tumor VCF (Ion Torrent)
+		//Check fields for solid tumor VCF (Ion Torrent), don't strip trailing matching bases
 		try {
 			VCFParser parserTorr = new VCFParser(solidTumorVCF);
+			
+			Assert.assertTrue(parserTorr.isStripTrailingMatchingBases()); //check default		
+		
+			parserTorr.setStripTrailingMatchingBases(false);
+			Assert.assertFalse(parserTorr.isStripTrailingMatchingBases());
+			
 			//Go through file
 			int i=0;
 			while(parserTorr.advanceLine() && i<3) {	
@@ -426,10 +432,146 @@ public class TestVCFParser {
 					Double rp = parserTorr.getRPScore();
 					Assert.assertTrue(rp.equals(-1.0));
 				}
+				
+				// Check last variant
+				if (i == 20) {					
+					String chrom = parserTorr.getContig();
+					Assert.assertTrue(chrom.equals("11"));
+					
+					Integer pos = parserTorr.getPos();
+					Assert.assertTrue(pos == 108225624);
+						
+					String ref = parserTorr.getRef();
+					Assert.assertTrue(ref.equals("TATTTTTTTTC"));
+						
+					String alt = parserTorr.getAlt();
+					Assert.assertTrue(alt.equals("ATTTTTTTC"));				
+					
+					Boolean hetero = parserTorr.isHetero();
+					Assert.assertTrue(hetero);
+							
+					Boolean homo = parserTorr.isHomo();
+					Assert.assertFalse(homo);
+							
+					Boolean phase = parserTorr.isPhased();
+					Assert.assertFalse(phase);
+							
+					Integer depth = parserTorr.getDepth();
+					Assert.assertTrue(depth==234);
+
+					Integer varDepth = parserTorr.getVariantDepth();
+					Assert.assertTrue(varDepth==220);
+							
+					Double genotypeQual = parserTorr.getGenotypeQuality();
+					Assert.assertTrue(genotypeQual.equals(17.0));
+						
+					Double vqsr = parserTorr.getVQSR();
+					Assert.assertTrue(vqsr.equals(-1.0));
+							
+					Double fs = parserTorr.getStrandBiasScore();
+					Assert.assertTrue(fs.equals(0.5));
+					
+					Double rp = parserTorr.getRPScore();
+					Assert.assertTrue(rp.equals(-1.0));
+				}
+				
+				
 				i++;		
 
 			}
-			System.err.println("\tVCFParser tests for parsing variants passed on a solid tumor VCF (Ion Torrent).");
+			System.err.println("\tVCFParser tests for parsing variants passed on a solid tumor VCF (Ion Torrent) (don't strip trailing matching bases).");
+		} catch (IOException e) {
+			e.printStackTrace();
+			Assert.assertTrue(false);
+		}
+		
+		//Check fields for solid tumor VCF (Ion Torrent), do strip trailing matching bases
+		try {
+			VCFParser parserTorrStrip = new VCFParser(solidTumorVCF);
+			
+			Assert.assertTrue(parserTorrStrip.isStripTrailingMatchingBases()); //check default		
+			
+			//Go through file
+			int i=0;
+			while(parserTorrStrip.advanceLine() && i<3) {	
+				VariantRec var = parserTorrStrip.toVariantRec();
+
+				// Check third variant
+				if (i == 2) {
+					Boolean hetero = parserTorrStrip.isHetero();
+					Assert.assertFalse(hetero);
+							
+					Boolean homo = parserTorrStrip.isHomo();
+					Assert.assertTrue(homo);
+							
+					Boolean phase = parserTorrStrip.isPhased();
+					Assert.assertFalse(phase);
+							
+					Integer depth = parserTorrStrip.getDepth();
+					Assert.assertTrue(depth==1119);
+
+					Integer varDepth = parserTorrStrip.getVariantDepth();
+					Assert.assertTrue(varDepth==1119);
+							
+					Double genotypeQual = parserTorrStrip.getGenotypeQuality();
+					Assert.assertTrue(genotypeQual.equals(99.0));
+						
+					Double vqsr = parserTorrStrip.getVQSR();
+					Assert.assertTrue(vqsr.equals(-1.0));
+							
+					Double fs = parserTorrStrip.getStrandBiasScore();
+					Assert.assertTrue(fs.equals(0.5));
+					
+					Double rp = parserTorrStrip.getRPScore();
+					Assert.assertTrue(rp.equals(-1.0));
+				}
+				
+				// Check last variant
+				if (i == 20) {		
+					String chrom = parserTorrStrip.getContig();
+					Assert.assertTrue(chrom.equals("11"));
+					
+					Integer pos = parserTorrStrip.getPos();
+					Assert.assertTrue(pos == 108225624);
+						
+					String ref = parserTorrStrip.getRef();
+					Assert.assertTrue(ref.equals("TAT"));
+						
+					String alt = parserTorrStrip.getAlt();
+					Assert.assertTrue(alt.equals("A"));				
+					
+					Boolean hetero = parserTorrStrip.isHetero();
+					Assert.assertTrue(hetero);
+							
+					Boolean homo = parserTorrStrip.isHomo();
+					Assert.assertFalse(homo);
+							
+					Boolean phase = parserTorrStrip.isPhased();
+					Assert.assertFalse(phase);
+							
+					Integer depth = parserTorrStrip.getDepth();
+					Assert.assertTrue(depth==234);
+
+					Integer varDepth = parserTorrStrip.getVariantDepth();
+					Assert.assertTrue(varDepth==220);
+							
+					Double genotypeQual = parserTorrStrip.getGenotypeQuality();
+					Assert.assertTrue(genotypeQual.equals(17.0));
+						
+					Double vqsr = parserTorrStrip.getVQSR();
+					Assert.assertTrue(vqsr.equals(-1.0));
+							
+					Double fs = parserTorrStrip.getStrandBiasScore();
+					Assert.assertTrue(fs.equals(0.5));
+					
+					Double rp = parserTorrStrip.getRPScore();
+					Assert.assertTrue(rp.equals(-1.0));
+				}					
+							
+				i++;		
+
+			}
+			System.err.println("\tVCFParser tests for parsing variants passed on a solid tumor VCF (Ion Torrent) (strip trailing matching bases).");
 		} catch (IOException e) {
 			e.printStackTrace();
 			Assert.assertTrue(false);

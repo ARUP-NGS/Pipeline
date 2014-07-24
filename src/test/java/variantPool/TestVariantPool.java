@@ -20,6 +20,7 @@ public class TestVariantPool {
 		File solidTumorVCF = new File("src/test/java/testvcfs/solid_tumor_test1.vcf");
 		File complexVCF = new File("src/test/java/testvcfs/complexVars.vcf");
 		
+	
 		try {
 			VariantPool pool = new VariantPool(new VCFFile(emptyVCF));
 			Assert.assertTrue(pool.size() == 0); 
@@ -31,7 +32,7 @@ public class TestVariantPool {
 		
 		try {
 			VariantPool pool = new VariantPool(new VCFFile(solidTumorVCF));
-			Assert.assertEquals(17, pool.size());
+			Assert.assertEquals(20, pool.size());
 			Assert.assertNotNull(pool.findRecord("17", 7579472));
 			Assert.assertNotNull(pool.findRecord("2", 212578300, "C", "T"));
 		} catch (IOException e) {
@@ -58,9 +59,9 @@ public class TestVariantPool {
 			Assert.assertEquals(8, pool.size());
 			Assert.assertNotNull(pool.findRecord("19", 10665691));
 			Assert.assertNotNull(pool.findRecord("19", 10665691, "TTGAC", "CTGAT"));
-			Assert.assertNotNull(pool.findRecord("19", 10665691, "TTGAC", "CTGAC"));
+			Assert.assertNotNull(pool.findRecord("19", 10665691, "T", "C"));
 			Assert.assertNotNull(pool.findRecord("12", 57870464));
-			Assert.assertNotNull(pool.findRecord("12", 57870464, "GT", "T"));
+			Assert.assertNotNull(pool.findRecord("12", 57870464, "G", "-"));
 		} catch (IOException e) {
 			e.printStackTrace();
 			Assert.fail();

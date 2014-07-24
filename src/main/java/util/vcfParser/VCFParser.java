@@ -44,6 +44,7 @@ public class VCFParser implements VariantLineReader {
 	private Map<String, Integer> sampleIndexes = null;
 	
 	private boolean stripInitialMatchingBases = true; //defaults to true (i.e. will trim)
+	private boolean stripTrailingMatchingBases = true; //defaults to true (i.e. will trim)
 	
 	public VCFParser(File source) throws IOException {
 		setFile(source);
@@ -249,7 +250,8 @@ public class VCFParser implements VariantLineReader {
 		if (currentLineToks == null) {
 			return null;
 		}
-		String chr = currentLineToks[0].toUpperCase().replace("CHR","");
+	//	String chr = currentLineToks[0].toUpperCase().replace("CHR","");
+		String chr = getContig();
 		int pos = getPos(); 
 		String ref = getRef();
 		String alt = getAlt(); 
@@ -281,13 +283,9 @@ public class VCFParser implements VariantLineReader {
 				} 
 				
 				//Update start position
-				pos+=matches;
-								
-		//		var.setPosition(chr, pos, end);
-				
+				pos+=matches;				
 			}
 		}
-		
 		//Update end position
 		Integer end=null;
 		if (alt.equals("-")) {
@@ -296,7 +294,29 @@ public class VCFParser implements VariantLineReader {
 		else {
 			end = pos + ref.length();
 		}
+				
+		//@author elainegee start
+		//Remove trailing characters if they are equal and subtract that many bases from end position
+		if (stripTrailingMatchingBases) {
+			int matches = findNumberOfTrailingMatchingBases(ref, alt);						
+			if (matches > 0) {	
+				// Trim Ref
+				ref = ref.substring(0, ref.length() - matches); 
+				if (ref.length()==0) {
+					ref = "-";
+				}
+				// Trim Alt 			
+				alt = alt.substring(0, alt.length() - matches); 
+				if (alt.length()==0){								
+					alt = "-";
+				} 
+				
+				//Update end position
+				end-=matches;				
+			}
+		}
 		
+		//Create new variant record
 		VariantRec var = new VariantRec(chr, pos, end, ref, alt);
 		var.setQuality(quality);
 
@@ -372,15 +392,29 @@ public class VCFParser implements VariantLineReader {
 	}	
 	
 	/**
-	 * Sets boolean for determining whether to strip matching bases between REF & ALT 
+	 * Sets boolean for determining whether to strip initial matching bases between REF & ALT 
 	 */
 	public void setStripInitialMatchingBases(boolean stripInitialMatchingBases) {
 		this.stripInitialMatchingBases = stripInitialMatchingBases;
 	}
 	
+	/**
+	 * Returns whether trailing matching bases between REF & ALT are stripped
+	 */
+	public boolean isStripTrailingMatchingBases() {
+		return stripTrailingMatchingBases;
+	}	
+	
+	/**
+	 * Sets boolean for determining whether to strip trailing matching bases between REF & ALT 
+	 */
+	public void setStripTrailingMatchingBases(boolean stripTrailingMatchingBases) {
+		this.stripTrailingMatchingBases = stripTrailingMatchingBases;
+	}
 	
 	/**
 	 * Calculates the number of shared bases between the ref sequence & alternate allele
+	 * at the BEGINNING of the sequence (only takes one ref and one alt as input)
 	 * @author elainegee 
 	 * @return
 	 */
@@ -388,28 +422,45 @@ public class VCFParser implements VariantLineReader {
 		String[] altToks = alt.split(",");
 		int AltCount = altToks.length;
 		String shortestAlt = altToks[0];
-		// find shortest alt allele
-		for(int j=0; j< AltCount; j++) {
-			if (shortestAlt.length() > altToks[j].length()){
-				shortestAlt = altToks[j];
-			}
-		}
-		// find length of matching bases across all alleles
+
+		// find length of initial matching bases across all alleles
 		int i;						
 		for(i=0; i<Math.min(ref.length(), shortestAlt.length()); i++) {
-			int validAlts = 0;
+			int validAlts = 0; // counts number of alts that match
 			char refchar = ref.charAt(i);
+			// loop through each alt
 			for (int j=0; j< AltCount; j++) {
 				String testAlt = altToks[j];					
 				if (refchar == testAlt.charAt(i)) {
 					validAlts++;
 				}
 			}
+			// if not all alts match, then return last matching base index 
 			if (validAlts - AltCount != 0) {
 				return i;							
 			}
 		}
 		return i; 
+	}
+	
+	/**
+	 * Calculates the number of shared bases between the ref sequence & alternate allele 
+	 * at the END of the sequence
+	 * @author elainegee 
+	 * @return 
+	 */
+	public static int findNumberOfTrailingMatchingBases(String ref, String alt) {
+		// find length of matching trailing bases 
+		int i;		
+		int matchBases = 0;
+		for(i=0; i<Math.min(ref.length(), alt.length()); i++) {
+			if (ref.charAt(ref.length()-i-1) == alt.charAt(alt.length()-i-1)) {
+				matchBases++;
+			} else {
+				return matchBases; //stop loop if no matches
+			}
+		}
+		return matchBases; 
 	}
 	
 	/**
@@ -529,6 +580,19 @@ public class VCFParser implements VariantLineReader {
 		} catch (NullPointerException npe) {
 			return -1.0; //-1.0 indicates no data found
 		}
+	}
+	
+	/**
+	 * Variant chromosome/contig
+	 * @author elainegee
+	 * @return
+	 */
+	public String getContig() {
+		if (currentLineToks != null) {
+			return currentLineToks[0].toUpperCase().replace("CHR","");
+		} else {
+			return "?";
+		}		
 	}
 	
 	/**
