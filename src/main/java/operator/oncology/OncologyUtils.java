@@ -8,6 +8,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -185,7 +186,13 @@ public class OncologyUtils extends IOOperator {
 
 		for (int i = 0; i < fusionLength; i++) {
 			fusionCounts[i] = fusionMap.get(FusionContigs[i]);
-			fusionFrac[i] = (double) fusionCounts[i] / fusionMapped;
+			if(fusionMapped !=0) {
+				fusionFrac[i] = (double) fusionCounts[i] / fusionMapped;
+			}
+			else {
+				fusionFrac[i]=-1729; //Dividing by zero is only for Ramanujan
+				logger.info("The number of reads mapped to the ratio reference is 0, so a nonsense negative number is returned for the fraction.");
+			}
 			if (FusionContigs[i].toUpperCase().contains("CTRL")) {
 				houseKeepingReads += (int) fusionCounts[i];
 			}
@@ -196,7 +203,14 @@ public class OncologyUtils extends IOOperator {
 		}
 		for (int i = 0; i < ratioLength; i++) {
 			ratioCounts[i] = ratioMap.get(RatioContigs[i]);
-			ratioFrac[i] = (double) ratioCounts[i] / ratioMapped;
+			if(ratioMapped!=0){
+				ratioFrac[i] = (double) ratioCounts[i] / ratioMapped;
+			}
+			else {
+				ratioFrac[i] = -1337; //Dividing by 0 is the devil's business.
+				logger.info("The number of reads mapped to the ratio reference is 0, so a nonsense negative number is returned for the fraction.");
+			}
+			System.out.println(Double.toString(ratioFrac[i]) + " is the value of this ratioFrac");
 		}
 
 		// Normalized comparison
@@ -230,12 +244,14 @@ public class OncologyUtils extends IOOperator {
 			RatioCounts3p5p[i] = ratioCounts[2 * i] + ratioCounts[2 * i + 1];
 		}
 
+		/* FOR DEBUGGING
 		for (double value : RatioCounts3p5p) {
 			System.out.println("Value of RatioCounts3p5p is (at this point) "
 					+ Double.toString(value));
 			logger.info("Value of RatioCounts3p5p is (at this point) "
 					+ Double.toString(value));
 		}
+		*/
 
 		/*
 		 * 5. Write results to JSON Stores results in a Hashmap (keys:
@@ -329,16 +345,30 @@ public class OncologyUtils extends IOOperator {
 		// Build rna ratio map
 		Map<String, Object> rnaRatio = new HashMap<String, Object>();
 		rnaRatio = buildFractionCountMap(RatioContigs, ratioCounts, ratioFrac);
-
+		
 		// Build RNA ratio
 		Map<String, Object> rnaRatioAdjusted = new HashMap<String, Object>();
 		rnaRatioAdjusted = buildFractionCountMap(RatioContigSets,
 				RatioCounts3p5p, ratioForRatio);
-
+		
 		// Build rna fusion map
 		Map<String, Object> rnaFusion = new HashMap<String, Object>();
 		rnaFusion = buildFractionCountMap(FusionContigs, fusionCounts,
 				fusionFrac);
+		List<String>keys2 = new ArrayList<String>(rnaFusion.keySet());
+		/* For Debugged
+		for (String key: keys2) {
+		    System.out.println(key + ": " + rnaFusion.get(key));
+		}
+		List<String> keys = new ArrayList<String>(rnaRatio.keySet());
+		for (String key: keys) {
+		    System.out.println(key + ": " + rnaRatio.get(key));
+		}
+		List<String>keys1 = new ArrayList<String>(rnaRatioAdjusted.keySet());
+		for (String key: keys1) {
+		    System.out.println(key + ": " + rnaRatioAdjusted.get(key));
+		}
+		*/
 
 		// Build final results map to be converted to JSON
 		Map<String, Object> finalResults = new HashMap<String, Object>();
@@ -356,6 +386,19 @@ public class OncologyUtils extends IOOperator {
 		String fusionStr = fusionjson.toString();
 		JSONObject ratioCalcJson = new JSONObject(rnaRatioAdjusted);
 		String ratioCalcStr = ratioCalcJson.toString();
+		
+		if(ratioStr == null) {
+			throw new OperationFailedException("ratioStr is null. Abort!", this);
+		}
+		if(fusionStr == null) {
+			throw new OperationFailedException("fusionStr is null. Abort!", this);
+		}
+		if(summaryStr == null) {
+			throw new OperationFailedException("summaryStr is null. Abort!", this);
+		}
+		if(ratioCalcStr == null) {
+			throw new OperationFailedException("ratioCalcStr is null. Abort!", this);
+		}
 		System.out.println(ratioStr + " is ratio str");
 		System.out.println(fusionStr + " is fusion str");
 		System.out.println(summaryStr + " is summary str");
@@ -365,19 +408,17 @@ public class OncologyUtils extends IOOperator {
 		// Get the json string, then compress it to a byte array
 		String str = json.toString();
 		
-		
+		/*
 		if (str == null) {
 			String ManualJsonStr = "{\"summary\":" + summaryStr + "\"rna.ratio\":" + ratioStr + "\"rna.fusion\":" + fusionStr + "\"rna.adjusted.ratio\":" + ratioCalcStr + "}";
-			/*
 			File dest = this.getOutputBufferForClass(JSONBuffer.class).getFile();
 			PrintWriter out = new PrintWriter(dest);
 			out.println(ManualJsonStr);
 			out.flush();
 			out.close();
-			*/
 			str = ManualJsonStr;
-		}
-
+			//return;
+		*/
 		
 		// Makes the JSON string human-readable. Requires GSON library.
 		/*

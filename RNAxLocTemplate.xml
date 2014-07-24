@@ -1,7 +1,7 @@
 
 <!-- Analysis name: Lung Melanoma RNA IonTorrent xLoc -->
 <!-- Analysis ID: lung.iontorrent.rna.xloc -->
-<!-- Analysis description: Pipeline for RNAseq translocation with custom references -->
+<!-- Analysis description: Pipeline for RNAseq translocation with custom references v.11 -->
 <Pipeline>
 
 
