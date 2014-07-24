@@ -351,9 +351,16 @@ public class SnpEffGeneAnnotate extends Annotator {
 			String[] cpParts = cp.split("/");
 			String cdot = "";
 			String pdot = "";
-			if (cp.length()>0 && cpParts.length > 1) {
-				pdot = cpParts[0];
-				cdot = cpParts[1];
+			if (cp.length()>0) {
+				if (cpParts.length == 1){
+					cdot = cpParts[0];	
+				}
+				if (cpParts.length == 2){
+					pdot = cpParts[0];
+					cdot = cpParts[1];
+				}
+				
+				
 			}
 			
 			String gene = bits[5];
