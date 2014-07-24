@@ -54,7 +54,11 @@ public class VarViewerWriter extends VariantPoolWriter {
 			 VariantRec.EXOMES_AA_HOMREF,
 			 VariantRec.EXOMES_EA_HET,
 			 VariantRec.EXOMES_EA_HOMALT,
-			 VariantRec.EXOMES_EA_HOMREF
+			 VariantRec.EXOMES_EA_HOMREF,
+			 VariantRec.PFAM_AC,
+			 VariantRec.PFAM_ID,
+			 VariantRec.PFAM_DESC,
+			 VariantRec.SCOP_DOMAIN
 			 }));
 	
 	public final static List<String> geneKeys = new ArrayList<String>( Arrays.asList(new String[]{
