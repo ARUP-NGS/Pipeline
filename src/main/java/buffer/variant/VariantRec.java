@@ -635,6 +635,9 @@ public class VariantRec {
 	public static final String PFAM_ID = "pfam.id";
 	public static final String PFAM_DESC = "pfam.desc";
 	public static final String SCOP_DOMAIN = "scop.domain";
+	public static final String COSMIC_ID = "cosmic.id";
+	public static final String COSMIC_COUNT = "cosmic.count";
+	
 	
 }
 
