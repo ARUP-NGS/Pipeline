@@ -631,6 +631,13 @@ public class VariantRec {
 	public static final String SPLICING_TOPNMDIFF = "splicing.topnmdiff";
 	public static final String HOTSPOT_ID = "hotspot.id";
 	public static final String NON_PREFERRED_TRANSCRIPT = "non.preferred.transcript";
+	public static final String PFAM_AC = "pfam.ac";
+	public static final String PFAM_ID = "pfam.id";
+	public static final String PFAM_DESC = "pfam.desc";
+	public static final String SCOP_DOMAIN = "scop.domain";
+	public static final String COSMIC_ID = "cosmic.id";
+	public static final String COSMIC_COUNT = "cosmic.count";
+	
 	
 }
 

@@ -5,8 +5,6 @@ import java.util.List;
 import operator.IOOperator;
 import operator.OperationFailedException;
 
-import org.apache.log4j.Logger;
-
 import buffer.BAMFile;
 import buffer.FileBuffer;
 
@@ -47,7 +45,5 @@ public class MapParse extends IOOperator {
 		String command2 = samPath + " view -bh -f 0x0004 -o " + unmappedBam
 				+ " " + inputBAM;
 		executeCommand(command2);
-		System.out.println("Testing ...");
-
 	}
 }

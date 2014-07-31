@@ -150,6 +150,10 @@ public class JSONVarsGenerator {
 				}
 				
 				String annotatedCSV = manifest.getProperty("annotated.vars");
+				//Handles special case for lung panel 
+				if (annotatedCSV == null) {
+					annotatedCSV = manifest.getProperty("annotated.vars.dna");
+				}
 				File annotatedVarsFile = new File(resultsDir.getAbsolutePath() + "/" + annotatedCSV);
 				if (! annotatedVarsFile.exists()) {
 					System.err.println("Annotated variant file " + annotatedCSV + " is specified in manifest, but does not exist!");

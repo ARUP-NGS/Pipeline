@@ -90,7 +90,7 @@
   </output>
 </IndexUnmappedTerm>
 
-<AmpliconFilterTerm class="operator.bamutils.AmpliconCoverageFilter" bedpath="/yggdrasil/workspace/LungMel/Designed.bed" fraction="0.5">
+<AmpliconFilterTerm class="operator.bamutils.AmpliconCoverageFilter" bedpath="/yggdrasil/workspace/LungMel/ampliconDesignLungMel.bed" fraction="0.5">
   <input>
     <mappedTermBam /> 
   </input>
@@ -260,7 +260,7 @@
   </output>
 </IndexUnmappedFusion>
 
-<AmpliconFilter class="operator.bamutils.AmpliconCoverageFilter" bedpath="/yggdrasil/workspace/LungMel/Designed.bed" fraction="0.7">
+<AmpliconFilter class="operator.bamutils.AmpliconCoverageFilter" bedpath="/yggdrasil/workspace/LungMel/ampliconDesignLungMel.bed" fraction="0.7">
   <input>
     <mappedFusionBam /> 
   </input>
