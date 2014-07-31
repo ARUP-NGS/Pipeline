@@ -28,6 +28,7 @@ public class SplitByChromosome extends IOOperator {
 	protected ThreadPoolExecutor threadPool = null;
 	public static final String JVM_ARGS="jvmargs";
 	public static final String PATH = "path";
+	public static final String CHECKCONTIGS="check";
 	public static final String CHROMOSOMES = "chromosomes";
 	protected String defaultGATKPath = "~/GenomeAnalysisTK/GenomeAnalysisTK.jar";
 	protected String gatkPath = defaultGATKPath;
@@ -35,6 +36,7 @@ public class SplitByChromosome extends IOOperator {
 	protected String referencePath = null;
 	protected MultiFileBuffer multiBAM;
 	protected MultiFileBuffer outputFiles;
+	protected boolean checkChrs = true;
 	//Default list of chromosomes to split out, which is all of them
 	static final String[] defaultChrs = new String[]{"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "X", "Y"}; 
 	
@@ -59,6 +61,11 @@ public class SplitByChromosome extends IOOperator {
 		outputFiles = (MultiFileBuffer) getOutputBufferForClass(MultiFileBuffer.class);
 		if (outputFiles instanceof GlobFileBuffer) {
 			((GlobFileBuffer)outputFiles).findFiles();
+		}
+		
+		String check = this.getAttribute(CHECKCONTIGS);
+		if (check != null) {
+			checkChrs = Boolean.parseBoolean(check);
 		}
 		
 		Object propsPath = getPipelineProperty(PipelineXMLConstants.GATK_PATH);
@@ -101,7 +108,7 @@ public class SplitByChromosome extends IOOperator {
 			e.printStackTrace();
 		}
 		
-		if (chromsToMake == defaultChrs)
+		if (chromsToMake == defaultChrs && checkChrs)
 			checkContigs(outputFiles.getFileList()); //Ensure all contigs have been created
 		logger.info("Done with splitting operator " + getObjectLabel());		
 	}

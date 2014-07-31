@@ -1004,11 +1004,8 @@ public class QCReport extends Operator {
 		}
 		
 		String str = uniq.get(0);
-		for(int i=1; i<Math.min(2, uniq.size()); i++) {
+		for(int i=1; i<uniq.size(); i++) {
 			str = str + ", " + uniq.get(i);
-		}
-		if (uniq.size() > 3) {
-			str = str + "...";
 		}
 		return str;
 	}

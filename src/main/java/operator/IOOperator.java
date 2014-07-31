@@ -185,7 +185,7 @@ public abstract class IOOperator extends Operator {
 			final Thread errConsumer = new StringPipeHandler(p.getErrorStream(), System.err);
 			errConsumer.start();
 			
-			//If runtime is going down, destroy the process so it won't become orphaned
+			//If runtime is going down, destroy the process so it won't become orphaned/ zombied
 			Runtime.getRuntime().addShutdownHook(new Thread() {
 				public void run() {
 					//System.err.println("Invoking shutdown thread, destroying task with command : " + command);
@@ -204,9 +204,10 @@ public abstract class IOOperator extends Operator {
 				throw new OperationFailedException("Task was interrupted : " + System.err.toString() + "\n" + e.getLocalizedMessage(), this);
 			}
 
-			
+			p.destroy();
 		}
 		catch (IOException e1) {
+			
 			throw new OperationFailedException("Task encountered an IO exception : " + System.err.toString() + "\n" + e1.getLocalizedMessage(), this);
 		}
 	}

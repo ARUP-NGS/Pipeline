@@ -72,6 +72,10 @@ public class CisTransClassifier  {
 					throw new IllegalArgumentException("Variants are not on the same chromosome");
 				}
 
+				
+				
+				
+				
 				int var1Pos = var1.getStart();
 				int var2Pos = var2.getStart();
 				char var1Ref = var1.getRef().charAt(0);
