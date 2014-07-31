@@ -24,7 +24,7 @@ public class COSMICCodingDB {
 		reader = new TabixReader(dbFile.getAbsolutePath());
 	}
     
-    public String[] getInfoForPostion(String contig, int pos) throws IOException {
+    public String[] getInfoForPosition(String contig, int pos) throws IOException {
 		String queryStr = contig + ":" + pos + "-" + (pos);
 		
 		try {

@@ -24,7 +24,7 @@ public class DomainDB {
 		reader = new TabixReader(dbFile.getAbsolutePath());
 	}
     
-    public String[] getInfoForPostion(String contig, int pos) throws IOException {
+    public String[] getInfoForPosition(String contig, int pos) throws IOException {
 		String queryStr = contig + ":" + pos + "-" + (pos);
 		
 		try {
@@ -34,11 +34,11 @@ public class DomainDB {
 					String str = iter.next();
 					while(str != null) {
 						String[] toks = str.split("\t");
-						if(toks[0]!=contig) {
+						if(toks[0].equals(contig)) {
 							str = iter.next();
 							continue;
 						}
-						if(toks[8]=="n/a") {
+						if(toks[8].equals("n/a")) {
 							str = iter.next();
 							continue;
 						}

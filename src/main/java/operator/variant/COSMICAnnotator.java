@@ -38,12 +38,10 @@ public class COSMICAnnotator extends Annotator{
 			}
 			String[] dbInfo;
 			try {
-				dbInfo = cosmicDB.getInfoForPostion(var.getContig(), var.getStart());
+				dbInfo = cosmicDB.getInfoForPosition(var.getContig(), var.getStart());
 				if (dbInfo != null) {
-					if(dbInfo[0]!="n/a" || dbInfo[1]!="n/a" || dbInfo[2]!="n/a" || dbInfo[3]!="n/a" ){
+					if(dbInfo[0].equals("n/a") || dbInfo[1].equals("n/a") || dbInfo[2].equals("n/a") || dbInfo[3].equals("n/a")){
 						var.addAnnotation(VariantRec.COSMIC_ID, dbInfo[0]);
-						var.addAnnotation(VariantRec.CDOT, dbInfo[1]);
-						var.addAnnotation(VariantRec.PDOT, dbInfo[2]);
 						var.addAnnotation(VariantRec.COSMIC_COUNT, dbInfo[3]);
 					}
 				}

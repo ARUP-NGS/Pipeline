@@ -39,9 +39,9 @@ public class PfamScopAnnotator extends Annotator{
 		//pfamAC,pfamID,pfamDesc,domainName	
 			String[] dbInfo;
 			try {
-				dbInfo = PfamScop.getInfoForPostion(var.getContig(), var.getStart());
+				dbInfo = PfamScop.getInfoForPosition(var.getContig(), var.getStart());
 				if (dbInfo != null) {
-					if(dbInfo[0]!="n/a" || dbInfo[1]!="n/a" || dbInfo[2]!="n/a" || dbInfo[3]!="n/a" ){
+					if(dbInfo[0].equals("n/a") || dbInfo[1].equals("n/a") || dbInfo[2].equals("n/a") || dbInfo[3].equals("n/a") ){
 						var.addAnnotation(VariantRec.PFAM_AC, dbInfo[0]);
 						var.addAnnotation(VariantRec.PFAM_ID, dbInfo[1]);
 						var.addAnnotation(VariantRec.PFAM_DESC, dbInfo[2]);
