@@ -8,9 +8,7 @@ import pipeline.Pipeline;
  * For Bowtie2's "2" algorithm
  * Builds .bwt
  * 
- *
- *   
- * @author Daniel
+ * @author daniel
  *
  */
 
@@ -27,7 +25,6 @@ public class Bowtie2Build extends operator.CommandOperator {
 	public String getCommand() {
 		filePathToIndex = inputBuffers.get(0).getAbsolutePath();
 		String command = pathToBowtie2 + " " + filePathToIndex + " " + filePathToIndex.substring(0, filePathToIndex.lastIndexOf('.'));
-		//System.out.println(command + " OMG LULZ IT WORKED");
 		return command;
 	}
 	
