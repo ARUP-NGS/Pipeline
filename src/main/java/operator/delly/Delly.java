@@ -29,14 +29,14 @@ public class Delly extends CommandOperator {
 	String svAnalysis;
 	ReferenceFile refBuf = (ReferenceFile) this.getInputBufferForClass(ReferenceFile.class);
 	FileBuffer outVCF = this.getOutputBufferForClass(VCFFile.class);
-	FileBuffer outBAM = this.getOutputBufferForClass(BAMFile.class);
+	FileBuffer inBAM = this.getInputBufferForClass(BAMFile.class);
     protected String getCommand() {
 		Logger.getLogger(Pipeline.primaryLoggerName).info("Delly is searching for structural variations of the type: " + svAnalysis);
     	String ref = refBuf.getAbsolutePath();
     	String outputVCF = outVCF.getAbsolutePath();
-        String outputBAM = outBAM.getAbsolutePath(); 
+        String inputBAM = inBAM.getAbsolutePath(); 
     	String command_str=dellyPath + " -g " + ref + " -t " + svAnalysis + excludeString + "-o " + 
-    			outputVCF + " " + outputBAM;
+    			outputVCF + " " + inputBAM;
     	
     	return command_str;
     }
