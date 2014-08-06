@@ -67,6 +67,8 @@ public class Bowtie2Align extends IOOperator {
 		executeCommand(command);
 		String Sam2Bam = samtoolsPath + " view -Sbhu -o " + OutputBAM + " " + OutputSAM;
 		executeCommand(Sam2Bam);
+		String rmSam = "rm " + OutputSAM;
+		executeCommand(rmSam);
 	}
 	
 }
