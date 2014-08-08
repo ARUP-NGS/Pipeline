@@ -356,19 +356,6 @@ public class OncologyUtils extends IOOperator {
 		rnaFusion = buildFractionCountMap(FusionContigs, fusionCounts,
 				fusionFrac);
 		List<String>keys2 = new ArrayList<String>(rnaFusion.keySet());
-		/* For Debugged
-		for (String key: keys2) {
-		    System.out.println(key + ": " + rnaFusion.get(key));
-		}
-		List<String> keys = new ArrayList<String>(rnaRatio.keySet());
-		for (String key: keys) {
-		    System.out.println(key + ": " + rnaRatio.get(key));
-		}
-		List<String>keys1 = new ArrayList<String>(rnaRatioAdjusted.keySet());
-		for (String key: keys1) {
-		    System.out.println(key + ": " + rnaRatioAdjusted.get(key));
-		}
-		*/
 
 		// Build final results map to be converted to JSON
 		Map<String, Object> finalResults = new HashMap<String, Object>();
@@ -407,18 +394,6 @@ public class OncologyUtils extends IOOperator {
 
 		// Get the json string, then compress it to a byte array
 		String str = json.toString();
-		
-		/*
-		if (str == null) {
-			String ManualJsonStr = "{\"summary\":" + summaryStr + "\"rna.ratio\":" + ratioStr + "\"rna.fusion\":" + fusionStr + "\"rna.adjusted.ratio\":" + ratioCalcStr + "}";
-			File dest = this.getOutputBufferForClass(JSONBuffer.class).getFile();
-			PrintWriter out = new PrintWriter(dest);
-			out.println(ManualJsonStr);
-			out.flush();
-			out.close();
-			str = ManualJsonStr;
-			//return;
-		*/
 		
 		// Makes the JSON string human-readable. Requires GSON library.
 		/*

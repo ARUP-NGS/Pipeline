@@ -76,11 +76,13 @@ public class Bowtie2Align extends IOOperator {
 			throw new IllegalArgumentException(
 					"No path to Bowtie2 found, please specify " + BOWTIE2_DIR);
 		}
+		if(!pathAttr.endsWith("/"))
+			pathAttr=pathAttr+"/";
 		if (!(new File(pathAttr + "bowtie2").exists())) {
 			throw new IllegalArgumentException(
 					"No file found at Bowtie2 path : " + pathAttr + "bowtie2");
 		}
-		bowtie2path = (pathAttr + "/bowtie2");
+		bowtie2path = (pathAttr + "bowtie2");
 
 		String samtoolsAttr = this.getPipelineProperty(SAMTOOLS_PATH);
 		if (samtoolsAttr == null) {
@@ -103,8 +105,8 @@ public class Bowtie2Align extends IOOperator {
 				.getAbsolutePath();
 		String OutputSAM = OutputBAM.substring(0, OutputBAM.lastIndexOf('.'))
 				+ ".sam";
-		String command = bowtie2path + " -t " + threads + " " + extraOpts + " "
-				+ style + " " + sensitivity + " --rg-id \"@RG\\tID:unknown\\tSM: " + sample + " -x " + ref + " -1 " + Reads1
+		String command = bowtie2path + " -p " + threads + " " + extraOpts + " "
+				+ style + " " + sensitivity + " --rg-id \"unknown\" --rg SM:" + sample + " -x " + ref + " -1 " + Reads1
 				+ " -2 " + Reads2 + " -S " + OutputSAM;
 		logger.info("About to align with bowtie2.\nCommand String is: "
 				+ command);

@@ -29,7 +29,7 @@ public class MergeSam extends IOOperator {
 
 		List<FileBuffer> inputBuffers = this
 				.getAllInputBuffersForClass(BAMFile.class);
-		FileBuffer outBam = this.getInputBufferForClass(BAMFile.class);
+		FileBuffer outBam = this.getOutputBufferForClass(BAMFile.class);
 		String fileList = "";
 		Logger.getLogger(Pipeline.primaryLoggerName).info(
 				"PicardTools is merging the input files.");

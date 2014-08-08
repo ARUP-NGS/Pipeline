@@ -22,7 +22,7 @@ public class SamSVFilter extends CommandOperator {
 	public static final String JVM_ARGS="jvmargs";
 	public static final String SAMSV_DIR="samsv.dir";
 	public static final String MEMORY_RANGE="memory.range";
-	protected String defaultUSeqDir = "/mnt/research2/Daniel/bin/jar/USeq-8.7.8/";
+	protected String defaultUSeqDir = "/mnt/research2/Daniel/bin/jar/USeq_8.7.8/";
 	protected String memoryRange = " -Xms2G -Xmx8G ";
 	@Override
 	protected String getCommand() throws OperationFailedException {
