@@ -58,7 +58,9 @@ public class VarViewerWriter extends VariantPoolWriter {
 			 VariantRec.PFAM_AC,
 			 VariantRec.PFAM_ID,
 			 VariantRec.PFAM_DESC,
-			 VariantRec.SCOP_DOMAIN
+			 VariantRec.SCOP_DOMAIN,
+			 VariantRec.COSMIC_ID,
+			 VariantRec.COSMIC_COUNT
 			 }));
 	
 	public final static List<String> geneKeys = new ArrayList<String>( Arrays.asList(new String[]{

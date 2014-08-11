@@ -16,7 +16,7 @@ public class DomainDB {
 	private File dbFile;
 	private TabixReader reader = null;
     public DomainDB(File file) throws IOException {
-		if (! dbFile.exists()) {
+		if (! file.exists()) {
 			throw new IOException("File " + dbFile.getAbsolutePath() + " does not exist");
 		}
 		dbFile = file;
