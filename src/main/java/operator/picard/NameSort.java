@@ -7,11 +7,11 @@ import pipeline.Pipeline;
 import pipeline.PipelineXMLConstants;
 
 /**
- * Uses Picard to coorindate sort a BAM file
- * @author brendan
+ * Uses Picard to sort a BAM file by name
+ * @author daniel
  *
  */
-public class CoordinateSort extends CommandOperator {
+public class NameSort extends CommandOperator {
 
 	
 	public static final String PATH = "path";
@@ -29,7 +29,8 @@ public class CoordinateSort extends CommandOperator {
 	
 	@Override
 	protected String getCommand() {
-		Logger logger = Logger.getLogger(Pipeline.primaryLoggerName);	
+		Logger logger = Logger.getLogger(Pipeline.primaryLoggerName);
+	
 		Object path = getPipelineProperty(PipelineXMLConstants.PICARD_PATH);
 		if (path != null)
 			picardDir = path.toString();
@@ -43,7 +44,7 @@ public class CoordinateSort extends CommandOperator {
 		if (picardDir.endsWith("/")) {
 			picardDir = picardDir.substring(0, picardDir.length()-1);
 		}
-	
+		
 		String memoryAttr = this.getAttribute(MEMORY_RANGE);
 		if(memoryAttr != null){
 			memoryRange=memoryAttr;
@@ -75,7 +76,7 @@ public class CoordinateSort extends CommandOperator {
 		String inputPath = inputBuffers.get(0).getAbsolutePath();
 		String outputPath = outputBuffers.get(0).getAbsolutePath();
 		
-		String command = "java " + memoryRange + " " + jvmARGStr + " -jar " + picardDir + "/SortSam.jar" + " INPUT=" + inputPath + " OUTPUT=" + outputPath + " SORT_ORDER=coordinate VALIDATION_STRINGENCY=LENIENT CREATE_INDEX=" + createIndex + " MAX_RECORDS_IN_RAM=" + maxRecords + " ";
+		String command = "java " + memoryRange + " " + jvmARGStr + " -jar " + picardDir + "/SortSam.jar" + " INPUT=" + inputPath + " OUTPUT=" + outputPath + " SORT_ORDER=queryname VALIDATION_STRINGENCY=LENIENT CREATE_INDEX=" + createIndex + " MAX_RECORDS_IN_RAM=" + maxRecords + " ";
 		return command;
 	}
 

@@ -50,7 +50,6 @@ public class FreeBayes extends IOOperator {
 		FileBuffer outputVCF = this.getOutputBufferForClass(VCFFile.class);
 		List<FileBuffer> inputBuffers = this.getAllInputBuffersForClass(BAMFile.class);
 		FileBuffer inputBED = this.getInputBufferForClass(BEDFile.class);
-		String baseName = this.getOutputBufferForClass(VCFFile.class).getAbsolutePath();
 		Logger.getLogger(Pipeline.primaryLoggerName).info("Freebayes is looking for SNPs with reference " + refBuf.getFilename() + " in source BAM file of " + inputBuffers.get(0).getFilename() + "." );
 
 		if(inputBED != null) {

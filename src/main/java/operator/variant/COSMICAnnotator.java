@@ -21,7 +21,7 @@ public class COSMICAnnotator extends Annotator{
 	     
 	    @Override
 		public void annotateVariant(VariantRec var) throws OperationFailedException {
-			if (cosmicDB == null) {
+	    	if (cosmicDB == null) {
 				String CosmicCodingDBFile = this.getPipelineProperty("cosmic.db.path");
 				if (CosmicCodingDBFile == null) {
 					throw new OperationFailedException("No path to COSMIC coding DB specified in pipeline properties", this);
@@ -36,16 +36,11 @@ public class COSMICAnnotator extends Annotator{
 					throw new OperationFailedException("Error opening COSMIC vcf: " + e.getMessage(), this);
 				}
 			}
-			String[] dbInfo;
 			try {
-				dbInfo = cosmicDB.getInfoForPostion(var.getContig(), var.getStart());
+				String[] dbInfo = cosmicDB.getInfoForPosition(var.getContig(), var.getStart());
 				if (dbInfo != null) {
-					if(dbInfo[0]!="n/a" || dbInfo[1]!="n/a" || dbInfo[2]!="n/a" || dbInfo[3]!="n/a" ){
-						var.addAnnotation(VariantRec.COSMIC_ID, dbInfo[0]);
-						var.addAnnotation(VariantRec.CDOT, dbInfo[1]);
-						var.addAnnotation(VariantRec.PDOT, dbInfo[2]);
-						var.addAnnotation(VariantRec.COSMIC_COUNT, dbInfo[3]);
-					}
+					var.addAnnotation(VariantRec.COSMIC_ID, dbInfo[0]);
+					var.addAnnotation(VariantRec.COSMIC_COUNT, dbInfo[1]);
 				}
 				else {
 					//var.addProperty(VariantRec.ARUP_OVERALL_FREQ, 0.0);

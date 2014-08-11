@@ -11,33 +11,44 @@ import buffer.BAMFile;
 /**
  * Implements USeq's SamFilter program.
  * Parses a BAM file into spanning, single, and soft-masked alignment groups.
- * Also generates counts for each possible translocation
  *
  *   
  * @author daniel
  * 
  */
 public class SamSVFilter extends CommandOperator {
-
 	
 	public static final String USEQ_DIR = "useq.dir";
 	public static final String JVM_ARGS="jvmargs";
 	public static final String SAMSV_DIR="samsv.dir";
-	protected String defaultUSeqDir = "/mnt/research2/Daniel/bin/jar/USeq-8.7.8/";
+	public static final String MEMORY_RANGE="memory.range";
+	protected String defaultUSeqDir = "/mnt/research2/Daniel/bin/jar/USeq_8.7.8/";
+	protected String memoryRange = " -Xms2G -Xmx8G ";
 	@Override
 	protected String getCommand() throws OperationFailedException {
-		
+		Logger logger = Logger.getLogger(Pipeline.primaryLoggerName);
 		int threads = this.getPipelineOwner().getThreadCount();
+		String memoryAttr = properties.get(MEMORY_RANGE);
+		if(memoryAttr != null){
+			memoryRange = memoryAttr;
+			logger.info("Default memory range overridden. New value: " + memoryRange + ".");
+		}
 		String useqPath = defaultUSeqDir;
+		String useqAttr = getPipelineProperty(USEQ_DIR);
+		if(useqAttr != null) {
+			useqPath = useqAttr;
+			logger.info("Default USeq location overridden. New value: " + useqPath + ".");
+		}
 		String inputBam = this.getInputBufferForClass(BAMFile.class).getAbsolutePath();
 		String bedRegion = this.getInputBufferForClass(BEDFile.class).getAbsolutePath();
 		String bedString = " -b " + bedRegion;
 		if(bedRegion==null) {
-			Logger.getLogger(Pipeline.primaryLoggerName).info("No BED file provided for SamSVFilter");
-		        throw new OperationFailedException("BED file is required for this operation", null);
+			logger.info("No BED file provided for SamSVFilter");
+		        throw new OperationFailedException("BED file is required for SamSVFilter", this);
 		}
 		String outputPath = this.getAttribute(SAMSV_DIR);
-		Logger.getLogger(Pipeline.primaryLoggerName).info("Parsing " + inputBam + " into spanning, single, and soft-masked alignment groups with " + threads + " threads");
+		if(outputPath==null)
+			throw new OperationFailedException("No SV directory provided. Cannot proceed without it.",this);
 		//User can override path specified in properties
 		String userPath = properties.get(USEQ_DIR);
 		if (userPath != null) {
@@ -61,7 +72,8 @@ public class SamSVFilter extends CommandOperator {
 		if (outputPath.endsWith("/")) {
 			outputPath = outputPath.substring(0, outputPath.length()-1);
 		}
-		String command = "java -Xms2G -Xmx20G " + jvmARGStr + " -jar " + useqPath + "/SamSVFilter -s " + outputPath +" -a "+ inputBam + bedString;
+		logger.info("Now attempting to parse " + inputBam + " into spanning, single, and soft-masked alignment groups with " + threads + " threads");
+		String command = "java " + memoryRange + " " + jvmARGStr + " -jar " + useqPath + "/SamSVFilter -s " + outputPath +" -a "+ inputBam + bedString;
 		return command;
 	}
 

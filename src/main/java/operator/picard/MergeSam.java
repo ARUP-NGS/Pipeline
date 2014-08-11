@@ -19,21 +19,30 @@ import buffer.FileBuffer;
 public class MergeSam extends IOOperator {
 
 	public static final String JVM_ARGS = "jvmargs";
+	public static final String MEMORY_RANGE = "memory.range";
 	String jvmargs = "-Djava.io.tmpdir=/mounts/tmp/";// Set default jvmargs
 	protected String defaultPicardDir = "~/picard-tools-1.55/";
 	protected String picardDir = defaultPicardDir;
+	protected String memoryRange = " -Xms2G -Xmx8G ";
 
 	public void performOperation() throws OperationFailedException {
 
 		List<FileBuffer> inputBuffers = this
 				.getAllInputBuffersForClass(BAMFile.class);
-		FileBuffer outBam = this.getInputBufferForClass(BAMFile.class);
+		FileBuffer outBam = this.getOutputBufferForClass(BAMFile.class);
 		String fileList = "";
 		Logger.getLogger(Pipeline.primaryLoggerName).info(
 				"PicardTools is merging the input files.");
 		for (FileBuffer bam : inputBuffers) {
 			fileList += " I=" + bam.getAbsolutePath();
 		}
+
+		String memoryAttr = getAttribute(MEMORY_RANGE);
+		if (memoryAttr != null) {
+			memoryRange = memoryAttr;
+			Logger.getLogger(Pipeline.primaryLoggerName).info("Default memory range overridden. New value: " + memoryRange + ".");
+		}
+
 		// Get Picard Path, JVM attributes
 		Object path = getPipelineProperty(PipelineXMLConstants.PICARD_PATH);
 		if (path != null) {
@@ -51,8 +60,8 @@ public class MergeSam extends IOOperator {
 		if (jvmAttr != null) {
 			this.jvmargs = jvmAttr;
 		}
-		String command = "java -Xms2G -Xmx20G " + jvmargs + " -jar " + picardDir
-				+ "/MergeSamFiles.jar " + fileList + " O="
+		String command = "java -Xms2G -Xmx20G " + jvmargs + " -jar "
+				+ picardDir + "/MergeSamFiles.jar " + fileList + " O="
 				+ outBam.getAbsolutePath()
 				+ " USE_THREADING=true CREATE_INDEX=true MSD=true";
 

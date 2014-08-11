@@ -9,14 +9,17 @@ package operator.variant;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.logging.Logger;
 
 import org.broad.tribble.readers.TabixReader;
+
+import pipeline.Pipeline;
 
 public class COSMICCodingDB {
 	private File dbFile;
 	private TabixReader reader = null;
     public COSMICCodingDB(File file) throws IOException {
-		if (! dbFile.exists()) {
+		if (! file.exists()) {
 			throw new IOException("File " + dbFile.getAbsolutePath() + " does not exist");
 		}
 		dbFile = file;
@@ -24,34 +27,33 @@ public class COSMICCodingDB {
 		reader = new TabixReader(dbFile.getAbsolutePath());
 	}
     
-    public String[] getInfoForPostion(String contig, int pos) throws IOException {
+    public String[] getInfoForPosition(String contig, int pos) throws IOException {
 		String queryStr = contig + ":" + pos + "-" + (pos);
-		
+		Logger logger = Logger.getLogger(Pipeline.primaryLoggerName);
+
 		try {
 			TabixReader.Iterator iter = reader.query(queryStr);
-
 			if(iter != null) {
 					String str = iter.next();
 					while(str != null) {
 						String[] toks = str.split("\t");
-						if(toks[0]!=contig) {
-							str = iter.next();
-							continue;
-						}
 						Integer VarPos = Integer.parseInt(toks[1]);
-						
 						if(pos == VarPos) {
 							String cosmicID = toks[2];
-							String cDot = toks[7].split(";")[2].split("CDS=")[-1];
-							String pDot = toks[7].split(";")[3].split("AA=")[-1];
-							String cosmicCount = toks[7].split(";")[4].split("CNT=")[-1];
-							return new String[]{cosmicID,cDot,pDot,cosmicCount};
+							String cosmicCount = toks[7].split(";")[4];
+							return new String[]{cosmicID,cosmicCount};
+						}
+						else {
+							logger.info("Failed to make it match. " + pos + " is the position for our input variant rec, while the position in the VCF is " + VarPos );
 						}
 						str = iter.next();
 					}
 			}
+			else {
+			}
 		}
 		catch (RuntimeException rex) {
+			logger.info("Runtime Exception is happening - watch out!");
 			//Bad contigs will cause an array out-of-bounds exception to be thrown by
 			//the tabix reader. There's not much we can do about this since the methods
 			//are private... right now we just ignore it and skip this variant

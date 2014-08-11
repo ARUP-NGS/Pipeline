@@ -1,6 +1,10 @@
 package operator.gatk;
 
-import operator.CommandOperator;
+import java.util.logging.Logger;
+
+import operator.IOOperator;
+import operator.OperationFailedException;
+import pipeline.Pipeline;
 import pipeline.PipelineXMLConstants;
 import buffer.BAMFile;
 import buffer.BEDFile;
@@ -8,7 +12,7 @@ import buffer.FileBuffer;
 import buffer.ReferenceFile;
 import buffer.VCFFile;
 
-public class Genotyper extends CommandOperator {
+public class Genotyper extends IOOperator {
 
 	public final String defaultMemOptions = " -Xms2048m -Xmx16g";
 	public static final String PATH = "path";
@@ -20,6 +24,7 @@ public class Genotyper extends CommandOperator {
 	public static final String OUT_MODE = "out_mode";
 	public static final String EMIT_ALL_SITES = "EMIT_ALL_SITES";
 	public static final String DOWNSAMPLE_TO_COV = "downsample_to_coverage";
+	public static final String PERMIT_NONZERO = "permit.nonzero";
 	protected String defaultGATKPath = "~/GenomeAnalysisTK/GenomeAnalysisTK.jar";
 	protected String gatkPath = defaultGATKPath;
 	protected double standCallConf = 30.0;
@@ -27,6 +32,8 @@ public class Genotyper extends CommandOperator {
 	protected String minIndelFrac = null;
 	protected String outMode = null;
 	protected String downsampleToCoverage = null;
+	String PermitNonzero = "false";
+		
 	
 	
 	
@@ -36,7 +43,9 @@ public class Genotyper extends CommandOperator {
 	}
 	
 	@Override
-	protected String getCommand() {
+	public void performOperation() throws OperationFailedException {
+		
+		Logger logger = Logger.getLogger(Pipeline.primaryLoggerName);
 		
 		Object propsPath = getPipelineProperty(PipelineXMLConstants.GATK_PATH);
 		if (propsPath != null)
@@ -57,6 +66,22 @@ public class Genotyper extends CommandOperator {
 		String standCallConfString = properties.get(CALLCONF);
 		if(standCallConfString != null){
 			standCallConf = Double.parseDouble(standCallConfString);
+		}
+	
+		Boolean AcceptNonzero = false;
+		String PermitAttr = this.getAttribute(PERMIT_NONZERO);
+		if (PermitAttr != null){
+			if(PermitAttr.equalsIgnoreCase("true")) {
+				AcceptNonzero = true;
+				logger.info("Non-zero return status has been set as permitted.");
+			}
+			else if(PermitAttr.equalsIgnoreCase("false")) {
+				AcceptNonzero = false;
+				logger.info("Non-zero return status has been set as not permitted.");
+			}
+			else {
+				logger.info("Non-zero return status permittability has not been set. Assuming the default: false.");
+			}
 		}
 		
 		String standEmitConfString = properties.get(CALLEMIT);
@@ -131,7 +156,8 @@ public class Genotyper extends CommandOperator {
 			command = command + " -minIndelFrac " + minIndelFrac;
 		if (downsampleToCoverage != null)
 			command = command + " --downsample_to_coverage " + downsampleToCoverage;
-		return command;
+		executeCommand(command, AcceptNonzero);
+		return;
 	}
 
 }
