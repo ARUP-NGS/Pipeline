@@ -2,11 +2,14 @@ package buffer.variant;
 
 import gene.Gene;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeSet;
 
 /**
  * A class to store some basic information about a single variant
@@ -471,6 +474,21 @@ public class VariantRec {
 		return toSimpleString();
 	}
 	
+	public String annotationsToString(){
+		StringBuilder sb = new StringBuilder();
+		int i = 0;
+		for(String key : annotations.keySet()){
+			if(i == 0){
+                sb.append(key + ": " + annotations.get(key));
+                i++;
+			}
+			else{
+                sb.append(", " + key + ": " + annotations.get(key));
+			}
+		}
+		return sb.toString();
+	}
+	
 	/**
 	 * Obtain an object that compares two variant records for start site
 	 * @return
@@ -490,6 +508,125 @@ public class VariantRec {
 	
 	public static IntervalComparator getIntervalComparator() {
 		return new IntervalComparator();
+	}
+
+	public static ArrayList<String> equals(VariantRec r1, VariantRec r2){
+		
+		ArrayList<String> errors = new ArrayList<String>();
+		
+		/* Check if same chr */
+		if(!r1.getContig().equals(r2.getContig())){
+			errors.add("Records not on same chrom. Rec 1: " + r1.getContig()
+					+ "\tRec 2: " + r2.getContig());
+			return errors; /* no need to continue with more unecessary errors */
+		}
+		/* Check for same start if same chr */
+		else if(r1.getStart() != r2.getStart()){
+			errors.add("Records do not begin at same position. Rec 1: " + r1.getStart()
+					+ "\tRec 2: " + r2.getStart());
+			return errors; /* no need to continue with more unecessary errors */
+		}
+		
+		/* Check for same end */
+		if(r1.getEnd() != r2.getEnd()){
+			errors.add("Records do not end at same position. Rec 1: " + r1.getEnd()
+					+ "\tRec 2: " + r2.getEnd());
+			return errors; /* no need to continue with more unecessary errors */
+		}
+		
+		/* Check for same ref */
+		if(!r1.getRef().equals(r2.getRef())){
+			errors.add("Records do not have the same reference. Rec 1: " + r1.getRef()
+					+ "\tRec 2: " + r2.getRef());
+			return errors; /* no need to continue with more unecessary errors */
+		}
+
+		/* Check for same alts */
+		TreeSet<String> r1Alts = new TreeSet<String>(Arrays.asList(r1.getAllAlts()));
+		TreeSet<String> r2Alts = new TreeSet<String>(Arrays.asList(r2.getAllAlts()));
+		if(!r1Alts.equals(r2Alts)){
+			errors.add("Records do not have the same alternate alleles. Rec 1: " + r1Alts.toString()
+					+ "\tRec 2: " + r2Alts.toString());
+			return errors; /* no need to continue with more unecessary errors */
+		}
+		
+		/* Check for same gene name */
+		Gene r1Gene = r1.getGene();
+		Gene r2Gene = r2.getGene();
+		if(r1Gene != null && r2Gene != null){
+            if(!r1Gene.getName().equals(r2Gene.getName())){
+                errors.add("Records do not have the same gene name. Rec 1: " + r1Gene.getName()
+                        + "\tRec 2: " + r2Gene.getName());
+            }
+		}
+		else if(r1Gene == null && r2Gene == null){
+			// This is fine. They equal.
+		}
+		else{ /* One must be null and the other isn't */
+			String r1GeneString = null, r2GeneString = null;
+			if(r1Gene == null){
+				r1GeneString = "null";
+            }
+			else{
+				r1GeneString = r1Gene.getName();
+			}
+
+			if(r2Gene == null){
+				r2GeneString = "null";
+            } 
+			else{
+				r2GeneString = r2Gene.getName();
+			}
+            errors.add("Records do not have the same gene name. Rec 1: " + r1GeneString
+                    + "\tRec 2: " + r2GeneString);
+		}
+		
+		/* Check the annotations equal */
+		Collection<String> r1AnnoKeys = r1.getAnnotationKeys();
+		Collection<String> r2AnnoKeys = r2.getAnnotationKeys();
+		
+		/* Check the to records have the same annotations set (same keys exist) */
+		if(!r1AnnoKeys.equals(r2AnnoKeys)){
+            errors.add("Records do not have the same annotation keys. Rec 1: " + r1AnnoKeys.toString()
+                    + "\tRec 2: " + r2AnnoKeys.toString());
+		}
+		/* If they have the same keys, see if the values equal */
+		else{ 
+			String r1Anno, r2Anno;
+			for(String key : r1AnnoKeys){
+				r1Anno = r1.getAnnotation(key);
+				r2Anno = r2.getAnnotation(key);
+				if(!r1Anno.equals(r2Anno)){
+                    errors.add("Record annotation " + key + " does not have matching value. Rec 1: " + r1Anno
+                            + "\tRec 2: " + r2Anno);
+				}
+			}
+		}
+			
+		
+        return errors;
+//		String[] r1Alts = r1.getAllAlts();
+//		String[] r2Alts = r2.getAllAlts();
+//		/* Check if same number of alts */
+//		if(r1Alts.length != r2Alts.length){
+//			
+//		}
+//		/* If same number of alts, check that the sets equal */
+//		else{
+//			boolean contains;
+//			for(int i = 0; i < r1Alts.length; i++){
+//				contains = false;
+//				for(int j = 0; j < r2Alts.length; i++){
+//					if(r1Alts[i].equals(r2Alts[j])){
+//						contains = true;
+//						break;
+//					}
+//				}
+//				if(!contains){
+//					
+//				}
+//			}
+//		}
 	}
 	
 	public static class PositionComparator implements Comparator<VariantRec> {
@@ -527,6 +664,7 @@ public class VariantRec {
 			return o1.start - o2.start;
 		}
 	}
+	
 	
 	/**
 	 * A generic comparator that retrieves the property with the given key and compares

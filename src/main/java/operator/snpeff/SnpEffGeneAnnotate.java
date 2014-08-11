@@ -45,7 +45,7 @@ public class SnpEffGeneAnnotate extends Annotator {
 		
 		//First we have to build an input file
 		File input = new File(this.getProjectHome() + "/snpeff.input.vcf");
-		File outputFile = new File("snpeff.output");
+		File outputFile = new File(this.getProjectHome() + "/snpeff.output");
 		int varsWritten = 0;
 		
 		try {
