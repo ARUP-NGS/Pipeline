@@ -4,39 +4,15 @@
 
 <InputVCF class="buffer.VCFFile" filename="$$INPUTFILE" />
 
-<MakeInput class="operator.annovar.ConvertVCFAnnovar">
- <input>
-	<InputVCF />
- </input>
- <output>
-	<AnnoInput class="buffer.AnnovarInputFile" filename="$$PREFIX.annovar.input" />
- </output>
-</MakeInput>
 
 <VariantPool class="buffer.variant.VariantPool">
 	<InputVCF />
 </VariantPool>
 
-<GeneAnnotate class="operator.annovar.GeneAnnotator">
-	<AnnoInput />
+<GeneAnnotate class="operator.snpeff.SnpEffGeneAnnotate" snpeff.genome="hg19">
 	<VariantPool />
 </GeneAnnotate>
 
-<dbNSFPAnnotate class="operator.variant.DBNSFPAnnotator">
- <VariantPool />
-</dbNSFPAnnotate>
-
-<dbNSFPGene class="operator.variant.DBNSFPGeneAnnotator">
- <VariantPool />
-</dbNSFPGene>
-
-<GOAnnotate class="operator.annovar.GOAnnotator" >
-  <VariantPool />
-</GOAnnotate>
-
-<HGMDAnnotate class="operator.annovar.HGMDAnnotator">
-  <VariantPool />
-</HGMDAnnotate>
 
 <ToFile class="operator.variant.ExcelWriter">
 	<VariantPool />

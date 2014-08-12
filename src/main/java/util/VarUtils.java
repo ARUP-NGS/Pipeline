@@ -307,7 +307,10 @@ public class VarUtils {
 	private static VariantLineReader getReader(String filename) throws IOException {
 		VariantLineReader reader = null;
 		if (filename.endsWith("vcf")) {
-			reader = new VCFParser(new File(filename));
+			VCFParser parser = new VCFParser(new File(filename));
+			parser.setStripInitialMatchingBases(true);
+			parser.setStripTrailingMatchingBases(true);
+			reader = parser;
 			//reader = new VCFParser(new File(filename), true);
 		}
 		if (filename.endsWith("csv")) {
@@ -535,11 +538,15 @@ public class VarUtils {
 	public static VariantPool getPool(File inputFile) throws IOException {
 		VariantPool variants = null;
 		if (inputFile.getName().endsWith(".csv")) {
+			
 			variants = new VariantPool(new CSVFile(inputFile));	
 			//variants = new VariantPool(new SimpleLineReader(inputFile));
 		} else {
 			if (inputFile.getName().endsWith(".vcf")) {
-				variants = new VariantPool(new VCFFile(inputFile));	
+				VCFParser parser = new VCFParser(new VCFFile(inputFile));
+				parser.setStripInitialMatchingBases(true);
+				parser.setStripTrailingMatchingBases(true);
+				variants = new VariantPool(parser);	
 			}
 			else {
 				throw new IllegalArgumentException("Unrecognized file suffix for input file: " + inputFile.getName());
@@ -1954,6 +1961,7 @@ public class VarUtils {
 		
 		List<VariantPool> pools = new ArrayList<VariantPool>();
 		
+		//This seems dumb.. shouldn't we read the first file in as a pool, and traverse the others?
 		for(int i=2; i<args.length; i++) {
 			try {
 				pools.add( getPool(new File(args[i])) );

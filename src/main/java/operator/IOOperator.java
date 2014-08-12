@@ -217,56 +217,22 @@ public abstract class IOOperator extends Operator {
 	
 	/**
 	 * Execute the given system command in its own process, and wait until the process has completed
-	 * to return. If the exit value of the process is not zero, an OperationFailedException in thrown
+	 * to return. If the exit value of the process is not zero, an OperationFailedException is thrown
 	 * @param command
 	 * @throws OperationFailedException
 	 */
 	protected void executeCommand(final String command) throws OperationFailedException {
-		Runtime r = Runtime.getRuntime();
-		final Process p;
-
-		try {
-			p = r.exec(command);
-			
-			//Weirdly, processes that emits tons of data to their error stream can cause some kind of 
-			//system hang if the data isn't read. Since BWA and samtools both have the potential to do this
-			//we by default capture the error stream here and write it to System.err to avoid hangs. s
-			final Thread errConsumer = new StringPipeHandler(p.getErrorStream(), System.err);
-			errConsumer.start();
-			
-			//If runtime is going down, destroy the process so it won't become orphaned
-			Runtime.getRuntime().addShutdownHook(new Thread() {
-				public void run() {
-					//System.err.println("Invoking shutdown thread, destroying task with command : " + command);
-					p.destroy();
-					errConsumer.interrupt();
-				}
-			});
-
-			
-			
-			try {
-				if (p.waitFor() != 0) {
-					throw new OperationFailedException("Task terminated with nonzero exit value : " + System.err.toString() + " command was: " + command, this);
-				}
-			} catch (InterruptedException e) {
-				throw new OperationFailedException("Task was interrupted : " + System.err.toString() + "\n" + e.getLocalizedMessage(), this);
-			}
-
-			
-		}
-		catch (IOException e1) {
-			throw new OperationFailedException("Task encountered an IO exception : " + System.err.toString() + "\n" + e1.getLocalizedMessage(), this);
-		}
+		executeCommand(command, false);
 	}
 	
 	/**
 	 * Execute the given system command in its own process, and wait until the process has completed
 	 * to return. If the exit value of the process is not zero, an OperationFailedException in thrown
 	 * @param command
+	 * @param permitNonZero If true, tolerate nonzero exit values from subordinate processes
 	 * @throws OperationFailedException
 	 */
-	protected void executeCommand(final String command,final boolean PermitNonzero) throws OperationFailedException {
+	protected void executeCommand(final String command, final boolean permitNonZero) throws OperationFailedException {
 		Runtime r = Runtime.getRuntime();
 		final Process p;
 
@@ -292,12 +258,12 @@ public abstract class IOOperator extends Operator {
 			
 			try {
 				if (p.waitFor() != 0) {
-					if(PermitNonzero==false)
+					if(permitNonZero==false) {
 						throw new OperationFailedException("Task terminated with nonzero exit value : " + System.err.toString() + " command was: " + command, this);
+					}
 					else {
 						Logger.getLogger(Pipeline.primaryLoggerName).info("Task terminated with nonzero exit value: " + System.err.toString() + " command was: " + command);
 						Logger.getLogger(Pipeline.primaryLoggerName).info("Settings: Nonzero exit status permitted. Continuing Pipeline.");
-						return;
 					}
 				}
 			} catch (InterruptedException e) {
