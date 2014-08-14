@@ -32,6 +32,13 @@ public class GeneAnnotator extends AnnovarAnnotator {
 		if (variants == null)
 			throw new OperationFailedException("Variant pool not initialized", this);
 		
+		//Re-write the annovar input file even if it was supplied. This is because we don't really
+		//know how it was created originally, and specifically what method of stripping bases was used
+		//If the wrong method was used, it could muck up our ability to match the variants in the output
+		//files to those in the variant pool. It's safer to do it all internally since we can control
+		//the exact behavior of base-stripping. 
+		createAnnovarInput(variants, annovarInputFile);
+		
 		String splicingThreshAttr = this.getAttribute(SPLICING_THRESH);
 		if(splicingThreshAttr != null){
 			Logger.getLogger(Pipeline.primaryLoggerName).info("Splicing threshold specified as " + splicingThreshAttr + " in template.");
@@ -62,11 +69,23 @@ public class GeneAnnotator extends AnnovarAnnotator {
 		
 		//Cleanup old annovar files
 		File variantFunc = new File(variantFuncFile);
-		variantFunc.deleteOnExit();
+		//variantFunc.deleteOnExit();
 		File exonVariantFunc = new File(exonFuncFile);
-		exonVariantFunc.deleteOnExit();
+		//exonVariantFunc.deleteOnExit();
 	}
 	
+	/**
+	 * Count the number of leading bases that are identical between ref and alt
+	 * @return
+	 */
+	public static int countInitialMatchingBases(String ref, String alt) {
+		int count = 0;
+		int min = Math.min(ref.length(), alt.length());
+		while(count < min && ref.charAt(count)==alt.charAt(count)) {
+			count++;
+		}
+		return count;
+	}
 	
 	private void addAnnotations(String variantFilePath, String exonicFuncFilePath, Map<String, String> nmMap) throws IOException {
 		//Add gene annotations
@@ -88,12 +107,31 @@ public class GeneAnnotator extends AnnovarAnnotator {
 			String alt = toks[6];
 			
 			//Fix weird issue with annovar where when it converts indels the position is incremented as much as we think it should be
-			if (ref.equals("-")) {
-				pos++;
-			}
+//			if (ref.equals("-")) {
+//				pos++;
+//			}
+			
+			//OK, so we don't actually know if the variants in the pool had their initial matching
+			//bases stripped, or not. So first look with no modifications to ref and alt, but if
+			//we don't find a match then strip initial matches and look again. 
+			VariantRec rec = findVariant(contig, pos, ref, alt);  //Make sure we match alt
+//			if (rec == null) {
+//				int initialMatching = countInitialMatchingBases(ref, alt);
+//				ref = ref.substring(initialMatching);
+//				alt = alt.substring(initialMatching);
+//				if (ref.length()==0) {
+//					ref = "-";
+//				}
+//				if (alt.length()==0) {
+//					alt = "-";
+//				}
+//				pos += (initialMatching-1);		
+//				rec = findVariant(contig, pos, ref, alt);  //Make sure we match alt
+//			}
+			
 			boolean hasPreferredNM = false; //Gets set to true if there's a preferred NM specified for this variant
 			boolean isUsingPreferredNM = false; //Set to true if we're using the preferred NM
-			VariantRec rec = findVariant(contig, pos, ref, alt);  //Make sure we match alt
+			
 			if (rec == null) {
 				errorVars++;
 				if (lastFewErrors.size() < 250)
@@ -198,9 +236,9 @@ public class GeneAnnotator extends AnnovarAnnotator {
 				int pos = Integer.parseInt( toks[4] );
 				
 				//Fix weird issue with annovar where when it converts indels the position is incremented as much as we think it should be
-				if (ref.equals("-")) {
-					pos++;
-				}
+//				if (ref.equals("-")) {
+//					pos++;
+//				}
 				
 				VariantRec rec = findVariant(contig, pos, ref, alt);
 				

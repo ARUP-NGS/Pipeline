@@ -1,0 +1,19 @@
+
+<!-- Uses annovar to annotate the given VCF file. This will produce lots of different output files... -->
+<Pipeline>
+
+<InputVCF class="buffer.VCFFile" filename="src/test/java/testvcfs/complexVars.vcf" />
+
+<VariantPool class="buffer.variant.VariantPool">
+	<InputVCF />
+</VariantPool>
+
+
+<GeneAnnotate class="operator.snpeff.SnpEffGeneAnnotate" snpeff.genome="hg19" updownstream.length="100">
+	<VariantPool />
+</GeneAnnotate>
+
+
+
+
+</Pipeline>

@@ -16,6 +16,7 @@ public class TestSnpEff extends TestCase {
 	
 	File inputFile = new File("src/test/java/annotation/testSnpEff.xml");
 	File inputFile2 = new File("src/test/java/annotation/testSnpEff2.xml");
+	File inputFile3 = new File("src/test/java/annotation/testSnpEff3.xml");
 	File propertiesFile = new File("src/test/java/core/inputFiles/testProperties.xml");
 	File snpEffDir = new File("snpEffDirLink");
 	
@@ -112,10 +113,42 @@ public class TestSnpEff extends TestCase {
 				Assert.assertTrue(var.getAnnotation(VariantRec.GENE_NAME).contains("CYP4B1"));
 				
 				
-			} catch (Exception ex) {
 				
+			} catch (Exception ex) {
+				System.err.println("Exception during testing: " + ex.getLocalizedMessage());
+				ex.printStackTrace(System.err);
+				Assert.assertFalse(true);
 			}
-	
+			
+			try {
+				//This tests the 'complex vars' file
+				Pipeline ppl = new Pipeline(inputFile3, propertiesFile.getAbsolutePath());
+				ppl.setProperty("snpeff.dir", "/home/brendan/snpEff_3_6/");
+				ppl.initializePipeline();
+				ppl.stopAllLogging();
+				
+				ppl.execute();
+				
+				SnpEffGeneAnnotate annotator = (SnpEffGeneAnnotate)ppl.getObjectHandler().getObjectForLabel("GeneAnnotate");
+				VariantPool vars = annotator.getVariants();
+				Assert.assertTrue(vars.size() == 10);
+				
+				VariantRec var = vars.findRecord("18", 48610384, "-", "GCAC");
+				Assert.assertTrue(var != null); 
+				Assert.assertTrue(var.getAnnotation(VariantRec.VARIANT_TYPE).equalsIgnoreCase("UTR_3_PRIME"));
+				Assert.assertTrue(var.getAnnotation(VariantRec.GENE_NAME).contains("SMAD4"));
+			
+				var = vars.findRecord("18", 48610383, "CACA", "-");
+				Assert.assertTrue(var != null);
+				Assert.assertTrue(var.getAnnotation(VariantRec.VARIANT_TYPE).equalsIgnoreCase("UTR_3_PRIME"));
+				Assert.assertTrue(var.getAnnotation(VariantRec.GENE_NAME).contains("SMAD4"));
+				
+				
+			} catch (Exception ex) {
+				System.err.println("Exception during testing: " + ex.getLocalizedMessage());
+				ex.printStackTrace(System.err);
+				Assert.assertFalse(true);
+			}
 		
 	}
 }

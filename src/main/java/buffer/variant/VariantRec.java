@@ -114,6 +114,19 @@ public class VariantRec {
 	}
 	
 	/**
+	 * Count the number of leading bases that are identical between ref and alt
+	 * @return
+	 */
+	public int countInitialMatchingBases() {
+		int count = 0;
+		int min = Math.min(ref.length(), alt.length());
+		while(count < min && ref.charAt(count)==alt.charAt(count)) {
+			count++;
+		}
+		return count;
+	}
+	
+	/**
 	 * True if any of the alt alleles in this variant rec matches the given alt
 	 * the 'alt alleles' are those returned by getAllAlts(), which splits the usual getAlt() on ','
 	 * @param alt

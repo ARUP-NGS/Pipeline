@@ -1,0 +1,28 @@
+
+<!-- Uses annovar to annotate the given VCF file. This will produce lots of different output files... -->
+<Pipeline>
+
+<InputVCF class="buffer.VCFFile" filename="src/test/java/testvcfs/myeloid.vcf" />
+
+<VariantPool class="buffer.variant.VariantPool">
+	<InputVCF />
+</VariantPool>
+
+
+<MakeInput class="operator.annovar.ConvertVCFAnnovar">
+ <input>
+	<InputVCF />
+ </input>
+ <output>
+	<AnnoInput class="buffer.AnnovarInputFile" filename="annovar.input" />
+ </output>
+</MakeInput>
+
+
+<GeneAnnotate class="operator.annovar.GeneAnnotator" >
+	<AnnoInput />
+	<VariantPool />
+</GeneAnnotate>
+
+
+</Pipeline>
