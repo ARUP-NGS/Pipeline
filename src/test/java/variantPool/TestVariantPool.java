@@ -56,7 +56,7 @@ public class TestVariantPool {
 		
 		try {
 			VariantPool pool = new VariantPool(new VCFFile(complexVCF));
-			Assert.assertEquals(8, pool.size());
+			Assert.assertEquals(10, pool.size());
 			Assert.assertNotNull(pool.findRecord("19", 10665691));
 			Assert.assertNotNull(pool.findRecord("19", 10665691, "TTGAC", "CTGAT"));
 			Assert.assertNotNull(pool.findRecord("19", 10665691, "T", "C"));
