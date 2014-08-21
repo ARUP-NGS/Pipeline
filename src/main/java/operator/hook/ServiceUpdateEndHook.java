@@ -79,8 +79,9 @@ public class ServiceUpdateEndHook extends OperatorEndHook implements IOperatorEn
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
-		if(!HttpUtils.HttpPostJSON(serverURL + service, obj).equals(success)){
-			throw new Exception("Error posting to the .NET service for End Hook");
+		String responseText = HttpUtils.HttpPostJSON(serverURL + service, obj); 
+		if(! responseText.equals(success)){
+			throw new Exception("Error posting to the .NET service for End Hook: " + responseText);
 		}
 	}
 
