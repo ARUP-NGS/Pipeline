@@ -23,6 +23,8 @@ public class TestVCFParser {
 	File complexVCF = new File("src/test/java/testvcfs/complexVars.vcf");
 	File emptyVCF = new File("src/test/java/testvcfs/empty.vcf");
 	
+	File panelVCF = new File("examples/test_panel.vcf");
+	
 	@Test
 	public void TestReadHeader() {
 		
@@ -665,5 +667,68 @@ public class TestVCFParser {
 				Assert.assertTrue(false);
 			}
 		}
+	
+	//test Hom calls #EG left off here
+	@Test
+	public void TestHom() {				
+		try {
+			VCFParser parserPanel = new VCFParser(panelVCF);
+
+			//Go through file
+			int i=0;
+			while(parserPanel.advanceLine() && i<15) {	
+				VariantRec var = parserPanel.toVariantRec();
+
+				// Check the first variant
+				if (i == 0) {
+					String chrom = parserPanel.getContig();
+					Assert.assertTrue(chrom.equals("2"));
+			
+					Integer pos = parserPanel.getPos();
+					Assert.assertTrue(pos == 227872182);
+				
+					String ref = parserPanel.getRef();
+					Assert.assertTrue(ref.equals("G"));
+				
+					String alt = parserPanel.getAlt();
+					Assert.assertTrue(alt.equals("A"));	
+			
+					Boolean hetero = parserPanel.isHetero();
+					Assert.assertTrue(hetero);
+							
+					Boolean homo = parserPanel.isHomo();
+					Assert.assertFalse(homo);
+				}
+				else if (i == 14) {
+				// Check the fifteenth variant
+						String chrom = parserPanel.getContig();
+						Assert.assertTrue(chrom.equals("2"));
+				
+						Integer pos = parserPanel.getPos();
+						Assert.assertTrue(pos == 228128540);
+					
+						String ref = parserPanel.getRef();
+						Assert.assertTrue(ref.equals("C"));
+					
+						String alt = parserPanel.getAlt();
+						Assert.assertTrue(alt.equals("T"));	
+				
+						Boolean hetero = parserPanel.isHetero();
+						Assert.assertFalse(hetero);
+								
+						Boolean homo = parserPanel.isHomo();
+						Assert.assertTrue(homo);
+					}			
+					i++;							
+			}
+										
+			System.err.println("\tVCFParser tests on parsing homozygotes/heterozytgotes passed on panel VCF.");
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			Assert.assertTrue(false);
+		}
+		
+	}
 }
 	
