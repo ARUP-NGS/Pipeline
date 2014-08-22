@@ -40,12 +40,14 @@ public class JSONVarsGenerator {
 	public static JSONObject createJSONVariants(VariantPool variants) throws JSONException{
 		JSONObject jsonResponse = new JSONObject();
 		
+		
+		
+		
 		//Added by Dave 8/22/14
 		if(variants==null){
-			JSONArray jsonVarList= null;
-			jsonResponse.put("variant.list", jsonVarList);
-			return jsonResponse;
+			variants = new VariantPool();
 		}
+		
 		//end
 		
 		AnnotatedVarsJsonConverter converter = new AnnotatedVarsJsonConverter();
