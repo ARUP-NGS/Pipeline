@@ -668,7 +668,7 @@ public class TestVCFParser {
 			}
 		}
 	
-	//test Hom calls #EG left off here
+	//test Hom calls 
 	@Test
 	public void TestHom() {				
 		try {
