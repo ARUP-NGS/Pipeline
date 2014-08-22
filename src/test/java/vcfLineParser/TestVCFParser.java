@@ -676,7 +676,7 @@ public class TestVCFParser {
 
 			//Go through file
 			int i=0;
-			while(parserPanel.advanceLine() && i<15) {	
+			while(parserPanel.advanceLine() && i<17) {	
 				VariantRec var = parserPanel.toVariantRec();
 
 				// Check the first variant
@@ -700,7 +700,7 @@ public class TestVCFParser {
 					Assert.assertFalse(homo);
 				}
 				else if (i == 14) {
-				// Check the fifteenth variant
+				// Check the fifteenth variant (hom)
 						String chrom = parserPanel.getContig();
 						Assert.assertTrue(chrom.equals("2"));
 				
@@ -719,6 +719,28 @@ public class TestVCFParser {
 						Boolean homo = parserPanel.isHomo();
 						Assert.assertTrue(homo);
 					}			
+				else if (i == 15) {
+					// Check the 16th variant (hom)
+							Integer pos = parserPanel.getPos();
+							Assert.assertTrue(pos == 228163453);
+									
+							Boolean hetero = parserPanel.isHetero();
+							Assert.assertFalse(hetero);
+									
+							Boolean homo = parserPanel.isHomo();
+							Assert.assertTrue(homo);
+						}			
+				else if (i == 16) {
+					// Check the 17th variant (hom)
+							Integer pos = parserPanel.getPos();
+							Assert.assertTrue(pos == 228168748);
+									
+							Boolean hetero = parserPanel.isHetero();
+							Assert.assertFalse(hetero);
+									
+							Boolean homo = parserPanel.isHomo();
+							Assert.assertTrue(homo);
+						}		
 					i++;							
 			}
 										
