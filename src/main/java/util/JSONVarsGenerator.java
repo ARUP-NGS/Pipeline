@@ -40,11 +40,13 @@ public class JSONVarsGenerator {
 	public static JSONObject createJSONVariants(VariantPool variants) throws JSONException{
 		JSONObject jsonResponse = new JSONObject();
 		
+		//Added by Dave 8/22/14
 		if(variants==null){
 			JSONArray jsonVarList= null;
 			jsonResponse.put("variant.list", jsonVarList);
 			return jsonResponse;
 		}
+		//end
 		
 		AnnotatedVarsJsonConverter converter = new AnnotatedVarsJsonConverter();
 
@@ -147,9 +149,9 @@ public class JSONVarsGenerator {
 				continue;
 			}
 			try {
+				
 				SampleManifest manifest = manifestReader.readManifest(resultsDir.getAbsolutePath());
-				
-				
+								
 				String destFilename="";
 				String jsonVars = manifest.getProperty("json.vars");
 				if (jsonVars != null && (!overwrite)) {
@@ -157,6 +159,7 @@ public class JSONVarsGenerator {
 					continue;
 				}
 				
+				//Moved here (up 20 lines or so) by Dave to work for NA case
 				File dest = new File(resultsDir.getAbsolutePath() + "/var/");
 								
 				String annotatedCSV = manifest.getProperty("annotated.vars");
@@ -164,6 +167,8 @@ public class JSONVarsGenerator {
 				if (annotatedCSV == null) {
 					annotatedCSV = manifest.getProperty("annotated.vars.dna");
 				}
+				
+				//Dave changed area
 				if(annotatedCSV.equalsIgnoreCase("NA")){ //in the case of no variants for BCR-ABL
 					destFilename = dest + "empty_annotatedvars.json.gz";
 					VariantPool variants = null;
