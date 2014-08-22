@@ -69,9 +69,9 @@ public class GeneAnnotator extends AnnovarAnnotator {
 		
 		//Cleanup old annovar files
 		File variantFunc = new File(variantFuncFile);
-		//variantFunc.deleteOnExit();
+		variantFunc.deleteOnExit();
 		File exonVariantFunc = new File(exonFuncFile);
-		//exonVariantFunc.deleteOnExit();
+		exonVariantFunc.deleteOnExit();
 	}
 	
 	/**

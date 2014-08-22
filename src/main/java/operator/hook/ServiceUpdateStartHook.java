@@ -82,9 +82,11 @@ public class ServiceUpdateStartHook extends OperatorStartHook implements IOperat
 			e.printStackTrace();
 		}
 		
-		if(!HttpUtils.HttpPostJSON(serverURL + service, obj).equals(success)){
-			throw new Exception("Error posting to the .NET service for Start Hook");
+		String responseText = HttpUtils.HttpPostJSON(serverURL + service, obj); 
+		if(! responseText.equals(success)){
+			throw new Exception("Error posting to the .NET service for start Hook: " + responseText);
 		}
+		
 	}
 
 	

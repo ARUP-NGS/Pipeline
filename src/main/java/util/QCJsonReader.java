@@ -307,7 +307,20 @@ public class QCJsonReader {
 		}
 	}
 
-	
+	public static Double mean(List<Double> vals) {
+		Double sum = 0d;
+		Double count = 0d;
+		for(Double val : vals) {
+			if (val != null && (!Double.isNaN(val))) {
+				count++;
+				sum += val;
+			}
+		}
+		if (count > 0)
+			return sum / count;
+		else 
+			return Double.NaN;
+	}
 	public static void performQAIndicators(List<String> paths, PrintStream out, AnalysisTypeConverter converter) {
 		Map<String, QCInfoList> analysisMap = new HashMap<String, QCInfoList>(); //Mapping from analysis types to groups of qc metrics
 		
@@ -331,30 +344,32 @@ public class QCJsonReader {
 				JSONArray fracAbove = finalCov.getJSONArray("fraction.above.index");		
 
 				Double mean = finalCov.getDouble("mean.coverage");
-				Double above0 = fracAbove.getDouble(0);
-				Double above20 = fracAbove.getDouble(20);
-				Double above50 = fracAbove.getDouble(50);
+				double above0 = fracAbove.getDouble(1);
+				Double below10 = 1.0-fracAbove.getDouble(10);
+//				Double above20 = fracAbove.getDouble(20);
+//				Double above50 = fracAbove.getDouble(50);
 				qcList.add("mean.coverage", mean);
-				qcList.add("frac.above.0", above0);
-				qcList.add("frac.above.20", above20);
-				qcList.add("frac.above.50", above50);
+				qcList.add("no.coverage", 100.0*(1.0-above0));
+				qcList.add("frac.below.10", 100.0*below10);
+//				qcList.add("frac.above.0", above0);
+//				qcList.add("frac.above.20", above20);
+//				qcList.add("frac.above.50", above50);
 				
 				
 				
 				JSONObject rawBam = obj.getJSONObject("raw.bam.metrics");
 				Double rawReadCount = rawBam.getDouble("total.reads");
-				qcList.add("raw.reads", rawReadCount);
 				double basesRead = rawBam.getDouble("bases.read");
-				qcList.add("bases.above.q10", rawBam.getDouble("bases.above.q10")/basesRead);
-				qcList.add("bases.above.q20", rawBam.getDouble("bases.above.q20")/basesRead);
-				qcList.add("bases.above.q30", rawBam.getDouble("bases.above.q30")/basesRead);
-				qcList.add("unmapped.reads", rawBam.getDouble("unmapped.reads")/rawReadCount);
+				qcList.add("bases.above.q10", 100.0*rawBam.getDouble("bases.above.q10")/basesRead);
+				qcList.add("bases.above.q20", 100.0*rawBam.getDouble("bases.above.q20")/basesRead);
+				qcList.add("bases.above.q30", 100.0*rawBam.getDouble("bases.above.q30")/basesRead);
+				qcList.add("reads.on.target", 100.0* (1.0-rawBam.getDouble("unmapped.reads")/rawReadCount));
 				
 				
 				JSONObject finalBam = obj.getJSONObject("final.bam.metrics");
 				Double finalReadCount = finalBam.getDouble("total.reads");
 				double percentDups = (rawReadCount - finalReadCount)/rawReadCount;
-				qcList.add("percent.dups", percentDups);
+				qcList.add("percent.dups", 100.0*percentDups);
 				
 				int indelCount = -1;
 				Double snpCount = Double.NaN;
@@ -362,6 +377,7 @@ public class QCJsonReader {
 				Double tstv = Double.NaN;
 				Double knownSnps = Double.NaN;
 				Double novelFrac = Double.NaN;
+				Double varsPerBaseCalled = Double.NaN;
 				JSONObject variants = null;
 				try {
 					variants = obj.getJSONObject("variant.metrics");
@@ -372,6 +388,12 @@ public class QCJsonReader {
 				try {
 					varCount = variants.getDouble("total.vars");
 					qcList.add("total.variants", varCount);
+					
+					if (obj.has("capture.extent")) {
+						long extent = obj.getLong("capture.extent");
+						varsPerBaseCalled = varCount / (double)extent;
+						qcList.add("vars.per.base", varsPerBaseCalled);
+					}
 				}
 				catch (JSONException e) {
 
@@ -382,13 +404,7 @@ public class QCJsonReader {
 					novelFrac = 1.0 - knownSnps/snpCount;
 				}
 				
-				try {
-					tstv = variants.getDouble("total.tt.ratio");
-					qcList.add("total.tt.ratio", tstv);
-				}
-				catch (JSONException e) {
-
-				}
+				
 				
 				
 
@@ -411,61 +427,35 @@ public class QCJsonReader {
 			Collections.sort(sortedKeys);
 			int count = qcItems.getValsForMetric( sortedKeys.get(0) ).size();
 		
-			out.println("\nAnalysis type: " + analType + " samples found: " + count);
-			if (count < 10) {
-				out.println("Not enough samples, skipping " + analType);
-				continue;
-			}
+			out.println("\n" + analType + "\n Samples found: " + count);
+			
 			
 			for(String metric : sortedKeys) {
-				out.print(analType + "\t");
-				
-				if (metric.equals("total.snps")) out.print("Total SNPs");				
 				if (metric.equals("total.variants")) out.print("Total variants");
-				if (metric.equals("known.snps")) out.print("Known SNPs");
-				if (metric.equals("total.tt.ratio")) out.print("Overall Ti/Tv");
+				if (metric.equals("vars.per.base")) out.print("Variants per bp targeted");
 				if (metric.equals("mean.coverage")) out.print("Mean coverage");
-				if (metric.equals("raw.reads")) out.print("Total reads");
-				if (metric.equals("bases.above.q30")) out.print("Bases above Q30");
-				if (metric.equals("bases.above.q20")) out.print("Bases above Q20");
-				if (metric.equals("bases.above.q10")) out.print("Bases above Q10");
-				if (metric.equals("frac.above.0")) out.print("Fraction above 0X");
-				if (metric.equals("frac.above.20")) out.print("Fraction above 20X");
-				if (metric.equals("frac.above.50")) out.print("Fraction above 50X");
-				if (metric.equals("percent.dups")) out.print("PCR dups. removed");
-				if (metric.equals("unmapped.reads")) out.print("Unmapped reads");
+				if (metric.equals("no.coverage")) out.print("% Bases with no coverage");
+				if (metric.equals("frac.below.10")) out.print("% Bases < 10 coverage");
 				
-				out.print("\t" + metric + "\t");
+				if (metric.equals("bases.above.q30")) out.print("% Bases above Q30");
+				if (metric.equals("bases.above.q20")) out.print("% Bases above Q20");
+				if (metric.equals("bases.above.q10")) out.print("% Bases above Q10");
+				if (metric.equals("frac.above.0")) out.print("% Fraction above 0X");
+				if (metric.equals("frac.above.20")) out.print("% Fraction above 20X");
+				if (metric.equals("frac.above.50")) out.print("% Fraction above 50X");
+				if (metric.equals("percent.dups")) out.print("% PCR dups. removed");
+				if (metric.equals("reads.on.target")) out.print("% Reads aligning to target");
+				
 				List<Double> vals = qcItems.getValsForMetric(metric);
-				String formattedList = formatQCListVals(vals);
-				out.print(formattedList);
 				
-				if (metric.equals("total.snps")
-						|| metric.equals("total.variants")
-						|| metric.equals("known.tt")
-						|| metric.equals("novel.tt")
-						|| metric.equals("total.tt.ratio")) {
-					out.print("Variant metrics\tvariant.metrics");				
+				Double mean = mean(vals);
+				if (Math.abs(mean)<0.01) {
+					out.println(":\t" + smallFormatter.format(mean));
+				} else {
+					out.println(":\t" + formatter.format(mean));	
 				}
-				if (metric.equals("mean.coverage")) {
-					out.print("Coverage\tfinal.coverage.metrics");
-				}
-				if (metric.equals("raw.reads")) {
-					out.print("Coverage\traw.bam.metrics");
-				}
-				if (metric.equals("percent.dups")) {
-					out.print("BAM Metrics\tNULL");
-				}
-				if (metric.equals("unmapped.reads")) {
-					out.print("BAM Metrics\tNULL");
-				}
-				if (metric.startsWith("bases.above")) {
-					out.print("BAM Metrics\traw.bam.metrics");
-				}
-				if (metric.startsWith("frac.above")) {
-					out.print("Coverage\tNULL");
-				}
-				out.println();
+				
+				
 			}
 		}
 	}
