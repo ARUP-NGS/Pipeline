@@ -46,6 +46,10 @@ public class OncologyUtils extends IOOperator {
 	public void performOperation() throws OperationFailedException,
 			JSONException, IOException {
 		boolean runFailed = false;
+		String samtoolsPath = defaultSamPath;
+		String samAttr = this.getAttribute(SAMTOOLS_PATH);
+		if(samAttr != null)
+			samtoolsPath=samAttr;
 		Logger logger = Logger.getLogger(Pipeline.primaryLoggerName);
 		logger.info("Beginning utilities: Checking Arguments");
 		System.out.println("Beginning utilities: Checking Arguments.");
@@ -131,6 +135,9 @@ public class OncologyUtils extends IOOperator {
 		long mismatchFilterFusionCount = passMappedFusion - passMatchFusion;
 
 		// Get map containing # of reads per contig
+		
+		String commandStr = samtoolsPath + " index " + BamBuffers.get(6).getAbsolutePath();
+		executeCommand(commandStr);
 		Map<String, Long> bamRatioMap = ReadCounter.countReadsByChromosome(
 				(BAMFile) BamBuffers.get(6), 1);
 		Set<String> keysRatio = bamRatioMap.keySet();
@@ -143,7 +150,10 @@ public class OncologyUtils extends IOOperator {
 					+ bamRatioMap.get(key).toString());
 			ratioMap.put(key, bamRatioMap.get(key));
 		}
-
+		
+		String commandStr1 = samtoolsPath + " index " + BamBuffers.get(6).getAbsolutePath();
+		System.out.println("Now executing " + commandStr1);
+		executeCommand(commandStr1);
 		Map<String, Long> bamFusionMap = ReadCounter.countReadsByChromosome(
 				(BAMFile) BamBuffers.get(4), 1);
 		Set<String> keysFusion = bamFusionMap.keySet();
