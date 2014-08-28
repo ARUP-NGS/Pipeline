@@ -126,15 +126,19 @@ public class TestVCFParser {
 				// Check second variant, first alt 
 				if (i == 2) { //first variant has 2 alts
 					Integer pos = parser.getPos();
+					Assert.assertTrue(var.getStart() == pos);
 					Assert.assertTrue(pos == 133978709);
 					
 					String ref = parser.getRef();
+					Assert.assertTrue(var.getRef().equals(ref));
 					Assert.assertTrue(ref.equals("CTC"));
 					
 					String alt = parser.getAlt();
+					Assert.assertTrue(var.getAlt().equals(alt));
 					Assert.assertTrue(alt.equals("CTGTG"));					
 					
 					Boolean hetero = parser.isHetero();
+					Assert.assertTrue(var.isHetero() == hetero);
 					Assert.assertTrue(hetero);
 							
 					Boolean homo = parser.isHomo();
@@ -144,12 +148,14 @@ public class TestVCFParser {
 					Assert.assertFalse(phase);
 												
 					Integer depth = parser.getDepth();
+					Assert.assertTrue(var.getProperty(VariantRec.DEPTH).equals( new Double(depth)));
 					Assert.assertTrue(depth==13);
 
 					Integer varDepth = parser.getVariantDepth();
 					Assert.assertTrue(varDepth==7);
 							
 					Double genotypeQual = parser.getGenotypeQuality();
+					Assert.assertTrue(var.getProperty(VariantRec.GENOTYPE_QUALITY).equals(genotypeQual));
 					Assert.assertTrue(genotypeQual.equals(-1.0));
 							
 					Double vqsr = parser.getVQSR();
@@ -698,6 +704,10 @@ public class TestVCFParser {
 							
 					Boolean homo = parserPanel.isHomo();
 					Assert.assertFalse(homo);
+					
+					boolean hom = (!var.isHetero());
+					Assert.assertFalse(hom);
+					
 				}
 				else if (i == 14) {
 				// Check the fifteenth variant (hom)
@@ -718,6 +728,9 @@ public class TestVCFParser {
 								
 						Boolean homo = parserPanel.isHomo();
 						Assert.assertTrue(homo);
+						
+						boolean hom = (!var.isHetero()); //Test the variant itself
+						Assert.assertTrue(hom);
 					}			
 				else if (i == 15) {
 					// Check the 16th variant (hom)
@@ -729,6 +742,9 @@ public class TestVCFParser {
 									
 							Boolean homo = parserPanel.isHomo();
 							Assert.assertTrue(homo);
+							
+							boolean hom = (!var.isHetero()); //Test the variant itself
+							Assert.assertTrue(hom);
 						}			
 				else if (i == 16) {
 					// Check the 17th variant (hom)
@@ -740,6 +756,9 @@ public class TestVCFParser {
 									
 							Boolean homo = parserPanel.isHomo();
 							Assert.assertTrue(homo);
+							
+							boolean hom = (!var.isHetero()); //Test the variant itself
+							Assert.assertTrue(hom);
 						}		
 					i++;							
 			}

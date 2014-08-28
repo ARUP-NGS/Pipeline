@@ -47,10 +47,7 @@ public class VCFParser implements VariantLineReader {
 	private boolean stripTrailingMatchingBases = true; //defaults to true (i.e. will trim)
 	
 	public VCFParser(File source) throws IOException {
-		setFile(source);
-
-		reader = new BufferedReader(new FileReader(source));
-		parseHeader();
+		setFile(source); //Initializes reader and parses the header information
 	}
 	
 	public VCFParser(VCFFile file) throws IOException {
@@ -64,9 +61,7 @@ public class VCFParser implements VariantLineReader {
 	 * @throws IOException
 	 */
 	public VCFParser(File source, String sampleName) throws IOException {
-		setFile(source);
-		reader = new BufferedReader(new FileReader(source));
-		parseHeader();
+		setFile(source);//Initializes reader and parses the header information
 		
 		if (! sampleIndexes.containsKey(sampleName)) {
 			throw new IllegalArgumentException("Sample " + sampleName + " not found in this vcf.");
@@ -87,6 +82,7 @@ public class VCFParser implements VariantLineReader {
 		headerItems = new HashMap<String, HeaderEntry>();
 		headerProperties = new HashMap<String, String>();
 		sampleIndexes = new HashMap<String, Integer>();
+
 		String line = reader.readLine();
 		while(line != null && (line.startsWith("##") || line.trim().length()==0)) {
 			if (line.startsWith("##INFO") || line.startsWith("##FORMAT")) {
@@ -194,6 +190,8 @@ public class VCFParser implements VariantLineReader {
 	public void setFile(File file) throws IOException {
 		headerItems = null;
 		this.source = file;
+		reader = new BufferedReader(new FileReader(source));
+		parseHeader();
 		//currentLine = reader.readLine(); //EG
 	}
 	
@@ -249,6 +247,9 @@ public class VCFParser implements VariantLineReader {
 	public VariantRec toVariantRec() {
 		if (currentLineToks == null) {
 			return null;
+		}
+		if (headerItems == null || headerProperties == null) {
+			throw new IllegalStateException("No header information, header probably not parsed correctly.");
 		}
 	//	String chr = currentLineToks[0].toUpperCase().replace("CHR","");
 		String chr = getContig();
@@ -315,14 +316,15 @@ public class VCFParser implements VariantLineReader {
 				end-=matches;				
 			}
 		}
-		
-		//Create new variant record
-		VariantRec var = new VariantRec(chr, pos, end, ref, alt);
-		var.setQuality(quality);
 
-		
 		// Create sampleMetrics dictionary containing INFO & FORMAT field data, keyed by annotation
 		sampleMetrics = createSampleMetricsDict(); //Stores sample-specific key=value pairs from VCF entry from FORMAT & INFO, not header	
+
+		
+		//Create new variant record
+		boolean isHet = isHetero();
+		VariantRec var = new VariantRec(chr, pos, end, ref, alt, quality, isHet);
+		var.setQuality(quality);
 
 		// Get certain values					
 		Integer depth = getDepth();
