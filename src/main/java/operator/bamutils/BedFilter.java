@@ -38,6 +38,9 @@ public class BedFilter extends BAMClassifier {
 		if (bedAttr != null) {
 			bedFile = bedAttr;
 		}
+		if(bedFile == null) {
+			throw new OperationFailedException("bedFile wasn't initialized! Something went wrong.", this);
+		}
 		boolean value = readPasses(samRecord);
 		ReturnRecord returnValue = new ReturnRecord(samRecord, value);
 		return returnValue;
@@ -50,7 +53,16 @@ public class BedFilter extends BAMClassifier {
 		if (chrom.contains("CTRL")) {
 			return true;
 		}
-		BufferedReader br = new BufferedReader(new FileReader(bedFile));
+		BufferedReader br = null;
+		//System.out.println("Bedfile location: " + bedFile);
+		try{
+			FileReader fr = new FileReader(bedFile);
+			br = new BufferedReader(fr);
+		}
+		catch (NullPointerException e) {
+			e.printStackTrace();
+			System.out.println(e.toString());
+		}
 		String entry;
 
 		while ((entry = br.readLine()) != null) {

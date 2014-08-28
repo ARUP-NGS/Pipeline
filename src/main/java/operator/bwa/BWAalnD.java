@@ -58,8 +58,8 @@ public class BWAalnD extends IOOperator {
 		String referencePath = reference.getAbsolutePath();
 		FileBuffer reads = this.getInputBufferForClass(FastQFile.class);
 		String readsPath = reads.getAbsolutePath();
-		String command_str = pathToBWA + " aln -t " + threads + " -f " + extra_options
-				+ saiPath + " " + referencePath + " " + readsPath;
+		String command_str = pathToBWA + " aln -t " + threads + " " + extra_options
+				+ " -f " + saiPath + " " + referencePath + " " + readsPath;
 		System.out.println(command_str);
 		executeCommand(command_str);
 
