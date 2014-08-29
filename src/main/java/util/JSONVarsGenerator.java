@@ -40,9 +40,6 @@ public class JSONVarsGenerator {
 	public static JSONObject createJSONVariants(VariantPool variants) throws JSONException{
 		JSONObject jsonResponse = new JSONObject();
 		
-		
-		
-		
 		//Added by Dave 8/22/14
 		if(variants==null){
 			variants = new VariantPool();
@@ -77,6 +74,13 @@ public class JSONVarsGenerator {
 		return jsonResponse;
 	}
 	
+	public static String createEmptyJSONVariants(File destDir) throws JSONException, IOException {
+		String destFilename = "annotated.json.gz";
+		File dest = new File(destDir.getAbsolutePath() + "/" + destFilename);
+		createJSONVariants(new VariantPool(), dest);
+		return destFilename;
+	}
+	
 	/**
 	 * Create a json representation of the variant pool and all of the annotations & properties in
 	 * all of the variants, then write the json to the given file.
@@ -105,7 +109,7 @@ public class JSONVarsGenerator {
 		String destFilename = inputVars.getFilename().replace(".csv", ".json.gz");
 		destFilename = destFilename.replace(".xls", ".json.gz");
 		File dest = new File(destDir.getAbsolutePath() + "/" + destFilename);
-		
+				
 		VariantLineReader varReader = new CSVLineReader(inputVars.getFile());
 
 		VariantPool variants = new VariantPool(varReader);
@@ -165,28 +169,25 @@ public class JSONVarsGenerator {
 				File dest = new File(resultsDir.getAbsolutePath() + "/var/");
 								
 				String annotatedCSV = manifest.getProperty("annotated.vars");
+								
 				//Handles special case for lung panel 
 				if (annotatedCSV == null) {
 					annotatedCSV = manifest.getProperty("annotated.vars.dna");
 				}
 				
+				
 				//Dave changed area
-				if(annotatedCSV.equalsIgnoreCase("NA")){ //in the case of no variants for BCR-ABL
-					destFilename = dest + "empty_annotatedvars.json.gz";
-					VariantPool variants = null;
-					createJSONVariants(variants, dest);
-				}
-				else{
-					File annotatedVarsFile = new File(resultsDir.getAbsolutePath() + "/" + annotatedCSV);
-					if (! annotatedVarsFile.exists()) {
-						System.err.println("Annotated variant file " + annotatedCSV + " is specified in manifest, but does not exist!");
-						continue;
-					}
-					
-					destFilename = JSONVarsGenerator.createJSONVariants(new CSVFile(annotatedVarsFile), dest);
-				}
 				
-				
+				File annotatedVarsFile = new File(resultsDir.getAbsolutePath() + "/" + annotatedCSV);
+		
+				if (annotatedVarsFile.exists()) {
+					destFilename = JSONVarsGenerator.createJSONVariants(new CSVFile(annotatedVarsFile), dest);	
+				}
+				else {
+					//Annotated vars file does not exist, so create an empty JSON variants file
+					destFilename = JSONVarsGenerator.createEmptyJSONVariants(dest);
+				}
+
 				
 				WritableManifest writable = new WritableManifest(manifest);
 				writable.put("json.vars", "var/" + destFilename);
