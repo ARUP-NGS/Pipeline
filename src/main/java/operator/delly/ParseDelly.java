@@ -27,18 +27,22 @@ public class ParseDelly extends IOOperator {
 		try (BufferedReader br = new BufferedReader(new FileReader(inputVCF))) {
 			for (String line; (line = br.readLine()) != null;) {
 				String[] Values = line.split("\t");
+				boolean writeLine = false;
 				try {
 					String QualValue = Values[6];
 					if (QualValue.equals("PASS")) {
-						out.write(line);
+						writeLine = true;
 						TranslocationDetected = true;
 						logger.info("Translocation detected! See "
 								+ this.getOutputBufferForClass(FileBuffer.class)
 										.getAbsolutePath() + " for details.");
 					}
-				} catch (IndexOutOfBoundsException e) {
+				} 
+				catch (IndexOutOfBoundsException e) {
 					continue;
 				}
+				if(writeLine==true)
+					out.write(line);
 			}
 		}
 		catch(Exception e) {
