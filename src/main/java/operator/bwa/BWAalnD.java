@@ -41,6 +41,7 @@ public class BWAalnD extends IOOperator {
 		String extraOptsAttr = this.getAttribute(EXTRA_OPTS);
 		if(extraOptsAttr != null) {
 			extra_options = extraOptsAttr;
+			System.out.println("Extra options: " + extra_options + ".");
 		}
 		
 		String bwaPathAttr = properties.get(PATH);

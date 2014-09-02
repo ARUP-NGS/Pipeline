@@ -24,31 +24,26 @@ public class ParseDelly extends IOOperator {
 		PrintWriter out = new PrintWriter(this.getOutputBufferForClass(
 				FileBuffer.class).getAbsolutePath());
 		logger.info("Now parsing Delly VCF to check for any records passing the quality threshold.");
-		try (BufferedReader br = new BufferedReader(new FileReader(inputVCF))) {
-			for (String line; (line = br.readLine()) != null;) {
-				String[] Values = line.split("\t");
-				boolean writeLine = false;
-				try {
-					String QualValue = Values[6];
-					if (QualValue.equals("PASS")) {
-						writeLine = true;
-						TranslocationDetected = true;
-						logger.info("Translocation detected! See "
-								+ this.getOutputBufferForClass(FileBuffer.class)
-										.getAbsolutePath() + " for details.");
-					}
-				} 
-				catch (IndexOutOfBoundsException e) {
-					continue;
+		BufferedReader br = new BufferedReader(new FileReader(inputVCF));
+		for (String line; (line = br.readLine()) != null;) {
+			String[] Values = line.split("\t");
+			boolean writeLine = false;
+			try {
+				String QualValue = Values[6];
+				if (QualValue.equals("PASS")) {
+					writeLine = true;
+					TranslocationDetected = true;
+					logger.info("Translocation detected! See "
+							+ this.getOutputBufferForClass(FileBuffer.class)
+									.getAbsolutePath() + " for details.");
 				}
-				if(writeLine==true)
-					out.write(line);
+			} 
+			catch (IndexOutOfBoundsException e) {
+				continue;
 			}
-		}
-		catch(Exception e) {
-			out.close();
-			logger.info("Buffered Reader encountered an error " + e.getLocalizedMessage() + " " + e.getMessage());
-		}
+			if(writeLine==true)
+				out.write(line);
+			}
 		out.close();
 		logger.info("Delly parsing complete. Translocation detected: "
 				+ TranslocationDetected.toString() + '.');
