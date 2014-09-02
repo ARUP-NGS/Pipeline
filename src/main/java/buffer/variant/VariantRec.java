@@ -752,17 +752,17 @@ public class VariantRec {
 	public static final String FALSEPOS_PROB = "fp.prob";
 	public static final String TAUFP_SCORE = "taufp.score";
 	public static final String VQSR = "vqsr.score";
-	public static final String EXOMES_FREQ = "exomes5400.frequency";
-	public static final String EXOMES_FREQ_EA = "exomes5400.EA.frequency";
-	public static final String EXOMES_FREQ_AA = "exomes5400.AA.frequency";
+	public static final String EXOMES_FREQ = "exomes6500.frequency";
+	public static final String EXOMES_FREQ_EA = "exomes6500.EA.frequency";
+	public static final String EXOMES_FREQ_AA = "exomes6500.AA.frequency";
 	
-	public static final String EXOMES_EA_HOMREF = "exomes5400.EA.homref";
-	public static final String EXOMES_EA_HET = "exomes5400.EA.het";
-	public static final String EXOMES_EA_HOMALT = "exomes5400.EA.homalt";
+	public static final String EXOMES_EA_HOMREF = "exomes6500.EA.homref";
+	public static final String EXOMES_EA_HET = "exomes6500.EA.het";
+	public static final String EXOMES_EA_HOMALT = "exomes6500.EA.homalt";
 	
-	public static final String EXOMES_AA_HOMREF = "exomes5400.AA.homref";
-	public static final String EXOMES_AA_HET = "exomes5400.AA.het";
-	public static final String EXOMES_AA_HOMALT = "exomes5400.AA.homalt";
+	public static final String EXOMES_AA_HOMREF = "exomes6500.AA.homref";
+	public static final String EXOMES_AA_HET = "exomes6500.AA.het";
+	public static final String EXOMES_AA_HOMALT = "exomes6500.AA.homalt";
 	
 	public static final String HGMD_INFO = "hgmd.info";
 	public static final String SAMPLE_COUNT = "sample.count";	
