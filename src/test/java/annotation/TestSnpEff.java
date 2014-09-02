@@ -61,7 +61,7 @@ public class TestSnpEff extends TestCase {
 			
 			try {
 				Pipeline ppl = new Pipeline(inputFile2, propertiesFile.getAbsolutePath());
-				ppl.setProperty("snpeff.dir", "/home/brendan/snpEff_3_6/");
+				ppl.setProperty("snpeff.dir", snpEffDir.getAbsolutePath());
 				ppl.initializePipeline();
 				ppl.stopAllLogging();
 				
@@ -123,7 +123,7 @@ public class TestSnpEff extends TestCase {
 			try {
 				//This tests the 'complex vars' file
 				Pipeline ppl = new Pipeline(inputFile3, propertiesFile.getAbsolutePath());
-				ppl.setProperty("snpeff.dir", "/home/brendan/snpEff_3_6/");
+				ppl.setProperty("snpeff.dir", snpEffDir.getAbsolutePath());
 				ppl.initializePipeline();
 				ppl.stopAllLogging();
 				
