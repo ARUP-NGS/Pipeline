@@ -24,6 +24,7 @@ public class PindelRunner extends IOOperator {
 	public void performOperation() throws OperationFailedException,
 			JSONException, IOException {
 		
+		final String PINDEL_PATH="pindel.path";
 		String outputPrefix = this.getProjectHome() + "pindelOutput/out";
 		String pathToBamFile = inputBuffers.get(0).getAbsolutePath(); 
 		String pathToBedFile = inputBuffers.get(1).getAbsolutePath(); 
@@ -31,6 +32,11 @@ public class PindelRunner extends IOOperator {
 		String pathToPindel = ""; // Pipeline property - never changes
 		String pathToReference = inputBuffers.get(2).getAbsolutePath(); 
 		String sampleName="currentSample";
+		
+		String pathAttr = this.getAttribute(PINDEL_PATH);
+		if (pathAttr == null) {
+			pathAttr = this.getPipelineProperty(PINDEL_PATH);
+		}
 		
 		int insertSize = 400; // probably should be an attribute
 		String insertSizeString = properties.get(ISIZE);
