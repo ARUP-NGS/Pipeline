@@ -30,7 +30,7 @@ public class PindelRunner extends IOOperator {
 		String pathToConfigFile = this.getProjectHome() + "pindelConfig.txt"; 
 		String pathToPindel = ""; // Pipeline property - never changes
 		String pathToReference = inputBuffers.get(2).getAbsolutePath(); 
-		String sampleName = inputBuffers.get(3).getAbsolutePath(); 
+		String sampleName="currentSample";
 		
 		int insertSize = 400; // probably should be an attribute
 		String insertSizeString = properties.get(ISIZE);
