@@ -184,7 +184,7 @@ public class OncologyUtils extends IOOperator {
 		System.out.println("Now executing " + commandStr2);
 		executeCommand(commandStr2);
 		Map<String, Long> bamRescueMap = ReadCounter.countReadsByChromosome(
-				(BAMFile) BamBuffers.get(9), 1);
+				(BAMFile) BamBuffers.get(9), 0);
 		System.out.println("Grabbing contigs from this bam file: " + BamBuffers.get(9).getAbsolutePath());
 		Set<String> keysRescue = bamRescueMap.keySet();
 		Map<String, Long> rescueMap = new HashMap<String, Long>();
@@ -243,7 +243,7 @@ public class OncologyUtils extends IOOperator {
 			if (ratioMapped != 0) {
 				ratioFrac[i] = (double) ratioCounts[i] / ratioMapped;
 			} else {
-				ratioFrac[i] = -1337; // Dividing by 0 is the devil's business.
+				ratioFrac[i] = -1337; // Dividing by 0 is only for 1337 H4XX0rZ
 				logger.info("The number of reads mapped to the ratio reference is 0, so a nonsense negative number is returned for the fraction.");
 			}
 			System.out.println(Double.toString(ratioFrac[i])
@@ -255,7 +255,7 @@ public class OncologyUtils extends IOOperator {
 			if (rescueMapped != 0) {
 				fusionSplitFrac[i] = (double) fusionSplitCounts[i] / rescueMapped;
 			} else {
-				fusionSplitFrac[i] = -666; // Dividing by zero is only for Ramanujan
+				fusionSplitFrac[i] = -666; // Dividing by zero is the devil's business.
 				logger.info("The number of reads mapped to the rescue reference is 0, so a nonsense negative number is returned for the fraction.");
 			}
 		}
