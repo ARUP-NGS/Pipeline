@@ -48,15 +48,14 @@ public class OncologyUtils extends IOOperator {
 		boolean runFailed = false;
 		String samtoolsPath = defaultSamPath;
 		String samAttr = this.getAttribute(SAMTOOLS_PATH);
-		if(samAttr != null)
-			samtoolsPath=samAttr;
+		if (samAttr != null)
+			samtoolsPath = samAttr;
 		Logger logger = Logger.getLogger(Pipeline.primaryLoggerName);
 		logger.info("Beginning utilities: Checking Arguments");
 		System.out.println("Beginning utilities: Checking Arguments.");
 
 		List<FileBuffer> FastqBuffers = this
-				.getAllInputBuffersForClass(FastQFile.class); // Should contain
-																// 4 files
+				.getAllInputBuffersForClass(FastQFile.class); // Should contain 4 files
 		List<FileBuffer> BamBuffers = this
 				.getAllInputBuffersForClass(BAMFile.class);
 		List<FileBuffer> CustomRefBuffers = this
@@ -68,24 +67,27 @@ public class OncologyUtils extends IOOperator {
 					"4 Fastq files required as input.");
 		}
 
-		if (BamBuffers.size() != 9) {
+		if (BamBuffers.size() != 11) {
 			System.out.println(BamBuffers.size() + " bam files provided.");
-			throw new IllegalArgumentException("9 BAM files required as input.");
+			throw new IllegalArgumentException("11 BAM files required as input.");
 		}
 
-		if (CustomRefBuffers.size() != 2) {
+		if (CustomRefBuffers.size() != 3) {
 			System.out.println(CustomRefBuffers.size()
 					+ " fasta reference files provided.");
 			throw new IllegalArgumentException(
-					"2 fasta reference files required as input.");
+					"3 fasta reference files required as input.");
 		}
 
 		logger.info("Counting reads in Fastq Files");
 		System.out.println("Counting reads in Fastq Files");
-		long Trim90Fq = countLines(FastqBuffers.get(3).getAbsolutePath()) / 4;
 		long InFq = countLines(FastqBuffers.get(0).getAbsolutePath()) / 4;
-		long Trim40Fq = countLines(FastqBuffers.get(1).getAbsolutePath()) / 4;
-		long UnmappedFq = countLines(FastqBuffers.get(2).getAbsolutePath()) / 4;
+		/*
+		long adapterTrimmedFq = countLines(FastqBuffers.get(1)
+				.getAbsolutePath()) / 4;
+		long UnmappedTermFq = countLines(FastqBuffers.get(2).getAbsolutePath()) / 4;
+		long UnmappedFusFq = countLines(FastqBuffers.get(3).getAbsolutePath()) / 4;
+		*/
 
 		/*
 		 * 2. Get list of "chromosomes"
@@ -100,43 +102,52 @@ public class OncologyUtils extends IOOperator {
 		String[] RatioContigs = RatioRef.getContigs();
 		int ratioLength = RatioContigs.length;
 
+		FastaReader FusionRefSplit = null;
+		FusionRefSplit = new FastaReader(CustomRefBuffers.get(2).getFile());
+		String[] FusionSplitContigs = FusionRefSplit.getContigs();
+		int fusionSplitLength = FusionSplitContigs.length;
+		
 		/*
 		 * 3. Count records for all bam files
 		 */
 		logger.info("Counting records in BAM Files");
 		System.out.println("Counting records in BAM Files");
 		// TODO: Create external operator to complete this task
-		CountBAMRecords something = new CountBAMRecords();
-		long ratioMapped = something.CountRecords(BamBuffers.get(0));
+		// TODO: Also, change the logging information
+		CountBAMRecords counter = new CountBAMRecords();
+		long ratioMapped = counter.CountRecords(BamBuffers.get(0));
 		logger.info("Finished counting reads in BAM #1: mapped to ratio reference.");
-		long ratioUnmapped = something.CountRecords(BamBuffers.get(1));
+		long ratioUnmapped = counter.CountRecords(BamBuffers.get(1));
 		logger.info("Finished counting reads in BAM #2: unmapped to ratio reference.");
-		long fusionMapped = something.CountRecords(BamBuffers.get(2));
+		long fusionMapped = counter.CountRecords(BamBuffers.get(2));
 		logger.info("Finished counting reads in BAM #3: mapped to fusion reference");
-		long fusionUnmapped = something.CountRecords(BamBuffers.get(3));
+		long fusionUnmapped = counter.CountRecords(BamBuffers.get(3));
 		logger.info("Finished counting reads in BAM #4: unmapped to fusion reference.");
-		long filterFusion = something.CountRecords(BamBuffers.get(4));
-		logger.info("Finished counting reads in BAM #5");
-		long passMappedRatio = something.CountRecords(BamBuffers.get(5));
-		logger.info("Finished counting reads in BAM #6");
-		long passMatchRatio = something.CountRecords(BamBuffers.get(6));
-		logger.info("Finished counting reads in BAM #7");
-		long passMappedFusion = something.CountRecords(BamBuffers.get(7));
-		logger.info("Finished counting reads in BAM #8");
-		long passMatchFusion = something.CountRecords(BamBuffers.get(8));
-		logger.info("Finished counting reads in BAM #9. Last BAM!");
+		long filterFusion = counter.CountRecords(BamBuffers.get(4));
+		logger.info("Finished counting reads in BAM #5: mapped to fusion reference, passing bed filter.");
+		long passMappedRatio = counter.CountRecords(BamBuffers.get(5));
+		logger.info("Finished counting reads in BAM #6: mapped to ratio reference, passing amplicon coverage filter.");
+		long passMatchRatio = counter.CountRecords(BamBuffers.get(6));
+		logger.info("Finished counting reads in BAM #7: mapped to ratio reference, passing mismatch filter and the amplicon coverage filter.");
+		long passMappedFusion = counter.CountRecords(BamBuffers.get(7));
+		logger.info("Finished counting reads in BAM #8: mapped to fusion reference, passing amplicon coverage filter.");
+		long passMatchFusion = counter.CountRecords(BamBuffers.get(8));
+		logger.info("Finished counting reads in BAM #9: mapped to fusion reference, passing mismatch filter and the amplicon coverage filter.");
+		long rescueMapped = counter.CountRecords(BamBuffers.get(9));
+		logger.info("Finished counting reads in BAM #10: mapped to split fusion reference for rescue step.");
+		long rescueUnmapped = counter.CountRecords(BamBuffers.get(10));
+		logger.info("Finished counting reads in BAM #11: unmapped to all references.");
 
 		long filteredFromFusion = fusionMapped - filterFusion;
-		long short40 = InFq - Trim40Fq;
-		long short90 = UnmappedFq - Trim90Fq;
 		long mapFilterRatioCount = ratioMapped - passMappedRatio;
 		long mismatchFilterRatioCount = passMappedRatio - passMatchRatio;
 		long mapFilterFusionCount = fusionMapped - passMappedFusion;
 		long mismatchFilterFusionCount = passMappedFusion - passMatchFusion;
 
 		// Get map containing # of reads per contig
-		
-		String commandStr = samtoolsPath + " index " + BamBuffers.get(6).getAbsolutePath();
+
+		String commandStr = samtoolsPath + " index "
+				+ BamBuffers.get(6).getAbsolutePath();
 		executeCommand(commandStr);
 		Map<String, Long> bamRatioMap = ReadCounter.countReadsByChromosome(
 				(BAMFile) BamBuffers.get(6), 1);
@@ -150,8 +161,9 @@ public class OncologyUtils extends IOOperator {
 					+ bamRatioMap.get(key).toString());
 			ratioMap.put(key, bamRatioMap.get(key));
 		}
-		
-		String commandStr1 = samtoolsPath + " index " + BamBuffers.get(6).getAbsolutePath();
+
+		String commandStr1 = samtoolsPath + " index "
+				+ BamBuffers.get(4).getAbsolutePath();
 		System.out.println("Now executing " + commandStr1);
 		executeCommand(commandStr1);
 		Map<String, Long> bamFusionMap = ReadCounter.countReadsByChromosome(
@@ -167,6 +179,22 @@ public class OncologyUtils extends IOOperator {
 			fusionMap.put(key, bamFusionMap.get(key));
 		}
 
+		String commandStr2 = samtoolsPath + " index "
+				+ BamBuffers.get(9).getAbsolutePath();
+		System.out.println("Now executing " + commandStr2);
+		executeCommand(commandStr2);
+		Map<String, Long> bamRescueMap = ReadCounter.countReadsByChromosome(
+				(BAMFile) BamBuffers.get(9), 1);
+		System.out.println("Grabbing contigs from this bam file: " + BamBuffers.get(9).getAbsolutePath());
+		Set<String> keysRescue = bamRescueMap.keySet();
+		Map<String, Long> rescueMap = new HashMap<String, Long>();
+		for (String contig : FusionSplitContigs) {
+			rescueMap.put(contig, (long) 0);
+		}
+		for (String key : keysRescue) {
+			rescueMap.put(key, bamRescueMap.get(key));
+		}
+		
 		/*
 		 * 4. Calculate ratios as needed
 		 */
@@ -183,25 +211,24 @@ public class OncologyUtils extends IOOperator {
 				+ " fusionMapped " + fusionMapped + " InFq " + InFq);
 		double fracFilterFusion = (double) filterFusion / InFq;
 		double fracRemovedFilterFusion = (double) filteredFromFusion / InFq;
-		double fracShort40Mapped = (double) short40 / InFq;
-		double fracShort90Mapped = (double) short90 / InFq;
 		double fracUnmapped = (double) fusionUnmapped / InFq;
 
 		long[] fusionCounts = new long[fusionLength];
 		long[] ratioCounts = new long[ratioLength];
+		long[] fusionSplitCounts = new long[fusionSplitLength];
 		double[] fusionFrac = new double[fusionLength];
 		double[] ratioFrac = new double[ratioLength];
+		double[] fusionSplitFrac = new double[fusionSplitLength];
 
 		int houseKeepingReads = 0;
 
 		for (int i = 0; i < fusionLength; i++) {
 			fusionCounts[i] = fusionMap.get(FusionContigs[i]);
-			if(fusionMapped !=0) {
+			if (fusionMapped != 0) {
 				fusionFrac[i] = (double) fusionCounts[i] / fusionMapped;
-			}
-			else {
-				fusionFrac[i]=-1729; //Dividing by zero is only for Ramanujan
-				logger.info("The number of reads mapped to the ratio reference is 0, so a nonsense negative number is returned for the fraction.");
+			} else {
+				fusionFrac[i] = -1729; // Dividing by zero is only for Ramanujan
+				logger.info("The number of reads mapped to the fusion reference is 0, so a nonsense negative number is returned for the fraction.");
 			}
 			if (FusionContigs[i].toUpperCase().contains("CTRL")) {
 				houseKeepingReads += (int) fusionCounts[i];
@@ -213,14 +240,24 @@ public class OncologyUtils extends IOOperator {
 		}
 		for (int i = 0; i < ratioLength; i++) {
 			ratioCounts[i] = ratioMap.get(RatioContigs[i]);
-			if(ratioMapped!=0){
+			if (ratioMapped != 0) {
 				ratioFrac[i] = (double) ratioCounts[i] / ratioMapped;
-			}
-			else {
-				ratioFrac[i] = -1337; //Dividing by 0 is the devil's business.
+			} else {
+				ratioFrac[i] = -1337; // Dividing by 0 is the devil's business.
 				logger.info("The number of reads mapped to the ratio reference is 0, so a nonsense negative number is returned for the fraction.");
 			}
-			System.out.println(Double.toString(ratioFrac[i]) + " is the value of this ratioFrac");
+			System.out.println(Double.toString(ratioFrac[i])
+					+ " is the value of this ratioFrac");
+		}
+		//TODO: Finish loading fusionSplitCounts and fusionSplitFrac
+		for (int i = 0; i < fusionSplitLength; i++) {
+			fusionSplitCounts[i] = rescueMap.get(FusionSplitContigs[i]);
+			if (rescueMapped != 0) {
+				fusionSplitFrac[i] = (double) fusionSplitCounts[i] / rescueMapped;
+			} else {
+				fusionSplitFrac[i] = -666; // Dividing by zero is only for Ramanujan
+				logger.info("The number of reads mapped to the rescue reference is 0, so a nonsense negative number is returned for the fraction.");
+			}
 		}
 
 		// Normalized comparison
@@ -231,8 +268,6 @@ public class OncologyUtils extends IOOperator {
 				if (i % 2 == 0) {
 					double tempVar = ((double) ratioCounts[i] - (double) ratioCounts[i + 1])
 							/ houseKeepingReads;
-					// System.out.println(tempVar +
-					// " is the ratio we're trying to capture.");
 					ratioForRatio[i / 2] = tempVar;
 				}
 			}
@@ -254,14 +289,13 @@ public class OncologyUtils extends IOOperator {
 			RatioCounts3p5p[i] = ratioCounts[2 * i] + ratioCounts[2 * i + 1];
 		}
 
-		/* FOR DEBUGGING
-		for (double value : RatioCounts3p5p) {
-			System.out.println("Value of RatioCounts3p5p is (at this point) "
-					+ Double.toString(value));
-			logger.info("Value of RatioCounts3p5p is (at this point) "
-					+ Double.toString(value));
-		}
-		*/
+		/*
+		 * FOR DEBUGGING for (double value : RatioCounts3p5p) {
+		 * System.out.println("Value of RatioCounts3p5p is (at this point) " +
+		 * Double.toString(value));
+		 * logger.info("Value of RatioCounts3p5p is (at this point) " +
+		 * Double.toString(value)); }
+		 */
 
 		/*
 		 * 5. Write results to JSON Stores results in a Hashmap (keys:
@@ -279,11 +313,6 @@ public class OncologyUtils extends IOOperator {
 		summary.put(
 				"fraction of reads mapped to fusion reference passing fraction filter",
 				fracFilterFusion);
-		summary.put("fraction of reads filtered out for lengths < 40",
-				fracShort40Mapped);
-		summary.put(
-				"fraction of reads unmapped to ratio reference filtered out for lengths < 90",
-				fracShort90Mapped);
 		summary.put("fraction of reads filtered from fusion BAM by location",
 				fracRemovedFilterFusion);
 		summary.put("fraction of unmapped reads", fracUnmapped);
@@ -319,10 +348,6 @@ public class OncologyUtils extends IOOperator {
 		summary.put(
 				"count of reads mapped to fusion reference passing all filters",
 				filterFusion);
-		summary.put("count of reads filtered out for lengths < 40", short40);
-		summary.put(
-				"count of reads unmapped to ratio reference filtered out for lengths < 90",
-				short90);
 		summary.put("count of reads filtered from fusion BAM by location",
 				filteredFromFusion - mapFilterFusionCount
 						- mismatchFilterFusionCount);
@@ -355,17 +380,20 @@ public class OncologyUtils extends IOOperator {
 		// Build rna ratio map
 		Map<String, Object> rnaRatio = new HashMap<String, Object>();
 		rnaRatio = buildFractionCountMap(RatioContigs, ratioCounts, ratioFrac);
-		
-		// Build RNA ratio
+
+		// Build RNA ratio map
 		Map<String, Object> rnaRatioAdjusted = new HashMap<String, Object>();
 		rnaRatioAdjusted = buildFractionCountMap(RatioContigSets,
 				RatioCounts3p5p, ratioForRatio);
-		
+
 		// Build rna fusion map
 		Map<String, Object> rnaFusion = new HashMap<String, Object>();
 		rnaFusion = buildFractionCountMap(FusionContigs, fusionCounts,
 				fusionFrac);
-		List<String>keys2 = new ArrayList<String>(rnaFusion.keySet());
+		
+		//Build rescue step map
+		Map<String, Object> rnaRescue = new HashMap<String, Object>();
+		rnaRescue = buildFractionCountMap(FusionSplitContigs, fusionSplitCounts, fusionSplitFrac);
 
 		// Build final results map to be converted to JSON
 		Map<String, Object> finalResults = new HashMap<String, Object>();
@@ -373,6 +401,7 @@ public class OncologyUtils extends IOOperator {
 		finalResults.put("rna.ratio", rnaRatio);
 		finalResults.put("rna.fusion", rnaFusion);
 		finalResults.put("rna.adjusted.ratio", rnaRatioAdjusted);
+		finalResults.put("rna.rescue", rnaRescue);
 		JSONObject json = new JSONObject(finalResults);
 		// Convert final results to JSON
 		JSONObject summaryjson = new JSONObject(summary);
@@ -383,28 +412,37 @@ public class OncologyUtils extends IOOperator {
 		String fusionStr = fusionjson.toString();
 		JSONObject ratioCalcJson = new JSONObject(rnaRatioAdjusted);
 		String ratioCalcStr = ratioCalcJson.toString();
-		
-		if(ratioStr == null) {
+		JSONObject rescueJson = new JSONObject(rnaRescue);
+		String rescueStr = rescueJson.toString();
+
+		if (ratioStr == null) {
 			throw new OperationFailedException("ratioStr is null. Abort!", this);
 		}
-		if(fusionStr == null) {
-			throw new OperationFailedException("fusionStr is null. Abort!", this);
+		if (fusionStr == null) {
+			throw new OperationFailedException("fusionStr is null. Abort!",
+					this);
 		}
-		if(summaryStr == null) {
-			throw new OperationFailedException("summaryStr is null. Abort!", this);
+		if (summaryStr == null) {
+			throw new OperationFailedException("summaryStr is null. Abort!",
+					this);
 		}
-		if(ratioCalcStr == null) {
-			throw new OperationFailedException("ratioCalcStr is null. Abort!", this);
+		if (ratioCalcStr == null) {
+			throw new OperationFailedException("ratioCalcStr is null. Abort!",
+					this);
+		}
+		if (rescueStr == null) {
+			throw new OperationFailedException("rescueJsonStr is null. Abort!", this);
 		}
 		System.out.println(ratioStr + " is ratio str");
 		System.out.println(fusionStr + " is fusion str");
 		System.out.println(summaryStr + " is summary str");
 		System.out.println(ratioCalcStr + "is ratio calc str");
+		System.out.println(rescueStr + "is rescue str");
 		// System.out.printf( "JSON: %s", json.toString(2) );
 
 		// Get the json string, then compress it to a byte array
 		String str = json.toString();
-		
+
 		// Makes the JSON string human-readable. Requires GSON library.
 		/*
 		 * Gson gson = new GsonBuilder().setPrettyPrinting().create();
