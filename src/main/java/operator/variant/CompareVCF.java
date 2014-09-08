@@ -26,7 +26,7 @@ import buffer.variant.VariantPool;
 import buffer.variant.VariantRec;
 
 import pipeline.Pipeline;
-import util.VCFLineParser;
+import util.vcfParser.VCFParser;
 
 public class CompareVCF extends IOOperator {
 
@@ -58,7 +58,7 @@ public class CompareVCF extends IOOperator {
 	}
 	
 	private int buildVariantMap(VCFFile file, VariantPool vars) throws IOException {
-		VCFLineParser vParser = new VCFLineParser(file.getFile());
+		VCFParser vParser = new VCFParser(file.getFile());
 		int totalVarsCounted = 0;
 		
 		while(vParser.advanceLine()) {
@@ -89,14 +89,14 @@ public class CompareVCF extends IOOperator {
 
 	
 	/**
-	 * Use a VCFLineParser to count the number of heterozygotes in this VCF file
+	 * Use a VCFParser to count the number of heterozygotes in this VCF file
 	 * @param file
 	 * @return
 	 */
 	private int countHets(File file) {
 		int count = 0;
 		try {
-			VCFLineParser vp = new VCFLineParser(file);
+			VCFParser vp = new VCFParser(file);
 			while(vp.advanceLine()) {
 				if (vp.isHetero()) 
 					count++;
