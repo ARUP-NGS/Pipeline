@@ -26,7 +26,7 @@ import buffer.variant.VariantRec;
 import pipeline.Pipeline;
 import util.vcfParser.VCFParser;
 
-public class CompareVCF extends IOOperator {
+public class CompareVCF2 extends IOOperator {
 
 	protected VariantPool variantsA = new VariantPool();
 	protected VariantPool variantsB = new VariantPool();
