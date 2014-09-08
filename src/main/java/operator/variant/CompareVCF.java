@@ -19,12 +19,10 @@ import java.util.logging.Logger;
 
 import operator.IOOperator;
 import operator.OperationFailedException;
-
 import buffer.FileBuffer;
 import buffer.VCFFile;
 import buffer.variant.VariantPool;
 import buffer.variant.VariantRec;
-
 import pipeline.Pipeline;
 import util.vcfParser.VCFParser;
 
@@ -113,12 +111,25 @@ public class CompareVCF extends IOOperator {
 		List<VarPair> perfectMatch = new ArrayList<VarPair>();
 		List<VarPair> difZygote = new ArrayList<VarPair>();
 		List<VarPair> difAlt = new ArrayList<VarPair>();
-		
+		List<VarPair> missingProps = new ArrayList<VarPair>();
+		List<VarPair> diffProps = new ArrayList<VarPair>();
+		List<VarPair> adtlProps = new ArrayList<VarPair>();
+		List<VarPair> missingAnn = new ArrayList<VarPair>();
+		List<VarPair> diffAnn = new ArrayList<VarPair>();
+		List<VarPair> adtlAnn = new ArrayList<VarPair>();
+		double cumulPropDiffs = 0;
+		double cumulAnnDiffs = 0;
+		double cumulPropAdtns = 0;
+		double cumulAnnAdtns = 0;
 		
 		for(String contig : varsA.getContigs()) {
 			List<VariantRec> listA = varsA.getVariantsForContig(contig);
 			for(VariantRec rec : listA) {
 				VariantRec match = varsB.findRecordNoWarn(contig, rec.getStart());
+				double propDiffs = 0;
+				double propMissing = 0;
+				double annDiffs = 0;
+				double annMissing = 0;
 				if (match != null) {
 					VarPair pair = new VarPair();
 					pair.a = rec;
@@ -135,8 +146,77 @@ public class CompareVCF extends IOOperator {
 					else {
 						difAlt.add(pair); //Alt allele does not match
 					}
+					//Compare property entries for shared keys
+					Collection<String> recProps = rec.getPropertyKeys();
+					for(String prop : recProps) {
+						Double recProp = rec.getProperty(prop);
+						if(match.getProperty(prop)!=null){
+							if(recProp != match.getProperty(prop)) {
+								propDiffs += 1;
+							}
+						}
+						else {
+							propMissing += 1;
+						}
+					}
+					if(propDiffs >= 1){
+						output.println("Warning: properties do not match at contig: " + rec.getContig() + " and position: " + rec.getStart()  +  ". Number of differences: " + String.valueOf(propDiffs));
+						diffProps.add(pair);
+						cumulPropDiffs+=propDiffs;
+					}
+					//Count number of properties in match not in rec
+					double propAdtns = 0;
+					for(String matchProp : match.getPropertyKeys()) {
+						boolean present = false;
+						for(String recProp : recProps){
+							if(recProp == matchProp)
+								present = true;
+						}
+						if(present == false) {
+							propAdtns+=1;
+						}
+					}
+					if(propAdtns > 0) {
+						output.println("Warning: additional property in match not present in rec at contig: " + rec.getContig() + " and position: " + rec.getStart() + ". Number missing: " + String.valueOf(propAdtns));
+						cumulPropAdtns += propAdtns;
+						adtlProps.add(pair);
+					}
+					//Compare annotation entries for shared keys
+					Collection<String> recAnn = rec.getAnnotationKeys();
+					for(String ann : recAnn) {
+						Double recAnnotation = rec.getProperty(ann);
+						if(match.getProperty(ann)!=null){
+							if(recAnnotation != match.getProperty(ann)) {
+								ann += 1;
+							}
+						}
+						else {
+							annDiffs += 1;
+						}
+					}
+					if(annDiffs >= 1){
+						output.println("Warning: properties do not match at contig: " + rec.getContig() + " and position: " + rec.getStart()  +  ". Number of differences: " + String.valueOf(annDiffs));
+						diffProps.add(pair);
+						cumulAnnDiffs+=annDiffs;
+						diffAnn.add(pair);
+					}
 					
-					
+					double annAdtns = 0;
+					for(String matchAnn : match.getAnnotationKeys()) {
+						boolean present = false;
+						for(String recAnnot : recAnn){
+							if(recAnnot == matchAnn)
+								present = true;
+						}
+						if(present == false) {
+							annAdtns+=1;
+						}
+					}
+					if(annAdtns > 0) {
+						output.println("Warning: additional annotation in match not present in rec at contig: " + rec.getContig() + " and position: " + rec.getStart() + ". Number missing: " + String.valueOf(annAdtns));
+						cumulAnnAdtns += annAdtns;
+						adtlAnn.add(pair);
+					}
 				}
 			}
 		}
