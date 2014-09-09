@@ -10,7 +10,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Logger;
 
 import json.JSONArray;
@@ -41,6 +43,9 @@ import buffer.variant.VariantRec;
  */
 public class QCtoJSON extends Operator {
 
+	public static final String NM_DEFS = "nm.Definitions";
+	private Set<String> nms = new HashSet<String>();
+	
 	DOCMetrics rawCoverageMetrics = null;
 	DOCMetrics finalCoverageMetrics = null;
 	BAMMetrics rawBAMMetrics = null;
@@ -161,10 +166,12 @@ public class QCtoJSON extends Operator {
 				if(featureFile == null){
 					throw new IOException("PipelineProperty 'feature.file' not defined.");
 				}
+				if (nms != null) {
+					featureLookup.setPreferredNMs(nms);
+				}
 				featureLookup.buildExonMap(new File(featureFile));
 			}
 			catch (IOException ex) {
-				
 				Logger.getLogger(Pipeline.primaryLoggerName).warning("Error opening feature file, can't compute features for low coverage regions. " + ex.getLocalizedMessage());
 				obj.put("error", "Error reading exon features file");
 				return obj.toString();
@@ -342,6 +349,16 @@ public class QCtoJSON extends Operator {
 	@Override
 	public void initialize(NodeList children) {
 		
+		String nmDefs = this.getAttribute(NM_DEFS);
+		if (nmDefs != null) {
+			File nmFile = new File(nmDefs);
+			try {
+				nms = readNMMap(nmFile);
+			} catch (IOException e) {
+				throw new IllegalArgumentException("Could not parse NM Defs file: " + e.getLocalizedMessage());
+			}
+		}
+		
 		
 		for(int i=0; i<children.getLength(); i++) {
 			Node iChild = children.item(i);
@@ -387,6 +404,8 @@ public class QCtoJSON extends Operator {
 					noCallCSV = (CSVFile)obj;
 				}
 				
+				
+				
 				// ?
 			}
 		}
@@ -401,4 +420,24 @@ public class QCtoJSON extends Operator {
 		
 	}
 
+	private Set<String> readNMMap(File file) throws IOException{
+		BufferedReader br;
+			br = new BufferedReader(new FileReader(file));
+			String line;
+			HashSet<String> nms = new HashSet<String>();
+			
+			while((line = br.readLine()) != null){
+				if (line.length()==0)
+					continue;
+				
+				String[] values = line.split("\t");
+				if (values.length != 2) {
+					Logger.getLogger(Pipeline.primaryLoggerName).warning("Could not parse preferred NM# from line: " + line);
+					continue;
+				}
+				nms.add(values[1].toUpperCase().trim());
+			}
+			br.close();
+			return nms;
+		}
 }
