@@ -3,17 +3,21 @@ package operator.pindel;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.List;
+import java.util.logging.Logger;
 
 import json.JSONException;
 import operator.IOOperator;
 import operator.OperationFailedException;
+import pipeline.Pipeline;
 import buffer.BAMFile;
 
 public class PindelRunner extends IOOperator {
 
 	public static final String ISIZE = "insert.size";
 	public static final String FILTERTHRESHOLD = "filter.threshold";
-
+	public static final String PINDEL_PATH="pindel.path";
+	
 	@Override
 	public boolean requiresReference() {
 		return true;
@@ -23,7 +27,7 @@ public class PindelRunner extends IOOperator {
 	public void performOperation() throws OperationFailedException,
 			JSONException, IOException {
 		
-		final String PINDEL_PATH="pindel.path";
+		
 		String outputPrefix = this.getProjectHome() + "pindelOutput/out";
 		//String pathToBamFile = inputBuffers.get(0).getAbsolutePath();
 		BAMFile bam = (BAMFile)getInputBufferForClass(BAMFile.class);
@@ -31,13 +35,12 @@ public class PindelRunner extends IOOperator {
 		
 		String pathToBedFile = inputBuffers.get(1).getAbsolutePath(); 
 		String pathToConfigFile = this.getProjectHome() + "pindelConfig.txt"; 
-		String pathToPindel = ""; // Pipeline property - never changes
 		String pathToReference = inputBuffers.get(2).getAbsolutePath(); 
 		String sampleName="currentSample";
 		
-		String pathAttr = this.getAttribute(PINDEL_PATH);
-		if (pathAttr == null) {
-			pathAttr = this.getPipelineProperty(PINDEL_PATH);
+		String pathToPindel = this.getAttribute(PINDEL_PATH);
+		if (pathToPindel == null) {
+			pathToPindel = this.getPipelineProperty(PINDEL_PATH);
 		}
 		
 		int insertSize = 400; // probably should be an attribute
@@ -56,24 +59,29 @@ public class PindelRunner extends IOOperator {
 			createConfigFile(sampleName, pathToBamFile, insertSize,
 					pathToConfigFile);
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			throw new OperationFailedException(e.getLocalizedMessage(), this);
 		}
 
-		new File(this.getProjectHome() + "/pindelOutput");
+		File outputDir = new File(this.getProjectHome() + "/pindelOutput");
+		outputDir.mkdirs(); //Actually create the directory on the filesystem
 
-		String command = pathToPindel + " -f " + pathToReference + " -i "
-				+ pathToConfigFile + " -o " + outputPrefix + " -j "
-				+ pathToBedFile;
-
+		String command = pathToPindel + 
+				" -f " + pathToReference + 
+				" -i " + pathToConfigFile + 
+				" -o " + outputPrefix +
+				//" -T 1 " + //this.getPipelineOwner().getThreadCount() +
+				" -j " + pathToBedFile +
+				" -L " + this.getProjectHome() + "/pindel.log ";
+		Logger.getLogger(Pipeline.primaryLoggerName).info("Pindel operator is executing command " + command);
 		executeCommand(command); // run pindel
 
 		// Create PindelFolderFilter
 		// Produce Pindel output?
+		Logger.getLogger(Pipeline.primaryLoggerName).info("Pindel run completed, parsing results");
 		PindelFolderFilter folderFilter = new PindelFolderFilter(outputPrefix,
 				filterThreshold, pathToReference, pathToPindel);
-
+		List<PindelResult> results = folderFilter.getPindelResults();
 		// Produce VarViewer output?
 	}
 
@@ -81,8 +89,8 @@ public class PindelRunner extends IOOperator {
 			int insertSize, String pathToConfigFile) throws Exception {
 		
 			PrintWriter writer = new PrintWriter(pathToConfigFile, "UTF-8");
-			writer.println(sampleName + "\t" + pathToBamFile + "\t"
-					+ insertSize);
+			writer.println(pathToBamFile + "\t"
+					+ insertSize + "\t" + sampleName);
 			writer.close();
 		
 

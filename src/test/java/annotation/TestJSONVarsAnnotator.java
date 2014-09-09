@@ -19,6 +19,7 @@ public class TestJSONVarsAnnotator extends TestCase {
 		
 		VariantRec varA = new VariantRec("1", 10, 11, "A", "G", 100.0, true);
 		varA.addProperty(VariantRec.POP_FREQUENCY, 0.1);
+		varA.addProperty(VariantRec.EXOMES_FREQ, 0.123);
 		varA.addAnnotation(VariantRec.CDOT, "c.A450T");
 		varA.addAnnotation(VariantRec.GENE_NAME, "BANG");
 		pool.addRecord(varA);
@@ -81,12 +82,12 @@ public class TestJSONVarsAnnotator extends TestCase {
 			if (objD == null) Assert.assertTrue(false);
 			
 			Assert.assertTrue(objA.getDouble("pop.freq")==0.1);
-			Assert.assertTrue(objA.has("exomes5400.frequency"));
+			Assert.assertTrue(objA.has("exomes6500.frequency"));
 			Assert.assertEquals(objA.getString("gene"), "BANG");
 			Assert.assertTrue(objA.has("zygosity"));
 			Assert.assertTrue(objB.getDouble("pop.freq")==0.2);
 			Assert.assertTrue(objC.getDouble("pop.freq")==0.5);
-			Assert.assertTrue(objD.getDouble("exomes5400.frequency")==0.25);
+			Assert.assertTrue(objD.getDouble("exomes6500.frequency")==0.25);
 			Assert.assertEquals(objD.getString("gene"), "BLAH");
 			
 		} catch (JSONException e) {
@@ -98,3 +99,4 @@ public class TestJSONVarsAnnotator extends TestCase {
 	}
 
 }
+

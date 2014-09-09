@@ -244,6 +244,9 @@ public abstract class IOOperator extends Operator {
 			//we by default capture the error stream here and write it to System.err to avoid hangs. s
 			final Thread errConsumer = new StringPipeHandler(p.getErrorStream(), System.err);
 			errConsumer.start();
+			//Apparently, same goes for std out, if we dont capture and redirect it we can encounter a hang
+			final Thread outConsumer = new StringPipeHandler(p.getInputStream(), System.out);
+			outConsumer.start();
 			
 			//If runtime is going down, destroy the process so it won't become orphaned
 			Runtime.getRuntime().addShutdownHook(new Thread() {
@@ -251,13 +254,14 @@ public abstract class IOOperator extends Operator {
 					//System.err.println("Invoking shutdown thread, destroying task with command : " + command);
 					p.destroy();
 					errConsumer.interrupt();
+					outConsumer.interrupt();
 				}
 			});
 
 			
-			
 			try {
-				if (p.waitFor() != 0) {
+				int exitVal =p.waitFor(); 
+				if (exitVal != 0) {
 					if(permitNonZero==false) {
 						throw new OperationFailedException("Task terminated with nonzero exit value : " + System.err.toString() + " command was: " + command, this);
 					}
@@ -265,6 +269,8 @@ public abstract class IOOperator extends Operator {
 						Logger.getLogger(Pipeline.primaryLoggerName).info("Task terminated with nonzero exit value: " + System.err.toString() + " command was: " + command);
 						Logger.getLogger(Pipeline.primaryLoggerName).info("Settings: Nonzero exit status permitted. Continuing Pipeline.");
 					}
+				} else {
+					Logger.getLogger(Pipeline.primaryLoggerName).info("Task completed successfully: " + command);
 				}
 			} catch (InterruptedException e) {
 				throw new OperationFailedException("Task was interrupted : " + System.err.toString() + "\n" + e.getLocalizedMessage(), this);

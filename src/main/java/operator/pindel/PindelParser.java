@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 public class PindelParser {
 	private BufferedReader in;
@@ -106,5 +107,9 @@ public class PindelParser {
 		for (PindelResult temp : subset) {
 			temp.printSummary();
 		}
+	}
+	
+	public List<PindelResult> getResults() {
+		return resultsList;
 	}
 }
