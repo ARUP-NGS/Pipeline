@@ -1,14 +1,13 @@
 package operator.pindel;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
 
 import json.JSONException;
 import operator.IOOperator;
 import operator.OperationFailedException;
+import buffer.BAMFile;
 
 public class PindelRunner extends IOOperator {
 
@@ -26,7 +25,10 @@ public class PindelRunner extends IOOperator {
 		
 		final String PINDEL_PATH="pindel.path";
 		String outputPrefix = this.getProjectHome() + "pindelOutput/out";
-		String pathToBamFile = inputBuffers.get(0).getAbsolutePath(); 
+		//String pathToBamFile = inputBuffers.get(0).getAbsolutePath();
+		BAMFile bam = (BAMFile)getInputBufferForClass(BAMFile.class);
+		String pathToBamFile = bam.getAbsolutePath();
+		
 		String pathToBedFile = inputBuffers.get(1).getAbsolutePath(); 
 		String pathToConfigFile = this.getProjectHome() + "pindelConfig.txt"; 
 		String pathToPindel = ""; // Pipeline property - never changes
@@ -50,8 +52,14 @@ public class PindelRunner extends IOOperator {
 			filterThreshold = Integer.parseInt(filterString);
 		}
 
-		createConfigGile(sampleName, pathToBamFile, insertSize,
-				pathToConfigFile);
+		try {
+			createConfigFile(sampleName, pathToBamFile, insertSize,
+					pathToConfigFile);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			throw new OperationFailedException(e.getLocalizedMessage(), this);
+		}
 
 		new File(this.getProjectHome() + "/pindelOutput");
 
@@ -69,20 +77,14 @@ public class PindelRunner extends IOOperator {
 		// Produce VarViewer output?
 	}
 
-	private void createConfigGile(String sampleName, String pathToBamFile,
-			int insertSize, String pathToConfigFile) {
-		try {
+	private void createConfigFile(String sampleName, String pathToBamFile,
+			int insertSize, String pathToConfigFile) throws Exception {
+		
 			PrintWriter writer = new PrintWriter(pathToConfigFile, "UTF-8");
 			writer.println(sampleName + "\t" + pathToBamFile + "\t"
 					+ insertSize);
 			writer.close();
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (UnsupportedEncodingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		
 
 	}
 

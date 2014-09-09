@@ -12,9 +12,27 @@ public class CisTransResult implements Serializable {
 	Double alt2Only;
 	Double bothAlts;
 	Double misc;
-	Double transFrac;
-	Double cisFrac;
+	Double oldTransFrac;
+	Double oldCisFrac;
+	Double newTransFrac;
+	Double newCisFrac;
 	
+	public Double getNewTransFrac() {
+		return newTransFrac;
+	}
+
+	public void setNewTransFrac(Double newTransFrac) {
+		this.newTransFrac = newTransFrac;
+	}
+
+	public Double getNewCisFrac() {
+		return newCisFrac;
+	}
+
+	public void setNewCisFrac(Double newCisFrac) {
+		this.newCisFrac = newCisFrac;
+	}
+
 	public boolean isFailed() {
 		return failed;
 	}
@@ -31,20 +49,20 @@ public class CisTransResult implements Serializable {
 		this.failed = failed;
 	}
 	
-	public Double getTransFrac() {
-		return transFrac;
+	public Double getOldTransFrac() {
+		return oldTransFrac;
 	}
 
-	public void setTransFrac(Double transFrac) {
-		this.transFrac = transFrac;
+	public void setOldTransFrac(Double transFrac) {
+		this.oldTransFrac = transFrac;
 	}
 
-	public Double getCisFrac() {
-		return cisFrac;
+	public Double getOldCisFrac() {
+		return oldCisFrac;
 	}
 
-	public void setCisFrac(Double cisFrac) {
-		this.cisFrac = cisFrac;
+	public void setOldCisFrac(Double cisFrac) {
+		this.oldCisFrac = cisFrac;
 	}
 
 	

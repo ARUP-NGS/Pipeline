@@ -152,6 +152,10 @@ public class CisTransClassifier  {
 				}
 				inputBAM.close();
 				
+				
+				double minAlt = Math.min(alt1Only, alt2Only);
+				
+				
 				CisTransResult result = new CisTransResult();
 				if (readCov == 0) {
 					result.setFailed(true);
@@ -165,8 +169,15 @@ public class CisTransClassifier  {
 					result.setAlt2Only(new Double((alt2Only/readCov)*100) );
 					result.setBothAlts(new Double((bothAlts/readCov)*100) );
 					result.setMisc(new Double((misc/readCov)*100) );
-					result.setTransFrac(new Double(( (alt1Only+alt2Only)/readCov)*100));
-					result.setCisFrac(new Double((bothAlts/readCov)*100));
+					
+					//Newer version: Use twice the minimum alt frequency
+					result.setNewCisFrac(new Double( bothAlts/(bothAlts + 2.0*minAlt) *100));
+					result.setNewTransFrac(new Double( 2.0*minAlt/(bothAlts+2.0*minAlt) *100));
+					
+					
+					//Older version
+					result.setOldTransFrac(new Double(( (alt1Only+alt2Only)/readCov)*100));
+					result.setOldCisFrac(new Double((bothAlts/readCov)*100));
 				}
 				return result;
 

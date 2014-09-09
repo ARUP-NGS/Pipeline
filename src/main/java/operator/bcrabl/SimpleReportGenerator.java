@@ -176,15 +176,28 @@ public class SimpleReportGenerator {
 		}
 		else {
 			
-			double rawCis = result.getCisFrac();
-			double rawTrans = result.getTransFrac();
-			double normalizedCis = rawCis / (rawCis + rawTrans);
+//			Older version			
+//			double rawCis = result.getOldCisFrac();
+//			double rawTrans = result.getOldTransFrac();
+//			double normalizedCis = rawCis / (rawCis + rawTrans);
+//			
+//			if (normalizedCis > 0.8) {
+//				return "in cis with " + otherVar.getAnnotation(VariantRec.PDOT).replace("p.", "");
+//			}
+//			
+//			if (normalizedCis < 0.2) {
+//				return "in trans with " + otherVar.getAnnotation(VariantRec.PDOT).replace("p.", "");
+//			}
 			
-			if (normalizedCis > 0.8) {
+			
+			//Newer algorithm
+			double cis = result.getNewCisFrac();
+			double trans = result.getNewCisFrac();
+			if (cis > 0.8) {
 				return "in cis with " + otherVar.getAnnotation(VariantRec.PDOT).replace("p.", "");
 			}
 			
-			if (normalizedCis < 0.2) {
+			if (trans > 0.8) {
 				return "in trans with " + otherVar.getAnnotation(VariantRec.PDOT).replace("p.", "");
 			}
 			
