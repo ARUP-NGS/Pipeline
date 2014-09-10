@@ -44,7 +44,7 @@ import buffer.variant.VariantRec;
 public class QCtoJSON extends Operator {
 
 	public static final String NM_DEFS = "nm.Definitions";
-	private Set<String> nms = new HashSet<String>();
+	private Set<String> nms = null;
 	
 	DOCMetrics rawCoverageMetrics = null;
 	DOCMetrics finalCoverageMetrics = null;
@@ -166,10 +166,14 @@ public class QCtoJSON extends Operator {
 				if(featureFile == null){
 					throw new IOException("PipelineProperty 'feature.file' not defined.");
 				}
+				File features = new File(featureFile);
+				if (!features.exists()) {
+					throw new IOException("Feature file " + features.getAbsolutePath() + " does not exist!");
+				}
 				if (nms != null) {
 					featureLookup.setPreferredNMs(nms);
 				}
-				featureLookup.buildExonMap(new File(featureFile));
+				featureLookup.buildExonMap(features);
 			}
 			catch (IOException ex) {
 				Logger.getLogger(Pipeline.primaryLoggerName).warning("Error opening feature file, can't compute features for low coverage regions. " + ex.getLocalizedMessage());

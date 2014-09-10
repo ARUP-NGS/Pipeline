@@ -40,7 +40,7 @@ public class ExonLookupService extends AbstractIntervalContainer {
 		line = reader.readLine(); //Skip first line
 		while(line != null) {
 			String[] toks = line.split("\t");
-			String contig = toks[0].replace("chr", "");
+			String contig = toks[0].replace("chr", ""); 
 			
 			//input is in bed (0-based) coords, so we switch to 1-based when we read in
 			int start = Integer.parseInt(toks[1])+1;
@@ -69,14 +69,14 @@ public class ExonLookupService extends AbstractIntervalContainer {
 			
 			String desc = geneName + "(" + nmInfo + ") " + exonLoc;
 			
-			if (preferredNMs == null ||(preferredNMs != null && preferredNMs.contains(nmInfo))) {
+			if (preferredNMs == null ||(preferredNMs != null && preferredNMs.size()>0 && preferredNMs.contains(nmInfo))) {
 				addInterval(contig, start, end, desc);
 			}
 			
 			line = reader.readLine();
 		}
 		
-		reader.close();
+		reader.close(); //iouyoiu
 		
 		//Sort all intervals within contigs by start position. 
 		if (allIntervals != null) {
