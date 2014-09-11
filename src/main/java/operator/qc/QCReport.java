@@ -937,9 +937,7 @@ public class QCReport extends Operator {
 											features = featureLookup.getIntervalObjectsForRange(contig, (int)startPos, (int)endPos);							
 										}
 										String featureStr = mergeStrings(features);
-										if (length > 1 && (featureStr.contains("exon"))) {
-											regions.add(Arrays.asList(new String[]{"chr" + toks[0] + ":" + toks[1] + " - " + toks[2], "" + length, cause, featureStr}) );
-										}
+										regions.add(Arrays.asList(new String[]{"chr" + toks[0] + ":" + toks[1] + " - " + toks[2], "" + length, cause, featureStr}) );
 										noCallPositions += length;
 										noCallIntervals++;
 									} catch (NumberFormatException nfe) {

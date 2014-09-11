@@ -70,7 +70,7 @@ public class PindelRunner extends IOOperator {
 				" -f " + pathToReference + 
 				" -i " + pathToConfigFile + 
 				" -o " + outputPrefix +
-				" -T " + this.getPipelineOwner().getThreadCount() +
+				//" -T " + this.getPipelineOwner().getThreadCount() +
 				" -j " + pathToBedFile +
 				" -L " + this.getProjectHome() + "/pindel.log ";
 		Logger.getLogger(Pipeline.primaryLoggerName).info("Pindel operator is executing command " + command);
