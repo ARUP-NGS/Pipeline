@@ -192,7 +192,7 @@ public class SimpleReportGenerator {
 			
 			//Newer algorithm
 			double cis = result.getNewCisFrac();
-			double trans = result.getNewCisFrac();
+			double trans = result.getNewTransFrac();
 			if (cis > 80.0) {
 				return "in cis with " + otherVar.getAnnotation(VariantRec.PDOT).replace("p.", "");
 			}
