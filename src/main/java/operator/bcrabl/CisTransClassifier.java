@@ -106,7 +106,11 @@ public class CisTransClassifier  {
 				SAMRecord samRecord = sit.next();
 				while(samRecord != null) {
 					mapped = new MappedRead(samRecord);
-
+					String readName = samRecord.getReadName();
+					if (readName.contains("00460:01294")) {
+						int y=5; 
+					}
+					
 					// If within distance, loop through reads and for each one that spans
 					// both positions, count how many fit into one of four categories:
 					// 1. Variants A and B on the read
@@ -116,14 +120,17 @@ public class CisTransClassifier  {
 
 					if(mapped.containsPosition(var1Pos) && mapped.containsPosition(var2Pos)
 							&& mapped.getMappingQuality() >= requiredMappingQual
-							&& mapped.getQualityAtReferencePos(var1Pos) >= requiredBaseQual
-							&& mapped.getQualityAtReferencePos(var2Pos) >= requiredBaseQual){
+							&& ((mapped.getBaseAtReferencePos(var1Pos)<0) || (mapped.getQualityAtReferencePos(var1Pos) >= requiredBaseQual) )
+							&& ((mapped.getBaseAtReferencePos(var2Pos)<0) || (mapped.getQualityAtReferencePos(var2Pos) >= requiredBaseQual))){
 
 						readCov++;
 
-						baseAtRef1 = (char) mapped.getBaseAtReferencePos(var1Pos);
-						baseAtRef2 = (char) mapped.getBaseAtReferencePos(var2Pos);
-
+						baseAtRef1 = mapped.getBaseAtReferencePos(var1Pos)>-1 ? (char) mapped.getBaseAtReferencePos(var1Pos) : '-';
+						baseAtRef2 = mapped.getBaseAtReferencePos(var2Pos)>-1 ? (char) mapped.getBaseAtReferencePos(var2Pos) : '-';
+						
+						
+							 
+								
 						if(baseAtRef1 == var1Ref && baseAtRef2 == var2Ref){
 							bothRefs++;
 						}
