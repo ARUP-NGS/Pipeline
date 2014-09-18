@@ -11,6 +11,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import operator.OperationFailedException;
 import operator.annovar.Annotator;
@@ -174,8 +176,28 @@ public class SnpEffGeneAnnotate extends Annotator {
 				topRank = infoRank;
 			}
 		}
+
+		// based on the top hit, find the appropriate cdot
+		// make map of infolist index vs cdot value but only for the transcript of top hit
+		// choose cdot based on:
+			// something is better than nothing
+			// intronic or UTR is better than coding (because these will be most likely to be based on the reference transcript and not the variant)
+		String bestCdot = "";
+		Pattern p = Pattern.compile("[+-*]");
+		for(SnpEffInfo info : infoList) {
+			if (info.transcript == topHit.transcript && info.cDot != null && info.cDot != "") {
+				Matcher bestMatch = p.matcher(bestCdot);
+				Matcher nextMatch = p.matcher(info.cDot);
+				if (nextMatch.find() && ! bestMatch.find()) {
+					bestCdot = info.cDot;
+				} else if (bestCdot == "") {
+					bestCdot = info.cDot;
+				}
+			}
+		}
+
 		
-		appendAnnotation(var, VariantRec.CDOT, topHit.cDot);
+		appendAnnotation(var, VariantRec.CDOT, bestCdot);
 		appendAnnotation(var, VariantRec.PDOT, topHit.pDot);
 		appendAnnotation(var, VariantRec.EXON_NUMBER, topHit.exon);
 		appendAnnotation(var, VariantRec.NM_NUMBER, topHit.transcript);
@@ -191,12 +213,14 @@ public class SnpEffGeneAnnotate extends Annotator {
 		if (changeType == null || changeType.length()==0) {
 			return 0;
 		}
+		
+		//TODO change all text to reflect snpEff version 4.0
 		if (changeType.equals("INTERGENIC") || changeType.contains("UPSTREAM") || changeType.contains("DOWNSTREAM")) {
 			return 0;
 		}
 		//Splice is bad since there's no CDot or PDot associated with it. Prefer INTRON instead.
 				if (changeType.startsWith("SPLICE")) {
-					return 0;
+					return 3; // changed from 0 
 				}
 		if (changeType.contains("UTR")) {
 			return 1;
@@ -208,7 +232,7 @@ public class SnpEffGeneAnnotate extends Annotator {
 			return 2;
 		}
 		if (changeType.startsWith("NON_SYNONYMOUS")) {
-			return 3;
+			return 4; // changed from 3
 		}
 		
 		
