@@ -27,6 +27,16 @@ public class DOCMetrics extends FileBuffer implements JSONString {
 	
 	@Override
 	public String toJSONString() {
+		JSONObject obj = toJSONObject();
+		if (obj == null) {
+			return null;
+		}
+		else {
+			return obj.toString();
+		}
+	}
+	
+	public JSONObject toJSONObject() {
 		JSONObject obj = null;
 		try {
 			obj = new JSONObject();
@@ -41,13 +51,9 @@ public class DOCMetrics extends FileBuffer implements JSONString {
 			e.printStackTrace();
 		}
 		
-		if (obj == null)
-			return null;
-		else 
-			return obj.toString();
+		return obj;
 	}
 	
-
 	public double[] getCoverageProportions() {
 		return coverageProportions;
 	}

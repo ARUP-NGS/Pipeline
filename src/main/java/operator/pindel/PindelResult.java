@@ -1,26 +1,35 @@
 package operator.pindel;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+/**
+ * A single structural variation detected by Pindel, typically parsed using PindelParser
+ * from a Pindel output directory
+ * @author brendan
+ *
+ */
 public class PindelResult {
-	// Object starts with 100 pound symbols, but we won't save those, just use
-	// them as a delimeter
+	
 
 	// First row of data, given 1 line for each field, including comments for
 	// unsaved data
 	private int index;
 	private int finalIndex;
 	private String varType;
-	private int SVLength;
+	private int svLength;
 	// Always an NT field comes next, so not saved
-	private int NTLength; //
-	private String NTSeq;
+	private int ntLength; //
+	private String ntSeq;
 	// Text "ChrID" always found here
 	private String ChrID;
 	// Text BP always found here
-	private int BPStart;
-	private int BPEnd;
+	private int bpStart;
+	private int bpEnd;
 	// Always BP_range
-	private int BPRangeStart;
-	private int BPRangeEnd;
+	private int bpRangeStart;
+	private int bpRangeEnd;
 	// Always Supports
 	private int supportReads;
 	private int uniqReads;
@@ -42,6 +51,8 @@ public class PindelResult {
 	private int[] sampleCounts;
 	private String[] readLines;
 
+	private List<String> featureAnnotations = new ArrayList<String>();
+	
 	public PindelResult(final String[] entryLines) {
 		// System.out.println(entryLines[0]);
 		String[] bits = entryLines[0].split("\t");
@@ -52,27 +63,27 @@ public class PindelResult {
 
 		temp = bits[1].split(" ");
 		varType = temp[0];
-		SVLength = Integer.parseInt(temp[1]);
+		svLength = Integer.parseInt(temp[1]);
 
 		temp = bits[2].split(" ");
 		// Always an NT field comes next, so not saved
 		// System.out.println("bad line is "+bits[2] + "in " + index);
-		NTLength = Integer.parseInt(temp[1]); //
-		NTSeq = temp[2];
+		ntLength = Integer.parseInt(temp[1]); //
+		ntSeq = temp[2];
 
 		temp = bits[3].split(" ");
 		// Text "ChrID" always found here
-		ChrID = temp[1];
+		ChrID = temp[1].toUpperCase().replace("CHR", "");
 
 		temp = bits[4].split(" ");
 		// Text BP always found here
-		BPStart = Integer.parseInt(temp[1]);
-		BPEnd = Integer.parseInt(bits[5]);
+		bpStart = Integer.parseInt(temp[1]);
+		bpEnd = Integer.parseInt(bits[5]);
 
 		temp = bits[6].split(" ");
 		// Always BP_range
-		BPRangeStart = Integer.parseInt(temp[1]);
-		BPRangeEnd = Integer.parseInt(bits[7]);
+		bpRangeStart = Integer.parseInt(temp[1]);
+		bpRangeEnd = Integer.parseInt(bits[7]);
 
 		temp = bits[8].split(" ");
 		// Always Supports
@@ -123,13 +134,30 @@ public class PindelResult {
 		// System.out.println("Result created, index " + index);
 	}
 
+	public void addFeatureAnnotation(String anno) {
+		featureAnnotations.add(anno);
+	}
+	
+	public List<String> getAllAnnotations() {
+		return Collections.unmodifiableList(featureAnnotations);
+	}
+	
+	public String toShortString() {
+		String msg = varType + " " + ChrID + ":" + bpStart + "-" + bpEnd;
+		for(String feat : featureAnnotations) {
+			msg = msg + "\t" + feat;
+		}
+		
+		return msg;
+	}
+	
 	public String toString() {
 		String total = "";
 		int count = 0;
-		String firstLine = index + "\t" + varType + " " + SVLength + "\t"
-				+ "NT" + " " + NTLength + " " + NTSeq + "\t" + "ChrID" + " "
-				+ ChrID + "\t" + "BP" + " " + BPStart + "\t" + BPEnd + "\t"
-				+ "BP_range" + " " + BPRangeStart + "\t" + BPRangeEnd + "\t"
+		String firstLine = index + "\t" + varType + " " + svLength + "\t"
+				+ "NT" + " " + ntLength + " " + ntSeq + "\t" + "ChrID" + " "
+				+ ChrID + "\t" + "BP" + " " + bpStart + "\t" + bpEnd + "\t"
+				+ "BP_range" + " " + bpRangeStart + "\t" + bpRangeEnd + "\t"
 				+ "Supports" + " " + supportReads + "\t" + uniqReads + "\t"
 				+ "+" + " " + upReads + "\t" + upUniqReads + "\t" + "-" + " "
 				+ downReads + "\t" + downUniqReads + "\t" + "S1" + " "
@@ -158,7 +186,7 @@ public class PindelResult {
 	}
 
 	public int getSVLength() {
-		return SVLength;
+		return svLength;
 	}
 
 	public int getIndex() {
@@ -170,11 +198,11 @@ public class PindelResult {
 	}
 
 	public int getRangeStart() {
-		return BPRangeStart;
+		return bpRangeStart;
 	}
 
 	public int getRangeEnd() {
-		return BPRangeEnd;
+		return bpRangeEnd;
 	}
 
 	public int getSupportReads() {
@@ -187,7 +215,7 @@ public class PindelResult {
 			System.out.println("Index match");
 			if (ChrID.equals(next.getChromo())) {
 				System.out.println("Chromosome match");
-				if (Math.abs(BPRangeStart - next.getRangeStart()) < 100) {
+				if (Math.abs(bpRangeStart - next.getRangeStart()) < 100) {
 					System.out.println("Same found at " + index);
 					return true;
 				}
@@ -199,23 +227,23 @@ public class PindelResult {
 
 	public void add(PindelResult next) {
 		finalIndex = next.getIndex();
-		if (SVLength < next.getSVLength()) {
-			SVLength = next.getSVLength();
+		if (svLength < next.getSVLength()) {
+			svLength = next.getSVLength();
 		}
 
-		if (BPRangeStart < next.getRangeStart()) {
-			BPRangeStart = next.getRangeStart();
+		if (bpRangeStart < next.getRangeStart()) {
+			bpRangeStart = next.getRangeStart();
 		}
 
-		if (BPRangeEnd < next.getRangeEnd()) {
-			BPRangeEnd = next.getRangeEnd();
+		if (bpRangeEnd < next.getRangeEnd()) {
+			bpRangeEnd = next.getRangeEnd();
 		}
 		supportReads += next.getSupportReads();
 	}
 
 	public void printSummary() {
-		System.out.println(index + "\t" + finalIndex + "\t" + SVLength + "\t"
-				+ ChrID + "\t" + BPRangeStart + "\t" + BPRangeEnd + "\t"
+		System.out.println(index + "\t" + finalIndex + "\t" + svLength + "\t"
+				+ ChrID + "\t" + bpRangeStart + "\t" + bpRangeEnd + "\t"
 				+ supportReads);
 	}
 }

@@ -6,9 +6,11 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,6 +19,7 @@ import json.JSONArray;
 import json.JSONException;
 import json.JSONObject;
 import math.Histogram;
+import net.sf.samtools.util.DateParser;
 import util.prereviewDataGen.AnalysisTypeConverter;
 
 /**
@@ -227,7 +230,7 @@ public class QCJsonReader {
 		}
 		
 		if (command.startsWith("qa")) {
-			performQAIndicators(paths, System.out, null);
+			performQAIndicatorsByMonth(paths, System.out, null);
 			return;
 		}
 		
@@ -321,16 +324,80 @@ public class QCJsonReader {
 		else 
 			return Double.NaN;
 	}
-	public static void performQAIndicators(List<String> paths, PrintStream out, AnalysisTypeConverter converter) {
-		Map<String, QCInfoList> analysisMap = new HashMap<String, QCInfoList>(); //Mapping from analysis types to groups of qc metrics
+
+	public static void performQAIndicatorsByMonth(List<String> paths, PrintStream out, AnalysisTypeConverter converter) {
 		
+		Map<String, List<String>> groupedByMonth = new HashMap<String, List<String>>();
+	    SimpleDateFormat sd = new SimpleDateFormat("MMMM");
+
+		//GO through all input paths and group by calendar month before performing analysis
 		for(String path : paths) {
 			try {
 				File manifestFile = new File(path + "/sampleManifest.txt");
 				Map<String, String> manifest = readManifest(manifestFile);
+				Date analysisDate = new Date( Long.parseLong(manifest.get("analysis.start.time")));
+				String month = sd.format(analysisDate);
+				
+				List<String> pathsInMonth = groupedByMonth.get(month);
+				if (pathsInMonth == null) {
+					pathsInMonth = new ArrayList<String>();
+					groupedByMonth.put(month, pathsInMonth);
+				}
+				pathsInMonth.add(path);
+			}
+			catch (Exception ex) {
+				
+			}
+		}
+		
+		
+		//Now all paths are grouped by month, so iterate the map and perform QA for each month separately
+		for(String month : groupedByMonth.keySet()) {
+			List<String> monthPaths = groupedByMonth.get(month);
+			
+			out.println("\n\n Month: " + month);
+			performQAIndicators(monthPaths, out, converter);
+		}
+	}
+	
+	/**
+	 * Average Sequencing Depth of Target Regions
+Percent Bases with Base Quality > 30
+Percent Targeted Bases Covered
+Percent Variants that are Deletions
+Percent Variants that are Insertions
+Percent Targeted Bases with < 10x Coverage
+Percent Sequence Reads Mapped to Reference
+Percent Targeted Bases with No Coverage
+Percent of Variants Considered Novel
+Number of Sanger Requests Total (Average per Sample)
+Number of Sanger Requests Confirmed (Average per Sample)
+Number of Sanger Requests not Confirmed (Average per Sample)
+Percent Variants Considered Single Nucleotide Variants
+Targeted Bases
+Variants per Mega Base
+Transition Transversion Ratio
+Average Total Number of Variants
+	 * @param paths
+	 * @param out
+	 * @param converter
+	 */
+	public static void performQAIndicators(List<String> paths, PrintStream out, AnalysisTypeConverter converter) {
+		Map<String, QCInfoList> analysisMap = new HashMap<String, QCInfoList>(); //Mapping from analysis types to groups of qc metrics
+		Date bugFixDate = DateParser.parse("2014-08-01");
+		for(String path : paths) {
+			try {
+				File manifestFile = new File(path + "/sampleManifest.txt");
+				Map<String, String> manifest = readManifest(manifestFile);
+				Date analysisDate = new Date( Long.parseLong(manifest.get("analysis.start.time")));
 				String analysisType = analysisTypeFromManifest(manifestFile).replace(" (v. 1.0)", "");
 				if (converter != null) {
 					analysisType = converter.convert(analysisType);
+				}
+				
+				//Skip everything except aort's and both types of mitos. 
+				if (!(analysisType.toLowerCase().contains("aort") || analysisType.toLowerCase().contains("mito"))) {
+					continue;
 				}
 				QCInfoList qcList = analysisMap.get(analysisType);
 				if (qcList == null) {
@@ -338,18 +405,18 @@ public class QCJsonReader {
 					analysisMap.put(analysisType, qcList);
 				}
 				
-				
 				JSONObject obj = toJSONObj(path);
 				JSONObject finalCov = obj.getJSONObject("final.coverage.metrics");
 				JSONArray fracAbove = finalCov.getJSONArray("fraction.above.index");		
 
 				Double mean = finalCov.getDouble("mean.coverage");
-				double above0 = fracAbove.getDouble(1);
+				double above0 = fracAbove.getDouble(2);
 				Double below10 = 1.0-fracAbove.getDouble(10);
-//				Double above20 = fracAbove.getDouble(20);
-//				Double above50 = fracAbove.getDouble(50);
+				Double above10 = fracAbove.getDouble(10);
 				qcList.add("mean.coverage", mean);
 				qcList.add("no.coverage", 100.0*(1.0-above0));
+				
+				qcList.add("frac.above.10", 100.0*above10);
 				qcList.add("frac.below.10", 100.0*below10);
 //				qcList.add("frac.above.0", above0);
 //				qcList.add("frac.above.20", above20);
@@ -360,9 +427,16 @@ public class QCJsonReader {
 				JSONObject rawBam = obj.getJSONObject("raw.bam.metrics");
 				Double rawReadCount = rawBam.getDouble("total.reads");
 				double basesRead = rawBam.getDouble("bases.read");
-				qcList.add("bases.above.q10", 100.0*rawBam.getDouble("bases.above.q10")/basesRead);
-				qcList.add("bases.above.q20", 100.0*rawBam.getDouble("bases.above.q20")/basesRead);
-				qcList.add("bases.above.q30", 100.0*rawBam.getDouble("bases.above.q30")/basesRead);
+//				qcList.add("bases.above.q10", 100.0*rawBam.getDouble("bases.above.q10")/basesRead);
+//				qcList.add("bases.above.q20", 100.0*rawBam.getDouble("bases.above.q20")/basesRead);
+				
+				double q30Bases = 100.0*rawBam.getDouble("bases.above.q30")/basesRead;
+				
+				//Fix known bug in q30 base calculation that was fixed around august 1 2014
+				if (q30Bases < 10.0 && analysisDate.before(bugFixDate)) {
+					q30Bases = q30Bases*10;
+				}
+				qcList.add("bases.above.q30", q30Bases);
 				qcList.add("reads.on.target", 100.0* (1.0-rawBam.getDouble("unmapped.reads")/rawReadCount));
 				
 				
@@ -371,45 +445,59 @@ public class QCJsonReader {
 				double percentDups = (rawReadCount - finalReadCount)/rawReadCount;
 				qcList.add("percent.dups", 100.0*percentDups);
 				
-				int indelCount = -1;
+				Double insertionCount = Double.NaN;
+				Double deletionCount = Double.NaN;
 				Double snpCount = Double.NaN;
 				Double varCount = Double.NaN;
 				Double tstv = Double.NaN;
-				Double knownSnps = Double.NaN;
+				Double knownVars = Double.NaN;
 				Double novelFrac = Double.NaN;
 				Double varsPerBaseCalled = Double.NaN;
 				JSONObject variants = null;
 				try {
 					variants = obj.getJSONObject("variant.metrics");
+					snpCount = variants.getDouble("total.snps");
+					varCount = variants.getDouble("total.vars");
+					insertionCount = variants.getDouble("total.insertions");
+					deletionCount = variants.getDouble("total.deletions");
+					tstv = variants.getDouble("total.tt.ratio");
+					knownVars = variants.getDouble("total.known");
+					
+					double percentInsertions = insertionCount / varCount * 100.0;
+					qcList.add("insertion.frac", percentInsertions);
+					
+					double percentDeletions = deletionCount / varCount * 100.0;
+					qcList.add("deletion.frac", percentDeletions);
+					
+					qcList.add("tstv.ratio", tstv);					
 				}
 				catch (JSONException e) {
 
 				}
 				try {
-					varCount = variants.getDouble("total.vars");
 					qcList.add("total.variants", varCount);
 					
 					if (obj.has("capture.extent")) {
 						long extent = obj.getLong("capture.extent");
 						varsPerBaseCalled = varCount / (double)extent;
-						qcList.add("vars.per.base", varsPerBaseCalled);
+						qcList.add("vars.per.megabase", varsPerBaseCalled*1e6);
+						qcList.add("targeted.bases", new Double(extent));
 					}
 				}
 				catch (JSONException e) {
 
 				}
 				
+				qcList.add("snp.frac", 100.0*snpCount/varCount);
 				
-				if (snpCount > 0) {
-					novelFrac = 1.0 - knownSnps/snpCount;
+				if (varCount > 0) {
+					novelFrac = 1.0 - knownVars/varCount;
+					qcList.add("novel.vars.fraction", novelFrac);
 				}
-				
-				
-				
-				
-
-				//System.out.println(toSampleName(path) + "\t" + rawReadCount + "\t" + mean + "\t" + formatter.format(percentDups) + "\t" + above15 + "\t" + snpCount + "\t" + indelCount + "\t" + formatter.format(novelFrac) + "\t" + formatter.format(tstv));
-
+				else {
+					qcList.add("novel.vars.fraction", 0.0);
+				}
+		
 			} catch (JSONException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -431,20 +519,22 @@ public class QCJsonReader {
 			
 			
 			for(String metric : sortedKeys) {
-				if (metric.equals("total.variants")) out.print("Total variants");
-				if (metric.equals("vars.per.base")) out.print("Variants per bp targeted");
-				if (metric.equals("mean.coverage")) out.print("Mean coverage");
-				if (metric.equals("no.coverage")) out.print("% Bases with no coverage");
-				if (metric.equals("frac.below.10")) out.print("% Bases < 10 coverage");
-				
-				if (metric.equals("bases.above.q30")) out.print("% Bases above Q30");
-				if (metric.equals("bases.above.q20")) out.print("% Bases above Q20");
-				if (metric.equals("bases.above.q10")) out.print("% Bases above Q10");
-				if (metric.equals("frac.above.0")) out.print("% Fraction above 0X");
-				if (metric.equals("frac.above.20")) out.print("% Fraction above 20X");
-				if (metric.equals("frac.above.50")) out.print("% Fraction above 50X");
-				if (metric.equals("percent.dups")) out.print("% PCR dups. removed");
-				if (metric.equals("reads.on.target")) out.print("% Reads aligning to target");
+				if (metric.equals("total.variants")) out.print("Average Total Number of Variants");
+				if (metric.equals("novel.vars.fraction")) out.print("Percent of Variants Considered Novel");
+				if (metric.equals("snp.frac")) out.print("Percent Variants Considered Single Nucleotide Variants");
+				if (metric.equals("insertion.frac")) out.print("Percent Variants that are Insertions");
+				if (metric.equals("deletion.frac")) out.print("Percent Variants that are Deletions");
+				if (metric.equals("vars.per.megabase")) out.print("Variants per megabase");
+				if (metric.equals("tstv.ratio")) out.print("Transition Transversion Ratio");
+				if (metric.equals("mean.coverage")) out.print("Average Sequencing Depth of Target Regions");
+				if (metric.equals("no.coverage")) out.print("Percent Targeted Bases with No Coverage");
+				if (metric.equals("frac.below.10")) out.print("Percent Targeted Bases with < 10x Coverage");
+				if (metric.equals("frac.above.10")) out.print("% Bases > 10 coverage");
+				if (metric.equals("bases.above.q30")) out.print("Percent Bases with Base Quality > 30");
+				if (metric.equals("frac.above.0")) out.print("Percent Targeted Bases Covered");
+				if (metric.equals("targeted.bases")) out.print("Targeted Bases");
+				if (metric.equals("percent.dups")) out.print("% PCR duplicates removed");
+				if (metric.equals("reads.on.target")) out.print("Percent Sequence Reads Mapped to Reference");
 				
 				List<Double> vals = qcItems.getValsForMetric(metric);
 				
@@ -454,7 +544,6 @@ public class QCJsonReader {
 				} else {
 					out.println(":\t" + formatter.format(mean));	
 				}
-				
 				
 			}
 		}
@@ -579,6 +668,19 @@ public class QCJsonReader {
 
 				}
 
+				
+				
+				//NoCalls stuff...
+				try {
+					JSONObject nocalls = obj.getJSONObject("nocalls");
+					int count = nocalls.getInt("interval.count");
+					int extent = nocalls.getInt("no.call.extent");
+					qcList.add("nocalls.region.count", new Double(count));
+					qcList.add("nocalls.extent", new Double(extent));
+				} catch(Exception ex) {
+					
+				}
+				
 				//System.out.println(toSampleName(path) + "\t" + rawReadCount + "\t" + mean + "\t" + formatter.format(percentDups) + "\t" + above15 + "\t" + snpCount + "\t" + indelCount + "\t" + formatter.format(novelFrac) + "\t" + formatter.format(tstv));
 
 			} catch (JSONException e) {
@@ -623,6 +725,8 @@ public class QCJsonReader {
 				if (metric.equals("frac.above.50")) out.print("Fraction above 50X");
 				if (metric.equals("percent.dups")) out.print("PCR dups. removed");
 				if (metric.equals("unmapped.reads")) out.print("Unmapped reads");
+				if (metric.equals("nocalls.region.count")) out.print("Number of no-call regions");
+				if (metric.equals("nocalls.extent")) out.print("Number no-call bases");
 				
 				out.print("\t" + metric + "\t");
 				List<Double> vals = qcItems.getValsForMetric(metric);
@@ -647,6 +751,9 @@ public class QCJsonReader {
 				}
 				if (metric.equals("unmapped.reads")) {
 					out.print("BAM Metrics\tNULL");
+				}
+				if (metric.startsWith("nocalls")) {
+					out.print("BAM Metrics\tnocalls");
 				}
 				if (metric.startsWith("bases.above")) {
 					out.print("BAM Metrics\traw.bam.metrics");
