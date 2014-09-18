@@ -19,12 +19,10 @@ import java.util.logging.Logger;
 
 import operator.IOOperator;
 import operator.OperationFailedException;
-
 import buffer.FileBuffer;
 import buffer.VCFFile;
 import buffer.variant.VariantPool;
 import buffer.variant.VariantRec;
-
 import pipeline.Pipeline;
 import util.vcfParser.VCFParser;
 
@@ -164,6 +162,140 @@ public class CompareVCF extends IOOperator {
 		output.println("\tFraction of dif alts from B : " + formatter.format(overlapB));
 	
 	}
+
+	public static int[] compareVars(VariantPool varsA, VariantPool varsB, Logger output) {
+		List<VarPair> perfectMatch = new ArrayList<VarPair>();
+		List<VarPair> difZygote = new ArrayList<VarPair>();
+		List<VarPair> difAlt = new ArrayList<VarPair>();
+		List<VarPair> missingProps = new ArrayList<VarPair>();
+		List<VarPair> diffProps = new ArrayList<VarPair>();
+		List<VarPair> adtlProps = new ArrayList<VarPair>();
+		List<VarPair> missingAnn = new ArrayList<VarPair>();
+		List<VarPair> diffAnn = new ArrayList<VarPair>();
+		List<VarPair> adtlAnn = new ArrayList<VarPair>();
+		int cumulPropDiffs = 0;
+		int cumulAnnDiffs = 0;
+		int cumulPropAdtns = 0;
+		int cumulAnnAdtns = 0;
+		int cumulPropMissing = 0;
+		int cumulAnnMissing = 0;
+		
+		for(String contig : varsA.getContigs()) {
+			List<VariantRec> listA = varsA.getVariantsForContig(contig);
+			for(VariantRec rec : listA) {
+				VariantRec match = varsB.findRecordNoWarn(contig, rec.getStart());
+				int propDiffs = 0;
+				int propMissing = 0;
+				int annDiffs = 0;
+				int annMissing = 0;
+				if (match != null) {
+					VarPair pair = new VarPair();
+					pair.a = rec;
+					pair.b = match;
+					
+					if (rec.getAlt().equals(match.getAlt())) {
+						if (rec.isHetero() == match.isHetero()) {
+							perfectMatch.add(pair);							
+						}
+						else {
+							difZygote.add(pair); //Alt allele matches, but zygosity is different
+						}
+					}
+					else {
+						difAlt.add(pair); //Alt allele does not match
+					}
+					//Compare property entries for shared keys
+					Collection<String> recProps = rec.getPropertyKeys();
+					for(String prop : recProps) {
+						Double recProp = rec.getProperty(prop);
+						if(match.getProperty(prop)!=null){
+							if(recProp != match.getProperty(prop)) {
+								propDiffs += 1;
+							}
+						}
+						else {
+							propMissing += 1;
+						}
+					}
+					if(propDiffs >= 1){
+						output.info("Warning: properties do not match at contig: " + rec.getContig() + " and position: " + rec.getStart()  +  ". Number of differences: " + String.valueOf(propDiffs));
+						diffProps.add(pair);
+						cumulPropDiffs+=propDiffs;
+					}
+					if(propMissing >= 1){
+						output.info("Warning: property missing from second VCFRecord at contig: " + rec.getContig() + " and position: " + rec.getStart()  +  ". Number missing: " + String.valueOf(propMissing));
+						missingProps.add(pair);
+						cumulPropMissing+=propMissing;
+					}
+					
+					//Count number of properties in match not in rec
+					int propAdtns = 0;
+					for(String matchProp : match.getPropertyKeys()) {
+						boolean present = false;
+						for(String recProp : recProps){
+							if(recProp == matchProp)
+								present = true;
+						}
+						if(present == false) {
+							propAdtns+=1;
+						}
+					}
+					if(propAdtns > 0) {
+						output.info("Warning: additional property in match not present in rec at contig: " + rec.getContig() + " and position: " + rec.getStart() + ". Number missing: " + String.valueOf(propAdtns));
+						cumulPropAdtns += propAdtns;
+						adtlProps.add(pair);
+					}
+					
+					//Compare annotation entries for shared keys
+					Collection<String> recAnn = rec.getAnnotationKeys();
+					for(String ann : recAnn) {
+						Double recAnnotation = rec.getProperty(ann);
+						if(match.getProperty(ann)!=null){
+							if(recAnnotation != match.getProperty(ann)) {
+								ann += 1;
+							}
+						}
+						else {
+							annMissing += 1;
+						}
+					}
+					if(annDiffs >= 1){
+						output.info("Warning: annotations do not match at contig: " + rec.getContig() + " and position: " + rec.getStart()  +  ". Number of differences: " + String.valueOf(annDiffs));
+						cumulAnnDiffs+=annDiffs;
+						diffAnn.add(pair);
+					}
+
+					if(annMissing >= 1){
+						output.info("Warning: annotations not found in second rec at contig: " + rec.getContig() + " and position: " + rec.getStart()  +  ". Number missing: " + String.valueOf(annMissing));
+						missingAnn.add(pair);
+						cumulAnnDiffs+=annDiffs;
+					}
+					
+					double annAdtns = 0;
+					for(String matchAnn : match.getAnnotationKeys()) {
+						boolean present = false;
+						for(String recAnnot : recAnn){
+							if(recAnnot == matchAnn)
+								present = true;
+						}
+						if(present == false) {
+							annAdtns+=1;
+						}
+					}
+					if(annAdtns > 0) {
+						output.info("Warning: additional annotation in match not present in rec at contig: " + rec.getContig() + " and position: " + rec.getStart() + ". Number missing: " + String.valueOf(annAdtns));
+						cumulAnnAdtns += annAdtns;
+						adtlAnn.add(pair);
+					}
+				}
+			}
+		}
+		int[] returnArray = {cumulPropDiffs, cumulPropMissing, cumulPropAdtns, cumulAnnDiffs, cumulAnnMissing, cumulAnnAdtns};
+		return returnArray;
+
+	}
+	
+	
 	
 	/**
 	 * Returns average variant quality of first item in pair

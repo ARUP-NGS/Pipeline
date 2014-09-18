@@ -76,7 +76,7 @@ public class BedFilter extends BAMClassifier {
 					return true;
 				}
 				else {
-					System.out.println("Read fails to cover region.");
+					//System.out.println("Read fails to cover region.");
 					br.close();
 					return false;
 				}
