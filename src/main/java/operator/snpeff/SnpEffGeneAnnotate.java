@@ -183,14 +183,16 @@ public class SnpEffGeneAnnotate extends Annotator {
 			// something is better than nothing
 			// intronic or UTR is better than coding (because these will be most likely to be based on the reference transcript and not the variant)
 		String bestCdot = "";
-		Pattern p = Pattern.compile("[+-*]");
+		Pattern p = Pattern.compile("[\\+\\-\\*]");
+		System.out.println("Starting new Variant");
 		for(SnpEffInfo info : infoList) {
-			if (info.transcript == topHit.transcript && info.cDot != null && info.cDot != "") {
+			System.out.println("Cdot is: " + info.cDot + "   " + info.transcript + "   " + info.exon);
+			if (info.transcript.equals(topHit.transcript) && info.cDot != null && ! info.cDot.equals("")) {
 				Matcher bestMatch = p.matcher(bestCdot);
 				Matcher nextMatch = p.matcher(info.cDot);
 				if (nextMatch.find() && ! bestMatch.find()) {
 					bestCdot = info.cDot;
-				} else if (bestCdot == "") {
+				} else if (bestCdot.equals("")) {
 					bestCdot = info.cDot;
 				}
 			}
