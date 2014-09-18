@@ -17,7 +17,8 @@ import pipeline.Pipeline;
 
 
 /*
- * Compares review directories, including VCFs.
+ * Compares review directories, including VCFs, CSVs, and QC Metrics.
+ * @author daniel
  */
 
 public class compareReviewDirs extends IOOperator{
@@ -49,8 +50,8 @@ public void performOperation() throws OperationFailedException, JSONException,
 	}
 	
 	//Create "File"s for the vcf files.VCF1reader
-	String vcfLoc1 = revDirLoc1 + "var/" + revDirLoc1.split(".")[0]+"_all_variants.vcf";
-	String vcfLoc2 = revDirLoc2 + "var/" + revDirLoc2.split(".")[0]+"_all_variants.vcf";
+	String vcfLoc1 = revDirLoc1 + "var/" + revDirLoc1.split(".")[0]+".all.vcf";
+	String vcfLoc2 = revDirLoc2 + "var/" + revDirLoc2.split(".")[0]+".all.vcf";
 	VariantPool varPool1 = new VariantPool(new VCFFile( new File(vcfLoc1)));
 	VariantPool varPool2 = new VariantPool(new VCFFile( new File(vcfLoc2)));
 	varPool1.sortAllContigs();
@@ -59,6 +60,9 @@ public void performOperation() throws OperationFailedException, JSONException,
 	int[] compareStats = CompareVCF.compareVars(varPool1, varPool2, logger);
 	//TODO: Create output for this operation.
 	
+	//
+	String csvLoc1 = revDirLoc1 + "var/" + revDirLoc1.split(".")[0]+"_annotated.csv";
+	String csvLoc2 = revDirLoc2 + "var/" + revDirLoc2.split(".")[0]+"_annotated.csv";
 }
 
 }
