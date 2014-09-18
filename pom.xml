@@ -91,7 +91,7 @@
                     <generateGitPropertiesFile>true</generateGitPropertiesFile>
 
                     <!-- The path for the to be generated properties file, it's relative to ${project.basedir} -->
-                    <generateGitPropertiesFilename>src/main/resources/git.properties</generateGitPropertiesFilename>
+                    <generateGitPropertiesFilename>src/main/java/git.properties</generateGitPropertiesFilename>
 
                     <!-- true by default, controls whether the plugin will fail when no .git directory is found, when set to false the plugin will just skip execution -->
                     <!-- @since 2.0.4 -->
