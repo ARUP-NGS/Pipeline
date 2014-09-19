@@ -17,6 +17,7 @@ import buffer.CSVFile;
 import buffer.FileBuffer;
 
 import com.google.common.base.Joiner;
+
 import java.util.logging.Logger;
 
 
@@ -29,7 +30,7 @@ import java.util.logging.Logger;
 public class CompareAnnotationCSVs extends IOOperator{
 	
 	private HashMap<String, Object> CSVCompare(String csvFile1, String csvFile2) throws IOException{
-		HashMap<String, Object> compareSummary = new HashMap<>();
+		HashMap<String, Object> compareSummary = new HashMap<String, Object>();
 		//Load csv1 into a String array
 		BufferedReader csvReader1 = new BufferedReader(new FileReader(csvFile1));
         String str;
@@ -41,7 +42,7 @@ public class CompareAnnotationCSVs extends IOOperator{
         //Load csv2 into a String array
 		BufferedReader csvReader2 = new BufferedReader(new FileReader(csvFile1));
         List<String> list2 = new ArrayList<String>();
-        while((str = csvReader1.readLine()) != null){
+        while((str = csvReader2.readLine()) != null){
             list2.add(str);
         }
         String[] csvLines2 = list2.toArray(new String[0]);
@@ -63,13 +64,15 @@ public class CompareAnnotationCSVs extends IOOperator{
         	i+=1;
         }
         
-        HashMap positionResults = SharedVars(csvLocs1, csvLocs2);
+        HashMap<String, Integer> positionResults = SharedVars(csvLocs1, csvLocs2);
+        HashMap<String, Integer> zygosityResults = ZygosityCompare(csvLines1, csvLines2);
         compareSummary.put("positionResults", positionResults);
+        compareSummary.put("zygosityResults", zygosityResults);
 
 		return compareSummary;
 	}
 
-	private HashMap SharedVars(String[] csvLocs1, String[] csvLocs2){
+	private HashMap<String, Integer> SharedVars(String[] csvLocs1, String[] csvLocs2){
         //Grab first 3 elements in in the row and join them into a string to check for unique locations.
 		HashMap<String, Integer> positionResults = new HashMap<>();
 
@@ -94,8 +97,32 @@ public class CompareAnnotationCSVs extends IOOperator{
 		return positionResults;
 	}
 
-	private HashMap ZygosityCompare(String[] csvLines1, String[] csvLines2){
+	private HashMap<String, Integer> ZygosityCompare(String[] csvLines1, String[] csvLines2){
 		HashMap<String, Integer> zygosityResults = new HashMap<>();
+        String[] csvLocs1 = new String[csvLines1.length];
+        String[] csvLocs2 = new String[csvLines2.length];
+        String[] zygosity1 = new String[csvLines1.length];
+        String[] zygosity2 = new String[csvLines2.length];
+        int i=0;
+        // Create zygosity and position arrays
+        for(String line : csvLines1) {
+        	if(line.startsWith("#"))
+        		continue;
+        	csvLocs1[i] = Joiner.on("\t").join(Arrays.asList(line.split("\t")).subList(0, 2).toArray());
+        	zygosity1[i] = line.split("\t")[7];
+        	i+=1;
+        }
+        i=0;
+        for(String line : csvLines2) {
+        	if(line.startsWith("#"))
+        		continue;
+        	csvLocs2[i] = Joiner.on("\t").join(Arrays.asList(line.split("\t")).subList(0, 2).toArray());
+        	zygosity2[i] = line.split("\t")[7];
+        	i+=1;
+        }
+        // Create list of variants to facilitate comparison of zygosity
+        String[] varList1 = new HashSet<String>(Arrays.asList(csvLocs1)).toArray(new String[csvLocs1.length]);
+        String[] varList2 = new HashSet<String>(Arrays.asList(csvLocs1)).toArray(new String[csvLocs1.length]);
 		return zygosityResults;
 	}
 
@@ -111,7 +138,7 @@ public class CompareAnnotationCSVs extends IOOperator{
 		String CSV1 = CSVs.get(0).getAbsolutePath();
 		String CSV2 = CSVs.get(1).getAbsolutePath();
 		
-		HashMap Results = CSVCompare(CSV1, CSV2);
+		HashMap<String, Object> Results = CSVCompare(CSV1, CSV2);
 		
 	}
 	
