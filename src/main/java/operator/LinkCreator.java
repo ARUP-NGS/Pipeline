@@ -10,6 +10,7 @@ import org.w3c.dom.NodeList;
 import pipeline.Pipeline;
 import pipeline.PipelineObject;
 import buffer.BAMFile;
+import buffer.BEDFile;
 
 /**
  * Just creates a symbolic link from one dir to the BAM file in a results directory.
@@ -27,6 +28,7 @@ public class LinkCreator extends Operator {
 	private String webRoot = "/var/www/html/";
 	private String resultDir = "results/";
 	private BAMFile finalBam = null;
+	private BEDFile capture = null;
 	private String sampleID = null;
 	private String linkName = null;
 
@@ -35,8 +37,16 @@ public class LinkCreator extends Operator {
 		linkName = finalBam.getFilename(); 
 		String linkTarget = finalBam.getAbsolutePath();
 
+		
+		
 		createLink(linkTarget, webRoot +  resultDir + linkName );
 		createLink(linkTarget + ".bai", webRoot +  resultDir + linkName + ".bai" );
+		
+		if (capture != null) {
+			String captureLinkName = capture.getFilename();
+			String captureLinkTarget = capture.getAbsolutePath();
+			createLink(captureLinkTarget, webRoot +  resultDir + captureLinkName );
+		}
 	}
 	
 	/**
@@ -114,6 +124,11 @@ public class LinkCreator extends Operator {
 				
 				if (obj instanceof BAMFile) {
 					finalBam = (BAMFile)obj;
+					continue;
+				}
+				
+				if (obj instanceof BEDFile) {
+					capture = (BEDFile)obj;
 					continue;
 				}
 				
