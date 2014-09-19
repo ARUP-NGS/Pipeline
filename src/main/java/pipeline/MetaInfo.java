@@ -29,37 +29,41 @@ public class MetaInfo {
 		return Pipeline.class.getProtectionDomain().getCodeSource().getLocation().getPath();
 	}
 	
-	public static String getGitCommitTag() throws IOException {
+	public static String getGitCommitTag() {
 		Map<String, String> props = getGitProperties();
 		return props.get("git.commit.id.abbrev");
 	}
 	
-	public static String getCompileDateStr() throws IOException {
+	public static String getCompileDateStr() {
 		Map<String, String> props = getGitProperties();
 		return props.get("git.build.time");
 	}
 	
 	
 	
-	private static Map<String, String> getGitProperties() throws IOException {
+	private static Map<String, String> getGitProperties() {
 		File jarFile = new File(Pipeline.class.getProtectionDomain().getCodeSource().getLocation().getPath());
-		
+		Map<String, String> props = new HashMap<String, String>();		
 		URL jarURL;
-		
+		try {
 			jarURL = new URL("jar:file:" + jarFile.getAbsolutePath() + "!/");
+
 			JarURLConnection jarConnection = (JarURLConnection)jarURL.openConnection();
 			ZipEntry entry = jarConnection.getJarFile().getEntry("git.properties");
 			InputStream propsInputStream = jarConnection.getJarFile().getInputStream(entry);
-		
-		Map<String, String> props = new HashMap<String, String>();
-		BufferedReader reader = new BufferedReader(new InputStreamReader(propsInputStream));
-		String line = reader.readLine();
-		while(line != null) {
-			if (! line.startsWith("#")) {
-				String[] toks = line.split("=", 2);
-				props.put(toks[0], toks[1]);
+
+			BufferedReader reader = new BufferedReader(new InputStreamReader(propsInputStream));
+			String line = reader.readLine();
+			while(line != null) {
+				if (! line.startsWith("#")) {
+					String[] toks = line.split("=", 2);
+					props.put(toks[0], toks[1]);
+				}
+				line = reader.readLine();
 			}
-			line = reader.readLine();
+		} catch (MalformedURLException e) {
+		} catch (IOException e) {
+			//errors here relatively common for weird reasons, we ignore them for now
 		}
 		return props;
 	}
@@ -98,13 +102,8 @@ public class MetaInfo {
 //		Date modTime = new Date(MetaInfo.getManifestModifiedTime());
 //		System.out.println("Jar file modified time: " + modTime);
 	
-		try {
-			System.out.println("Git commit tag : " + MetaInfo.getGitCommitTag());
-			System.out.println("Git build time : " + MetaInfo.getCompileDateStr());
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		System.out.println("Git commit tag : " + MetaInfo.getGitCommitTag());
+		System.out.println("Git build time : " + MetaInfo.getCompileDateStr());
 		
 	}
 }
