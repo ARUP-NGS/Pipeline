@@ -44,13 +44,13 @@ public class PindelParser {
 		}
 	}
 
-	public void filter(int i) {
+	public void filter(int threshold) {
 		Iterator<PindelResult> iter = resultsList.iterator();
-		PindelResult temp;
+		
 		while (iter.hasNext()) {
-			temp = iter.next();
+			PindelResult temp = iter.next();
 			// System.out.println("Checking result " + temp.getIndex());
-			if (temp.getSVLength() < 15) {
+			if (temp.getSVLength() < threshold) {
 				iter.remove();
 			}
 		}

@@ -1,28 +1,42 @@
 package operator.pindel;
 
+import gene.ExonLookupService;
+
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
 import json.JSONException;
+import json.JSONObject;
 import operator.IOOperator;
 import operator.OperationFailedException;
 import pipeline.Pipeline;
 import buffer.BAMFile;
+import buffer.BEDFile;
+import buffer.ReferenceFile;
 
+/**
+ * An operator to run PINDEL, parse the output, and annotate it using the 'ExonLookupService', which
+ * determines which genes & exons are overlapped by any detected variants. 
+ * @author brendan
+ *
+ */
 public class PindelRunner extends IOOperator {
 
 	public static final String ISIZE = "insert.size";
 	public static final String FILTERTHRESHOLD = "filter.threshold";
 	public static final String PINDEL_PATH="pindel.path";
-	
+
 	@Override
 	public boolean requiresReference() {
 		return true;
 	}
-
+	
 	@Override
 	public void performOperation() throws OperationFailedException,
 			JSONException, IOException {
@@ -33,9 +47,9 @@ public class PindelRunner extends IOOperator {
 		BAMFile bam = (BAMFile)getInputBufferForClass(BAMFile.class);
 		String pathToBamFile = bam.getAbsolutePath();
 		
-		String pathToBedFile = inputBuffers.get(1).getAbsolutePath(); 
+		String pathToBedFile = (getInputBufferForClass(BEDFile.class)).getAbsolutePath(); 
 		String pathToConfigFile = this.getProjectHome() + "pindelConfig.txt"; 
-		String pathToReference = inputBuffers.get(2).getAbsolutePath(); 
+		String pathToReference = (getInputBufferForClass(ReferenceFile.class)).getAbsolutePath(); 
 		String sampleName="currentSample";
 		
 		String pathToPindel = this.getAttribute(PINDEL_PATH);
@@ -49,6 +63,8 @@ public class PindelRunner extends IOOperator {
 			insertSize = Integer.parseInt(insertSizeString);
 		}
 
+		
+		
 		int filterThreshold = 15; // probably should be an attribute
 		String filterString = properties.get(FILTERTHRESHOLD);
 		if (filterString != null) {
@@ -70,19 +86,53 @@ public class PindelRunner extends IOOperator {
 				" -f " + pathToReference + 
 				" -i " + pathToConfigFile + 
 				" -o " + outputPrefix +
-				//" -T " + this.getPipelineOwner().getThreadCount() +
+				" -T " + Math.min(8, this.getPipelineOwner().getThreadCount()) +
 				" -j " + pathToBedFile +
 				" -L " + this.getProjectHome() + "/pindel.log ";
 		Logger.getLogger(Pipeline.primaryLoggerName).info("Pindel operator is executing command " + command);
-		executeCommand(command); // run pindel
+		executeCommand(command, true); // run pindel
 
 		// Create PindelFolderFilter
 		// Produce Pindel output?
 		Logger.getLogger(Pipeline.primaryLoggerName).info("Pindel run completed, parsing results");
-		PindelFolderFilter folderFilter = new PindelFolderFilter(outputPrefix,
-				filterThreshold, pathToReference, pathToPindel);
-		List<PindelResult> results = folderFilter.getPindelResults();
-		// Produce VarViewer output?
+		
+		PindelResultsContainer resultsObject = (PindelResultsContainer)getOutputBufferForClass(PindelResultsContainer.class);
+		resultsObject.readResults(outputPrefix,filterThreshold);
+		
+		Map<String, List<PindelResult>> results = resultsObject.getPindelResults();
+		
+		//Now add annotations to all those results... 
+		ExonLookupService featureLookup = new ExonLookupService();
+		String featureFile = getPipelineProperty("feature.file");
+		if(featureFile == null){
+			throw new IOException("PipelineProperty 'feature.file' not defined.");
+		}
+		File features = new File(featureFile);
+		if (!features.exists()) {
+			throw new IOException("Feature file " + features.getAbsolutePath() + " does not exist!");
+		}
+		featureLookup.buildExonMap(features);
+		
+		for(String svType : results.keySet()) {
+			System.out.println("Structural variant type: " + svType);
+			for(PindelResult sv : results.get(svType)) {
+				Object[] overlappingFeatures = featureLookup.getIntervalObjectsForRange(sv.getChromo(), sv.getRangeStart(), sv.getRangeEnd());
+				for(Object feat : overlappingFeatures) {
+					sv.addFeatureAnnotation(feat.toString());
+				}
+				System.out.println(sv.toShortString());
+			}
+		}
+		
+		
+		//Write it to a file
+		JSONObject resultsJSON = resultsObject.resultsToJSON();
+		File resultJSONFile = resultsObject.getFile();
+		resultJSONFile.createNewFile();
+		BufferedWriter writer = new BufferedWriter(new FileWriter(resultsObject.getFile()));
+		writer.write(resultsJSON.toString() +"\n");
+		writer.close();
+		
 	}
 
 	private void createConfigFile(String sampleName, String pathToBamFile,

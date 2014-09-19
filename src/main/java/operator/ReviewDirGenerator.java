@@ -132,9 +132,12 @@ public class ReviewDirGenerator extends Operator {
 		}
 		
 		try {
-			File varDestination = new File(rootPath + "/var/" + variantFile.getFilename());
-			copyTextFile(variantFile.getFile(), varDestination);
-
+			
+			if (variantFile != null) {
+				File varDestination = new File(rootPath + "/var/" + variantFile.getFilename());
+				copyTextFile(variantFile.getFile(), varDestination);
+			}
+			
 			File inputDestination = new File(rootPath + "/log/pipeline_input.xml");
 			copyTextFile(this.getPipelineOwner().getSourceFile(), inputDestination);
 			
@@ -143,27 +146,20 @@ public class ReviewDirGenerator extends Operator {
 				copyTextFile(capture.getFile(), bedDestination);
 			}
 			
-			File logDestination = new File(rootPath + "/log/" + logFile.getFilename());
-			copyTextFile(logFile.getFile(), logDestination);
-
-			File newBAMLocation = new File(rootPath + "/bam/");
-			String indexPath = finalBAM.getAbsolutePath() + ".bai";
-			File indexFile = new File(indexPath);
-			if (indexFile.exists()) {
-				moveFile(indexFile, newBAMLocation);
-			}
-			moveFile(finalBAM, newBAMLocation);
-			
-			
-			File newFQLocation = new File(rootPath + "/fastq/");
-			if (fastqs1 != null) {
-				moveFiles(fastqs1, newFQLocation);
+			if (logFile != null) {
+				File logDestination = new File(rootPath + "/log/" + logFile.getFilename());
+				copyTextFile(logFile.getFile(), logDestination);
 			}
 			
-			if (fastqs2 != null) {
-				moveFiles(fastqs2, newFQLocation);
+			if (finalBAM != null) {
+				File newBAMLocation = new File(rootPath + "/bam/");
+				String indexPath = finalBAM.getAbsolutePath() + ".bai";
+				File indexFile = new File(indexPath);
+				if (indexFile.exists()) {
+					moveFile(indexFile, newBAMLocation);
+				}
+				moveFile(finalBAM, newBAMLocation);
 			}
-			
 			
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -379,15 +375,6 @@ public class ReviewDirGenerator extends Operator {
 			}
 		}
 		
-		if (finalBAM == null) {
-			throw new IllegalArgumentException("No BAM file specified to ReviewDirGenerator");
-		}
-		if (variantFile == null) {
-			throw new IllegalArgumentException("No variant file specified to ReviewDirGenerator");
-		}
-		if (logFile == null) {
-			throw new IllegalArgumentException("No log file specified to ReviewDirGenerator");
-		}
 	}
 
 }

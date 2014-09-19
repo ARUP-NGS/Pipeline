@@ -47,7 +47,7 @@ import util.QueuedLogHandler;
  */
 public class Pipeline {
 
-	public static final String PIPELINE_VERSION = "1.2.6";
+	public static final String PIPELINE_VERSION = "1.2.7";
 	protected File source;
 	protected Document xmlDoc;
 	public static final String PROJECT_HOME="home";
@@ -602,6 +602,13 @@ public class Pipeline {
 	private static void printVersion() {
 		System.out.println("Pipeline version: " + PIPELINE_VERSION);
 		System.out.println("Compile date: " + new Date(MetaInfo.getManifestModifiedTime()));
+		try {
+			System.out.println("Git commit tag : " + MetaInfo.getGitCommitTag());
+			System.out.println("Git build time : " + MetaInfo.getCompileDateStr());
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 	public static void main(String[] args) throws JSONException, IOException {

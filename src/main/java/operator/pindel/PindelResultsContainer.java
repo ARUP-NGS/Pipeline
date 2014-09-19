@@ -1,34 +1,34 @@
 package operator.pindel;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.List;
+import gene.ExonLookupService;
 
-public class PindelFolderFilter {
-	private enum outFiles {
-		_D, _LI, _TD, _SI,
-		// _INV
-	}
+import java.io.File;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import json.JSONArray;
+import json.JSONException;
+import json.JSONObject;
+import buffer.FileBuffer;
+
+public class PindelResultsContainer extends FileBuffer {
 	
+	//List of PINDEL output file suffices we deal with
+	private String[] outputFileSuffixes = new String[]{"_D", "_LI", "_TD", "_SI"};
+
+	//Storage for all parsed results, grouped by suffix (_D, _LI, etc)
+	private Map<String, List<PindelResult>> results = null;
+
+	//Parses PINDEL output and converts it into a PindelResult object
 	private PindelParser parser;
 
-	public PindelFolderFilter(String prefix, int threshold, String reference,
-			String pindelAddress) throws IOException {
+	
+	public void readResults(String prefix, int threshold) throws IOException {
 		
-
-		File inv = new File(prefix + "_INV");
-		File inv2 = new File(prefix + "2_INV");
-		copyFileUsingStreams(inv, inv2); // INV has a different format that
-												// we aren't processing right
-												// now, so we simply copy the
-												// file
-		
-
-		for (outFiles currentFile : outFiles.values()) {
+		results = new HashMap<String, List<PindelResult>>();
+		for (String currentFile : outputFileSuffixes) {
 			File thisFile = new File(prefix + currentFile);
 			File filteredFile = new File(prefix + "2" + currentFile);
 			if (thisFile.exists()) {
@@ -36,10 +36,10 @@ public class PindelFolderFilter {
 					System.out.println("processing " + prefix + currentFile);
 					parser = new PindelParser(thisFile);
 					parser.filter(threshold);
-					System.out.println(parser.printPINDEL());
+					//System.out.println(parser.printPINDEL());
 					parser.makePindelFile(filteredFile);
-					parser.makeVCF(prefix + "2", reference, pindelAddress);
 					parser.combineResults();
+					results.put(currentFile, parser.getResults());
 				} else {
 					System.out.println("file size 0 " + prefix + currentFile);
 				}
@@ -49,25 +49,88 @@ public class PindelFolderFilter {
 		}
 	}
 
-	public List<PindelResult> getPindelResults() {
-		return parser.getResults();
+	public Map<String, List<PindelResult>> getPindelResults() {
+		return results;
 	}
 	
-	private static void copyFileUsingStreams(File source, File dest)
-			throws IOException {
-		InputStream input = null;
-		OutputStream output = null;
-		try {
-			input = new FileInputStream(source);
-			output = new FileOutputStream(dest);
-			byte[] buf = new byte[1024];
-			int bytesRead;
-			while ((bytesRead = input.read(buf)) > 0) {
-				output.write(buf, 0, bytesRead);
+	public JSONObject resultsToJSON() throws JSONException {
+		JSONObject resultObj = new JSONObject();
+		
+		for(String resultType : results.keySet()) {
+			JSONArray categoryObj = new JSONArray();
+			
+			for(PindelResult hit : results.get(resultType)) {
+				JSONObject singleResult = pindelResultToJSON(hit);
+				categoryObj.put(singleResult);
 			}
-		} finally {
-			input.close();
-			output.close();
+			
+			resultObj.put(resultType, categoryObj);
 		}
+		
+		return resultObj;
 	}
+	
+	private static JSONObject pindelResultToJSON(PindelResult pr) throws JSONException {
+		JSONObject res = new JSONObject();
+		res.put("chr", pr.getChromo());
+		res.put("start", pr.getRangeStart());
+		res.put("end", pr.getRangeEnd());
+		res.put("supportingReads", pr.getSupportReads());
+		
+		JSONArray features = new JSONArray();
+		for(String feat : pr.getAllAnnotations()) {
+			features.put(feat);
+		}
+		res.put("features", features);
+		return res;
+	}
+	
+	
+	public static void main(String[] args) {
+		File pindelOutput = new File("/home/brendan/DATA2/pindeltest/pindelOutput/out2");
+		try {
+			PindelResultsContainer cont = new PindelResultsContainer();
+			cont.readResults(pindelOutput.getAbsolutePath(), 15);
+			
+			Map<String, List<PindelResult>> results = cont.getPindelResults();
+			ExonLookupService featureLookup = new ExonLookupService();
+			String featureFile = "/home/brendan/resources/features20140909.v2.bed";
+			
+			File features = new File(featureFile);
+			if (!features.exists()) {
+				throw new IOException("Feature file " + features.getAbsolutePath() + " does not exist!");
+			}
+			featureLookup.buildExonMap(features);
+			
+			for(String svType : results.keySet()) {
+				for(PindelResult sv : results.get(svType)) {
+					Object[] overlappingFeatures = featureLookup.getIntervalObjectsForRange(sv.getChromo(), sv.getRangeStart(), sv.getRangeEnd());
+					for(Object feat : overlappingFeatures) {
+						sv.addFeatureAnnotation(feat.toString());
+					}
+				}
+			}
+			
+			for(String svType : results.keySet()) {
+				System.out.println("SV Type : " + svType);
+				List<PindelResult> svs = results.get(svType);
+				for(PindelResult res : svs) {
+					System.out.println("\t" + res.toShortString());
+				}
+			}
+			
+			
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		
+	}
+
+	@Override
+	public String getTypeStr() {
+		return "PindelResults";
+	}
+
 }

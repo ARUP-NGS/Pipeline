@@ -106,7 +106,7 @@ public class CisTransClassifier  {
 				SAMRecord samRecord = sit.next();
 				while(samRecord != null) {
 					mapped = new MappedRead(samRecord);
-
+					
 					// If within distance, loop through reads and for each one that spans
 					// both positions, count how many fit into one of four categories:
 					// 1. Variants A and B on the read
@@ -114,16 +114,20 @@ public class CisTransClassifier  {
 					// 3. Variant B but not A on the read
 					// 4. Neither variant on the read
 
+					//Funky logic below addresses the fact that deletions don't have a base quality associated with them
+					//So if we detect a deletion then ignore base quality constraint for that variant 
 					if(mapped.containsPosition(var1Pos) && mapped.containsPosition(var2Pos)
 							&& mapped.getMappingQuality() >= requiredMappingQual
-							&& mapped.getQualityAtReferencePos(var1Pos) >= requiredBaseQual
-							&& mapped.getQualityAtReferencePos(var2Pos) >= requiredBaseQual){
+							&& ((mapped.getBaseAtReferencePos(var1Pos)<0) || (mapped.getQualityAtReferencePos(var1Pos) >= requiredBaseQual) )
+							&& ((mapped.getBaseAtReferencePos(var2Pos)<0) || (mapped.getQualityAtReferencePos(var2Pos) >= requiredBaseQual))){
 
 						readCov++;
 
-						baseAtRef1 = (char) mapped.getBaseAtReferencePos(var1Pos);
-						baseAtRef2 = (char) mapped.getBaseAtReferencePos(var2Pos);
-
+						//Be sure to catch / convert cases where the variant is a deletion to '-'
+						baseAtRef1 = mapped.getBaseAtReferencePos(var1Pos)>-1 ? (char) mapped.getBaseAtReferencePos(var1Pos) : '-';
+						baseAtRef2 = mapped.getBaseAtReferencePos(var2Pos)>-1 ? (char) mapped.getBaseAtReferencePos(var2Pos) : '-';
+							 
+								
 						if(baseAtRef1 == var1Ref && baseAtRef2 == var2Ref){
 							bothRefs++;
 						}
