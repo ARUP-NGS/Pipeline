@@ -74,7 +74,7 @@ public class CompareAnnotationCSVs extends IOOperator{
 
 	private HashMap<String, Integer> SharedVars(String[] csvLocs1, String[] csvLocs2){
         //Grab first 3 elements in in the row and join them into a string to check for unique locations.
-		HashMap<String, Integer> positionResults = new HashMap<>();
+		HashMap<String, Integer> positionResults = new HashMap<String, Integer>();
 
         String[] varList1 = new HashSet<String>(Arrays.asList(csvLocs1)).toArray(new String[csvLocs1.length]);
         String[] varList2 = new HashSet<String>(Arrays.asList(csvLocs1)).toArray(new String[csvLocs1.length]);
@@ -98,7 +98,7 @@ public class CompareAnnotationCSVs extends IOOperator{
 	}
 
 	private HashMap<String, Integer> ZygosityCompare(String[] csvLines1, String[] csvLines2){
-		HashMap<String, Integer> zygosityResults = new HashMap<>();
+		HashMap<String, Integer> zygosityResults = new HashMap<String, Integer>();
         String[] csvLocs1 = new String[csvLines1.length];
         String[] csvLocs2 = new String[csvLines2.length];
         String[] zygosity1 = new String[csvLines1.length];
