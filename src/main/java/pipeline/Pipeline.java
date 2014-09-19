@@ -375,12 +375,6 @@ public class Pipeline {
 			}
 		}
 		
-				
-		if (props.getProperty(PipelineXMLConstants.MAIL_RECIPIENT) != null) {
-			String mailRecipient = props.getProperty(PipelineXMLConstants.MAIL_RECIPIENT);
-			
-		}
-		
 		if (xmlDoc == null) {
 			primaryLogger.severe(" ERROR : XML document not found / defined, aborting run ");
 			throw new PipelineDocException("XMLDoc not defined");
@@ -404,6 +398,10 @@ public class Pipeline {
 		primaryLogger.info("Beginning new Pipeline run");
 		primaryLogger.info("Jar file absolute path: " + MetaInfo.getJarFilePath());
 		primaryLogger.info("Jar file compilation time: " + new Date(MetaInfo.getManifestModifiedTime()));
+		
+		primaryLogger.info("Git commit tag : " + MetaInfo.getGitCommitTag());
+		primaryLogger.info("Git build time : " + MetaInfo.getCompileDateStr());
+		
 		
 		primaryLogger.info("XML Document found and parsed, attempting to read objects");
 		
@@ -602,13 +600,9 @@ public class Pipeline {
 	private static void printVersion() {
 		System.out.println("Pipeline version: " + PIPELINE_VERSION);
 		System.out.println("Compile date: " + new Date(MetaInfo.getManifestModifiedTime()));
-		try {
-			System.out.println("Git commit tag : " + MetaInfo.getGitCommitTag());
-			System.out.println("Git build time : " + MetaInfo.getCompileDateStr());
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		
+		System.out.println("Git commit tag : " + MetaInfo.getGitCommitTag());
+		System.out.println("Git build time : " + MetaInfo.getCompileDateStr());
 	}
 	
 	public static void main(String[] args) throws JSONException, IOException {
