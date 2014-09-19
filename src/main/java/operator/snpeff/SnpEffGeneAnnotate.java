@@ -166,7 +166,7 @@ public class SnpEffGeneAnnotate extends Annotator {
 				hasPreferredNM = true;
 				String preferredNM = nmMap.get(info.gene);
 				if (info.transcript.startsWith(preferredNM)) {
-					infoRank = 1000;
+					infoRank += 1000;
 					isUsingPreferredNM = true;
 				}
 			}
@@ -184,9 +184,7 @@ public class SnpEffGeneAnnotate extends Annotator {
 			// intronic or UTR is better than coding (because these will be most likely to be based on the reference transcript and not the variant)
 		String bestCdot = "";
 		Pattern p = Pattern.compile("[\\+\\-\\*]");
-		System.out.println("Starting new Variant");
 		for(SnpEffInfo info : infoList) {
-			System.out.println("Cdot is: " + info.cDot + "   " + info.transcript + "   " + info.exon);
 			if (info.transcript.equals(topHit.transcript) && info.cDot != null && ! info.cDot.equals("")) {
 				Matcher bestMatch = p.matcher(bestCdot);
 				Matcher nextMatch = p.matcher(info.cDot);
@@ -216,33 +214,38 @@ public class SnpEffGeneAnnotate extends Annotator {
 			return 0;
 		}
 		
-		//TODO change all text to reflect snpEff version 4.0
-		if (changeType.equals("INTERGENIC") || changeType.contains("UPSTREAM") || changeType.contains("DOWNSTREAM")) {
-			return 0;
+		if (VarEffects.effects.containsKey(changeType.trim())) {
+			return VarEffects.effects.get(changeType.trim());
+		} else {
+			return 6;
 		}
+		
+		// Previous code
+		//if (changeType.contains("intergenic") || changeType.contains("upstream") || changeType.contains("downstream") || changeType.equals("INTERGENIC") || changeType.contains("UPSTREAM") || changeType.contains("DOWNSTREAM")) {
+		//	return 0;
+		//}
 		//Splice is bad since there's no CDot or PDot associated with it. Prefer INTRON instead.
-				if (changeType.startsWith("SPLICE")) {
-					return 3; // changed from 0 
-				}
-		if (changeType.contains("UTR")) {
-			return 1;
-		}
-		if (changeType.equals("INTRON")) {
-			return 1;
-		}
-		if (changeType.equals("SYNONYMOUS_CODING")) {
-			return 2;
-		}
-		if (changeType.startsWith("NON_SYNONYMOUS")) {
-			return 4; // changed from 3
-		}
-		
-		
-		if (changeType.startsWith("START") || changeType.startsWith("STOP")) {
-			return 5;
-		}
-		
-		return 6;
+		//		if (changeType.startsWith("SPLICE") || changeType.startsWith("splice")) {
+		//			return 3; // changed from 0 
+		//		}
+		//if (changeType.contains("UTR")) {   // UTR is capitalized in both snpEff 3.
+		//	return 1;
+		//}
+		//if (changeType.equals("INTRON")) {
+		//	return 1;
+		//}
+		//if (changeType.equals("SYNONYMOUS_CODING")) {
+		//	return 2;
+		//}
+		//if (changeType.startsWith("NON_SYNONYMOUS")) {
+		//	return 4; // changed from 3
+		//}
+		//
+		//if (changeType.startsWith("START") || changeType.startsWith("STOP")) {
+		//	return 5;
+		//}
+		//
+		//return 6;
 	}
 	
 	private static String convertVar(String chr, int pos, String ref, String alt) {
@@ -490,3 +493,8 @@ public class SnpEffGeneAnnotate extends Annotator {
 		String exon;
 	}
 }
+
+
+
+
+
