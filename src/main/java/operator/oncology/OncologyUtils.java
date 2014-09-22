@@ -9,7 +9,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -152,7 +152,7 @@ public class OncologyUtils extends IOOperator {
 		Map<String, Long> bamRatioMap = ReadCounter.countReadsByChromosome(
 				(BAMFile) BamBuffers.get(6), 1);
 		Set<String> keysRatio = bamRatioMap.keySet();
-		Map<String, Long> ratioMap = new HashMap<String, Long>();
+		Map<String, Long> ratioMap = new LinkedHashMap<String, Long>();
 		for (String contig : RatioContigs) {
 			ratioMap.put(contig, (long) 0);
 		}
@@ -169,7 +169,7 @@ public class OncologyUtils extends IOOperator {
 		Map<String, Long> bamFusionMap = ReadCounter.countReadsByChromosome(
 				(BAMFile) BamBuffers.get(4), 1);
 		Set<String> keysFusion = bamFusionMap.keySet();
-		Map<String, Long> fusionMap = new HashMap<String, Long>();
+		Map<String, Long> fusionMap = new LinkedHashMap<String, Long>();
 		for (String contig : FusionContigs) {
 			fusionMap.put(contig, (long) 0);
 		}
@@ -187,7 +187,7 @@ public class OncologyUtils extends IOOperator {
 				(BAMFile) BamBuffers.get(9), 0);
 		System.out.println("Grabbing contigs from this bam file: " + BamBuffers.get(9).getAbsolutePath());
 		Set<String> keysRescue = bamRescueMap.keySet();
-		Map<String, Long> rescueMap = new HashMap<String, Long>();
+		Map<String, Long> rescueMap = new LinkedHashMap<String, Long>();
 		for (String contig : FusionSplitContigs) {
 			rescueMap.put(contig, (long) 0);
 		}
@@ -304,7 +304,7 @@ public class OncologyUtils extends IOOperator {
 		 * @author elainegee
 		 */
 		// Build summary map
-		Map<String, Object> summary = new HashMap<String, Object>();
+		Map<String, Object> summary = new LinkedHashMap<String, Object>();
 		// TODO: Rename the keys for these Map/JSON entries
 		summary.put("fraction of reads mapped to ratio reference",
 				fracRatioMapped);
@@ -378,25 +378,25 @@ public class OncologyUtils extends IOOperator {
 				mismatchFilterFusionCount);
 
 		// Build rna ratio map
-		Map<String, Object> rnaRatio = new HashMap<String, Object>();
+		Map<String, Object> rnaRatio = new LinkedHashMap<String, Object>();
 		rnaRatio = buildFractionCountMap(RatioContigs, ratioCounts, ratioFrac);
 
 		// Build RNA ratio map
-		Map<String, Object> rnaRatioAdjusted = new HashMap<String, Object>();
+		Map<String, Object> rnaRatioAdjusted = new LinkedHashMap<String, Object>();
 		rnaRatioAdjusted = buildFractionCountMap(RatioContigSets,
 				RatioCounts3p5p, ratioForRatio);
 
 		// Build rna fusion map
-		Map<String, Object> rnaFusion = new HashMap<String, Object>();
+		Map<String, Object> rnaFusion = new LinkedHashMap<String, Object>();
 		rnaFusion = buildFractionCountMap(FusionContigs, fusionCounts,
 				fusionFrac);
 		
 		//Build rescue step map
-		Map<String, Object> rnaRescue = new HashMap<String, Object>();
+		Map<String, Object> rnaRescue = new LinkedHashMap<String, Object>();
 		rnaRescue = buildFractionCountMap(FusionSplitContigs, fusionSplitCounts, fusionSplitFrac);
 
 		// Build final results map to be converted to JSON
-		Map<String, Object> finalResults = new HashMap<String, Object>();
+		Map<String, Object> finalResults = new LinkedHashMap<String, Object>();
 		finalResults.put("summary", summary);
 		finalResults.put("rna.ratio", rnaRatio);
 		finalResults.put("rna.fusion", rnaFusion);
@@ -470,10 +470,10 @@ public class OncologyUtils extends IOOperator {
 	 */
 	private Map<String, Object> buildFractionCountMap(String[] contigs,
 			long[] counts, double[] fractions) {
-		Map<String, Object> results = new HashMap<String, Object>();
+		Map<String, Object> results = new LinkedHashMap<String, Object>();
 		// Pull out information for each contig
 		for (int i = 0; i < contigs.length; i++) {
-			Map<String, Object> contigResults = new HashMap<String, Object>();
+			Map<String, Object> contigResults = new LinkedHashMap<String, Object>();
 			// Store fraction info
 			contigResults.put("fraction", fractions[i]);
 			// Store count info
