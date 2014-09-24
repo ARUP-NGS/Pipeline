@@ -60,13 +60,15 @@ public class SnpEffGeneAnnotate extends Annotator {
 			writer.write("##fileformat=VCFv4.1\n");
 			writer.write("#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	sample\n");
 			
-			for(String contig: variants.getContigs()) {
-				for(VariantRec rec: variants.getVariantsForContig(contig)) {
-					String varStr = convertVar(rec);		
-					writer.write(varStr + "\n");
-					varsWritten++;
+				for(String contig: variants.getContigs()) {
+					for(VariantRec rec: variants.getVariantsForContig(contig)) {
+						if (bedFile == null || bedFile.contains(rec.getContig(), rec.getStart())) {
+							String varStr = convertVar(rec);		
+							writer.write(varStr + "\n");
+							varsWritten++;
+						}
+					}
 				}
-			}
 
 			writer.close();
 		} catch (IOException e) {
