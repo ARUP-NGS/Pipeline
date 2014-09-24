@@ -1,21 +1,29 @@
 package util.Comparators;
 
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.HashSet;
 import java.util.List;
 
 import json.JSONException;
+import json.JSONObject;
 import operator.IOOperator;
 import operator.OperationFailedException;
 import pipeline.Pipeline;
+import util.CompressGZIP;
 import buffer.CSVFile;
 import buffer.FileBuffer;
+import buffer.JSONBuffer;
+
+import org.apache.commons.lang.ArrayUtils;
 
 import com.google.common.base.Joiner;
 
@@ -30,8 +38,8 @@ import java.util.logging.Logger;
  */
 public class CompareAnnotationCSVs extends IOOperator{
 	
-	private LinkedHashMap<String, Object> CSVCompare(String csvFile1, String csvFile2) throws IOException{
-		//Load csv1 into a String array
+	LinkedHashMap<String, Object> CSVCompare(String csvFile1, String csvFile2) throws IOException{
+		//Load csv1 Integero a String array
 		BufferedReader csvReader1 = new BufferedReader(new FileReader(csvFile1));
         String str;
         List<String> list1 = new ArrayList<String>();
@@ -49,7 +57,7 @@ public class CompareAnnotationCSVs extends IOOperator{
         
         String[] csvLocs1 = new String[csvLines1.length];
         String[] csvLocs2 = new String[csvLines2.length];
-        int i=0;
+        Integer i=0;
         for(String line : csvLines1) {
         	if(line.startsWith("#"))
         		continue;
@@ -87,19 +95,19 @@ public class CompareAnnotationCSVs extends IOOperator{
 	private LinkedHashMap<String, ArrayList<String>> FullComparison (String[] sharedLines1, String[] sharedLines2){
 		Logger logger = Logger.getLogger(Pipeline.primaryLoggerName);
 		String[] header = sharedLines1[0].split("\t");
-		int numCols = header.length;
-		int numRows = sharedLines1.length;
-		int numCols2 = sharedLines2[0].split("\t").length;
+		Integer numCols = header.length;
+		Integer numRows = sharedLines1.length;
+		Integer numCols2 = sharedLines2[0].split("\t").length;
 		if(numCols != numCols2) {
 			logger.info("Number of columns in csv 1 is " + numCols + ", while number in csv 2 is " + numCols2+". It seems that these aren't the same.");
 		}
 		LinkedHashMap<String, ArrayList<String>> diffMap = new LinkedHashMap<String, ArrayList<String>>();
-		int col = 0;
-		int[] annotationSum = new int[numCols];
-		int[] varSum = new int[numRows];
+		Integer col = 0;
+		Integer[] annotationSum = new Integer[numCols];
+		Integer[] varSum = new Integer[numRows];
 		while(col < numCols) {
 			ArrayList<String> diffList = new ArrayList<String>();
-			int row = 0;
+			Integer row = 0;
 			while(row < numRows) {
 				if(sharedLines1[row].split("\t")[col] != sharedLines2[row].split("\t")[col]) {
 					varSum[row]++;
@@ -112,17 +120,55 @@ public class CompareAnnotationCSVs extends IOOperator{
 			diffMap.put(header[col], diffList);
 			col++;
 		}
-		
+		double colAvgFrac = 0;
+		Integer colSumDiff = 0;
+		double varAvgFrac = 0;
+		double varSumDiff = 0;
+		ArrayList<String> colCntStr = new ArrayList<String>();
+		ArrayList<String> varCntStr = new ArrayList<String>();
 		ArrayList<String> colPctStr = new ArrayList<String>();
 		ArrayList<String> varPctStr = new ArrayList<String>();
-		for(int i = 0; i < numCols; i++) {
+		for(Integer i = 0; i < numCols; i++) {
 			colPctStr.add(String.format("%.2f", 100*(double)annotationSum[i]/(double)numRows) + "%");
+			colCntStr.add(String.format("%d", annotationSum[i]));
+			colSumDiff += annotationSum[i];
+			colAvgFrac += (double)annotationSum[i]/(double)numRows;
 		}
-		for(int i = 0; i < numCols; i++) {
+		for(Integer i = 0; i < numRows; i++) {
 			varPctStr.add(String.format("%.2f", 100*(double)varSum[i]/(double)numCols + "%"));
+			varCntStr.add(String.format("%d", varSum[i]));
+			varSumDiff += varSum[i];
+			varAvgFrac += (double)varSum[i]/(double)numCols;
 		}
+		colAvgFrac = colAvgFrac / numCols;
+		logger.info("Average annotation has this fraction of entries with differences between csvs: " + colAvgFrac);
+		varAvgFrac = varAvgFrac / numRows;
+		logger.info("Average variant has this fraction of entries with differences between csvs: " + varAvgFrac);
+		
+		Integer maxVarDiffs = 0;
+		String maxVarLoc = "N/A";
+		Integer maxAnnotDiffs = 0;
+		String maxAnnot = "N/A";
+		for(int k = 0; k < annotationSum.length ; k++) {
+			if(annotationSum[k] > maxVarDiffs){
+				maxVarDiffs = annotationSum[k];
+				maxVarLoc = Joiner.on("\t").join(Arrays.asList(sharedLines1[k].split("\t")).subList(0, 4));
+			}
+		}
+		for(int k = 0; k < header.length; k++) {
+			if(varSum[k] > maxAnnotDiffs) {
+				maxAnnotDiffs = varSum[k];
+				maxAnnot = header[k];
+			}
+		}
+		logger.info("Variant with the most differences between input files is located at " + maxVarLoc + "with " + maxVarDiffs + " changes.");
+		logger.info("Annotation with the most differences between input files is " + maxAnnot + "with " + maxAnnotDiffs + " changes.");
+		
+		
 		diffMap.put("columnPcts", colPctStr);
+		diffMap.put("colCounts", colCntStr);
 		diffMap.put("varPcts", varPctStr);
+		diffMap.put("varCounts", varCntStr);
 		
 		return diffMap;
 	}
@@ -199,31 +245,6 @@ public class CompareAnnotationCSVs extends IOOperator{
         return zygosityResults;
 	}
 
-	private LinkedHashMap<String, Integer> ZygosityCompare(String[] csvLines1, String[] csvLines2, String[] csvLocs1, String[] csvLocs2){
-		LinkedHashMap<String, Integer> zygosityResults = new LinkedHashMap<String, Integer>();
-        String[] zygosity1 = new String[csvLines1.length];
-        String[] zygosity2 = new String[csvLines2.length];
-        int i=0;
-        // Create zygosity and position arrays
-        for(String line : csvLines1) {
-        	if(line.startsWith("#"))
-        		continue;
-        	zygosity1[i] = line.split("\t")[7];
-        	i+=1;
-        }
-        i=0;
-        for(String line : csvLines2) {
-        	if(line.startsWith("#"))
-        		continue;
-        	zygosity2[i] = line.split("\t")[7];
-        	i+=1;
-        }
-        // Create list of variants to facilitate comparison of zygosity
-        String[] varList1 = new HashSet<String>(Arrays.asList(csvLocs1)).toArray(new String[csvLocs1.length]);
-        String[] varList2 = new HashSet<String>(Arrays.asList(csvLocs1)).toArray(new String[csvLocs1.length]);
-		return zygosityResults;
-	}
-	
 	@Override
 	public void performOperation() throws OperationFailedException,
 			JSONException, IOException {
@@ -236,6 +257,17 @@ public class CompareAnnotationCSVs extends IOOperator{
 		String CSV2 = CSVs.get(1).getAbsolutePath();
 		
 		LinkedHashMap<String, Object> Results = CSVCompare(CSV1, CSV2);
+		JSONObject ResultsJson = new JSONObject(Results);
+		String ResultsStr = ResultsJson.toString();
+		
+		byte[] bytes = CompressGZIP.compressGZIP(ResultsStr);
+
+		// Write compresssed JSON to file
+		File dest = this.getOutputBufferForClass(JSONBuffer.class).getFile();
+		BufferedOutputStream writer = new BufferedOutputStream(
+				new FileOutputStream(dest));
+		writer.write(bytes);
+		writer.close();
 		
 	}
 	

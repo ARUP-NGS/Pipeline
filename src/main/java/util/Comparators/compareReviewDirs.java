@@ -1,18 +1,25 @@
 package util.Comparators;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.logging.Logger;
 
 import json.JSONException;
+import json.JSONObject;
 import buffer.FileBuffer;
+import buffer.JSONBuffer;
 import buffer.VCFFile;
 import buffer.variant.VariantPool;
 import buffer.variant.VariantRec;
 import operator.IOOperator;
 import operator.OperationFailedException;
 import operator.variant.CompareVCF;
+import util.CompressGZIP;
+import util.Comparators.CompareAnnotationCSVs;
 import pipeline.Pipeline;
 
 
@@ -31,11 +38,11 @@ public void performOperation() throws OperationFailedException, JSONException,
 	// Get folder locations
 	List<FileBuffer> RevDirs = this.getAllInputBuffersForClass(FileBuffer.class);
 	String revDirLoc1 = RevDirs.get(0).getAbsolutePath();
-	if(!revDirLoc1.endsWith("/"))
-		revDirLoc1=revDirLoc1+"/";
+	if(revDirLoc1.endsWith("/"))
+		revDirLoc1=revDirLoc1.substring(0, revDirLoc1.length()-1);
 	String revDirLoc2 = RevDirs.get(1).getAbsolutePath();
-	if(!revDirLoc2.endsWith("/"))
-		revDirLoc2=revDirLoc1+"/";
+	if(revDirLoc2.endsWith("/"))
+		revDirLoc2=revDirLoc2.substring(0, revDirLoc2.length()-1);
 	
 	// Create "File" objects for them
 	File revDir1 = new File(revDirLoc1);
@@ -50,19 +57,36 @@ public void performOperation() throws OperationFailedException, JSONException,
 	}
 	
 	//Create "File"s for the vcf files.VCF1reader
-	String vcfLoc1 = revDirLoc1 + "var/" + revDirLoc1.split(".")[0]+".all.vcf";
-	String vcfLoc2 = revDirLoc2 + "var/" + revDirLoc2.split(".")[0]+".all.vcf";
+	String vcfLoc1 = revDirLoc1 + "/var/" + revDirLoc1.replace("*/","").split(".")[0]+"_all_variants.vcf";
+	String vcfLoc2 = revDirLoc2 + "/var/" + revDirLoc2.replace("*/","").split(".")[0]+"_all_variants.vcf";
 	VariantPool varPool1 = new VariantPool(new VCFFile( new File(vcfLoc1)));
 	VariantPool varPool2 = new VariantPool(new VCFFile( new File(vcfLoc2)));
 	varPool1.sortAllContigs();
 	varPool2.sortAllContigs();
-	CompareVCF compare = new CompareVCF();
-	int[] compareStats = CompareVCF.compareVars(varPool1, varPool2, logger);
+	
+	LinkedHashMap<String, Integer> compareStats = CompareVCF.compareVars(varPool1, varPool2, logger);
+	String csvLoc1 = revDirLoc1 + "var/" + revDirLoc1.replace("*/","").split(".")[0]+"_annotated.csv";
+	String csvLoc2 = revDirLoc2 + "var/" + revDirLoc2.replace("*/","").split(".")[0]+"_annotated.csv";
+	CompareAnnotationCSVs CSVComp = new CompareAnnotationCSVs();
+	LinkedHashMap<String, Object> csvResults = CSVComp.CSVCompare(csvLoc1, csvLoc2);
+	
+	LinkedHashMap<String, Object> AllResults = new LinkedHashMap<String, Object>();
+	AllResults.put("CSVResults", csvResults);
+	AllResults.put("VCFResults", compareStats);
+	JSONObject ResultsJson = new JSONObject(csvResults);
+	String ResultsStr = ResultsJson.toString();
+	
+	byte[] bytes = CompressGZIP.compressGZIP(ResultsStr);
+
+	// Write compresssed JSON to file
+	File dest = this.getOutputBufferForClass(JSONBuffer.class).getFile();
+	BufferedOutputStream writer = new BufferedOutputStream(
+			new FileOutputStream(dest));
+	writer.write(bytes);
+	writer.close();
+	
 	//TODO: Create output for this operation.
 	
-	//
-	String csvLoc1 = revDirLoc1 + "var/" + revDirLoc1.split(".")[0]+"_annotated.csv";
-	String csvLoc2 = revDirLoc2 + "var/" + revDirLoc2.split(".")[0]+"_annotated.csv";
 }
 
 }

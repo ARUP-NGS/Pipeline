@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -163,7 +164,7 @@ public class CompareVCF extends IOOperator {
 	
 	}
 
-	public static int[] compareVars(VariantPool varsA, VariantPool varsB, Logger output) {
+	public static LinkedHashMap<String, Integer> compareVars(VariantPool varsA, VariantPool varsB, Logger output) {
 		List<VarPair> perfectMatch = new ArrayList<VarPair>();
 		List<VarPair> difZygote = new ArrayList<VarPair>();
 		List<VarPair> difAlt = new ArrayList<VarPair>();
@@ -290,8 +291,14 @@ public class CompareVCF extends IOOperator {
 				}
 			}
 		}
-		int[] returnArray = {cumulPropDiffs, cumulPropMissing, cumulPropAdtns, cumulAnnDiffs, cumulAnnMissing, cumulAnnAdtns};
-		return returnArray;
+		LinkedHashMap<String, Integer> vcfResults = new LinkedHashMap<String, Integer>();
+		vcfResults.put("Total properties at variance between sets", cumulPropDiffs);
+		vcfResults.put("Total properties missing from sample 2", cumulPropMissing);
+		vcfResults.put("Total properties missing from sample 1", cumulPropAdtns);
+		vcfResults.put("Total annotations at variance between sets", cumulAnnDiffs);
+		vcfResults.put("Total annotations missing from Sample 2", cumulAnnMissing);
+		vcfResults.put("Total annotations missing from Sample 1", cumulAnnAdtns);
+		return vcfResults;
 
 	}
 	
