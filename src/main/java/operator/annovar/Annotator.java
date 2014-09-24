@@ -16,6 +16,7 @@ import org.w3c.dom.NodeList;
 
 import pipeline.Pipeline;
 import pipeline.PipelineObject;
+import buffer.BEDFile;
 import buffer.variant.VariantPool;
 import buffer.variant.VariantRec;
 
@@ -28,6 +29,7 @@ import buffer.variant.VariantRec;
 public abstract class Annotator extends Operator {
 
 	protected VariantPool variants = null;
+	protected BEDFile bedFile = null;
 	
 
 	/**
@@ -62,19 +64,21 @@ public abstract class Annotator extends Operator {
 		prepare();
 		
 		int varsAnnotated = 0;
-		
+
 		for(String contig : variants.getContigs()) {
 			for(VariantRec rec : variants.getVariantsForContig(contig)) {
-				annotateVariant(rec);
+				if (bedFile == null || bedFile.contains(rec.getContig(), rec.getStart())) {
+					annotateVariant(rec);
 				
-				varsAnnotated++;
-				double prog = 100 * (double)varsAnnotated  / (double) tot;
-				if (displayProgress() && varsAnnotated % 2000 == 0) {
-					System.out.println("Annotated " + varsAnnotated + " of " + tot + " variants  (" + formatter.format(prog) + "% )");	
+					varsAnnotated++;
+					double prog = 100 * (double)varsAnnotated  / (double) tot;
+					if (displayProgress() && varsAnnotated % 2000 == 0) {
+						System.out.println("Annotated " + varsAnnotated + " of " + tot + " variants  (" + formatter.format(prog) + "% )");	
+					}
 				}
 			}
 		}
-			
+		
 		cleanup();
 	}
 
@@ -121,8 +125,14 @@ public abstract class Annotator extends Operator {
 				PipelineObject obj = getObjectFromHandler(el.getNodeName());
 				if (obj instanceof VariantPool) {
 					variants = (VariantPool)obj;
+				} else if (obj instanceof BEDFile) {
+					bedFile = (BEDFile)obj;
+					try {
+						bedFile.buildIntervalsMap(true);
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
 				}
-
 			}
 		}
 	}
