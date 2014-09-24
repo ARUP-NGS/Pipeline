@@ -14,7 +14,6 @@ import buffer.FileBuffer;
 import buffer.JSONBuffer;
 import buffer.VCFFile;
 import buffer.variant.VariantPool;
-import buffer.variant.VariantRec;
 import operator.IOOperator;
 import operator.OperationFailedException;
 import operator.variant.CompareVCF;
@@ -36,11 +35,10 @@ public void performOperation() throws OperationFailedException, JSONException,
 	
 	Logger logger = Logger.getLogger(Pipeline.primaryLoggerName);
 	// Get folder locations
-	List<FileBuffer> RevDirs = this.getAllInputBuffersForClass(FileBuffer.class);
-	String revDirLoc1 = RevDirs.get(0).getAbsolutePath();
+	String revDirLoc1 = this.getAttribute("ReviewDir1");
 	if(revDirLoc1.endsWith("/"))
 		revDirLoc1=revDirLoc1.substring(0, revDirLoc1.length()-1);
-	String revDirLoc2 = RevDirs.get(1).getAbsolutePath();
+	String revDirLoc2 = this.getAttribute("ReviewDir2");
 	if(revDirLoc2.endsWith("/"))
 		revDirLoc2=revDirLoc2.substring(0, revDirLoc2.length()-1);
 	
@@ -57,16 +55,30 @@ public void performOperation() throws OperationFailedException, JSONException,
 	}
 	
 	//Create "File"s for the vcf files.VCF1reader
-	String vcfLoc1 = revDirLoc1 + "/var/" + revDirLoc1.replace("*/","").split(".")[0]+"_all_variants.vcf";
-	String vcfLoc2 = revDirLoc2 + "/var/" + revDirLoc2.replace("*/","").split(".")[0]+"_all_variants.vcf";
+	String Prefix1 = revDirLoc1.split("/")[revDirLoc1.split("/").length-1];
+	String Prefix2 = revDirLoc2.split("/")[revDirLoc2.split("/").length-1];
+	System.out.println("Prefix1 is " + Prefix1);
+	System.out.println("Prefix2 is " + Prefix2);
+	String[] splitPrefix1 = Prefix1.split(".");
+	int i=0;
+	if(splitPrefix1.length == 0) {
+		System.out.println("THIS IS EMPTY");
+	}
+	while(i < splitPrefix1.length) {
+		System.out.println("Entry in this split string number " + i + " is " + splitPrefix1[i]);
+	}
+	String vcfLoc1 = revDirLoc1 + "/var/" + Prefix1.split("\\.")[0]+"_all_variants.vcf";
+	logger.info("vcfLoc1 is: " + vcfLoc1);
+	String vcfLoc2 = revDirLoc2 + "/var/" + Prefix2.split("\\.")[0]+"_all_variants.vcf";
+	logger.info("vcfLoc1 is: " + vcfLoc1);
 	VariantPool varPool1 = new VariantPool(new VCFFile( new File(vcfLoc1)));
 	VariantPool varPool2 = new VariantPool(new VCFFile( new File(vcfLoc2)));
 	varPool1.sortAllContigs();
 	varPool2.sortAllContigs();
 	
 	LinkedHashMap<String, Integer> compareStats = CompareVCF.compareVars(varPool1, varPool2, logger);
-	String csvLoc1 = revDirLoc1 + "var/" + revDirLoc1.replace("*/","").split(".")[0]+"_annotated.csv";
-	String csvLoc2 = revDirLoc2 + "var/" + revDirLoc2.replace("*/","").split(".")[0]+"_annotated.csv";
+	String csvLoc1 = revDirLoc1 + "/var/" + Prefix1.split("\\.")[0]+"_annotated.csv";
+	String csvLoc2 = revDirLoc2 + "/var/" + Prefix2.split("\\.")[0]+"_annotated.csv";
 	CompareAnnotationCSVs CSVComp = new CompareAnnotationCSVs();
 	LinkedHashMap<String, Object> csvResults = CSVComp.CSVCompare(csvLoc1, csvLoc2);
 	

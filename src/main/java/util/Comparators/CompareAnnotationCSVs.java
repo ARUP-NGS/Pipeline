@@ -75,9 +75,23 @@ public class CompareAnnotationCSVs extends IOOperator{
         LinkedHashMap<String, Integer> positionResults = SharedVarsCounts(csvLocs1, csvLocs2);
         //Retrieve variant positions shared between both to facilitate further comparisons.
         ArrayList<ArrayList<String>> sharedLines = SharedVarLines(csvLines1, csvLines2, csvLocs1, csvLocs2);
-		String [] sharedLines1 = (String[]) sharedLines.get(0).toArray();
-		String [] sharedLines2 = (String[]) sharedLines.get(1).toArray();
-		
+		String [] sharedLines1 = new String[sharedLines.get(0).toArray().length];
+		int length = sharedLines.get(0).toArray().length;
+		Object [] sharedLinesList1 = sharedLines.get(0).toArray();
+		int counter=0;
+		for(Object obj : sharedLinesList1) {
+			String s = (String)obj;
+			sharedLines1[counter] = s;
+			counter += 1;
+		}
+		String [] sharedLines2 = new String[sharedLines.get(0).toArray().length];
+		counter = 0;
+		Object [] sharedLinesList2 = sharedLines.get(1).toArray();
+		for(Object obj : sharedLinesList2) {
+			String s = (String)obj;
+			sharedLines2[counter] = s;
+			counter += 1;
+		}
         
 		LinkedHashMap<String, Object> compareSummary = new LinkedHashMap<String, Object>();
 		LinkedHashMap<String, Integer> zygosityResults = ZygosityCompare(sharedLines1, sharedLines2);
@@ -105,6 +119,10 @@ public class CompareAnnotationCSVs extends IOOperator{
 		Integer col = 0;
 		Integer[] annotationSum = new Integer[numCols];
 		Integer[] varSum = new Integer[numRows];
+		for(int i=0; i<varSum.length;i++)
+			varSum[i] = 0;
+		for(int i=0; i<annotationSum.length;i++)
+			annotationSum[i] = 0;
 		while(col < numCols) {
 			ArrayList<String> diffList = new ArrayList<String>();
 			Integer row = 0;
