@@ -59,14 +59,6 @@ public void performOperation() throws OperationFailedException, JSONException,
 	String Prefix2 = revDirLoc2.split("/")[revDirLoc2.split("/").length-1];
 	System.out.println("Prefix1 is " + Prefix1);
 	System.out.println("Prefix2 is " + Prefix2);
-	String[] splitPrefix1 = Prefix1.split(".");
-	int i=0;
-	if(splitPrefix1.length == 0) {
-		System.out.println("THIS IS EMPTY");
-	}
-	while(i < splitPrefix1.length) {
-		System.out.println("Entry in this split string number " + i + " is " + splitPrefix1[i]);
-	}
 	String vcfLoc1 = revDirLoc1 + "/var/" + Prefix1.split("\\.")[0]+"_all_variants.vcf";
 	logger.info("vcfLoc1 is: " + vcfLoc1);
 	String vcfLoc2 = revDirLoc2 + "/var/" + Prefix2.split("\\.")[0]+"_all_variants.vcf";

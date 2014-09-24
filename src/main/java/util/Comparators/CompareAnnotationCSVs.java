@@ -127,7 +127,7 @@ public class CompareAnnotationCSVs extends IOOperator{
 			ArrayList<String> diffList = new ArrayList<String>();
 			Integer row = 0;
 			while(row < numRows) {
-				if(sharedLines1[row].split("\t")[col] != sharedLines2[row].split("\t")[col]) {
+				if(!sharedLines1[row].split("\t")[col].equals(sharedLines2[row].split("\t")[col])) {
 					varSum[row]++;
 					annotationSum[col]++;
 					diffList.add(Joiner.on("\t").join(Arrays.asList(sharedLines1[row].split("\t")).subList(0, 4)));
@@ -153,7 +153,7 @@ public class CompareAnnotationCSVs extends IOOperator{
 			colAvgFrac += (double)annotationSum[i]/(double)numRows;
 		}
 		for(Integer i = 0; i < numRows; i++) {
-			varPctStr.add(String.format("%.2f", 100*(double)varSum[i]/(double)numCols + "%"));
+			varPctStr.add(String.format("%.2f", 100*(double)varSum[i]/(double)numCols) + "%");
 			varCntStr.add(String.format("%d", varSum[i]));
 			varSumDiff += varSum[i];
 			varAvgFrac += (double)varSum[i]/(double)numCols;
@@ -173,14 +173,14 @@ public class CompareAnnotationCSVs extends IOOperator{
 				maxVarLoc = Joiner.on("\t").join(Arrays.asList(sharedLines1[k].split("\t")).subList(0, 4));
 			}
 		}
-		for(int k = 0; k < header.length; k++) {
+		for(int k = 0; k < varSum.length; k++) {
 			if(varSum[k] > maxAnnotDiffs) {
 				maxAnnotDiffs = varSum[k];
 				maxAnnot = header[k];
 			}
 		}
-		logger.info("Variant with the most differences between input files is located at " + maxVarLoc + "with " + maxVarDiffs + " changes.");
-		logger.info("Annotation with the most differences between input files is " + maxAnnot + "with " + maxAnnotDiffs + " changes.");
+		logger.info("Variant with the most differences between input files is located at " + maxVarLoc + " with " + maxVarDiffs + " changes.");
+		logger.info("Annotation with the most differences between input files is " + maxAnnot + " with " + maxAnnotDiffs + " changes.");
 		
 		
 		diffMap.put("columnPcts", colPctStr);
@@ -266,6 +266,7 @@ public class CompareAnnotationCSVs extends IOOperator{
 	@Override
 	public void performOperation() throws OperationFailedException,
 			JSONException, IOException {
+
 		Logger logger = Logger.getLogger(Pipeline.primaryLoggerName);
 		List<FileBuffer> CSVs = this.getAllInputBuffersForClass(CSVFile.class);
 		if(CSVs.size() != 2){
