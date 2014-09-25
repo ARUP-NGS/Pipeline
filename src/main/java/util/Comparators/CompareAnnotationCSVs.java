@@ -59,15 +59,15 @@ public class CompareAnnotationCSVs extends IOOperator{
         String[] csvLocs2 = new String[csvLines2.length];
         Integer i=0;
         for(String line : csvLines1) {
-        	if(line.startsWith("#"))
-        		continue;
+        	//if(line.startsWith("#"))
+        	//	continue;
         	csvLocs1[i] = Joiner.on("\t").join(Arrays.asList(line.split("\t")).subList(0, 4).toArray()); 
         	i+=1;
         }
         i=0;
         for(String line : csvLines2) {
-        	if(line.startsWith("#"))
-        		continue;
+        	//if(line.startsWith("#"))
+        	//	continue;
         	csvLocs2[i] = Joiner.on("\t").join(Arrays.asList(line.split("\t")).subList(0, 4).toArray());
         	i+=1;
         }
