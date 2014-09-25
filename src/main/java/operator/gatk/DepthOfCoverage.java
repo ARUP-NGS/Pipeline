@@ -1,5 +1,7 @@
 package operator.gatk;
 
+import gene.ExonLookupService;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -25,9 +27,10 @@ public class DepthOfCoverage extends IOOperator {
 	public static final String PATH = "path";
 	public static final String THREADS = "threads";
 	public static final String JVM_ARGS="jvmargs";
+	public static final String EXON_MIN_DEPTH="exon.min.depth";
 	protected String defaultGATKPath = "~/GenomeAnalysisTK-1.6/GenomeAnalysisTK.jar";
 	protected String gatkPath = defaultGATKPath;
-	final static int[] cutoffs = new int[]{5, 8, 10, 15, 20, 50};
+	final static int[] cutoffs = new int[]{5, 8, 10, 15, 20, 50, 500, 1000};
 	private DOCMetrics metrics = null;
 	
 	public boolean requiresReference() {
@@ -46,6 +49,12 @@ public class DepthOfCoverage extends IOOperator {
 			gatkPath = path;
 		}
 		
+		Integer minExonDepth = null;
+		String exonMinDepthAttr = properties.get(EXON_MIN_DEPTH);
+		{
+			minExonDepth = Integer.parseInt(exonMinDepthAttr);
+		}
+		
 		//Additional args for jvm
 		String jvmARGStr = properties.get(JVM_ARGS);
 		if (jvmARGStr == null || jvmARGStr.length()==0) {
@@ -55,6 +64,8 @@ public class DepthOfCoverage extends IOOperator {
 		if (jvmARGStr == null || jvmARGStr.length()==0) {
 			jvmARGStr = "";
 		}
+		
+		
 		
 		
 		FileBuffer inputBuffer = getInputBufferForClass(BAMFile.class);
@@ -141,17 +152,44 @@ public class DepthOfCoverage extends IOOperator {
 				Double meanCov = Double.parseDouble( toks[2] );
 				Double percentOK = Double.parseDouble( toks[ toks.length - 3].trim() );
 				
-				if (percentOK < 80.0) {
+				if (minExonDepth != null && meanCov < minExonDepth) {
 					FlaggedInterval fInt = new FlaggedInterval();
 					fInt.info = interval;
 					fInt.mean = meanCov;
 					fInt.frac = percentOK;
+					
+					String[] posToks = interval.split("(:)|(-)"); 
+					fInt.chr = posToks[0];
+					fInt.start = Integer.parseInt(posToks[1]);
+					fInt.end = Integer.parseInt(posToks[2]);
+					
 					problemIntervals.add(fInt);
 				}
+				
+				
 				line = reader.readLine();
 			}
 			
 			metrics.setFlaggedIntervals(problemIntervals);
+			
+			//Annotate the problem interval regions so we know what they are
+			ExonLookupService featureLookup = new ExonLookupService();
+			String featureFile = getPipelineProperty("feature.file");
+			if(featureFile == null){
+				throw new IOException("PipelineProperty 'feature.file' not defined.");
+			}
+			File features = new File(featureFile);
+			if (!features.exists()) {
+				throw new IOException("Feature file " + features.getAbsolutePath() + " does not exist!");
+			}
+			featureLookup.buildExonMap(features);
+			
+			for(FlaggedInterval lowCovExon : metrics.getFlaggedIntervals()) {
+				Object[] overlappingFeatures = featureLookup.getIntervalObjectsForRange(lowCovExon.chr, lowCovExon.start, lowCovExon.end);
+				for(Object feat : overlappingFeatures) {
+					lowCovExon.info = lowCovExon.info + feat.toString() + "; ";
+				}
+			}
 			
 			
 			

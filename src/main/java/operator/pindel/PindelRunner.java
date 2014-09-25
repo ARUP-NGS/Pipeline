@@ -114,13 +114,11 @@ public class PindelRunner extends IOOperator {
 		featureLookup.buildExonMap(features);
 		
 		for(String svType : results.keySet()) {
-			System.out.println("Structural variant type: " + svType);
 			for(PindelResult sv : results.get(svType)) {
 				Object[] overlappingFeatures = featureLookup.getIntervalObjectsForRange(sv.getChromo(), sv.getRangeStart(), sv.getRangeEnd());
 				for(Object feat : overlappingFeatures) {
 					sv.addFeatureAnnotation(feat.toString());
 				}
-				System.out.println(sv.toShortString());
 			}
 		}
 		

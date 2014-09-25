@@ -2,6 +2,7 @@ package buffer;
 
 import java.util.List;
 
+import json.JSONArray;
 import json.JSONException;
 import json.JSONObject;
 import json.JSONString;
@@ -45,7 +46,9 @@ public class DOCMetrics extends FileBuffer implements JSONString {
 			obj.put("fraction.above.cov.cutoff", toPrecision(fractionAboveCutoff, 4));
 			if (coverageProportions != null)
 				obj.put("fraction.above.index", toPrecision(coverageProportions, 4));
-			
+			if (flaggedIntervals != null) {
+				obj.put("lowcov.exons", flaggedIntervalsToJSON());
+			}
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -54,6 +57,30 @@ public class DOCMetrics extends FileBuffer implements JSONString {
 		return obj;
 	}
 	
+	private JSONArray flaggedIntervalsToJSON() {
+		JSONArray arr = new JSONArray();
+		for(FlaggedInterval fi : flaggedIntervals) {
+			try {
+				arr.put( flaggedIntervalToJSON(fi) );
+			} catch (JSONException e) {
+				System.err.println("Exception parsing flagged interval " + fi.chr + " : " + fi.start + "-" + fi.end);
+			}
+		}
+		return arr;
+	}
+	
+	private JSONObject flaggedIntervalToJSON(FlaggedInterval fi) throws JSONException {
+		JSONObject obj = new JSONObject();
+		
+		obj.put("chr", fi.chr);
+		obj.put("start", fi.start);
+		obj.put("end", fi.end);
+		obj.put("meancov", fi.mean);
+		obj.put("feature", fi.info);
+		
+		return obj;
+	}
+
 	public double[] getCoverageProportions() {
 		return coverageProportions;
 	}
@@ -136,6 +163,9 @@ public class DOCMetrics extends FileBuffer implements JSONString {
 		public String info = null;
 		public double mean = 0;
 		public double frac = 0;
+		public String chr;
+		public int start;
+		public int end;
 	}
 	
 }

@@ -57,17 +57,22 @@ public class BEDFile extends IntervalsFile {
 					contig = contig.replace("chr", "");
 				toks[1] = toks[1].trim();
 				toks[2] = toks[2].trim();
-				Integer begin = Integer.parseInt(toks[1]);
-				Integer end = Integer.parseInt(toks[2]);
-				Interval interval = new Interval(begin, end);
+				try {
+					Integer begin = Integer.parseInt(toks[1]);
+					Integer end = Integer.parseInt(toks[2]);
+					Interval interval = new Interval(begin, end);
 
-				List<Interval> contigIntervals = intervals.get(contig);
-				if (contigIntervals == null) {
-					contigIntervals = new ArrayList<Interval>(2048);
-					intervals.put(contig, contigIntervals);
-					//System.out.println("BED file adding contig: " + contig);
+					List<Interval> contigIntervals = intervals.get(contig);
+					if (contigIntervals == null) {
+						contigIntervals = new ArrayList<Interval>(2048);
+						intervals.put(contig, contigIntervals);
+						//System.out.println("BED file adding contig: " + contig);
+					}
+					contigIntervals.add(interval);
 				}
-				contigIntervals.add(interval);
+				catch (Exception ex) {
+					Logger.getLogger(Pipeline.primaryLoggerName).warning("Skipping invalid line in bed file: " + line);
+				}
 			}
 			line = reader.readLine();
 		}
