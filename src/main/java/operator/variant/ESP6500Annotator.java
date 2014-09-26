@@ -82,6 +82,10 @@ public class ESP6500Annotator extends Annotator {
 	private boolean addAnnotationsFromString(VariantRec var, String val) {
 		String[] toks = val.split("\t");
 		String[] format = toks[7].split(";");
+		
+		Double totOverall = 0.0;
+		Double homOverall = 0.0;
+		
 		for(int i=0; i<format.length; i++) {
 			String tok = format[i];
 			if (tok.startsWith("MAF=")) {
@@ -110,6 +114,8 @@ public class ESP6500Annotator extends Annotator {
 					var.addProperty(VariantRec.EXOMES_EA_HOMREF, homRef / tot);
 					var.addProperty(VariantRec.EXOMES_EA_HET, het/tot);
 					var.addProperty(VariantRec.EXOMES_EA_HOMALT, homAlt/ tot);
+					totOverall += tot;
+					homOverall += homAlt;
 				}
 				catch(NumberFormatException ex) {
 					//Don't worry about it, no annotation though
@@ -127,12 +133,21 @@ public class ESP6500Annotator extends Annotator {
 					var.addProperty(VariantRec.EXOMES_AA_HOMREF, homRef / tot);
 					var.addProperty(VariantRec.EXOMES_AA_HET, het/tot);
 					var.addProperty(VariantRec.EXOMES_AA_HOMALT, homAlt/ tot);
+					totOverall += tot;
+					homOverall += homAlt;
 				}
 				catch(NumberFormatException ex) {
 					//Don't worry about it, no annotation though
 				}
 			}
 		}
+		
+		if (totOverall > 0) {
+			var.addProperty(VariantRec.EXOMES_HOM_FREQ, homOverall / totOverall);
+		} else {
+			var.addProperty(VariantRec.EXOMES_HOM_FREQ, 0.0);	
+		}
+		
 		return true;
 	}
 

@@ -282,26 +282,7 @@ public class SnpEffGeneAnnotate extends Annotator {
 		}		
 	}
 	
-	private Map<String,String> readNMMap(File file) throws IOException{
-		BufferedReader br;
-			br = new BufferedReader(new FileReader(file));
-			String line;
-			HashMap<String,String> nms = new HashMap<String,String>();
-			
-			while((line = br.readLine()) != null){
-				if (line.length()==0)
-					continue;
-				
-				String[] values = line.split("\t");
-				if (values.length != 2) {
-					Logger.getLogger(Pipeline.primaryLoggerName).warning("Could not parse preferred NM# from line: " + line);
-					continue;
-				}
-				nms.put(values[0].toUpperCase().trim(), values[1].toUpperCase().trim());
-			}
-			br.close();
-			return nms;
-		}
+	
 	
 	/**
 	 * Convert the variant info a form that works with SnpEff parsing
@@ -475,14 +456,8 @@ public class SnpEffGeneAnnotate extends Annotator {
 		}
 		
 		String nmDefs = this.getAttribute(NM_DEFS);
-		if (nmDefs != null) {
-			File nmFile = new File(nmDefs);
-			try {
-				nmMap = readNMMap(nmFile);
-			} catch (IOException e) {
-				throw new IllegalArgumentException("Could not parse NM Defs file: " + e.getLocalizedMessage());
-			}
-		}
+		nmMap = loadPreferredNMs(nmDefs);
+		
 	}
 	
 	

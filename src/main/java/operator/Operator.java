@@ -1,8 +1,10 @@
 package operator;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -101,7 +103,7 @@ public abstract class Operator extends PipelineObject {
 	}
 	
 	/**
-	 * Add a start hook to this Operator
+	 * Add a start hook to this Operator, these are called every time the operator begins
 	 * @param start
 	 */
 	public void addStartHook(IOperatorStartHook start){
@@ -109,12 +111,19 @@ public abstract class Operator extends PipelineObject {
 	}
 	
 	/**
-	 * Add an end hook to this operator
+	 * Add an end hook to this operator, these are called every time the operator ends
 	 * @param end
 	 */
 	public void addEndHook(IOperatorEndHook end){
 		endHooks.add(end);
 	}
+	
+	/**
+	 * Execute the given command as a Process, and write the output of the process to the given file
+	 * @param command
+	 * @param outputFile
+	 * @throws OperationFailedException
+	 */
 	protected void executeCommandCaptureOutput(final String command, File outputFile) throws OperationFailedException {
 		Runtime r = Runtime.getRuntime();
 		final Process p;
@@ -242,4 +251,79 @@ public abstract class Operator extends PipelineObject {
 	}		
 	
 	public abstract void performOperation() throws OperationFailedException, JSONException, IOException;
+	
+	
+	/**
+	 * A convenience method for reading preferred NMs BOTH from the defaultPreferredNMs file, 
+	 * and also an operator-specific file given as an argument. Operator-specific preferences
+	 * override default ones, and may be null, in which case just the default NMs will be loaded. 
+	 * Returns a Map from GeneName -> TranscriptID specifying which transcripts to use for which genes
+	 * @param nmsFilePath
+	 * @return
+	 */
+	protected Map<String, String> loadPreferredNMs(String nmsFilePath) {
+		Map<String, String> preferredNMs = new HashMap<String,String>();		
+
+		
+		try {
+			//First, load default NMs from the Pipeline properties, if it exists
+			String defaultPreferredNMs = this.getPipelineProperty("default.preferred.nms");
+			if (defaultPreferredNMs != null) {
+				Logger.getLogger(Pipeline.primaryLoggerName).info("Loading default preferred nms from " + defaultPreferredNMs);
+				File dpnms = new File(defaultPreferredNMs);
+				if (dpnms.exists()) {
+					preferredNMs = readNMFile(dpnms);
+				}
+			}
+
+			//Now load the specific nms for this operator
+			if (nmsFilePath != null) {
+				File specificNMFile = new File(nmsFilePath);
+				Logger.getLogger(Pipeline.primaryLoggerName).info("Loading specific preferred nms from " + nmsFilePath);
+				Map<String, String> specificNMs = readNMFile(specificNMFile);
+
+				for(String key : specificNMs.keySet()) {
+					preferredNMs.put(key, specificNMs.get(key));
+				}
+			}
+
+			
+			Logger.getLogger(Pipeline.primaryLoggerName).info("Loaded " + preferredNMs.size() + " preferred transcripts");
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		return preferredNMs;		
+	}
+
+	
+	private static Map<String, String> readNMFile(File file) throws IOException {
+		Map<String, String> nms = new HashMap<String,String>();
+		BufferedReader br;
+		br = new BufferedReader(new FileReader(file));
+		String line;
+		
+		while((line = br.readLine()) != null){
+			if (line.length()==0)
+				continue;
+			
+			String[] values = line.split("\t");
+			if (values.length != 2) {
+				Logger.getLogger(Pipeline.primaryLoggerName).warning("Could not parse preferred NM# from line: " + line);
+				continue;
+			}
+			
+			String nm = values[1].toUpperCase().trim();
+			if (nm.contains(".")) {
+				int index= nm.indexOf(".");
+				nm = nm.substring(0,index);
+			}
+			
+			nms.put(values[0].toUpperCase().trim(), nm);
+		}
+		br.close();
+		
+		return nms;
+	}
 }
