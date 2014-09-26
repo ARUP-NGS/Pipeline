@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
@@ -44,7 +45,7 @@ import buffer.variant.VariantRec;
 public class QCtoJSON extends Operator {
 
 	public static final String NM_DEFS = "nm.Definitions";
-	private Set<String> nms = null;
+	private Map<String, String> nms = null;
 	
 	DOCMetrics rawCoverageMetrics = null;
 	DOCMetrics finalCoverageMetrics = null;
@@ -170,9 +171,7 @@ public class QCtoJSON extends Operator {
 				if (!features.exists()) {
 					throw new IOException("Feature file " + features.getAbsolutePath() + " does not exist!");
 				}
-				if (nms != null) {
-					featureLookup.setPreferredNMs(nms);
-				}
+				featureLookup.setPreferredNMs(nms);
 				featureLookup.buildExonMap(features);
 			}
 			catch (IOException ex) {
@@ -354,14 +353,8 @@ public class QCtoJSON extends Operator {
 	public void initialize(NodeList children) {
 		
 		String nmDefs = this.getAttribute(NM_DEFS);
-		if (nmDefs != null) {
-			File nmFile = new File(nmDefs);
-			try {
-				nms = readNMMap(nmFile);
-			} catch (IOException e) {
-				throw new IllegalArgumentException("Could not parse NM Defs file: " + e.getLocalizedMessage());
-			}
-		}
+		nms = loadPreferredNMs(nmDefs);
+		
 		
 		
 		for(int i=0; i<children.getLength(); i++) {

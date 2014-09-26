@@ -6,7 +6,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
 import util.Interval;
 
@@ -19,10 +19,10 @@ import util.Interval;
  */
 public class ExonLookupService extends AbstractIntervalContainer {
 
-	private Set<String> preferredNMs = null;
+	private Map<String, String> preferredNMs = null;
 	
 	//If specified, we report only the regions corresponding to these nms and ignore all else. 
-	public void setPreferredNMs(Set<String> nms) {
+	public void setPreferredNMs(Map<String, String> nms) {
 		this.preferredNMs = nms;
 	}
 
@@ -69,8 +69,17 @@ public class ExonLookupService extends AbstractIntervalContainer {
 			
 			String desc = geneName + "(" + nmInfo + ") " + exonLoc;
 			
-			if (preferredNMs == null ||(preferredNMs != null && preferredNMs.size()>0 && preferredNMs.contains(nmInfo))) {
+			if (preferredNMs == null) {
 				addInterval(contig, start, end, desc);
+			} 
+			else {
+				//Does this gene have a preferred NM? 
+				String nm = preferredNMs.get(geneName);
+				if (nm == null) {
+					addInterval(contig, start, end, desc);
+				} else if (nmInfo.contains(nm)) {
+					addInterval(contig, start, end, desc);
+				} 
 			}
 			
 			line = reader.readLine();

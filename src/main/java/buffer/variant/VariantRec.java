@@ -753,6 +753,7 @@ public class VariantRec {
 	public static final String TAUFP_SCORE = "taufp.score";
 	public static final String VQSR = "vqsr.score";
 	public static final String EXOMES_FREQ = "exomes6500.frequency";
+	public static final String EXOMES_HOM_FREQ = "exomes6500.homalt.frequency";
 	public static final String EXOMES_FREQ_EA = "exomes6500.EA.frequency";
 	public static final String EXOMES_FREQ_AA = "exomes6500.AA.frequency";
 	

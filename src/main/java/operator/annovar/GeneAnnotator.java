@@ -56,7 +56,7 @@ public class GeneAnnotator extends AnnovarAnnotator {
 		String nmFile = this.getAttribute("nm.Definitions");
 		if(nmFile != null) {
 			Logger.getLogger(Pipeline.primaryLoggerName).info("Reading in defined NM #s from file: " + nmFile);
-			nmMap = readNMMap(new File(nmFile));
+			nmMap = loadPreferredNMs(nmFile);
 		}
 		
 		try {
@@ -308,31 +308,5 @@ public class GeneAnnotator extends AnnovarAnnotator {
 		}
 	}
 
-	private HashMap<String,String> readNMMap(File file){
-		BufferedReader br;
-		try {
-			br = new BufferedReader(new FileReader(file));
-			String line;
-			HashMap<String,String> nms = new HashMap<String,String>();
-			
-			while((line = br.readLine()) != null){
-				if (line.length()==0)
-					continue;
-				
-				String[] values = line.split("\t");
-				if (values.length != 2) {
-					Logger.getLogger(Pipeline.primaryLoggerName).warning("Could not parse preferred NM# from line: " + line);
-					continue;
-				}
-				nms.put(values[0].toUpperCase().trim(), values[1].toUpperCase().trim());
-			}
-			br.close();
-			return nms;
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		
-		
-		return null;
-	}
+	
 }

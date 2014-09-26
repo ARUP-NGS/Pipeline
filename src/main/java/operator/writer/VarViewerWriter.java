@@ -29,6 +29,7 @@ public class VarViewerWriter extends VariantPoolWriter {
 			 VariantRec.POP_FREQUENCY,
 			 VariantRec.AMR_FREQUENCY,
 			 VariantRec.EXOMES_FREQ,
+			 VariantRec.EXOMES_HOM_FREQ,
 			 VariantRec.RSNUM,
 			 VariantRec.ARUP_FREQ,
 			 VariantRec.ARUP_OVERALL_FREQ,

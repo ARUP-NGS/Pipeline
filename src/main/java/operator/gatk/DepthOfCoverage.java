@@ -8,6 +8,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
 import operator.IOOperator;
@@ -27,11 +28,13 @@ public class DepthOfCoverage extends IOOperator {
 	public static final String PATH = "path";
 	public static final String THREADS = "threads";
 	public static final String JVM_ARGS="jvmargs";
+	public static final String NM_DEFS="nm.Defintions";
 	public static final String EXON_MIN_DEPTH="exon.min.depth";
 	protected String defaultGATKPath = "~/GenomeAnalysisTK-1.6/GenomeAnalysisTK.jar";
 	protected String gatkPath = defaultGATKPath;
 	final static int[] cutoffs = new int[]{5, 8, 10, 15, 20, 50, 500, 1000};
 	private DOCMetrics metrics = null;
+	
 	
 	public boolean requiresReference() {
 		return true;
@@ -51,6 +54,7 @@ public class DepthOfCoverage extends IOOperator {
 		
 		Integer minExonDepth = null;
 		String exonMinDepthAttr = properties.get(EXON_MIN_DEPTH);
+		if (exonMinDepthAttr != null)
 		{
 			minExonDepth = Integer.parseInt(exonMinDepthAttr);
 		}
@@ -63,6 +67,15 @@ public class DepthOfCoverage extends IOOperator {
 		//If it's still null then be sure to make it the empty string
 		if (jvmARGStr == null || jvmARGStr.length()==0) {
 			jvmARGStr = "";
+		}
+		
+		
+		
+		String preferredNMsPath = this.getAttribute(NM_DEFS);
+		Map<String, String> preferredNMs = loadPreferredNMs(preferredNMsPath);
+		
+		if (jvmARGStr == null || jvmARGStr.length()==0) {
+			jvmARGStr = (String) getPipelineProperty(JVM_ARGS);
 		}
 		
 		
@@ -154,7 +167,7 @@ public class DepthOfCoverage extends IOOperator {
 				
 				if (minExonDepth != null && meanCov < minExonDepth) {
 					FlaggedInterval fInt = new FlaggedInterval();
-					fInt.info = interval;
+					fInt.info = "";
 					fInt.mean = meanCov;
 					fInt.frac = percentOK;
 					
@@ -182,7 +195,9 @@ public class DepthOfCoverage extends IOOperator {
 			if (!features.exists()) {
 				throw new IOException("Feature file " + features.getAbsolutePath() + " does not exist!");
 			}
+			featureLookup.setPreferredNMs(preferredNMs);
 			featureLookup.buildExonMap(features);
+			
 			
 			for(FlaggedInterval lowCovExon : metrics.getFlaggedIntervals()) {
 				Object[] overlappingFeatures = featureLookup.getIntervalObjectsForRange(lowCovExon.chr, lowCovExon.start, lowCovExon.end);
@@ -200,11 +215,7 @@ public class DepthOfCoverage extends IOOperator {
 			File intervalCoverageProps = new File(outputPrefix + ".sample_cumulative_coverage_proportions");
 			reader = new BufferedReader(new FileReader(intervalCoverageProps));
 			line = reader.readLine();
-//			toks = line.split("\t");
-//			Integer[] depths = new Integer[toks.length];
-//			for(int i=0; i<depths.length; i++) {
-//				depths[i]  = i;
-//			}
+
 			
 			line = reader.readLine();
 			toks = line.split("\t");
@@ -214,13 +225,13 @@ public class DepthOfCoverage extends IOOperator {
 			}
 			metrics.setCoverageProportions(prop);
 			
-			
-			
 		} catch (IOException e) {
 			e.printStackTrace();
 			throw new OperationFailedException("Error reading output file : " + summaryFile.getAbsolutePath(), this);
 		}
 		
 	}
+
+
 
 }
