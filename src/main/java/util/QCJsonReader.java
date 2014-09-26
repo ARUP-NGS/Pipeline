@@ -32,7 +32,7 @@ public class QCJsonReader {
 	static DecimalFormat formatter = new DecimalFormat("0.0##");
 	static DecimalFormat smallFormatter = new DecimalFormat("0.00000");
 	
-	private static JSONObject toJSONObj(String path) throws IOException, JSONException {
+	public static JSONObject toJSONObj(String path) throws IOException, JSONException {
 		File file = new File(path);
 		if (file.isDirectory()) {
 			//If file is a directory, see if it's in the 'reviewdir' format

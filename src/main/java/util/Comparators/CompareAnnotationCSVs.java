@@ -76,7 +76,6 @@ public class CompareAnnotationCSVs extends IOOperator{
         //Retrieve variant positions shared between both to facilitate further comparisons.
         ArrayList<ArrayList<String>> sharedLines = SharedVarLines(csvLines1, csvLines2, csvLocs1, csvLocs2);
 		String [] sharedLines1 = new String[sharedLines.get(0).toArray().length];
-		int length = sharedLines.get(0).toArray().length;
 		Object [] sharedLinesList1 = sharedLines.get(0).toArray();
 		int counter=0;
 		for(Object obj : sharedLinesList1) {
