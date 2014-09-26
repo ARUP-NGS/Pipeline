@@ -115,9 +115,12 @@ public class VCFParser implements VariantLineReader {
 		//but GATK does not
 		creator =  headerProperties.get("source");
 		if (creator == null) {
-			if (headerProperties.containsKey("UnifiedGenotyper")) {
+			if (headerProperties.containsKey("UnifiedGenotyper") || headerProperties.containsKey("GATKCommandLine")) {
 				creator = "GATK / UnifiedGenotyper";
-			} 	
+			} else {
+				throw new IOException("Cannot determine variant caller that generated VCF. No header property for source nor UnifiedGenotyper/GATKCommandLine");
+			}
+			
 		}
 	}
 	
@@ -192,7 +195,6 @@ public class VCFParser implements VariantLineReader {
 		this.source = file;
 		reader = new BufferedReader(new FileReader(source));
 		parseHeader();
-		//currentLine = reader.readLine(); //EG
 	}
 	
 	/**

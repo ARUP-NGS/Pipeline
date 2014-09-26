@@ -25,8 +25,19 @@ public class TestVCFParser {
 	
 	File panelVCF = new File("examples/test_panel.vcf");
 	
+	File noVariantCallerHeaderVCF = new File("src/test/java/testvcfs/noVariantHeader.vcf");
+	
 	@Test
 	public void TestReadHeader() {
+		
+		try {
+			VCFParser parserNoCreator = new VCFParser(noVariantCallerHeaderVCF);
+			parserNoCreator.getCreator();
+						
+		} catch (IOException e) {
+			// This should throw an exception because the variant caller is not definied in this VCF 
+			Assert.assertTrue(e.getMessage().equals("Cannot determine variant caller that generated VCF. No header property for source nor UnifiedGenotyper/GATKCommandLine"));
+		}
 		
 		try {
 			VCFParser parser = new VCFParser(freebayesVCF);
@@ -101,6 +112,7 @@ public class TestVCFParser {
 			e.printStackTrace();
 			Assert.assertTrue(false);
 		}
+			
 		
 	}
 	
