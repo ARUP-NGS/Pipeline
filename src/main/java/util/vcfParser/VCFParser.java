@@ -34,7 +34,7 @@ public class VCFParser implements VariantLineReader {
 	
 	private BufferedReader reader = null;
 	
-	private String creator = null; //Tool that created this vcf, usually GATK / UG, FreeBayes, etc. 
+	private String creator = "unknown"; //Tool that created this vcf, usually GATK / UG, FreeBayes, etc. 
 	
 	private int altIndex = 0; //Index of alt allele for the current line
 	private String currentLine = null;
@@ -118,6 +118,9 @@ public class VCFParser implements VariantLineReader {
 			if (headerProperties.containsKey("UnifiedGenotyper")) {
 				creator = "GATK / UnifiedGenotyper";
 			} 	
+		}
+		if (creator == null) {
+			creator = "unknown";
 		}
 	}
 	
@@ -535,9 +538,12 @@ public class VCFParser implements VariantLineReader {
 		//Tokenize FORMAT keys & values
 		String[] formatKeys = currentLineToks[8].split(":"); //FORMAT keys
 		String[] formatData = currentLineToks[9].split(":"); //sample-specific FORMAT values
-
-		//Add data to dictionary		
-		for (int i=0; i < formatKeys.length; i++)  {
+		
+		
+		//Add data to dictionary	
+		//It's actually OK (according to vcf 4.1 spec) to drop non-specified trailing fields from the formatData
+		//so we try to read in only as many fields as there are formatData tokens
+		for (int i=0; i < formatData.length; i++)  {
 			dict.put(formatKeys[i], formatData[i]);
 		} 
 		//Return FORMAT-only dictionary
