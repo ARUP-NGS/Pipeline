@@ -537,9 +537,12 @@ public class VCFParser implements VariantLineReader {
 		//Tokenize FORMAT keys & values
 		String[] formatKeys = currentLineToks[8].split(":"); //FORMAT keys
 		String[] formatData = currentLineToks[9].split(":"); //sample-specific FORMAT values
-
-		//Add data to dictionary		
-		for (int i=0; i < formatKeys.length; i++)  {
+		
+		
+		//Add data to dictionary	
+		//It's actually OK (according to vcf 4.1 spec) to drop non-specified trailing fields from the formatData
+		//so we try to read in only as many fields as there are formatData tokens
+		for (int i=0; i < formatData.length; i++)  {
 			dict.put(formatKeys[i], formatData[i]);
 		} 
 		//Return FORMAT-only dictionary
