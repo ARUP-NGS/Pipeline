@@ -42,7 +42,7 @@ public class TestSnpEff extends TestCase {
 				
 				VariantRec var = vars.findRecord("20", 31022442, "-", "G");
 				Assert.assertTrue(var != null);
-				Assert.assertTrue(var.getAnnotation(VariantRec.VARIANT_TYPE).contains("frameshift"));
+				Assert.assertTrue(var.getAnnotation(VariantRec.VARIANT_TYPE).contains("frameshift_variant"));
 				Assert.assertTrue(var.getAnnotation(VariantRec.NM_NUMBER).contains("NM_015338"));
 				Assert.assertTrue(var.getAnnotation(VariantRec.GENE_NAME).contains("ASXL1"));
 				
@@ -107,6 +107,7 @@ public class TestSnpEff extends TestCase {
 				var = vars.findRecord("1", 47280747, "AT", "-");
 				Assert.assertTrue(var != null); 
 				Assert.assertTrue(var.getAnnotation(VariantRec.VARIANT_TYPE).equalsIgnoreCase("frameshift_variant"));
+				String eg=var.getAnnotation(VariantRec.PDOT);
 				Assert.assertTrue(var.getAnnotation(VariantRec.PDOT).contains("p.Asp294fs"));
 				Assert.assertTrue(var.getAnnotation(VariantRec.CDOT).contains("c.881_882delAT"));
 				Assert.assertTrue(var.getAnnotation(VariantRec.NM_NUMBER).contains("NM_000779"));
