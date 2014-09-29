@@ -34,7 +34,7 @@ public class VCFParser implements VariantLineReader {
 	
 	private BufferedReader reader = null;
 	
-	private String creator = "unknown"; //Tool that created this vcf, usually GATK / UG, FreeBayes, etc. 
+	private String creator = null; //Tool that created this vcf, usually GATK / UG, FreeBayes, etc. 
 	
 	private int altIndex = 0; //Index of alt allele for the current line
 	private String currentLine = null;
@@ -121,9 +121,6 @@ public class VCFParser implements VariantLineReader {
 				throw new IOException("Cannot determine variant caller that generated VCF. No header property for source nor UnifiedGenotyper/GATKCommandLine");
 			}
 			
-		}
-		if (creator == null) {
-			creator = "unknown";
 		}
 	}
 	
