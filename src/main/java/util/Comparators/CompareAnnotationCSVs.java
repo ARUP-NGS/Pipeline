@@ -29,110 +29,123 @@ import com.google.common.base.Joiner;
 
 import java.util.logging.Logger;
 
-
 /*
  * Compares two annotation CSV files.
  * Reports the number of variants shared and the numbers of variants unique to each.
  * Reports the number of annotations shared and the numbers of annotations uniue to each.
  * 
  */
-public class CompareAnnotationCSVs extends IOOperator{
-	
-	LinkedHashMap<String, Object> CSVCompare(String csvFile1, String csvFile2) throws IOException{
-		//Load csv1 Integero a String array
+public class CompareAnnotationCSVs extends IOOperator {
+
+	static LinkedHashMap<String, Object> CSVCompare(String csvFile1,
+			String csvFile2) throws IOException {
+		// Load csv1 into a String array
 		BufferedReader csvReader1 = new BufferedReader(new FileReader(csvFile1));
-        String str;
-        List<String> list1 = new ArrayList<String>();
-        while((str = csvReader1.readLine()) != null){
-            list1.add(str);
-        }
-        String[] csvLines1 = list1.toArray(new String[0]);
-        //Load csv2 into a String array
+		String str;
+		List<String> list1 = new ArrayList<String>();
+		while ((str = csvReader1.readLine()) != null) {
+			list1.add(str);
+		}
+		String[] csvLines1 = list1.toArray(new String[0]);
+		// Load csv2 into a String array
 		BufferedReader csvReader2 = new BufferedReader(new FileReader(csvFile1));
-        List<String> list2 = new ArrayList<String>();
-        while((str = csvReader2.readLine()) != null){
-            list2.add(str);
-        }
-        String[] csvLines2 = list2.toArray(new String[0]);
-        
-        String[] csvLocs1 = new String[csvLines1.length];
-        String[] csvLocs2 = new String[csvLines2.length];
-        Integer i=0;
-        for(String line : csvLines1) {
-        	//if(line.startsWith("#"))
-        	//	continue;
-        	csvLocs1[i] = Joiner.on("\t").join(Arrays.asList(line.split("\t")).subList(0, 4).toArray()); 
-        	i+=1;
-        }
-        i=0;
-        for(String line : csvLines2) {
-        	//if(line.startsWith("#"))
-        	//	continue;
-        	csvLocs2[i] = Joiner.on("\t").join(Arrays.asList(line.split("\t")).subList(0, 4).toArray());
-        	i+=1;
-        }
-        
-        LinkedHashMap<String, Integer> positionResults = SharedVarsCounts(csvLocs1, csvLocs2);
-        //Retrieve variant positions shared between both to facilitate further comparisons.
-        ArrayList<ArrayList<String>> sharedLines = SharedVarLines(csvLines1, csvLines2, csvLocs1, csvLocs2);
-		String [] sharedLines1 = new String[sharedLines.get(0).toArray().length];
-		Object [] sharedLinesList1 = sharedLines.get(0).toArray();
-		int counter=0;
-		for(Object obj : sharedLinesList1) {
-			String s = (String)obj;
+		List<String> list2 = new ArrayList<String>();
+		while ((str = csvReader2.readLine()) != null) {
+			list2.add(str);
+		}
+		String[] csvLines2 = list2.toArray(new String[0]);
+
+		String[] csvLocs1 = new String[csvLines1.length];
+		String[] csvLocs2 = new String[csvLines2.length];
+		Integer i = 0;
+		for (String line : csvLines1) {
+			// if(line.startsWith("#"))
+			// continue;
+			csvLocs1[i] = Joiner.on("\t").join(
+					Arrays.asList(line.split("\t")).subList(0, 4).toArray());
+			i += 1;
+		}
+		i = 0;
+		for (String line : csvLines2) {
+			// if(line.startsWith("#"))
+			// continue;
+			csvLocs2[i] = Joiner.on("\t").join(
+					Arrays.asList(line.split("\t")).subList(0, 4).toArray());
+			i += 1;
+		}
+
+		LinkedHashMap<String, Integer> positionResults = SharedVarsCounts(
+				csvLocs1, csvLocs2);
+		// Retrieve variant positions shared between both to facilitate further
+		// comparisons.
+		ArrayList<ArrayList<String>> sharedLines = SharedVarLines(csvLines1,
+				csvLines2, csvLocs1, csvLocs2);
+		String[] sharedLines1 = new String[sharedLines.get(0).toArray().length];
+		Object[] sharedLinesList1 = sharedLines.get(0).toArray();
+		int counter = 0;
+		for (Object obj : sharedLinesList1) {
+			String s = (String) obj;
 			sharedLines1[counter] = s;
 			counter += 1;
 		}
-		String [] sharedLines2 = new String[sharedLines.get(0).toArray().length];
+		String[] sharedLines2 = new String[sharedLines.get(0).toArray().length];
 		counter = 0;
-		Object [] sharedLinesList2 = sharedLines.get(1).toArray();
-		for(Object obj : sharedLinesList2) {
-			String s = (String)obj;
+		Object[] sharedLinesList2 = sharedLines.get(1).toArray();
+		for (Object obj : sharedLinesList2) {
+			String s = (String) obj;
 			sharedLines2[counter] = s;
 			counter += 1;
 		}
-        
+
 		LinkedHashMap<String, Object> compareSummary = new LinkedHashMap<String, Object>();
-		LinkedHashMap<String, Integer> zygosityResults = ZygosityCompare(sharedLines1, sharedLines2);
-        LinkedHashMap<String, ArrayList<String>> fullComparison = FullComparison(sharedLines1, sharedLines2);
-        if(positionResults != null)
-        	compareSummary.put("position.results", positionResults);
-        if(zygosityResults != null)
-        	compareSummary.put("zygosity.results", zygosityResults);
-        if(fullComparison != null)
-        	compareSummary.put("full.results", fullComparison);
+		LinkedHashMap<String, Integer> zygosityResults = ZygosityCompare(
+				sharedLines1, sharedLines2);
+		LinkedHashMap<String, ArrayList<String>> fullComparison = FullComparison(
+				sharedLines1, sharedLines2);
+		if (positionResults != null)
+			compareSummary.put("position.results", positionResults);
+		if (zygosityResults != null)
+			compareSummary.put("zygosity.results", zygosityResults);
+		if (fullComparison != null)
+			compareSummary.put("full.results", fullComparison);
 
 		return compareSummary;
 	}
 
-	private LinkedHashMap<String, ArrayList<String>> FullComparison (String[] sharedLines1, String[] sharedLines2){
+	private static LinkedHashMap<String, ArrayList<String>> FullComparison(
+			String[] sharedLines1, String[] sharedLines2) {
 		Logger logger = Logger.getLogger(Pipeline.primaryLoggerName);
 		String[] header = sharedLines1[0].split("\t");
 		Integer numCols = header.length;
 		Integer numRows = sharedLines1.length;
 		Integer numCols2 = sharedLines2[0].split("\t").length;
-		if(numCols != numCols2) {
-			logger.info("Number of columns in csv 1 is " + numCols + ", while number in csv 2 is " + numCols2+". It seems that these aren't the same.");
+		if (numCols != numCols2) {
+			logger.info("Number of columns in csv 1 is " + numCols
+					+ ", while number in csv 2 is " + numCols2
+					+ ". It seems that these aren't the same.");
 		}
 		LinkedHashMap<String, ArrayList<String>> diffMap = new LinkedHashMap<String, ArrayList<String>>();
 		Integer col = 0;
 		Integer[] annotationSum = new Integer[numCols];
 		Integer[] varSum = new Integer[numRows];
-		for(int i=0; i<varSum.length;i++)
+		for (int i = 0; i < varSum.length; i++)
 			varSum[i] = 0;
-		for(int i=0; i<annotationSum.length;i++)
+		for (int i = 0; i < annotationSum.length; i++)
 			annotationSum[i] = 0;
-		while(col < numCols) {
+		while (col < numCols) {
 			ArrayList<String> diffList = new ArrayList<String>();
 			Integer row = 0;
-			while(row < numRows) {
-				if(!sharedLines1[row].split("\t")[col].equals(sharedLines2[row].split("\t")[col])) {
+			while (row < numRows) {
+				if (!sharedLines1[row].split("\t")[col]
+						.equals(sharedLines2[row].split("\t")[col])) {
 					varSum[row]++;
 					annotationSum[col]++;
-					diffList.add(Joiner.on("\t").join(Arrays.asList(sharedLines1[row].split("\t")).subList(0, 4)));
-					
+					diffList.add(Joiner.on("\t").join(
+							Arrays.asList(sharedLines1[row].split("\t"))
+									.subList(0, 4)));
+
 				}
-				row ++;
+				row++;
 			}
 			diffMap.put(header[col], diffList);
 			col++;
@@ -145,65 +158,83 @@ public class CompareAnnotationCSVs extends IOOperator{
 		ArrayList<String> varCntStr = new ArrayList<String>();
 		ArrayList<String> colPctStr = new ArrayList<String>();
 		ArrayList<String> varPctStr = new ArrayList<String>();
-		for(Integer i = 0; i < numCols; i++) {
-			colPctStr.add(String.format("%.2f", 100*(double)annotationSum[i]/(double)numRows) + "%");
+		for (Integer i = 0; i < numCols; i++) {
+			colPctStr.add(String.format("%.2f", 100 * (double) annotationSum[i]
+					/ (double) numRows)
+					+ "%");
 			colCntStr.add(String.format("%d", annotationSum[i]));
 			colSumDiff += annotationSum[i];
-			colAvgFrac += (double)annotationSum[i]/(double)numRows;
+			colAvgFrac += (double) annotationSum[i] / (double) numRows;
 		}
-		for(Integer i = 0; i < numRows; i++) {
-			varPctStr.add(String.format("%.2f", 100*(double)varSum[i]/(double)numCols) + "%");
+		for (Integer i = 0; i < numRows; i++) {
+			varPctStr.add(String.format("%.2f", 100 * (double) varSum[i]
+					/ (double) numCols)
+					+ "%");
 			varCntStr.add(String.format("%d", varSum[i]));
 			varSumDiff += varSum[i];
-			varAvgFrac += (double)varSum[i]/(double)numCols;
+			varAvgFrac += (double) varSum[i] / (double) numCols;
 		}
 		colAvgFrac = colAvgFrac / numCols;
-		logger.info("Average annotation has this fraction of entries with differences between csvs: " + colAvgFrac);
+		logger.info("Average annotation has this fraction of entries with differences between csvs: "
+				+ colAvgFrac);
 		varAvgFrac = varAvgFrac / numRows;
-		logger.info("Average variant has this fraction of entries with differences between csvs: " + varAvgFrac);
-		
+		logger.info("Average variant has this fraction of entries with differences between csvs: "
+				+ varAvgFrac);
+
 		Integer maxVarDiffs = 0;
 		String maxVarLoc = "N/A";
 		Integer maxAnnotDiffs = 0;
 		String maxAnnot = "N/A";
-		for(int k = 0; k < annotationSum.length ; k++) {
-			if(annotationSum[k] > maxVarDiffs){
+		for (int k = 0; k < annotationSum.length; k++) {
+			if (annotationSum[k] > maxVarDiffs) {
 				maxVarDiffs = annotationSum[k];
-				maxVarLoc = Joiner.on("\t").join(Arrays.asList(sharedLines1[k].split("\t")).subList(0, 4));
+				maxVarLoc = Joiner.on("\t").join(
+						Arrays.asList(sharedLines1[k].split("\t"))
+								.subList(0, 4));
 			}
 		}
-		for(int k = 0; k < varSum.length; k++) {
-			if(varSum[k] > maxAnnotDiffs) {
+		for (int k = 0; k < varSum.length; k++) {
+			if (varSum[k] > maxAnnotDiffs) {
 				maxAnnotDiffs = varSum[k];
 				maxAnnot = header[k];
 			}
 		}
-		logger.info("Variant with the most differences between input files is located at " + maxVarLoc + " with " + maxVarDiffs + " changes.");
-		logger.info("Annotation with the most differences between input files is " + maxAnnot + " with " + maxAnnotDiffs + " changes.");
-		
-		
+		logger.info("Variant with the most differences between input files is located at "
+				+ maxVarLoc + " with " + maxVarDiffs + " changes.");
+		logger.info("Annotation with the most differences between input files is "
+				+ maxAnnot + " with " + maxAnnotDiffs + " changes.");
+
 		diffMap.put("columnPcts", colPctStr);
 		diffMap.put("colCounts", colCntStr);
 		diffMap.put("varPcts", varPctStr);
 		diffMap.put("varCounts", varCntStr);
-		
+
 		return diffMap;
 	}
-	
-	private ArrayList<ArrayList<String>> SharedVarLines(String[] csvLines1, String[] csvLines2, String[] csvLocs1, String[] csvLocs2){
+
+	private static ArrayList<ArrayList<String>> SharedVarLines(String[] csvLines1,
+			String[] csvLines2, String[] csvLocs1, String[] csvLocs2) {
 		ArrayList<String> sharedLines1 = new ArrayList<String>();
 		ArrayList<String> sharedLines2 = new ArrayList<String>();
 		int sharedCount = 0;
-        String[] varList1 = new HashSet<String>(Arrays.asList(csvLocs1)).toArray(new String[csvLocs1.length]);
-        String[] varList2 = new HashSet<String>(Arrays.asList(csvLocs1)).toArray(new String[csvLocs1.length]);
-		for (String line : csvLines1){
-			if(Arrays.asList(csvLocs2).contains(Joiner.on("\t").join(Arrays.asList(line.split("\t")).subList(0, 4).toArray()))){
+		String[] varList1 = new HashSet<String>(Arrays.asList(csvLocs1))
+				.toArray(new String[csvLocs1.length]);
+		String[] varList2 = new HashSet<String>(Arrays.asList(csvLocs1))
+				.toArray(new String[csvLocs2.length]);
+		for (String line : csvLines1) {
+			if (Arrays.asList(csvLocs2).contains(
+					Joiner.on("\t").join(
+							Arrays.asList(line.split("\t")).subList(0, 4)
+									.toArray()))) {
 				sharedLines1.add(line);
 				sharedCount += 1;
 			}
 		}
-		for (String line : csvLines2){
-			if(Arrays.asList(csvLocs1).contains(Joiner.on("\t").join(Arrays.asList(line.split("\t")).subList(0, 4).toArray())))
+		for (String line : csvLines2) {
+			if (Arrays.asList(csvLocs1).contains(
+					Joiner.on("\t").join(
+							Arrays.asList(line.split("\t")).subList(0, 4)
+									.toArray())))
 				sharedLines2.add(line);
 		}
 		ArrayList<ArrayList<String>> sharedLinesArray = new ArrayList<ArrayList<String>>();
@@ -213,53 +244,58 @@ public class CompareAnnotationCSVs extends IOOperator{
 		int uniq2 = csvLines2.length - sharedCount;
 		return sharedLinesArray;
 	}
-	
-	private LinkedHashMap<String, Integer> SharedVarsCounts(String[] csvLocs1, String[] csvLocs2){
-        //Grab first 3 elements in in the row and join them into a string to check for unique locations.
+
+	private static LinkedHashMap<String, Integer> SharedVarsCounts(String[] csvLocs1,
+			String[] csvLocs2) {
+		// Grab first 3 elements in in the row and join them into a string to
+		// check for unique locations.
 		LinkedHashMap<String, Integer> positionResults = new LinkedHashMap<String, Integer>();
 
-        String[] varList1 = new HashSet<String>(Arrays.asList(csvLocs1)).toArray(new String[csvLocs1.length]);
-        String[] varList2 = new HashSet<String>(Arrays.asList(csvLocs1)).toArray(new String[csvLocs1.length]);
-        int sharedLocs = 0;
-        int uniqLocs1 = 0;
-        int uniqLocs2 = 0;
-        for( String loc1 : varList1){
-        	if(Arrays.asList(varList2).contains(loc1))
-        		sharedLocs += 1;
-        	else
-        		uniqLocs1 += 1;
-        }
-        for( String loc2 : varList2) {
-        	if(!Arrays.asList(varList1).contains(loc2))
-        		uniqLocs2 += 1;
-        }
-        positionResults.put("sharedVariants", sharedLocs);
-        positionResults.put("uniq1Variants", uniqLocs1);
-        positionResults.put("uniq2Variants", uniqLocs2);
+		String[] varList1 = new HashSet<String>(Arrays.asList(csvLocs1))
+				.toArray(new String[csvLocs1.length]);
+		String[] varList2 = new HashSet<String>(Arrays.asList(csvLocs1))
+				.toArray(new String[csvLocs1.length]);
+		int sharedLocs = 0;
+		int uniqLocs1 = 0;
+		int uniqLocs2 = 0;
+		for (String loc1 : varList1) {
+			if (Arrays.asList(varList2).contains(loc1))
+				sharedLocs += 1;
+			else
+				uniqLocs1 += 1;
+		}
+		for (String loc2 : varList2) {
+			if (!Arrays.asList(varList1).contains(loc2))
+				uniqLocs2 += 1;
+		}
+		positionResults.put("sharedVariants", sharedLocs);
+		positionResults.put("uniq1Variants", uniqLocs1);
+		positionResults.put("uniq2Variants", uniqLocs2);
 		return positionResults;
 	}
 
-	private LinkedHashMap<String, Integer> ZygosityCompare(String[] sharedLines1, String[] sharedLines2){
+	private static LinkedHashMap<String, Integer> ZygosityCompare(
+			String[] sharedLines1, String[] sharedLines2) {
 		LinkedHashMap<String, Integer> zygosityResults = new LinkedHashMap<String, Integer>();
 		int diffs = 0;
-		try{
+		try {
 			assert sharedLines1.length == sharedLines2.length;
+		} catch (AssertionError e) {
+			throw new AssertionError(
+					"The two string arrays provided are of unequal length. This never happens in normal usage");
 		}
-		catch (AssertionError e) {
-			throw new AssertionError("The two string arrays provided are of unequal length. This never happens in normal usage");
-		}
-        String[] zygosity1 = new String[sharedLines1.length];
-        String[] zygosity2 = new String[sharedLines1.length];
-        int i = 0;
-		for(String line1 : sharedLines1)
+		String[] zygosity1 = new String[sharedLines1.length];
+		String[] zygosity2 = new String[sharedLines1.length];
+		int i = 0;
+		for (String line1 : sharedLines1)
 			zygosity1[i] = line1.split("\t")[7];
-		for(String line2 : sharedLines2)
+		for (String line2 : sharedLines2)
 			zygosity2[i] = line2.split("\t")[7];
-			if(!zygosity2[i].equals(zygosity1[i]))
-				diffs += 1;
+		if (!zygosity2[i].equals(zygosity1[i]))
+			diffs += 1;
 		zygosityResults.put("discord", diffs);
 		zygosityResults.put("agreement", sharedLines1.length - diffs);
-        return zygosityResults;
+		return zygosityResults;
 	}
 
 	@Override
@@ -268,16 +304,17 @@ public class CompareAnnotationCSVs extends IOOperator{
 
 		Logger logger = Logger.getLogger(Pipeline.primaryLoggerName);
 		List<FileBuffer> CSVs = this.getAllInputBuffersForClass(CSVFile.class);
-		if(CSVs.size() != 2){
-			throw new OperationFailedException("Exactly two CSVs required for this operator.", this);
+		if (CSVs.size() != 2) {
+			throw new OperationFailedException(
+					"Exactly two CSVs required for this operator.", this);
 		}
 		String CSV1 = CSVs.get(0).getAbsolutePath();
 		String CSV2 = CSVs.get(1).getAbsolutePath();
-		
+
 		LinkedHashMap<String, Object> Results = CSVCompare(CSV1, CSV2);
 		JSONObject ResultsJson = new JSONObject(Results);
 		String ResultsStr = ResultsJson.toString();
-		
+
 		byte[] bytes = CompressGZIP.compressGZIP(ResultsStr);
 
 		// Write compresssed JSON to file
@@ -286,7 +323,7 @@ public class CompareAnnotationCSVs extends IOOperator{
 				new FileOutputStream(dest));
 		writer.write(bytes);
 		writer.close();
-		
+
 	}
-	
+
 }
