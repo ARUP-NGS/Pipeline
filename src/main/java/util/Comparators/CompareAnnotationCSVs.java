@@ -8,10 +8,10 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.logging.Logger;
 
 import json.JSONException;
 import json.JSONObject;
@@ -23,11 +23,7 @@ import buffer.CSVFile;
 import buffer.FileBuffer;
 import buffer.JSONBuffer;
 
-import org.apache.commons.lang.ArrayUtils;
-
 import com.google.common.base.Joiner;
-
-import java.util.logging.Logger;
 
 /*
  * Compares two annotation CSV files.
