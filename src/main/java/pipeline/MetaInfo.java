@@ -61,7 +61,9 @@ public class MetaInfo {
 				}
 				line = reader.readLine();
 			}
+
 		} catch (MalformedURLException e) {
+
 		} catch (Exception e) {
 			//errors here relatively common for weird reasons, we ignore them for now
 		}

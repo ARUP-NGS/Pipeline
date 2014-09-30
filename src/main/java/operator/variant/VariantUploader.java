@@ -72,6 +72,8 @@ public class VariantUploader extends Operator {
 				else {
 					count = 2;		
 				}
+				double varFreq = r.getProperty(VariantRec.VAR_DEPTH) / r.getProperty(VariantRec.DEPTH);
+				row.put("AlleleFrequency", varFreq);
 				row.put("AlleleCount", count);
 				list.put(row);
 			}
@@ -80,12 +82,16 @@ public class VariantUploader extends Operator {
 			String result = HttpUtils.HttpPostJSON(uploadURL, json);
   					
 			logger.info("Uploading " + vars.size() + " variants to " + uploadURL);
+
 			if(!result.equals(success)){
 				//Not clear if we should fail here or what.. should we continue with future operations even if we 
 				//can't communicate with .NET?
 				//	throw new OperationFailedException("Failed to post variant list to .NET service: " + result, this);
-				//logger.warning("Error uploading variants : " + result);
+				logger.warning("Error uploading variants : " + result);
 				throw new OperationFailedException("ERROR: Failed to upload a JSON list of variants to '" + uploadURL + "'", this);
+
+			} else {
+				logger.info("Uploading " + vars.size() + " variants to " + uploadURL);	
 			}
 		} catch (NumberFormatException e){
 			throw new OperationFailedException("Failed to upload a JSON list of variants (NumberFormatException) (SampleID=" + sampleId + ": " + e.getMessage(), this);
