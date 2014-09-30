@@ -666,25 +666,28 @@ public class VCFParser implements VariantLineReader {
 	 * @return
 	 */
 	public Integer getVariantDepth(){
-		String AnnoStr = null;
-		Integer AnnoIdx = null;
+		String annoStr = null;
+		Integer annoIdx = null;
 		if (creator.startsWith("freeBayes")){
-			AnnoStr = "AO";
-			AnnoIdx = altIndex; //AO doesn't contain depth for REF, which is stored in RO
+			annoStr = "AO";
+			annoIdx = altIndex; //AO doesn't contain depth for REF, which is stored in RO
 		} else if (creator.startsWith("Torrent")){
-			AnnoStr = "FAO";
-			AnnoIdx = altIndex; //FAO only contains infor for alternate allele
+			annoStr = "FAO";
+			annoIdx = altIndex; //FAO only contains infor for alternate allele
+		} else if (creator.startsWith("RTG")) { //RTG variant caller
+			annoStr = "AD";
+			annoIdx = altIndex; //AD contains depth for REF
 		} else {
-			AnnoStr = "AD";
-			AnnoIdx = altIndex + 1; //AD contains depth for REF
+			annoStr = "AD";
+			annoIdx = altIndex + 1; //AD contains depth for REF
 		}
 		//Get alternate allele count from sampleMetrics dictionary	
-		String varDepthStr = getSampleMetricsStr(AnnoStr);
+		String varDepthStr = getSampleMetricsStr(annoStr);
 		if (varDepthStr == null) {
 			return null;
 		}
 		String[] varDepthToks = varDepthStr.split(",");
-		Integer vardp = convertStr2Int(varDepthToks[AnnoIdx]);
+		Integer vardp = convertStr2Int(varDepthToks[annoIdx]);
 		return vardp;				
 	}
 	
