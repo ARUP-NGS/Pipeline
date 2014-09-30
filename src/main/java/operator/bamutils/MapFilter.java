@@ -7,18 +7,19 @@ import net.sf.samtools.SAMRecord;
 
 /**
  * Splits a BAM file into one of two output files - one BAM for "fail" reads
- * which have less than a given mapqMin (default: 10) or are unmapped to
- * the reference, one with "pass" reads which have a sufficient mapQ.
+ * which have less than a given mapqMin (default: 10) or are unmapped to the
+ * reference, one with "pass" reads which have a sufficient mapQ.
  * 
  * @author daniel
  *
  */
 public class MapFilter extends BAMClassifier {
+	
 	public Logger logger = Logger.getLogger(Pipeline.primaryLoggerName);
-
+	
 	public ReturnRecord processRecord(SAMRecord samRecord) {
 		boolean value = readPasses(samRecord); // Initializing return value for
-												// this function.
+												// this function
 		ReturnRecord returnValue = new ReturnRecord(samRecord, value);
 		return returnValue;
 	}
@@ -30,10 +31,24 @@ public class MapFilter extends BAMClassifier {
 	 */
 
 	public boolean readPasses(SAMRecord read) {
-		if(read.getReferenceName().equals("*"))
+		if(read.getReadUnmappedFlag())
 			return false;
-		 else 
+		else
 			return true;
+/*		if (read.getReadUnmappedFlag()) {
+			if (read.getReferenceName().equals("*"))
+				return false;
+			else {
+				read.setReadUnmappedFlag(false);
+				logger.info("Read mapped to contig " + read.getReferenceName()
+						+ " but flagged as unmapped." + "\nRead starts at "
+						+ read.getAlignmentStart() + ", and read ends at "
+						+ read.getAlignmentEnd() + ".");
+				return true;
+			}
+		} else
+			return true;
+	*/
 	}
 
 }

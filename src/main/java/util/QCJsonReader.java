@@ -548,7 +548,7 @@ Average Total Number of Variants
 			}
 		}
 	}
-	
+
 	/**
 	 * Create a table of data from the given input paths that is formatted just like the prereview data table
 	 * in NGS.Web, for easy importing of data. It should look something like the following:
@@ -971,7 +971,7 @@ Average Total Number of Variants
 		return shortPath.replace(".reviewdir", "");
 	}
 
-	private static Map<String, String> readManifest(File manifestFile) throws IOException {
+	public static Map<String, String> readManifest(File manifestFile) throws IOException {
 		BufferedReader reader = new BufferedReader(new FileReader(manifestFile));
 		Map<String, String> pairs = new HashMap<String, String>();
 		String line = reader.readLine();

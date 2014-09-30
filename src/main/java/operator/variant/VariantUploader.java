@@ -25,6 +25,8 @@ public class VariantUploader extends Operator {
 
 	public static final String VARIANT_UPLOAD_URL = "variant.upload.url";
 	public static final String SAMPLEID = "sampleID";
+	public static final String ACCN = "accession";
+	public static final String RESULTDTA = "resultableDTA";
 	protected VariantPool variants = null;
 	
 	protected String uploadURL = null;
@@ -32,7 +34,8 @@ public class VariantUploader extends Operator {
 //	protected String uploadURL = "http://localhost:9172/Variant/UploadVariants";
 	protected final String success = "\"Success\"";
 	protected String sampleId = null;
-	
+	protected String accession = null;
+	protected String resultDTA = null;
 	
 	@Override
 	public void performOperation() throws OperationFailedException {
@@ -52,7 +55,9 @@ public class VariantUploader extends Operator {
 		JSONObject json = new JSONObject();
 		try {        
 			logger.info("Uploading " + variants.size() + " variants for sample " + sampleId);
-			json.put("sample.id", Integer.parseInt(sampleId));
+			json.put("sample.id", sampleId);
+			json.put("accession", accession);
+			json.put("result", resultDTA);
 		
 			JSONArray list = new JSONArray();
 			for(VariantRec r: vars){
@@ -82,6 +87,8 @@ public class VariantUploader extends Operator {
 				//can't communicate with .NET?
 				//	throw new OperationFailedException("Failed to post variant list to .NET service: " + result, this);
 				logger.warning("Error uploading variants : " + result);
+				throw new OperationFailedException("ERROR: Failed to upload a JSON list of variants to '" + uploadURL + "'", this);
+
 			} else {
 				logger.info("Uploading " + vars.size() + " variants to " + uploadURL);	
 			}
@@ -108,8 +115,19 @@ public class VariantUploader extends Operator {
 		}
 		
 		sampleId = this.getAttribute(SAMPLEID);
+		accession = this.getAttribute(ACCN);
+		resultDTA = this.getAttribute(RESULTDTA);
+			
 		if (sampleId == null || sampleId.length() == 0) {
 			throw new IllegalArgumentException("VariantUploader requires the sampleID to be specified");
+		}
+		
+		if (accession == null || accession.length() == 0) {
+			throw new IllegalArgumentException("VariantUploader requires the accession to be specified");
+		}
+		
+		if (resultDTA == null || resultDTA.length() == 0) {
+			throw new IllegalArgumentException("VariantUploader requires the resultableDTA to be specified");
 		}
 		
 		for(int i=0; i<children.getLength(); i++) {
