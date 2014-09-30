@@ -55,7 +55,6 @@ public class VariantUploader extends Operator {
 		JSONObject json = new JSONObject();
 		try {        
 			logger.info("Uploading " + variants.size() + " variants for sample " + sampleId);
-			json.put("sample.id", sampleId);
 			json.put("accession", accession);
 			json.put("result", resultDTA);
 		
@@ -76,9 +75,10 @@ public class VariantUploader extends Operator {
 				row.put("AlleleCount", count);
 				list.put(row);
 			}
-				
+			
 			json.put("variant.list", list);
 			String result = HttpUtils.HttpPostJSON(uploadURL, json);
+  					
 			logger.info("Uploading " + vars.size() + " variants to " + uploadURL);
 			if(!result.equals(success)){
 				//Not clear if we should fail here or what.. should we continue with future operations even if we 
