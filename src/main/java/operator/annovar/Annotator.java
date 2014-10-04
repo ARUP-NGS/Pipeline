@@ -67,7 +67,7 @@ public abstract class Annotator extends Operator {
 
 		for(String contig : variants.getContigs()) {
 			for(VariantRec rec : variants.getVariantsForContig(contig)) {
-				if (bedFile == null || bedFile.contains(rec.getContig(), rec.getStart())) {
+				if (bedFile == null || bedFile.contains(rec.getContig(), rec.getStart() - 1)) {
 					annotateVariant(rec);
 				
 					varsAnnotated++;
