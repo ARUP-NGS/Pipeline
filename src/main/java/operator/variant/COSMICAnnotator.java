@@ -9,7 +9,7 @@ import operator.annovar.Annotator;
 import pipeline.Pipeline;
 import buffer.variant.VariantRec;
 
-/*
+/**
  * Using UCSC's PFAM and Scop tables to annotate a variant's protein domain if available
  * Borrowing heavily from Brendan and David's code
  * @author daniel
@@ -42,10 +42,7 @@ public class COSMICAnnotator extends Annotator{
 					var.addAnnotation(VariantRec.COSMIC_ID, dbInfo[0]);
 					var.addAnnotation(VariantRec.COSMIC_COUNT, dbInfo[1]);
 				}
-				else {
-					//var.addProperty(VariantRec.ARUP_OVERALL_FREQ, 0.0);
-					//var.addAnnotation(VariantRec.ARUP_FREQ_DETAILS, "Total samples: 0");
-				}
+				
 				
 			} catch (IOException e) {
 				e.printStackTrace();

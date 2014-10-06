@@ -14,8 +14,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import math.Histogram;
@@ -2715,6 +2717,7 @@ public class VarUtils {
 			return;
 		}
 		
+		Map<String, Integer> varTypes = new HashMap<String, Integer>();
 		Histogram varDepthHisto = new Histogram(0, 1.0, 50); 
 		Histogram readDepthHisto = new Histogram(1, 250, 100); 
 		double qualitySum = 0;
@@ -2740,6 +2743,19 @@ public class VarUtils {
 						if (q>maxQual) {
 							maxQual = q;
 						}
+						
+						String type = rec.getAnnotation(VariantRec.VARIANT_TYPE);
+						if (type == null) {
+							type = "Not_annotated";
+						}
+						Integer count = varTypes.get(type);
+						if (count == null) {
+							varTypes.put(type, new Integer(1));
+						}
+						else {
+							varTypes.put(type, count+1);
+						}
+						
 					}
 				}
 				
@@ -2763,7 +2779,11 @@ public class VarUtils {
 				int heteros = pool.countHeteros();
 				System.out.println(" Heterozygotes : " + heteros + " (" + formatter.format((double)heteros / (double)pool.size()) + "% )");
 				
-//				
+				System.out.println("Variant type distribution:");
+				for (String vt : varTypes.keySet()) {
+					System.out.println("\t" + vt + " : " + varTypes.get(vt));
+				}
+				
 //				VariantPool q30Pool = new VariantPool(pool.filterPool(new VariantFilter() {
 //					public boolean passes(VariantRec rec) {
 //						return rec.getQuality() > 29.99;

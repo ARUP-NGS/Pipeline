@@ -1,9 +1,0 @@
-<Pipeline>
-
-<Test1 class="buffer.TextBuffer" filename="somefilename" />
-
-<Test2 class="operator.examples.Example1" attrA="blah" attrB="foo">
-   <Test1 />
-</Test2>
-
-</Pipeline>
