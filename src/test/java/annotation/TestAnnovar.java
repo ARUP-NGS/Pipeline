@@ -147,7 +147,7 @@ public class TestAnnovar extends TestCase {
 				Assert.assertTrue(var.getAnnotation(VariantRec.VARIANT_TYPE).equalsIgnoreCase("Intergenic"));
 				
 				
-				var = vars.findRecord("18", 48610384, "-", "GCAC");
+				var = vars.findRecord("18", 48610383, "-", "CGCA");
 				Assert.assertTrue(var != null); 
 				Assert.assertTrue(var.getAnnotation(VariantRec.VARIANT_TYPE).equalsIgnoreCase("UTR3"));
 				Assert.assertTrue(var.getAnnotation(VariantRec.GENE_NAME).contains("SMAD4"));
