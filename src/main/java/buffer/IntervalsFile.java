@@ -12,13 +12,14 @@ import java.util.List;
 import java.util.Map;
 
 import util.Interval;
+import util.coverage.HasIntervals;
 
 /**
  * Any file that describes a list of genomic intervals
  * @author brendan
  *
  */
-public abstract class IntervalsFile extends FileBuffer {
+public abstract class IntervalsFile extends FileBuffer implements HasIntervals {
 
 	protected Map<String, List<Interval>> intervals = null;
 	protected final IntervalComparator intComp = new IntervalComparator();

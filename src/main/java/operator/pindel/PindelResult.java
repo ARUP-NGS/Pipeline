@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import util.Interval;
+
 /**
  * A single structural variation detected by Pindel, typically parsed using PindelParser
  * from a Pindel output directory
@@ -53,6 +55,9 @@ public class PindelResult {
 
 	private List<String> featureAnnotations = new ArrayList<String>();
 	
+	private double meanDepth; //Must be computed externally - pindel doesn't set this by itself.
+	
+
 	public PindelResult(final String[] entryLines) {
 		// System.out.println(entryLines[0]);
 		String[] bits = entryLines[0].split("\t");
@@ -94,13 +99,13 @@ public class PindelResult {
 		// +
 		upReads = Integer.parseInt(temp[1]);
 		upUniqReads = Integer.parseInt(bits[11]);
-		;
+		
 
 		temp = bits[12].split(" ");
 		// -
 		downReads = Integer.parseInt(temp[1]);
 		downUniqReads = Integer.parseInt(bits[13]);
-		;
+		
 
 		temp = bits[14].split(" ");
 		// S1
@@ -143,13 +148,15 @@ public class PindelResult {
 	}
 	
 	public String toShortString() {
-		String msg = varType + " " + ChrID + ":" + bpStart + "-" + bpEnd;
-		for(String feat : featureAnnotations) {
-			msg = msg + "\t" + feat;
-		}
+		String msg = varType + " " + ChrID + ":" + bpStart + "-" + bpEnd + " (support " + supportReads + ")";
+//		for(String feat : featureAnnotations) {
+//			msg = msg + "\t" + feat;
+//		}
 		
 		return msg;
 	}
+	
+	
 	
 	public String toString() {
 		String total = "";
@@ -208,36 +215,49 @@ public class PindelResult {
 	public int getSupportReads() {
 		return supportReads;
 	}
+	
+	public double getMeanDepth() {
+		return meanDepth;
+	}
 
+	public void setMeanDepth(double meanDepth) {
+		this.meanDepth = meanDepth;
+	}
+	
+	public int getSize() {
+		return bpRangeEnd - bpRangeStart;
+	}
+	
 	public boolean sameHit(PindelResult next) {
-		System.out.println("In samehit");
-		if (finalIndex == next.getIndex() - 1) {
-			System.out.println("Index match");
+		if (this.varType.equals(next.varType)) {
 			if (ChrID.equals(next.getChromo())) {
-				System.out.println("Chromosome match");
-				if (Math.abs(bpRangeStart - next.getRangeStart()) < 100) {
-					System.out.println("Same found at " + index);
+				Interval thisInt = new Interval(bpRangeStart-1, bpRangeEnd+1);
+				Interval otherInt = new Interval(next.getRangeStart()-1, next.getRangeEnd()+1);
+				
+				if (thisInt.intersects(otherInt)
+					&& (Math.abs(bpRangeStart - next.getRangeStart()) < 100) 
+					&& (Math.abs(bpRangeEnd - next.getRangeEnd()) < 100)) {
 					return true;
 				}
 			}
 		}
-		System.out.println(finalIndex + " " + next.getIndex());
+		
 		return false;
 	}
 
-	public void add(PindelResult next) {
+	public void add(PindelResult next) {		
 		finalIndex = next.getIndex();
 		if (svLength < next.getSVLength()) {
 			svLength = next.getSVLength();
 		}
+		
+		
 
-		if (bpRangeStart < next.getRangeStart()) {
-			bpRangeStart = next.getRangeStart();
-		}
+		bpRangeStart = Math.min(bpRangeStart, next.getRangeStart());
+		bpRangeEnd = Math.min(bpRangeEnd, next.getRangeEnd());
 
-		if (bpRangeEnd < next.getRangeEnd()) {
-			bpRangeEnd = next.getRangeEnd();
-		}
+		
+		
 		supportReads += next.getSupportReads();
 	}
 

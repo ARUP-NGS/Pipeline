@@ -1,11 +1,13 @@
 package gene;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import util.Interval;
+import util.coverage.HasIntervals;
 
 /**
  * A list of intervals, grouped by contig. This is (or should be) the basic class
@@ -13,7 +15,7 @@ import util.Interval;
  * @author brendan
  *
  */
-public abstract class AbstractIntervalContainer {
+public class BasicIntervalContainer implements HasIntervals {
 
 	protected Map<String, List<Interval>> allIntervals = null;
 	
@@ -61,7 +63,7 @@ public abstract class AbstractIntervalContainer {
 	 * @param end
 	 * @param obj
 	 */
-	protected void addInterval(String contig, int start, int end, Object obj) {
+	public void addInterval(String contig, int start, int end, Object obj) {
 		if (allIntervals == null) {
 			allIntervals = new HashMap<String, List<Interval>>();
 		}
@@ -73,5 +75,15 @@ public abstract class AbstractIntervalContainer {
 		}
 		
 		intervals.add(new Interval(start, end, obj));
+	}
+
+	@Override
+	public Collection<String> getContigs() {
+		return allIntervals.keySet();
+	}
+
+	@Override
+	public List<Interval> getIntervalsForContig(String chr) {
+		return allIntervals.get(chr);
 	}
 }

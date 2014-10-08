@@ -1,5 +1,6 @@
 package operator.pindel;
 
+import gene.BasicIntervalContainer;
 import gene.ExonLookupService;
 
 import java.io.BufferedWriter;
@@ -16,6 +17,7 @@ import json.JSONObject;
 import operator.IOOperator;
 import operator.OperationFailedException;
 import pipeline.Pipeline;
+import util.coverage.CoverageCalculator;
 import buffer.BAMFile;
 import buffer.BEDFile;
 import buffer.ReferenceFile;
@@ -113,8 +115,13 @@ public class PindelRunner extends IOOperator {
 		}
 		featureLookup.buildExonMap(features);
 		
+		
 		for(String svType : results.keySet()) {
 			for(PindelResult sv : results.get(svType)) {
+				
+				double cov = computeMeanCoverageForRegion(bam, sv.getChromo(), sv.getRangeStart(), sv.getRangeEnd());
+				sv.setMeanDepth(cov);
+				System.out.println("Mean depth for " + sv.getChromo() + ": " + sv.getRangeStart() + "-" + sv.getRangeEnd() + "  :  " + cov);
 				Object[] overlappingFeatures = featureLookup.getIntervalObjectsForRange(sv.getChromo(), sv.getRangeStart(), sv.getRangeEnd());
 				for(Object feat : overlappingFeatures) {
 					sv.addFeatureAnnotation(feat.toString());
@@ -133,6 +140,26 @@ public class PindelRunner extends IOOperator {
 		
 	}
 
+	
+		private double computeMeanCoverageForRegion(BAMFile bam, String chr, int start, int end) throws IOException {
+			BasicIntervalContainer intervals = new BasicIntervalContainer();
+			intervals.addInterval(chr,  start,  end, null);
+			CoverageCalculator covCalc = new CoverageCalculator(bam.getFile(), intervals);
+			covCalc.setThreadCount(1);
+			int[] depthHistogram;
+			try {
+				depthHistogram = covCalc.computeOverallCoverage();
+				double meanDepth = CoverageCalculator.getMean(depthHistogram);
+				if (Double.isNaN(meanDepth)) {
+					meanDepth = 0.0; //WIll break json parsing later if left as NaN
+				}
+				return meanDepth;
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			return -1;
+		}
+		
 	private void createConfigFile(String sampleName, String pathToBamFile,
 			int insertSize, String pathToConfigFile) throws Exception {
 		
@@ -140,7 +167,6 @@ public class PindelRunner extends IOOperator {
 			writer.println(pathToBamFile + "\t"
 					+ insertSize + "\t" + sampleName);
 			writer.close();
-		
 
 	}
 

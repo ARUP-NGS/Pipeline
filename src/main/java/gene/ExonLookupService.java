@@ -17,7 +17,7 @@ import util.Interval;
  * @author brendan
  *
  */
-public class ExonLookupService extends AbstractIntervalContainer {
+public class ExonLookupService extends BasicIntervalContainer {
 
 	private Map<String, String> preferredNMs = null;
 	
