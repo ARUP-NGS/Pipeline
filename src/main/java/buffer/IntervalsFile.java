@@ -209,6 +209,55 @@ public abstract class IntervalsFile extends FileBuffer {
 			}
 		}
 	}
+
+	public boolean intersects(String contig, int begin, int end) {
+		return intersects(contig, begin, end, true);
+	}
+
+	public boolean intersects(String contig, int begin, int end, boolean warn) {
+		List<Interval> cInts = intervals.get(contig);
+		Interval qIntervalBegin = new Interval(begin, begin);
+		Interval qIntervalEnd = new Interval(end - 1, end - 1);
+		if (cInts == null) {
+			if (warn)
+				System.out.println("Contig " + contig + " is not in BED file!");
+			return false;
+		}
+		else {
+			int indexBegin = Collections.binarySearch(cInts, qIntervalBegin, intComp);
+			int indexEnd = Collections.binarySearch(cInts, qIntervalEnd, intComp);
+			if (indexBegin >= 0 || indexEnd >= 0) {
+				//System.out.println("Interval " + cInts.get(index) + " intersects the interval " + begin + ", " + end);
+				//An interval starts with one the query interval begin or end
+				return true;
+			}
+			else {
+				//No interval starts with begin or end
+				int keyIndexBegin = -indexBegin-1 -1;
+				int keyIndexEnd = -indexEnd-1 -1;
+				if (keyIndexBegin < 0 && keyIndexEnd < 0) {
+					//System.out.println("Interval #0 does NOT contain the interval " + begin + ", " + end);
+					return false;
+				} 
+				if (keyIndexBegin < keyIndexEnd) {
+					//System.out.println("spans across the start of a bed region");
+					return true;
+				}
+				//TODO fix this then add default return/throw error
+				if (keyIndexBegin == keyIndexEnd) {
+					//System.out.println("past same interval start");
+					Interval cInterval = cInts.get(keyIndexBegin);
+					if (begin < cInterval.end) { // use < rather than <= because of 0-based intervals assumed (bed style)
+						//System.out.println("starts before interval end");
+						return true;
+					}
+				}
+				//If nothing else stuck then something is potentially wrong with the intervals
+				//System.out.println("Interval " + cInterval + " does NOT contain the position " + pos);
+				return false;
+			}
+		}
+	}
 	
 	/**
 	 * Returns the number of bases covered by all of the intervals
