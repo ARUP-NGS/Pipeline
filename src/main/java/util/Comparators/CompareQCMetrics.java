@@ -71,30 +71,45 @@ public class CompareQCMetrics extends IOOperator {
 		return list;
 	}
 
-	static LinkedHashMap<String, Object> JSONCompare(String jsonFile1, String jsonFile2) throws JSONException, IOException{
-		Logger logger = Logger.getLogger(Pipeline.primaryLoggerName);
+	static LinkedHashMap<String, Object> JSONCompare(String jsonFile1,
+			String jsonFile2) throws JSONException, IOException {
+		/*
+		 * JSON2 Key #1: capture.extent JSON2 Key #2: final.coverage.metrics
+		 * JSON2 Key #3: capture.bed JSON2 Key #4: raw.coverage.metrics JSON2
+		 * Key #5: raw.bam.metrics JSON2 Key #6: variant.metrics JSON2 Key #7:
+		 * final.bam.metrics JSON2 Key #8: nocalls
+		 */
 
+		Logger logger = Logger.getLogger(Pipeline.primaryLoggerName);
+		System.out.println("JSON Filename 1 is " + jsonFile1);
+		System.out.println("JSON Filename 2 is " + jsonFile2);
 		JSONObject JSON1 = QCJsonReader.toJSONObj(jsonFile1);
 		JSONObject JSON2 = QCJsonReader.toJSONObj(jsonFile2);
-		
+
 		LinkedHashMap<String, Object> JSON1HM = toMap(JSON1);
 		LinkedHashMap<String, Object> JSON2HM = toMap(JSON2);
-		String[] JSON1Keys = JSON1HM.keySet().toArray(new String[JSON1HM.size()]);
-		String[] JSON2Keys = JSON1HM.keySet().toArray(new String[JSON2HM.size()]);
+		String[] JSON1Keys = JSON1HM.keySet().toArray(
+				new String[JSON1HM.size()]);
+		String[] JSON2Keys = JSON1HM.keySet().toArray(
+				new String[JSON2HM.size()]);
 		int i = 1;
-		for(String key: JSON1Keys) {
+		for (String key : JSON1Keys) {
 			System.out.println("JSON1 Key #" + i + ": " + key);
-			System.out.println("JSON1 Value #" + i + ": " + JSON1HM.get(key));
-			i+=1;
+			// System.out.println("JSON1 Value #" + i + ": " +
+			// JSON1HM.get(key));
+			i += 1;
 		}
 		i = 1;
-		for(String key: JSON2Keys) {
+		for (String key : JSON2Keys) {
 			System.out.println("JSON2 Key #" + i + ": " + key);
-			System.out.println("JSON2 Value #" + i + ": " + JSON2HM.get(key));
-			i+=1;
+			// System.out.println("JSON2 Value #" + i + ": " +
+			// JSON2HM.get(key));
+			i += 1;
 		}
-
-		return null;
+		LinkedHashMap<String, Object> QC_ComparisonLHM = new LinkedHashMap<String, Object>();
+		QC_ComparisonLHM.put("JSON1.qc", JSON1);
+		QC_ComparisonLHM.put("JSON2.qc", JSON2);
+		return QC_ComparisonLHM;
 	}
 
 	@Override
@@ -111,7 +126,7 @@ public class CompareQCMetrics extends IOOperator {
 		String JSON1 = JSONs.get(0).getAbsolutePath();
 		String JSON2 = JSONs.get(1).getAbsolutePath();
 
-		LinkedHashMap<String, Object> Results = JSONCompare(JSON1, JSON2);
+		LinkedHashMap<String, Object> Results = JSONCompNew_configuration (2)are(JSON1, JSON2);
 
 		JSONObject ResultsJson = new JSONObject(Results);
 		String ResultsStr = ResultsJson.toString();
