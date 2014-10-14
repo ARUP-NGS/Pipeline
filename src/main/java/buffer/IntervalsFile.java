@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import operator.OperationFailedException;
 import util.Interval;
 import util.coverage.HasIntervals;
 
@@ -245,7 +246,6 @@ public abstract class IntervalsFile extends FileBuffer implements HasIntervals {
 					//System.out.println("spans across the start of a bed region");
 					return true;
 				}
-				//TODO fix this then add default return/throw error
 				if (keyIndexBegin == keyIndexEnd) {
 					//System.out.println("past same interval start");
 					Interval cInterval = cInts.get(keyIndexBegin);
@@ -256,7 +256,7 @@ public abstract class IntervalsFile extends FileBuffer implements HasIntervals {
 				}
 				//If nothing else stuck then something is potentially wrong with the intervals
 				//System.out.println("Interval " + cInterval + " does NOT contain the position " + pos);
-				return false;
+				throw new IllegalArgumentException("Intervals appear to be malformed for intersects method");
 			}
 		}
 	}
