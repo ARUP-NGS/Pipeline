@@ -31,20 +31,12 @@ public class PindelResultsContainer extends FileBuffer {
 		for (String currentFile : outputFileSuffixes) {
 			File thisFile = new File(prefix + currentFile);
 			File filteredFile = new File(prefix + "2" + currentFile);
-			if (thisFile.exists()) {
-				if (thisFile.length() > 0) {
-					System.out.println("processing " + prefix + currentFile);
-					parser = new PindelParser(thisFile);
-					parser.filter(threshold);
-					//System.out.println(parser.printPINDEL());
-					parser.makePindelFile(filteredFile);
-					parser.combineResults();
-					results.put(currentFile, parser.getResults());
-				} else {
-					System.out.println("file size 0 " + prefix + currentFile);
-				}
-			} else {
-				System.out.println("failed to find " + prefix + currentFile);
+			if (thisFile.exists() && thisFile.length() > 0) {
+				parser = new PindelParser(thisFile);
+				parser.filter(threshold);
+				parser.makePindelFile(filteredFile);
+				parser.combineResults();
+				results.put(currentFile, parser.getResults());
 			}
 		}
 	}
@@ -76,6 +68,7 @@ public class PindelResultsContainer extends FileBuffer {
 		res.put("start", pr.getRangeStart());
 		res.put("end", pr.getRangeEnd());
 		res.put("supportingReads", pr.getSupportReads());
+		res.put("meanDepth", pr.getMeanDepth());
 		
 		JSONArray features = new JSONArray();
 		for(String feat : pr.getAllAnnotations()) {

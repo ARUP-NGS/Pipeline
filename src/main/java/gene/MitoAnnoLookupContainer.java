@@ -10,7 +10,7 @@ import java.io.IOException;
  * @author brendan
  *
  */
-public class MitoAnnoLookupContainer extends AbstractIntervalContainer {
+public class MitoAnnoLookupContainer extends BasicIntervalContainer {
 
 	public void readIntervals(File mitogbk) throws IOException {
 		BufferedReader reader = new BufferedReader(new FileReader(mitogbk));

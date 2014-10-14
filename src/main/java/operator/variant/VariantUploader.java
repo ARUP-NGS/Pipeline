@@ -33,9 +33,9 @@ public class VariantUploader extends Operator {
 //	protected String uploadURL = "http://ngs-webapp-dev/Variant/UploadVariants";
 //	protected String uploadURL = "http://localhost:9172/Variant/UploadVariants";
 	protected final String success = "\"Success\"";
-	protected String sampleId = null;
-	protected String accession = null;
-	protected String resultDTA = null;
+	protected String sampleId = "0";
+	protected String accession = "";
+	protected String resultDTA = "";
 	
 	@Override
 	public void performOperation() throws OperationFailedException {
@@ -55,6 +55,8 @@ public class VariantUploader extends Operator {
 		JSONObject json = new JSONObject();
 		try {        
 			logger.info("Uploading " + variants.size() + " variants for sample " + sampleId);
+			
+			json.put("accession", sampleId);
 			json.put("accession", accession);
 			json.put("result", resultDTA);
 		
@@ -120,15 +122,21 @@ public class VariantUploader extends Operator {
 		resultDTA = this.getAttribute(RESULTDTA);
 			
 		if (sampleId == null || sampleId.length() == 0) {
-			throw new IllegalArgumentException("VariantUploader requires the sampleID to be specified");
+			//If no sampleID specified, user must specify both accession and result dta
+			if (accession == null || accession.length() == 0) {
+				throw new IllegalArgumentException("VariantUploader requires the accession to be specified");
+			}
+			
+			if (resultDTA == null || resultDTA.length() == 0) {
+				throw new IllegalArgumentException("VariantUploader requires the resultableDTA to be specified");
+			}
 		}
 		
-		if (accession == null || accession.length() == 0) {
-			throw new IllegalArgumentException("VariantUploader requires the accession to be specified");
+		if (accession==null) {
+			accession = "";
 		}
-		
-		if (resultDTA == null || resultDTA.length() == 0) {
-			throw new IllegalArgumentException("VariantUploader requires the resultableDTA to be specified");
+		if (resultDTA==null) {
+			resultDTA="";
 		}
 		
 		for(int i=0; i<children.getLength(); i++) {
@@ -139,8 +147,11 @@ public class VariantUploader extends Operator {
 				if (obj instanceof VariantPool) {
 					variants = (VariantPool)obj;
 				}
-
 			}
+		}
+		
+		if (variants == null) {
+			throw new IllegalArgumentException("No variant pool specified!");
 		}
 	}
 

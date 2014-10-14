@@ -23,15 +23,12 @@ public class CoverageCalculator {
 	
 	
 	protected File inputBam = null;
-	protected IntervalsFile intervals;
+	protected HasIntervals intervals;
 	private int threads = Runtime.getRuntime().availableProcessors();
 	
-	public CoverageCalculator(File inputBam, IntervalsFile intervals) throws IOException {
+	public CoverageCalculator(File inputBam, HasIntervals intervals) throws IOException {
 		this.inputBam = inputBam;
 		this.intervals = intervals;
-		if (! intervals.isMapCreated()) {
-			intervals.buildIntervalsMap();
-		}
 	}
 
 	public void setThreadCount(int threads) {
@@ -44,9 +41,8 @@ public class CoverageCalculator {
 	public int[] computeOverallCoverage() throws InterruptedException {
 		int maxSubIntervalSize = 10000;
 		ThreadPoolExecutor pool = (ThreadPoolExecutor) Executors.newFixedThreadPool( threads );
-		int[] overallDepths = new int[1000];
+		int[] overallDepths = new int[15000];
 		
-		System.out.println("Submitting jobs..");
 		for(String chr : intervals.getContigs()) {
 			List<Interval> subIntervals = new ArrayList<Interval>();
 			for(Interval interval : intervals.getIntervalsForContig(chr)) {
@@ -67,11 +63,9 @@ public class CoverageCalculator {
 			}
 		}
 		
-		System.out.println("All jobs have been submitted, approx task count is: " + pool.getTaskCount());
+		
 		pool.shutdown();
 		pool.awaitTermination(10, TimeUnit.DAYS);
-		
-		//System.out.println("All tasks have completed...");
 
 		
 		return overallDepths;
@@ -269,9 +263,8 @@ public class CoverageCalculator {
 		boolean cont = true;
 		while(cont && bam.getCurrentPosition() < end) {
 			int depth = bam.size();
-			if (depth < depths.length) {
-				depths[depth]+=advance; //We assume this base and the next 'advance' bases all have the same coverage
-			}
+			depth = Math.min(depth, depths.length-1);
+			depths[depth]+=advance; //We assume this base and the next 'advance' bases all have the same coverage
 			cont = bam.advanceBy(advance);
 		}
 	}

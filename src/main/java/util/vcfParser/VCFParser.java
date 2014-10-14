@@ -268,7 +268,31 @@ public class VCFParser implements VariantLineReader {
 			//we tolerate it if we can't parse quality...
 		}
 		
+
 		//@author elainegee start
+
+		//Order important here: Remove trailing bases first! IN cases where there are starting and 
+		//trailing matching bases we want to preserve the start position as much as possible, since 
+		//that is what ends up getting used for future position comparisons. 
+ 
+		//Remove trailing characters if they are equal and subtract that many bases from end position
+		if (stripTrailingMatchingBases) {
+			int matches = findNumberOfTrailingMatchingBases(ref, alt);						
+			if (matches > 0) {	
+				// Trim Ref
+				ref = ref.substring(0, ref.length() - matches); 
+				if (ref.length()==0) {
+					ref = "-";
+				}
+				// Trim Alt 			
+				alt = alt.substring(0, alt.length() - matches); 
+				if (alt.length()==0){								
+					alt = "-";
+				} 
+
+			}
+		}
+
 		//Remove initial characters if they are equal and add that many bases to start position
 		//Warning: Indels may no longer be left-aligned after this procedure
 		if (stripInitialMatchingBases) {
@@ -289,6 +313,7 @@ public class VCFParser implements VariantLineReader {
 				pos+=matches;				
 			}
 		}
+		
 		//Update end position
 		Integer end=null;
 		if (alt.equals("-")) {
@@ -296,28 +321,8 @@ public class VCFParser implements VariantLineReader {
 		}
 		else {
 			end = pos + ref.length();
-		}
-				
-		//@author elainegee start
-		//Remove trailing characters if they are equal and subtract that many bases from end position
-		if (stripTrailingMatchingBases) {
-			int matches = findNumberOfTrailingMatchingBases(ref, alt);						
-			if (matches > 0) {	
-				// Trim Ref
-				ref = ref.substring(0, ref.length() - matches); 
-				if (ref.length()==0) {
-					ref = "-";
-				}
-				// Trim Alt 			
-				alt = alt.substring(0, alt.length() - matches); 
-				if (alt.length()==0){								
-					alt = "-";
-				} 
-				
-				//Update end position
-				end-=matches;				
-			}
-		}
+		}				
+		
 
 		// Create sampleMetrics dictionary containing INFO & FORMAT field data, keyed by annotation
 		sampleMetrics = createSampleMetricsDict(); //Stores sample-specific key=value pairs from VCF entry from FORMAT & INFO, not header	

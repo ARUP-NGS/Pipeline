@@ -87,7 +87,7 @@ public class PindelParser {
 	}
 
 	public void combineResults() {
-		ArrayList<PindelResult> subset = new ArrayList<PindelResult>();
+		ArrayList<PindelResult> combinedResults = new ArrayList<PindelResult>();
 		PindelResult current = null;
 		for (PindelResult next : resultsList) {
 			if (current == null) {
@@ -97,16 +97,13 @@ public class PindelParser {
 					current.add(next);
 				} else {
 					if(current.getSupportReads()>minCompositeSupported)
-					subset.add(current);
+					combinedResults.add(current);
 					current = next;
 				}
 			}
 		}
-		System.out
-				.println("index\tfinalIndex\tSVLength\tChrID\tBPRangeStart\tBPRangeEnd\tsupportReads");
-		for (PindelResult temp : subset) {
-			temp.printSummary();
-		}
+		
+		resultsList = combinedResults;
 	}
 	
 	public List<PindelResult> getResults() {
