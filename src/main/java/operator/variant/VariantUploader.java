@@ -56,7 +56,7 @@ public class VariantUploader extends Operator {
 		try {        
 			logger.info("Uploading " + variants.size() + " variants for sample " + sampleId);
 			
-			json.put("accession", sampleId);
+			json.put("sample.id", sampleId);
 			json.put("accession", accession);
 			json.put("result", resultDTA);
 		

@@ -231,12 +231,10 @@ public class PindelResult {
 	public boolean sameHit(PindelResult next) {
 		if (this.varType.equals(next.varType)) {
 			if (ChrID.equals(next.getChromo())) {
-				Interval thisInt = new Interval(bpRangeStart-1, bpRangeEnd+1);
-				Interval otherInt = new Interval(next.getRangeStart()-1, next.getRangeEnd()+1);
+				Interval thisInt = new Interval(bpRangeStart-5, bpRangeEnd+5);
+				Interval otherInt = new Interval(next.getRangeStart()-5, next.getRangeEnd()+5);
 				
-				if (thisInt.intersects(otherInt)
-					&& (Math.abs(bpRangeStart - next.getRangeStart()) < 100) 
-					&& (Math.abs(bpRangeEnd - next.getRangeEnd()) < 100)) {
+				if (thisInt.intersects(otherInt)) {
 					return true;
 				}
 			}
