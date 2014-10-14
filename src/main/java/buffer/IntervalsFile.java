@@ -210,14 +210,15 @@ public abstract class IntervalsFile extends FileBuffer {
 		}
 	}
 
-	public boolean intersects(String contig, int begin, int end) {
-		return intersects(contig, begin, end, true);
+	public boolean intersects(String contig, Interval qInterval) {
+
+		return intersects(contig, qInterval, true);
 	}
 
-	public boolean intersects(String contig, int begin, int end, boolean warn) {
+	public boolean intersects(String contig, Interval qInterval, boolean warn) {
 		List<Interval> cInts = intervals.get(contig);
-		Interval qIntervalBegin = new Interval(begin, begin);
-		Interval qIntervalEnd = new Interval(end - 1, end - 1);
+		Interval qIntervalBegin = new Interval(qInterval.begin, qInterval.begin);
+		Interval qIntervalEnd = new Interval(qInterval.end - 1, qInterval.end - 1);
 		if (cInts == null) {
 			if (warn)
 				System.out.println("Contig " + contig + " is not in BED file!");
@@ -247,7 +248,7 @@ public abstract class IntervalsFile extends FileBuffer {
 				if (keyIndexBegin == keyIndexEnd) {
 					//System.out.println("past same interval start");
 					Interval cInterval = cInts.get(keyIndexBegin);
-					if (begin < cInterval.end) { // use < rather than <= because of 0-based intervals assumed (bed style)
+					if (qInterval.begin < cInterval.end) { // use < rather than <= because of 0-based intervals assumed (bed style)
 						//System.out.println("starts before interval end");
 						return true;
 					}
