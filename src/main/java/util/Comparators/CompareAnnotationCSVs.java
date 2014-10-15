@@ -35,6 +35,7 @@ public class CompareAnnotationCSVs extends IOOperator {
 
 	static LinkedHashMap<String, Object> CSVCompare(String csvFile1,
 			String csvFile2) throws IOException {
+		Logger logger = Logger.getLogger(Pipeline.primaryLoggerName);
 		// Load csv1 into a String array
 		BufferedReader csvReader1 = new BufferedReader(new FileReader(csvFile1));
 		String str;
@@ -94,17 +95,33 @@ public class CompareAnnotationCSVs extends IOOperator {
 		}
 
 		LinkedHashMap<String, Object> compareSummary = new LinkedHashMap<String, Object>();
+		logger.info("Comparing zygosity calls.");
 		LinkedHashMap<String, Integer> zygosityResults = ZygosityCompare(
 				sharedLines1, sharedLines2);
+		logger.info("Comparing all fields.");
 		LinkedHashMap<String, ArrayList<String>> fullComparison = FullComparison(
 				sharedLines1, sharedLines2);
-		if (positionResults != null)
+		logger.info("Now building summary");
+		
+		if (positionResults != null){
+			logger.info("Position intersection completed successfully. Adding to the comparison summary.");
 			compareSummary.put("position.results", positionResults);
-		if (zygosityResults != null)
+		}
+		else
+			logger.info("Position intersection is null. Not adding to comparison summary.");
+		
+		if (zygosityResults != null){
+			logger.info("Zygosity comparison completed successfully. Adding to the comparison summary.");
 			compareSummary.put("zygosity.results", zygosityResults);
-		if (fullComparison != null)
+		}
+		else
+			logger.info("Zygosity comparison failed. Not adding to comparison summary.");
+		if (fullComparison != null){
+			logger.info("Full comparison completed successfully. Adding to the comparison summary.");
 			compareSummary.put("full.results", fullComparison);
-
+		}
+		else
+			logger.info("Full comparison failed. Not adding to comparison summary.");
 		return compareSummary;
 	}
 

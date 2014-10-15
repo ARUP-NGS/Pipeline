@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import operator.OperationFailedException;
 import util.Interval;
 import util.coverage.HasIntervals;
 
@@ -207,6 +208,55 @@ public abstract class IntervalsFile extends FileBuffer implements HasIntervals {
 					//System.out.println("Interval " + cInterval + " does NOT contain the position " + pos);
 					return false;
 				}
+			}
+		}
+	}
+
+	public boolean intersects(String contig, Interval qInterval) {
+
+		return intersects(contig, qInterval, true);
+	}
+
+	public boolean intersects(String contig, Interval qInterval, boolean warn) {
+		List<Interval> cInts = intervals.get(contig);
+		Interval qIntervalBegin = new Interval(qInterval.begin, qInterval.begin);
+		Interval qIntervalEnd = new Interval(qInterval.end - 1, qInterval.end - 1);
+		if (cInts == null) {
+			if (warn)
+				System.out.println("Contig " + contig + " is not in BED file!");
+			return false;
+		}
+		else {
+			int indexBegin = Collections.binarySearch(cInts, qIntervalBegin, intComp);
+			int indexEnd = Collections.binarySearch(cInts, qIntervalEnd, intComp);
+			if (indexBegin >= 0 || indexEnd >= 0) {
+				//System.out.println("Interval " + cInts.get(index) + " intersects the interval " + begin + ", " + end);
+				//An interval starts with one the query interval begin or end
+				return true;
+			}
+			else {
+				//No interval starts with begin or end
+				int keyIndexBegin = -indexBegin-1 -1;
+				int keyIndexEnd = -indexEnd-1 -1;
+				if (keyIndexBegin < 0 && keyIndexEnd < 0) {
+					//System.out.println("Interval #0 does NOT contain the interval " + begin + ", " + end);
+					return false;
+				} 
+				if (keyIndexBegin < keyIndexEnd) {
+					//System.out.println("spans across the start of a bed region");
+					return true;
+				}
+				if (keyIndexBegin == keyIndexEnd) {
+					//System.out.println("past same interval start");
+					Interval cInterval = cInts.get(keyIndexBegin);
+					if (qInterval.begin < cInterval.end) { // use < rather than <= because of 0-based intervals assumed (bed style)
+						//System.out.println("starts before interval end");
+						return true;
+					}
+				}
+				//If nothing else stuck then something is potentially wrong with the intervals
+				//System.out.println("Interval " + cInterval + " does NOT contain the position " + pos);
+				throw new IllegalArgumentException("Intervals appear to be malformed for intersects method");
 			}
 		}
 	}

@@ -20,10 +20,12 @@ public class MergeSam extends IOOperator {
 
 	public static final String JVM_ARGS = "jvmargs";
 	public static final String MEMORY_RANGE = "memory.range";
+	public static final String VALIDATION_STRINGENCY = "validation.stringency";
 	String jvmargs = "-Djava.io.tmpdir=/mounts/tmp/";// Set default jvmargs
 	protected String defaultPicardDir = "~/picard-tools-1.55/";
 	protected String picardDir = defaultPicardDir;
 	protected String memoryRange = " -Xms2G -Xmx8G ";
+	protected String valString = "VALIDATION_STRINGENCY=LENIENT";
 
 	public void performOperation() throws OperationFailedException {
 
@@ -41,6 +43,12 @@ public class MergeSam extends IOOperator {
 		if (memoryAttr != null) {
 			memoryRange = memoryAttr;
 			Logger.getLogger(Pipeline.primaryLoggerName).info("Default memory range overridden. New value: " + memoryRange + ".");
+		}
+		
+		String valAttr = getAttribute(VALIDATION_STRINGENCY);
+		if(valAttr != null) {
+			valString = "VALIDATION_STRINGENCY=" + valAttr.toUpperCase();
+			Logger.getLogger(Pipeline.primaryLoggerName).info("Default validation stringency overridden. New stringency string is: " + valString);
 		}
 
 		// Get Picard Path, JVM attributes
@@ -63,7 +71,7 @@ public class MergeSam extends IOOperator {
 		String command = "java -Xms2G -Xmx20G " + jvmargs + " -jar "
 				+ picardDir + "/MergeSamFiles.jar " + fileList + " O="
 				+ outBam.getAbsolutePath()
-				+ " USE_THREADING=true CREATE_INDEX=true MSD=true";
+				+ " USE_THREADING=true CREATE_INDEX=true MSD=true " + valString;
 
 		Logger.getLogger(Pipeline.primaryLoggerName).info(
 				this.getObjectLabel() + " is executing: " + command);
