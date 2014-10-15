@@ -1,29 +1,26 @@
 package util.Comparators;
 
 import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Set;
 import java.util.logging.Logger;
 
-import buffer.FileBuffer;
-import buffer.JSONBuffer;
 import json.JSONArray;
 import json.JSONException;
 import json.JSONObject;
 import operator.IOOperator;
 import operator.OperationFailedException;
 import pipeline.Pipeline;
-import util.QCJsonReader;
 import util.CompressGZIP;
+import util.QCJsonReader;
+import buffer.FileBuffer;
+import buffer.JSONBuffer;
 
 /*
  * I think I should make a file comparison superclass which then gets implemented or extended for these, since I am sharing a lot of code.
@@ -126,7 +123,7 @@ public class CompareQCMetrics extends IOOperator {
 		String JSON1 = JSONs.get(0).getAbsolutePath();
 		String JSON2 = JSONs.get(1).getAbsolutePath();
 
-		LinkedHashMap<String, Object> Results = JSONCompNew_configuration (2)are(JSON1, JSON2);
+		LinkedHashMap<String, Object> Results = JSONCompare(JSON1, JSON2);
 
 		JSONObject ResultsJson = new JSONObject(Results);
 		String ResultsStr = ResultsJson.toString();
