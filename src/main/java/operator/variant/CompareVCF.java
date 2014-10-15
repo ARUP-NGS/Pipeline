@@ -18,6 +18,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
+import net.sf.samtools.util.RuntimeEOFException;
+
 import org.apache.tools.ant.types.CommandlineJava.SysProperties;
 
 import operator.IOOperator;
@@ -172,7 +174,7 @@ public class CompareVCF extends IOOperator {
 
 	}
 
-	public static LinkedHashMap<String, Integer> compareVars(VariantPool varsA,
+	public static LinkedHashMap<String, Object> compareVars(VariantPool varsA,
 			VariantPool varsB, Logger output) {
 		List<VarPair> perfectMatch = new ArrayList<VarPair>();
 		List<VarPair> difZygote = new ArrayList<VarPair>();
@@ -190,11 +192,16 @@ public class CompareVCF extends IOOperator {
 		int cumulPropMissing = 0;
 		int cumulAnnMissing = 0;
 
+		LinkedHashMap<String, Object> vcfResults = new LinkedHashMap<String, Object>();
+		LinkedHashMap<String, Object> vcfDetails = new LinkedHashMap<String, Object>();
+		LinkedHashMap<String, Object> vcfPropDetails = new LinkedHashMap<String, Object>();
+		LinkedHashMap<String, Object> vcfAnnDetails = new LinkedHashMap<String, Object>();
+
 		for (String contig : varsA.getContigs()) {
 			List<VariantRec> listA = varsA.getVariantsForContig(contig);
 			for (VariantRec rec : listA) {
-				VariantRec match = varsB.findRecordNoWarn(contig,
-						rec.getStart());
+				VariantRec match = varsB.findRecord(contig, rec.getStart(),
+						rec.getRef(), rec.getAlt());
 				int propDiffs = 0;
 				int propMissing = 0;
 				int annDiffs = 0;
@@ -203,7 +210,8 @@ public class CompareVCF extends IOOperator {
 					VarPair pair = new VarPair();
 					pair.a = rec;
 					pair.b = match;
-
+					System.out.println(rec.getAlt() + " is rec alt while "
+							+ match.getAlt() + " is the match alt.");
 					if (rec.getAlt().equals(match.getAlt())) {
 						if (rec.isHetero() == match.isHetero()) {
 							perfectMatch.add(pair);
@@ -216,15 +224,46 @@ public class CompareVCF extends IOOperator {
 					}
 					// Compare property entries for shared keys
 					Collection<String> recProps = rec.getPropertyKeys();
+					if (!rec.getAlt().equals(match.getAlt()))
+						throw new RuntimeException(
+								"For some reason, rec and match have different alt alleles");
+					LinkedHashMap<String, String> discrepProp = new LinkedHashMap<String, String>();
+					LinkedHashMap<String, String> discrepAnn = new LinkedHashMap<String, String>();
 					for (String prop : recProps) {
 						Double recProp = rec.getProperty(prop);
 						if (match.getProperty(prop) != null) {
 							if (recProp.compareTo(match.getProperty(prop)) != 0) {
 								System.out
+										.println(rec.toSimpleString()
+												+ " is rec, while "
+												+ match.toSimpleString()
+												+ " is match.");
+
+								System.out
 										.println("Properties not matching. Prop1: "
 												+ recProp
 												+ ". Prop2: "
-												+ match.getProperty(prop));
+												+ match.getProperty(prop)
+												+ ". for property " + prop);
+								discrepProp.put("property", prop);
+								discrepProp
+										.put("recBasic", rec.toBasicString());
+								discrepProp.put("recSimple",
+										rec.toSimpleString());
+								discrepProp.put("matchBasic",
+										match.toBasicString());
+								discrepProp.put("matchSimple",
+										match.toSimpleString());
+								discrepProp.put("recProp", recProp.toString());
+								discrepProp.put("matchProp",
+										match.getProperty(prop).toString());
+								vcfPropDetails.put(
+										"chr" + rec.getContig() + ","
+												+ rec.getStart() + ","
+												+ rec.getEnd() + ","
+												+ rec.getRef() + ","
+												+ rec.getAlt(), discrepProp);
+
 								propDiffs += 1;
 							}
 						} else {
@@ -232,7 +271,7 @@ public class CompareVCF extends IOOperator {
 						}
 					}
 					if (propDiffs >= 1) {
-						output.info("Warning: properties do not match at contig: "
+						output.info("Warning: properties did not match at contig: "
 								+ rec.getContig()
 								+ " and position: "
 								+ rec.getStart()
@@ -281,7 +320,26 @@ public class CompareVCF extends IOOperator {
 						Double recAnnotation = rec.getProperty(ann);
 						if (match.getProperty(ann) != null) {
 							if (recAnnotation != match.getProperty(ann)) {
-								ann += 1;
+
+								discrepAnn.put("property", ann);
+								discrepAnn.put("recBasic", rec.toBasicString());
+								discrepAnn.put("recSimple",
+										rec.toSimpleString());
+								discrepAnn.put("matchBasic",
+										match.toBasicString());
+								discrepAnn.put("matchSimple",
+										match.toSimpleString());
+								discrepAnn.put("recAnn", recAnn.toString());
+								discrepAnn.put("matchAnn",
+										match.getProperty(ann).toString());
+								vcfAnnDetails.put(
+										"chr" + rec.getContig() + ","
+												+ rec.getStart() + ","
+												+ rec.getEnd() + ","
+												+ rec.getRef() + ","
+												+ rec.getAlt(), discrepAnn);
+
+								annDiffs += 1;
 							}
 						} else {
 							annMissing += 1;
@@ -333,19 +391,31 @@ public class CompareVCF extends IOOperator {
 				}
 			}
 		}
-		LinkedHashMap<String, Integer> vcfResults = new LinkedHashMap<String, Integer>();
-		vcfResults.put("Total properties at variance between sets",
+		LinkedHashMap<String, Integer> vcfSumResults = new LinkedHashMap<String, Integer>();
+		vcfSumResults.put("Total properties at variance between sets",
 				cumulPropDiffs);
-		vcfResults.put("Total properties missing from sample 2",
+		vcfSumResults.put("Total properties missing from sample 2",
 				cumulPropMissing);
-		vcfResults
-				.put("Total properties missing from sample 1", cumulPropAdtns);
-		vcfResults.put("Total annotations at variance between sets",
+		vcfSumResults.put("Total properties missing from sample 1",
+				cumulPropAdtns);
+		vcfSumResults.put("Total annotations at variance between sets",
 				cumulAnnDiffs);
-		vcfResults.put("Total annotations missing from Sample 2",
+		vcfSumResults.put("Total annotations missing from Sample 2",
 				cumulAnnMissing);
-		vcfResults
-				.put("Total annotations missing from Sample 1", cumulAnnAdtns);
+		vcfSumResults.put("Total annotations missing from Sample 1",
+				cumulAnnAdtns);
+		vcfResults.put("VCFSummary", vcfSumResults);
+		if(vcfPropDetails!=null)
+			vcfDetails.put("Property Details", vcfPropDetails);
+		else{
+			output.info("vcfPropDetails is null!");
+		}
+		if(vcfAnnDetails!=null)
+			vcfDetails.put("Annotation Details", vcfAnnDetails);
+		else
+			output.info("vcfAnnDetails is null!");
+		if(vcfDetails!=null)
+			vcfResults.put("VCFDetails", vcfDetails);
 		return vcfResults;
 
 	}

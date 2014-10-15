@@ -1,14 +1,10 @@
 package util.Comparators;
 
 import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -32,7 +28,10 @@ import pipeline.Pipeline;
  */
 
 public class compareReviewDirs extends IOOperator {
-
+	
+	public static final String csvKey = "annotated.vars";
+	public static final String qcKey = "qc.json";
+	public static final String vcfKey = "vcf.file";
 	@Override
 	public void performOperation() throws OperationFailedException,
 			JSONException, IOException {
@@ -64,42 +63,76 @@ public class compareReviewDirs extends IOOperator {
 
 		// Create "File"s for the vcf files.VCF1reader
 		// Modification: Grab file locations from Sample Manifest.
-		String[] tempStrArray = new String[2];
 		File manifestFile1 = new File(revDirLoc1 + "/sampleManifest.txt");
 		Map<String, String> smHash1 = QCJsonReader.readManifest(manifestFile1);
 		File manifestFile2 = new File(revDirLoc2 + "/sampleManifest.txt");
 		Map<String, String> smHash2 = QCJsonReader.readManifest(manifestFile2);
+		
+		// Compare VCF Files
+		LinkedHashMap<String, Object> compareStats = null;
+		if(smHash1.get(vcfKey) != null && !smHash1.get(vcfKey).isEmpty() && smHash2.get(vcfKey)!= null && !smHash2.get(vcfKey).isEmpty()) {
+			String vcfLoc1 = revDirLoc1 + "/" + smHash1.get(vcfKey);
+			String vcfLoc2 = revDirLoc2 + "/" + smHash2.get(vcfKey);
+			logger.info("vcfLoc1 is: " + vcfLoc1);
+			logger.info("vcfLoc2 is: " + vcfLoc2);
+			VariantPool varPool1 = new VariantPool(new VCFFile(new File(vcfLoc1)));
+			VariantPool varPool2 = new VariantPool(new VCFFile(new File(vcfLoc2)));
+			varPool1.sortAllContigs();
+			varPool2.sortAllContigs();
+			compareStats = CompareVCF.compareVars(varPool1, varPool2, logger);
+		}
+		else
+			throw new OperationFailedException("One or both sample manifests did not contain a final vcf. Abort mission!", this);
+		
+		System.out.println("VCF Comparison Done");
+		
+		// Compare Annotation Files
+		LinkedHashMap<String, Object> csvResults = null;
+		if(smHash1.get(csvKey) != null && !smHash1.get(csvKey).isEmpty() && smHash2.get(csvKey)!= null && !smHash2.get(csvKey).isEmpty()) {
+			String csvLoc1 = revDirLoc1 + "/" + smHash1.get(csvKey);
+			String csvLoc2 = revDirLoc2 + "/" + smHash2.get(csvKey);
+			csvResults = CompareAnnotationCSVs.CSVCompare(csvLoc1, csvLoc2);
+		}
+		else
+			throw new OperationFailedException("One or both sample manifests did not contain a final csv. Abort mission!", this);
 
-		// /Rest of code, unchanged
-		String vcfLoc1 = revDirLoc1 + "/" + smHash1.get("vcf.file");
-		String vcfLoc2 = revDirLoc2 + "/" + smHash2.get("vcf.file");
-		logger.info("vcfLoc1 is: " + vcfLoc1);
-		logger.info("vcfLoc2 is: " + vcfLoc2);
-		VariantPool varPool1 = new VariantPool(new VCFFile(new File(vcfLoc1)));
-		VariantPool varPool2 = new VariantPool(new VCFFile(new File(vcfLoc2)));
-		varPool1.sortAllContigs();
-		varPool2.sortAllContigs();
-
-		LinkedHashMap<String, Integer> compareStats = CompareVCF.compareVars(
-				varPool1, varPool2, logger);
-
-		String csvLoc1 = revDirLoc1 + "/" + smHash1.get("annotated.vars");
-		String csvLoc2 = revDirLoc2 + "/" + smHash2.get("annotated.vars");
-		LinkedHashMap<String, Object> csvResults = CompareAnnotationCSVs
-				.CSVCompare(csvLoc1, csvLoc2);
-
-		String qcLoc1 = revDirLoc1 + "/" + smHash1.get("qc.json");
-		String qcLoc2 = revDirLoc2 + "/" + smHash2.get("qc.json");
-		LinkedHashMap<String, Object> qcResults = CompareQCMetrics.JSONCompare(
-				qcLoc1, qcLoc2);
+		System.out.println("Now pausing so that I can figure out what's making all of that output! CSV Comparison Done");
+		try {
+			Thread.sleep(5);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		LinkedHashMap<String, Object> qcResults = null;
+		if(smHash1.get(qcKey) != null && !smHash1.get(qcKey).isEmpty() && smHash2.get(qcKey)!= null && !smHash2.get(qcKey).isEmpty()) {
+			String qcLoc1 = revDirLoc1 + "/" + smHash1.get(qcKey);
+			String qcLoc2 = revDirLoc2 + "/" + smHash2.get(qcKey);
+			qcResults = CompareQCMetrics.JSONCompare(qcLoc1, qcLoc2);
+		}
+		else
+			throw new OperationFailedException("One or both sample manifests did not contain a qc json. Abort mission!", this);
+		System.out.println("Now pausing so that I can figure out what's making all of that output! QC Metrics Comparison Done");
+		try {
+			Thread.sleep(5);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
 		LinkedHashMap<String, Object> AllResults = new LinkedHashMap<String, Object>();
 		if(csvResults != null)
 			AllResults.put("CSVResults", csvResults);
+		else
+			logger.info("csvResults is null. Not adding to json");
 		if(compareStats != null)
 			AllResults.put("VCFResults", compareStats);
+		else
+			logger.info("compareStats is null. Not adding to json");
 		if(qcResults != null)
 			AllResults.put("QCResults", qcResults);
+		else
+			logger.info("qcResults is null. Not adding to json");
 		JSONObject ResultsJson = new JSONObject(AllResults);
 		String ResultsStr = ResultsJson.toString();
 
