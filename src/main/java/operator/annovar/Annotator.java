@@ -16,6 +16,7 @@ import org.w3c.dom.NodeList;
 
 import pipeline.Pipeline;
 import pipeline.PipelineObject;
+import util.Interval;
 import buffer.BEDFile;
 import buffer.variant.VariantPool;
 import buffer.variant.VariantRec;
@@ -67,7 +68,10 @@ public abstract class Annotator extends Operator {
 
 		for(String contig : variants.getContigs()) {
 			for(VariantRec rec : variants.getVariantsForContig(contig)) {
-				if (bedFile == null || bedFile.contains(rec.getContig(), rec.getStart() - 1)) {
+				//TODO veryify that recEnd is not incorrect for two alt alleles
+				Integer recEnd = rec.getStart() + rec.getRef().length() - rec.getAlt().length();
+				Interval recInterval = new Interval(rec.getStart(), recEnd);
+				if (bedFile == null || bedFile.intersects(rec.getContig(), recInterval)) {
 					annotateVariant(rec);
 				
 					varsAnnotated++;
