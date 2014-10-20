@@ -92,7 +92,7 @@ public class PindelRunner extends IOOperator {
 				" -j " + pathToBedFile +
 				" -L " + this.getProjectHome() + "/pindel.log ";
 		Logger.getLogger(Pipeline.primaryLoggerName).info("Pindel operator is executing command " + command);
-		executeCommand(command, true); // run pindel
+		//executeCommand(command, true); // run pindel
 
 		// Create PindelFolderFilter
 		// Produce Pindel output?
@@ -121,7 +121,7 @@ public class PindelRunner extends IOOperator {
 				
 				double cov = computeMeanCoverageForRegion(bam, sv.getChromo(), sv.getRangeStart(), sv.getRangeEnd());
 				sv.setMeanDepth(cov);
-				System.out.println("Mean depth for " + sv.getChromo() + ": " + sv.getRangeStart() + "-" + sv.getRangeEnd() + "  :  " + cov);
+				System.out.println("Mean depth for " + sv.getChromo() + ": " + sv.getRangeStart() + "-" + sv.getRangeEnd() + "  :  " + cov + " var freq: " + (double)sv.getSupportReads()/sv.getMeanDepth());
 				Object[] overlappingFeatures = featureLookup.getIntervalObjectsForRange(sv.getChromo(), sv.getRangeStart(), sv.getRangeEnd());
 				for(Object feat : overlappingFeatures) {
 					sv.addFeatureAnnotation(feat.toString());

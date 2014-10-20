@@ -11,16 +11,16 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.logging.Logger;
 
-import buffer.FileBuffer;
-import buffer.JSONBuffer;
 import json.JSONArray;
 import json.JSONException;
 import json.JSONObject;
 import operator.IOOperator;
 import operator.OperationFailedException;
 import pipeline.Pipeline;
-import util.QCJsonReader;
 import util.CompressGZIP;
+import util.QCJsonReader;
+import buffer.FileBuffer;
+import buffer.JSONBuffer;
 
 /*
  * I think I should make a file comparison superclass which then gets implemented or extended for these, since I am sharing a lot of code.
@@ -123,7 +123,11 @@ public class CompareQCMetrics extends IOOperator {
 		}
 		String JSON1 = JSONs.get(0).getAbsolutePath();
 		String JSON2 = JSONs.get(1).getAbsolutePath();
+<<<<<<< HEAD
 		logger.info("About to compare JSONs");
+=======
+
+>>>>>>> 817850f7cb6c5d0f85eec45b84225962e29c6768
 		LinkedHashMap<String, Object> Results = JSONCompare(JSON1, JSON2);
 
 		JSONObject ResultsJson = new JSONObject(Results);

@@ -20,6 +20,7 @@ import operator.annovar.Annotator;
 import org.w3c.dom.NodeList;
 
 import pipeline.Pipeline;
+import util.Interval;
 import buffer.variant.VariantRec;
 
 /**
@@ -62,7 +63,10 @@ public class SnpEffGeneAnnotate extends Annotator {
 			
 				for(String contig: variants.getContigs()) {
 					for(VariantRec rec: variants.getVariantsForContig(contig)) {
-						if (bedFile == null || bedFile.contains(rec.getContig(), rec.getStart() - 1)) {
+						//TODO veryify that recEnd is not incorrect for two alt alleles
+						Integer recEnd = rec.getStart() + rec.getRef().length() - rec.getAlt().length();
+						Interval recInterval = new Interval(rec.getStart(), recEnd);
+						if (bedFile == null || bedFile.intersects(rec.getContig(), recInterval)) {
 							String varStr = convertVar(rec);		
 							writer.write(varStr + "\n");
 							varsWritten++;
@@ -185,6 +189,7 @@ public class SnpEffGeneAnnotate extends Annotator {
 			// something is better than nothing
 			// intronic or UTR is better than coding (because these will be most likely to be based on the reference transcript and not the variant)
 		String bestCdot = "";
+		String bestPdot = topHit.pDot;
 		Pattern p = Pattern.compile("[\\+\\-\\*]");
 		for(SnpEffInfo info : infoList) {
 			if (info.transcript.equals(topHit.transcript) && info.cDot != null && ! info.cDot.equals("")) {
@@ -192,15 +197,24 @@ public class SnpEffGeneAnnotate extends Annotator {
 				Matcher nextMatch = p.matcher(info.cDot);
 				if (nextMatch.find() && ! bestMatch.find()) {
 					bestCdot = info.cDot;
+					if (info.pDot != null && ! info.pDot.equals("")){
+						bestPdot = info.pDot;
+					}
 				} else if (bestCdot.equals("")) {
 					bestCdot = info.cDot;
+					if (info.pDot != null && ! info.pDot.equals("")){
+						bestPdot = info.pDot;
+					}
 				}
+			}
+			if (bestPdot == "" || bestPdot.equals("") && (info.pDot != null && ! info.pDot.equals(""))){
+				bestPdot = info.pDot;
 			}
 		}
 
 		
 		appendAnnotation(var, VariantRec.CDOT, bestCdot);
-		appendAnnotation(var, VariantRec.PDOT, topHit.pDot);
+		appendAnnotation(var, VariantRec.PDOT, bestPdot);
 		appendAnnotation(var, VariantRec.EXON_NUMBER, topHit.exon);
 		appendAnnotation(var, VariantRec.NM_NUMBER, topHit.transcript);
 		appendAnnotation(var, VariantRec.GENE_NAME, topHit.gene);

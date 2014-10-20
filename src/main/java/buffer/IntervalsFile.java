@@ -11,7 +11,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import operator.OperationFailedException;
 import util.Interval;
 import util.coverage.HasIntervals;
 
@@ -230,7 +229,8 @@ public abstract class IntervalsFile extends FileBuffer implements HasIntervals {
 			int indexBegin = Collections.binarySearch(cInts, qIntervalBegin, intComp);
 			int indexEnd = Collections.binarySearch(cInts, qIntervalEnd, intComp);
 			if (indexBegin >= 0 || indexEnd >= 0) {
-				//System.out.println("Interval " + cInts.get(index) + " intersects the interval " + begin + ", " + end);
+				//System.out.println("Interval " + cInts.get(indexBegin) + " starts same spot as either interval " + qInterval.begin + ", " + qInterval.end);
+				System.out.println("indexBegin>0 or indexEnd>0");
 				//An interval starts with one the query interval begin or end
 				return true;
 			}
@@ -239,19 +239,25 @@ public abstract class IntervalsFile extends FileBuffer implements HasIntervals {
 				int keyIndexBegin = -indexBegin-1 -1;
 				int keyIndexEnd = -indexEnd-1 -1;
 				if (keyIndexBegin < 0 && keyIndexEnd < 0) {
+					//System.out.println("Interval " + cInts.get(indexBegin) + " does not contain the interval " + qInterval.begin + ", " + qInterval.end);
+					System.out.println("False - keyIndexBegin<0 and keyIndexEnd<0");
 					//System.out.println("Interval #0 does NOT contain the interval " + begin + ", " + end);
 					return false;
 				} 
 				if (keyIndexBegin < keyIndexEnd) {
 					//System.out.println("spans across the start of a bed region");
+					System.out.println("True - keyIndexBegin < keyIndexEnd");
 					return true;
 				}
 				if (keyIndexBegin == keyIndexEnd) {
 					//System.out.println("past same interval start");
 					Interval cInterval = cInts.get(keyIndexBegin);
 					if (qInterval.begin < cInterval.end) { // use < rather than <= because of 0-based intervals assumed (bed style)
-						//System.out.println("starts before interval end");
+						System.out.println("True - starts before interval end");
 						return true;
+					} else {
+						System.out.println("False - starts after interval end");
+						return false;
 					}
 				}
 				//If nothing else stuck then something is potentially wrong with the intervals
