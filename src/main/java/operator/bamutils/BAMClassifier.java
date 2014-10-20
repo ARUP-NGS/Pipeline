@@ -5,8 +5,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.logging.Logger;
 
-import org.apache.tools.ant.types.CommandlineJava.SysProperties;
-
 import net.sf.samtools.SAMFileReader;
 import net.sf.samtools.SAMFileReader.ValidationStringency;
 import net.sf.samtools.SAMFileWriter;
@@ -16,7 +14,6 @@ import operator.IOOperator;
 import operator.OperationFailedException;
 import pipeline.Pipeline;
 import buffer.BAMFile;
-import buffer.BEDFile;
 import buffer.FileBuffer;
 
 /**

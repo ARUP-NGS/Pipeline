@@ -31,13 +31,11 @@ public class BWAMEMAlign extends IOOperator {
 	
 	public static final String JVM_ARGS="jvmargs";
 	public static final String BWA_PATH = "bwa.path";
-	public static final String STREAMSORT_PATH = "streamsort.path";
 	public static final String SAMTOOLS_PATH = "samtools.path";
 	public static final String SAMTOOLS_MT_PATH = "samtools-mt.path";
 	String sample = "unknown";
 	String samtoolsPath = null;
 	//String samtoolsMTPath = null;
-	String streamsortPath = null;
 	String bwaPath = null;
 
 	@Override
@@ -147,18 +145,6 @@ public class BWAMEMAlign extends IOOperator {
 		}
 		this.bwaPath = pathAttr;
 		
-		
-		String ssAttr = this.getAttribute(STREAMSORT_PATH);
-		if (ssAttr == null) {
-			ssAttr = this.getPipelineProperty(STREAMSORT_PATH);
-		}
-		if (ssAttr == null) {
-			throw new IllegalArgumentException("No path to stream sorter.jar found, please specify " + STREAMSORT_PATH);
-		}
-		if (! (new File(ssAttr).exists())) {
-			throw new IllegalArgumentException("No file found at stream sorter path : " + ssAttr);
-		}
-		this.streamsortPath = ssAttr;
 		
 		String samtoolsAttr = this.getAttribute(SAMTOOLS_PATH);
 		if (samtoolsAttr == null) {
