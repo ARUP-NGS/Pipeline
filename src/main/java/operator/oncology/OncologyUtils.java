@@ -397,6 +397,7 @@ public class OncologyUtils extends IOOperator {
 
 		// Build final results map to be converted to JSON
 		Map<String, Object> finalResults = new HashMap<String, Object>();
+<<<<<<< Updated upstream
 		finalResults.put("summary", summary);
 		finalResults.put("rna.ratio", rnaRatio);
 		finalResults.put("rna.fusion", rnaFusion);
@@ -451,6 +452,27 @@ public class OncologyUtils extends IOOperator {
 		 */
 		byte[] bytes = CompressGZIP.compressGZIP(str);
 
+=======
+		finalResults.put( "summary", summary );
+		finalResults.put( "rna.ratio", rnaRatio );
+		finalResults.put( "rna.fusion", rnaFusion );
+
+		//Convert final results to JSON
+	    JSONObject json = new JSONObject(finalResults);
+	    System.out.printf( "JSON: %s", json.toString(2) );
+	    
+		//Get the json string, then compress it to a byte array
+		//Make the JSON string human-readable
+	    
+	    Gson gson = new GsonBuilder().setPrettyPrinting().create();
+	    JsonParser jp = new JsonParser();
+	    JsonElement je = jp.parse(json.toString());
+	    String jsonString = gson.toJson(je);
+
+		//byte[] bytes = CompressGZIP.compressGZIP(prettyJsonString);
+		
+		byte[] bytes = CompressGZIP.compressGZIP(jsonString);
+>>>>>>> Stashed changes
 		// Write compresssed JSON to file
 		// File dest = new File(getProjectHome() + "/rna_report.json.gz");
 		File dest = this.getOutputBufferForClass(JSONBuffer.class).getFile();
@@ -458,7 +480,11 @@ public class OncologyUtils extends IOOperator {
 				new FileOutputStream(dest));
 		writer.write(bytes);
 		writer.close();
+<<<<<<< Updated upstream
 
+=======
+		
+>>>>>>> Stashed changes
 		return;
 	}
 
