@@ -1,29 +1,26 @@
 package util.Comparators;
 
 import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Set;
 import java.util.logging.Logger;
 
-import buffer.FileBuffer;
-import buffer.JSONBuffer;
 import json.JSONArray;
 import json.JSONException;
 import json.JSONObject;
 import operator.IOOperator;
 import operator.OperationFailedException;
 import pipeline.Pipeline;
-import util.QCJsonReader;
 import util.CompressGZIP;
+import util.QCJsonReader;
+import buffer.FileBuffer;
+import buffer.JSONBuffer;
 
 /*
  * I think I should make a file comparison superclass which then gets implemented or extended for these, since I am sharing a lot of code.
@@ -34,7 +31,7 @@ public class CompareQCMetrics extends IOOperator {
 	static DecimalFormat formatter = new DecimalFormat("0.0##");
 	static DecimalFormat smallFormatter = new DecimalFormat("0.00000");
 
-	public static LinkedHashMap jsonToMap(JSONObject json) throws JSONException {
+	public static LinkedHashMap <String, Object> jsonToMap(JSONObject json) throws JSONException {
 		LinkedHashMap<String, Object> retMap = new LinkedHashMap<String, Object>();
 
 		if (json != JSONObject.NULL) {
@@ -43,7 +40,7 @@ public class CompareQCMetrics extends IOOperator {
 		return retMap;
 	}
 
-	public static LinkedHashMap toMap(JSONObject object) throws JSONException {
+	public static LinkedHashMap<String, Object> toMap(JSONObject object) throws JSONException {
 		LinkedHashMap<String, Object> map = new LinkedHashMap<String, Object>();
 
 		Iterator<String> keysItr = object.keys();
@@ -63,7 +60,7 @@ public class CompareQCMetrics extends IOOperator {
 		return map;
 	}
 
-	public static List toList(JSONArray array) throws JSONException {
+	public static List<Object> toList(JSONArray array) throws JSONException {
 		List<Object> list = new ArrayList<Object>();
 		for (int i = 0; i < array.length(); i++) {
 			list.add(array.get(i));
@@ -106,6 +103,7 @@ public class CompareQCMetrics extends IOOperator {
 			// JSON2HM.get(key));
 			i += 1;
 		}
+		logger.info("Now returning qc objects to hashmap.");
 		LinkedHashMap<String, Object> QC_ComparisonLHM = new LinkedHashMap<String, Object>();
 		QC_ComparisonLHM.put("JSON1.qc", JSON1);
 		QC_ComparisonLHM.put("JSON2.qc", JSON2);
@@ -125,8 +123,12 @@ public class CompareQCMetrics extends IOOperator {
 		}
 		String JSON1 = JSONs.get(0).getAbsolutePath();
 		String JSON2 = JSONs.get(1).getAbsolutePath();
+<<<<<<< HEAD
+		logger.info("About to compare JSONs");
+=======
 
-		LinkedHashMap<String, Object> Results = JSONCompNew_configuration (2)are(JSON1, JSON2);
+>>>>>>> 817850f7cb6c5d0f85eec45b84225962e29c6768
+		LinkedHashMap<String, Object> Results = JSONCompare(JSON1, JSON2);
 
 		JSONObject ResultsJson = new JSONObject(Results);
 		String ResultsStr = ResultsJson.toString();
