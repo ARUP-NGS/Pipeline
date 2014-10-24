@@ -789,7 +789,28 @@ public class VariantRec {
 	public static final String SCOP_DOMAIN = "scop.domain";
 	public static final String COSMIC_ID = "HotSpot.ID"; //funky capitalization for consistency with IonTorrent stuff, don't change it
 	public static final String COSMIC_COUNT = "cosmic.count";
-	
+	public static final String EXOMES_65K_FREQ = "exomes65K.allele.freq";
+	public static final String EXOMES_65K_AFR_FREQ = "exomes65K.al.freq.afr";
+	public static final String EXOMES_65K_AMR_FREQ = "exomes65K.al.freq.amr";
+	public static final String EXOMES_65K_EAS_FREQ = "exomes65K.al.freq.eas";
+	public static final String EXOMES_65K_FIN_FREQ = "exomes65K.al.freq.fin";
+	public static final String EXOMES_65K_NFE_FREQ = "exomes65K.al.freq.nfe";
+	public static final String EXOMES_65K_SAS_FREQ = "exomes65K.al.freq.sas";
+	public static final String EXOMES_65K_AC_HET = "exomes65K.al.freq.het";
+	public static final String EXOMES_65K_AFR_HET = "exomes65K.al.freq.afr.het";
+	public static final String EXOMES_65K_AMR_HET = "exomes65K.al.freq.amr.het";
+	public static final String EXOMES_65K_EAS_HET = "exomes65K.al.freq.eas.het";
+	public static final String EXOMES_65K_FIN_HET = "exomes65K.al.freq.fin.het";
+	public static final String EXOMES_65K_NFE_HET = "exomes65K.al.freq.nfe.het";
+	public static final String EXOMES_65K_SAS_HET = "exomes65K.al.freq.sas.het";
+	public static final String EXOMES_65K_AC_HOM = "exomes65K.al.freq.hom";
+	public static final String EXOMES_65K_AFR_HOM = "exomes65K.al.freq.afr.hom";
+	public static final String EXOMES_65K_AMR_HOM = "exomes65K.al.freq.amr.hom";
+	public static final String EXOMES_65K_EAS_HOM = "exomes65K.al.freq.eas.hom";
+	public static final String EXOMES_65K_FIN_HOM = "exomes65K.al.freq.fin.hom";
+	public static final String EXOMES_65K_NFE_HOM = "exomes65K.al.freq.nfe.hom";
+	public static final String EXOMES_65K_SAS_HOM = "exomes65K.al.freq.sas.hom";
+
 	
 }
 
