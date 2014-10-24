@@ -69,8 +69,18 @@ public abstract class Annotator extends Operator {
 		for(String contig : variants.getContigs()) {
 			for(VariantRec rec : variants.getVariantsForContig(contig)) {
 				//TODO veryify that recEnd is not incorrect for two alt alleles
-				Integer recEnd = rec.getStart() + rec.getRef().length() - rec.getAlt().length();
-				Interval recInterval = new Interval(rec.getStart(), recEnd);
+				Integer recLength = rec.getRef().length() - rec.getAlt().length(); //if >0 Indicates a deletion
+				if (recLength < 0) { //Indicates that it is an insertion
+					recLength = 0; 
+				} else if (recLength == 0) { //Indicates that it is an snv or mnv
+					if (rec.getRef().length() == 1) { // Indicates that it is an snv
+						recLength = 1;
+					} else { // Indicates that it is an mnv
+						recLength = rec.getRef().length();
+					}
+				}
+				Integer recEnd = rec.getStart() - 1 + recLength;
+				Interval recInterval = new Interval(rec.getStart() - 1, recEnd);
 				if (bedFile == null || bedFile.intersects(rec.getContig(), recInterval)) {
 					annotateVariant(rec);
 				
