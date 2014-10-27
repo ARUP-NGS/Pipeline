@@ -33,7 +33,9 @@ public class PindelRunner extends IOOperator {
 	public static final String ISIZE = "insert.size";
 	public static final String FILTERTHRESHOLD = "filter.threshold";
 	public static final String PINDEL_PATH="pindel.path";
-
+	public static final String MERGE_THRESHOLD = "merge.threshold";
+	public static final String PREFERRED_NMS = "nm.Definitions";
+	
 	@Override
 	public boolean requiresReference() {
 		return true;
@@ -72,7 +74,17 @@ public class PindelRunner extends IOOperator {
 		if (filterString != null) {
 			filterThreshold = Integer.parseInt(filterString);
 		}
-
+		
+		int mergeThreshold = 25;
+		String mergeAttr = properties.get(MERGE_THRESHOLD);
+		if (mergeAttr != null) {
+			mergeThreshold = Integer.parseInt(mergeAttr);
+		}
+		
+		String preferredNMsPath = this.getAttribute(PREFERRED_NMS);
+		Map<String, String> preferredNMs = loadPreferredNMs(preferredNMsPath);
+		
+		
 		try {
 			createConfigFile(sampleName, pathToBamFile, insertSize,
 					pathToConfigFile);
@@ -92,14 +104,15 @@ public class PindelRunner extends IOOperator {
 				" -j " + pathToBedFile +
 				" -L " + this.getProjectHome() + "/pindel.log ";
 		Logger.getLogger(Pipeline.primaryLoggerName).info("Pindel operator is executing command " + command);
-		//executeCommand(command, true); // run pindel
+		executeCommand(command, true); // run pindel
 
 		// Create PindelFolderFilter
 		// Produce Pindel output?
 		Logger.getLogger(Pipeline.primaryLoggerName).info("Pindel run completed, parsing results");
+		Logger.getLogger(Pipeline.primaryLoggerName).info("Pindel Threshold: " + filterThreshold + " merge distance: " + mergeThreshold);
 		
 		PindelResultsContainer resultsObject = (PindelResultsContainer)getOutputBufferForClass(PindelResultsContainer.class);
-		resultsObject.readResults(outputPrefix,filterThreshold);
+		resultsObject.readResults(outputPrefix,filterThreshold, mergeThreshold);
 		
 		Map<String, List<PindelResult>> results = resultsObject.getPindelResults();
 		
@@ -113,6 +126,7 @@ public class PindelRunner extends IOOperator {
 		if (!features.exists()) {
 			throw new IOException("Feature file " + features.getAbsolutePath() + " does not exist!");
 		}
+		featureLookup.setPreferredNMs(preferredNMs);
 		featureLookup.buildExonMap(features);
 		
 		
@@ -121,10 +135,14 @@ public class PindelRunner extends IOOperator {
 				
 				double cov = computeMeanCoverageForRegion(bam, sv.getChromo(), sv.getRangeStart(), sv.getRangeEnd());
 				sv.setMeanDepth(cov);
-				System.out.println("Mean depth for " + sv.getChromo() + ": " + sv.getRangeStart() + "-" + sv.getRangeEnd() + "  :  " + cov + " var freq: " + (double)sv.getSupportReads()/sv.getMeanDepth());
 				Object[] overlappingFeatures = featureLookup.getIntervalObjectsForRange(sv.getChromo(), sv.getRangeStart(), sv.getRangeEnd());
-				for(Object feat : overlappingFeatures) {
-					sv.addFeatureAnnotation(feat.toString());
+				for(Object feats : overlappingFeatures) {
+					//Add exons only
+					for(Object feat : feats.toString().split(",")) {
+						if (feat.toString().contains("Exon")) {
+							sv.addFeatureAnnotation(feat.toString().replace("Coding", ""));
+						}
+					}
 				}
 			}
 		}

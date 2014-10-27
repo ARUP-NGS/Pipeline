@@ -25,7 +25,7 @@ public class PindelResultsContainer extends FileBuffer {
 	private PindelParser parser;
 
 	
-	public void readResults(String prefix, int threshold) throws IOException {
+	public void readResults(String prefix, int threshold, int mergeDistance) throws IOException {
 		
 		results = new HashMap<String, List<PindelResult>>();
 		for (String currentFile : outputFileSuffixes) {
@@ -35,7 +35,7 @@ public class PindelResultsContainer extends FileBuffer {
 				parser = new PindelParser(thisFile);
 				parser.filter(threshold);
 				parser.makePindelFile(filteredFile);
-				parser.combineResults();
+				parser.combineResults(mergeDistance);
 				results.put(currentFile, parser.getResults());
 			}
 		}
@@ -80,10 +80,10 @@ public class PindelResultsContainer extends FileBuffer {
 	
 	
 	public static void main(String[] args) {
-		File pindelOutput = new File("/home/brendan/DATA2/pindeltest/pindelOutput/out2");
+		File pindelOutput = new File("/home/brendan/DATA2/testsamples/g7PindelOutput/");
 		try {
 			PindelResultsContainer cont = new PindelResultsContainer();
-			cont.readResults(pindelOutput.getAbsolutePath(), 15);
+			cont.readResults(pindelOutput.getAbsolutePath(), 15, 25);
 			
 			Map<String, List<PindelResult>> results = cont.getPindelResults();
 			ExonLookupService featureLookup = new ExonLookupService();

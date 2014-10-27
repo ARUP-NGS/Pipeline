@@ -249,6 +249,11 @@ public class QCJsonReader {
 			return;
 		}
 		
+		if (command.startsWith("covGraph")) {
+			performCovGraph(paths, System.out);
+			return;
+		}
+		
 		if (command.startsWith("qcList")) {
 			performQCList(paths, System.out, null);
 			return;
@@ -951,6 +956,41 @@ Average Total Number of Variants
 		}
 		
 		out.println(data.toString());
+	}
+	
+	private static void performCovGraph(List<String> paths, PrintStream out) {
+		TextTable data = new TextTable(new String[]{"Mean", ">5", ">10", ">20", ">50"});
+		List<JSONArray> covs = new ArrayList<JSONArray>();
+		for(String path : paths) {
+			try {
+				JSONObject obj = toJSONObj(path);
+				if (obj.has("final.coverage.metrics")) {
+					JSONObject finalCov = obj.getJSONObject("final.coverage.metrics");
+					JSONArray fracAbove = finalCov.getJSONArray("fraction.above.index");
+					covs.add(fracAbove);
+				}
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		
+		
+		for(int i=0; i<covs.get(0).length(); i++) {
+			for(JSONArray arr : covs) {
+				try {
+					out.print(arr.getDouble(i) + "\t");
+				}
+				catch (JSONException jex) {
+					out.print("?" + "\t");
+				}
+			}
+			out.println();
+		}
+		 
 	}
 
 	private static String toSampleName(String path) {

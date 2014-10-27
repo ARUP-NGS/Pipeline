@@ -228,11 +228,11 @@ public class PindelResult {
 		return bpRangeEnd - bpRangeStart;
 	}
 	
-	public boolean sameHit(PindelResult next) {
+	public boolean sameHit(PindelResult next, int mergeDistance) {
 		if (this.varType.equals(next.varType)) {
 			if (ChrID.equals(next.getChromo())) {
-				Interval thisInt = new Interval(bpRangeStart-5, bpRangeEnd+5);
-				Interval otherInt = new Interval(next.getRangeStart()-5, next.getRangeEnd()+5);
+				Interval thisInt = new Interval(bpRangeStart-mergeDistance, bpRangeEnd+mergeDistance);
+				Interval otherInt = new Interval(next.getRangeStart()-1, next.getRangeEnd()+1);
 				
 				if (thisInt.intersects(otherInt)) {
 					return true;
@@ -249,12 +249,8 @@ public class PindelResult {
 			svLength = next.getSVLength();
 		}
 		
-		
-
 		bpRangeStart = Math.min(bpRangeStart, next.getRangeStart());
-		bpRangeEnd = Math.min(bpRangeEnd, next.getRangeEnd());
-
-		
+		bpRangeEnd = Math.max(bpRangeEnd, next.getRangeEnd());
 		
 		supportReads += next.getSupportReads();
 	}

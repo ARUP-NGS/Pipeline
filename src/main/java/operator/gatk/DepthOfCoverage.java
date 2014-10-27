@@ -201,8 +201,13 @@ public class DepthOfCoverage extends IOOperator {
 			
 			for(FlaggedInterval lowCovExon : metrics.getFlaggedIntervals()) {
 				Object[] overlappingFeatures = featureLookup.getIntervalObjectsForRange(lowCovExon.chr, lowCovExon.start, lowCovExon.end);
-				for(Object feat : overlappingFeatures) {
-					lowCovExon.info = lowCovExon.info + feat.toString() + "; ";
+				for(Object feats : overlappingFeatures) {
+					for(String feat : feats.toString().split(",")) {
+						if (feat.contains("Exon")) {
+							lowCovExon.info = lowCovExon.info + feat.replace("Coding", "") + "; ";
+						}
+					}
+					
 				}
 			}
 			

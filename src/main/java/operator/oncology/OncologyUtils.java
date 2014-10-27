@@ -7,29 +7,26 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.PrintWriter;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
-import java.lang.IllegalArgumentException;
 
 import json.JSONException;
 import json.JSONObject;
 import operator.IOOperator;
 import operator.OperationFailedException;
+import operator.bamutils.CountBAMRecords;
 import pipeline.Pipeline;
+import util.CompressGZIP;
 import util.FastaReader;
 import util.bamUtil.ReadCounter;
-import util.CompressGZIP;
 import buffer.BAMFile;
 import buffer.FastQFile;
 import buffer.FileBuffer;
 import buffer.JSONBuffer;
 import buffer.ReferenceFile;
-import operator.bamutils.CountBAMRecords;
 
 /*
  * @author daniel
@@ -397,7 +394,6 @@ public class OncologyUtils extends IOOperator {
 
 		// Build final results map to be converted to JSON
 		Map<String, Object> finalResults = new HashMap<String, Object>();
-<<<<<<< Updated upstream
 		finalResults.put("summary", summary);
 		finalResults.put("rna.ratio", rnaRatio);
 		finalResults.put("rna.fusion", rnaFusion);
@@ -452,27 +448,6 @@ public class OncologyUtils extends IOOperator {
 		 */
 		byte[] bytes = CompressGZIP.compressGZIP(str);
 
-=======
-		finalResults.put( "summary", summary );
-		finalResults.put( "rna.ratio", rnaRatio );
-		finalResults.put( "rna.fusion", rnaFusion );
-
-		//Convert final results to JSON
-	    JSONObject json = new JSONObject(finalResults);
-	    System.out.printf( "JSON: %s", json.toString(2) );
-	    
-		//Get the json string, then compress it to a byte array
-		//Make the JSON string human-readable
-	    
-	    Gson gson = new GsonBuilder().setPrettyPrinting().create();
-	    JsonParser jp = new JsonParser();
-	    JsonElement je = jp.parse(json.toString());
-	    String jsonString = gson.toJson(je);
-
-		//byte[] bytes = CompressGZIP.compressGZIP(prettyJsonString);
-		
-		byte[] bytes = CompressGZIP.compressGZIP(jsonString);
->>>>>>> Stashed changes
 		// Write compresssed JSON to file
 		// File dest = new File(getProjectHome() + "/rna_report.json.gz");
 		File dest = this.getOutputBufferForClass(JSONBuffer.class).getFile();
@@ -480,11 +455,6 @@ public class OncologyUtils extends IOOperator {
 				new FileOutputStream(dest));
 		writer.write(bytes);
 		writer.close();
-<<<<<<< Updated upstream
-
-=======
-		
->>>>>>> Stashed changes
 		return;
 	}
 

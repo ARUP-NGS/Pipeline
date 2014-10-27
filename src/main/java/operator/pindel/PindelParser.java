@@ -86,18 +86,19 @@ public class PindelParser {
 				+ "-R sampleRef -d 20101123 -v PINDEL.vcf";
 	}
 
-	public void combineResults() {
+	public void combineResults(int mergeDistance) {
 		ArrayList<PindelResult> combinedResults = new ArrayList<PindelResult>();
 		PindelResult current = null;
 		for (PindelResult next : resultsList) {
 			if (current == null) {
 				current = next;
 			} else {
-				if (current.sameHit(next)) {
+				if (current.sameHit(next, mergeDistance)) {
 					current.add(next);
 				} else {
-					if(current.getSupportReads()>minCompositeSupported)
-					combinedResults.add(current);
+					if(current.getSupportReads()>minCompositeSupported) {
+						combinedResults.add(current);
+					}
 					current = next;
 				}
 			}

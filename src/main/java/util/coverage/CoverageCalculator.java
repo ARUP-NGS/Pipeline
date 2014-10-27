@@ -145,6 +145,7 @@ public class CoverageCalculator {
 		
 		File inputBam = new File(args[0]);
 		IntervalsFile intervals = new BEDFile(new File(args[1]));
+		intervals.buildIntervalsMap();
 		
 		Date start = new Date();
 		CoverageCalculator covCalc = new CoverageCalculator(inputBam, intervals);
