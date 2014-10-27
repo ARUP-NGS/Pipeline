@@ -123,11 +123,8 @@ public class CompareQCMetrics extends IOOperator {
 		}
 		String JSON1 = JSONs.get(0).getAbsolutePath();
 		String JSON2 = JSONs.get(1).getAbsolutePath();
-<<<<<<< HEAD
 		logger.info("About to compare JSONs");
-=======
 
->>>>>>> 817850f7cb6c5d0f85eec45b84225962e29c6768
 		LinkedHashMap<String, Object> Results = JSONCompare(JSON1, JSON2);
 
 		JSONObject ResultsJson = new JSONObject(Results);
