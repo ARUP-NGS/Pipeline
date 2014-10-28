@@ -448,6 +448,12 @@ public class OncologyUtils extends IOOperator {
 		 */
 		byte[] bytes = CompressGZIP.compressGZIP(str);
 
+		finalResults.put( "summary", summary );
+		finalResults.put( "rna.ratio", rnaRatio );
+		finalResults.put( "rna.fusion", rnaFusion );
+
+		//byte[] bytes = CompressGZIP.compressGZIP(prettyJsonString);
+
 		// Write compresssed JSON to file
 		// File dest = new File(getProjectHome() + "/rna_report.json.gz");
 		File dest = this.getOutputBufferForClass(JSONBuffer.class).getFile();

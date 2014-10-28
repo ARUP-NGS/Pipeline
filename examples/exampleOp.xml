@@ -1,6 +1,6 @@
 <Pipeline>
 
-<InputText class="buffer.TextBuffer" filename="exampleInput.txt" />
+	<InputText class="buffer.TextBuffer" filename="examples/exampleInput.txt" />
 
 <WriteTheText class="operator.examples.Example1">
    <InputText />
