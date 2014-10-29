@@ -683,9 +683,9 @@ public class VCFParser implements VariantLineReader {
 		} else if (creator.startsWith("Torrent")){
 			annoStr = "FAO";
 			annoIdx = altIndex; //FAO only contains infor for alternate allele
-		} else if (creator.startsWith("RTG")) { //RTG variant caller
+		} else if (creator.startsWith("RTG") || creator.startsWith("CGAPipeline")) { //RTG variant caller or Complete Genomics
 			annoStr = "AD";
-			annoIdx = altIndex; //AD contains depth for REF
+			annoIdx = altIndex; //AD does not contain depth for REF
 		} else {
 			annoStr = "AD";
 			annoIdx = altIndex + 1; //AD contains depth for REF
