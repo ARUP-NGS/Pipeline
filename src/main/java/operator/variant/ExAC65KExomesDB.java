@@ -11,7 +11,6 @@ import java.util.Map;
 import org.apache.tools.ant.types.CommandlineJava.SysProperties;
 import org.broad.tribble.readers.TabixReader;
 
-import com.google.common.base.Joiner;
 
 /**
  * Stores information about variants that have previously been observed at ARUP, right now 

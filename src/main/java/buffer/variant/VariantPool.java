@@ -1183,8 +1183,7 @@ public class VariantPool extends Operator  {
 			}
 			return;
 		}
-		
-		
+				
 		if (inputVariants instanceof VCFFile) {
 			try {
 				this.varLineReader = new VCFParser( (VCFFile)inputVariants );

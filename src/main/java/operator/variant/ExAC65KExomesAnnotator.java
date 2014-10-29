@@ -101,11 +101,12 @@ public class ExAC65KExomesAnnotator extends Annotator {
 				}	
 			}
 			
-		} catch (NullPointerException | IOException e) {
+		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			System.out.println("AHH IT DIED");
 			e.printStackTrace();
 		}
+		
 		
 		
 	}
