@@ -33,10 +33,9 @@ public class TestVCFParser {
 		try {
 			VCFParser parserNoCreator = new VCFParser(noVariantCallerHeaderVCF);
 			parserNoCreator.getCreator();
-						
 		} catch (IOException e) {
 			// This should throw an exception because the variant caller is not definied in this VCF 
-			Assert.assertTrue(e.getMessage().equals("Cannot determine variant caller that generated VCF. No header property for source nor UnifiedGenotyper/GATKCommandLine"));
+			Assert.assertTrue(e.getMessage().equals(VCFParser.NO_SOURCE_WARNING_MESSAGE));
 		}
 		
 		try {

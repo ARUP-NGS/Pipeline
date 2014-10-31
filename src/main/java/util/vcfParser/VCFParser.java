@@ -25,6 +25,8 @@ import buffer.variant.VariantRec;
  */
 public class VCFParser implements VariantLineReader {
 	
+	public static final String NO_SOURCE_WARNING_MESSAGE = "Cannot determine variant caller that generated VCF. No '##source' header property found, and header does not contain '##GATKCommandLine'."; 
+	
 	protected Map<String, HeaderEntry> headerItems = null; //Stores info about FORMAT and INFO fields from header
 	protected Map<String, String> headerProperties = null; //Stores generic key=value pairs from header, not FORMAT or INFO
 	protected Map<String, String> sampleMetrics = null; //Stores generic key=value pairs FORMAT or INFO, not header 
@@ -124,7 +126,7 @@ public class VCFParser implements VariantLineReader {
 			if ((headerProperties.containsKey("UnifiedGenotyper")) || (headerProperties.containsKey("GATKCommandLine"))) {
 				creator = "GATK / UnifiedGenotyper";
 			} else {
-				throw new IOException("Cannot determine variant caller that generated VCF. No '##source' header property found, and header does not contain '##GATKCommandLine'.");
+				throw new IOException(NO_SOURCE_WARNING_MESSAGE);
 			}
 		}
 	}

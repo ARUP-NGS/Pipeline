@@ -24,9 +24,8 @@ public class TGPTabixAnnotator extends AbstractTabixAnnotator {
 	}
 	
 	/**
-	 * Checks to see if the string provided matches the contig, position, and alt of the variants given. 
-	 * If so, parses the frequency information from the string and annotates the variant.
-	 * Returns false if no match, true if annotations successfully added 
+	 * Parses several frequency-based annotations from the given string and 
+	 * converts them to annotations (properties, actually) on the variant
 	 * @param var
 	 * @param str
 	 * @throws OperationFailedException
