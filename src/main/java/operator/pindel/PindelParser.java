@@ -7,13 +7,15 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 public class PindelParser {
 	private BufferedReader in;
 	private int minCompositeSupported=5;
-	private ArrayList<PindelResult> resultsList;
+	private List<PindelResult> resultsList;
 
 	/**
 	 * @param filename A Pindel output file
@@ -47,9 +49,9 @@ public class PindelParser {
 	public void filter(int threshold) {
 		Iterator<PindelResult> iter = resultsList.iterator();
 		
+		
 		while (iter.hasNext()) {
 			PindelResult temp = iter.next();
-			// System.out.println("Checking result " + temp.getIndex());
 			if (temp.getSVLength() < threshold) {
 				iter.remove();
 			}
@@ -80,31 +82,68 @@ public class PindelParser {
 		}
 	}
 
-	public void makeVCF(final String prefix, final String reference,
-			final String pindelAddress) {
-		String call = pindelAddress + "pindel2vcf -P out2 -r " + reference
-				+ "-R sampleRef -d 20101123 -v PINDEL.vcf";
-	}
+	
 
-	public void combineResults(int mergeDistance) {
-		ArrayList<PindelResult> combinedResults = new ArrayList<PindelResult>();
-		PindelResult current = null;
+	public void combineResults(int mergeDistance) {		
+		//Collect all hits by ntSeq first, 
+		Map<String, List<PindelResult>> hitMap = new HashMap<String, List<PindelResult>>();
 		for (PindelResult next : resultsList) {
-			if (current == null) {
-				current = next;
-			} else {
-				if (current.sameHit(next, mergeDistance)) {
-					current.add(next);
-				} else {
-					if(current.getSupportReads()>minCompositeSupported) {
-						combinedResults.add(current);
-					}
-					current = next;
-				}
+			String seq = next.getSequence();
+			List<PindelResult> hitResults = hitMap.get(seq);
+			if (hitResults == null) {
+				hitResults = new ArrayList<PindelResult>();
+				hitMap.put(seq, hitResults);
 			}
+			hitResults.add(next);
 		}
 		
-		resultsList = combinedResults;
+		//Now, for each set of results that has the same sequence see if we can merge them... 
+		for(String seq : hitMap.keySet()) {
+			
+			//Find result with maximum support
+			PindelResult maxSupport = hitMap.get(seq).get(0);
+			for (PindelResult next :  hitMap.get(seq)) {
+				if (next.getSupportReads() > maxSupport.getSupportReads()) {
+					maxSupport = next;
+				}
+			}	
+			
+			List<PindelResult> mergeables = new ArrayList<PindelResult>();
+			int totalSupport = 0;
+			for (PindelResult next :  hitMap.get(seq)) {
+				if ((next != maxSupport) && next.sameHit(maxSupport, mergeDistance)) {
+					mergeables.add(next);
+					totalSupport += next.getSupportReads();
+				}
+			}
+			
+			//This is the 'definitive' version, we use the breakpoints from it, and 
+			//add the support from all the overlapping sameHits to it
+			maxSupport.setSupportReads(maxSupport.getSupportReads() + totalSupport);
+			
+			//Now remove all the hits we merged into maxSupport
+			for(PindelResult merged : mergeables) {
+				resultsList.remove(merged);
+			}
+			
+		}
+		
+//		for (PindelResult next : resultsList) {
+//			if (current == null) {
+//				current = next;
+//			} else {
+//				if (current.sameHit(next, mergeDistance)) {
+//					current.add(next);
+//				} else {
+//					if(current.getSupportReads()>minCompositeSupported) {
+//						combinedResults.add(current);
+//					}
+//					current = next;
+//				}
+//			}
+//		}
+		
+		
 	}
 	
 	public List<PindelResult> getResults() {

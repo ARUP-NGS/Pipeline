@@ -140,7 +140,7 @@ public class PindelRunner extends IOOperator {
 					//Add exons only
 					for(Object feat : feats.toString().split(",")) {
 						if (feat.toString().contains("Exon")) {
-							sv.addFeatureAnnotation(feat.toString().replace("Coding", ""));
+							sv.addFeatureAnnotation(feat.toString().replace("Coding", "").replace(";", ""));
 						}
 					}
 				}

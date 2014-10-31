@@ -66,7 +66,7 @@ public class PindelResultsContainer extends FileBuffer {
 		JSONObject res = new JSONObject();
 		res.put("chr", pr.getChromo());
 		res.put("start", pr.getRangeStart());
-		res.put("end", pr.getRangeEnd());
+		res.put("end", pr.getRangeStart()+pr.getSVLength());
 		res.put("supportingReads", pr.getSupportReads());
 		res.put("meanDepth", pr.getMeanDepth());
 		

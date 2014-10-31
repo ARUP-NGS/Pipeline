@@ -139,6 +139,10 @@ public class PindelResult {
 		// System.out.println("Result created, index " + index);
 	}
 
+	public void setSupportReads(int newSupport) {
+		this.supportReads = newSupport;
+	}
+	
 	public void addFeatureAnnotation(String anno) {
 		featureAnnotations.add(anno);
 	}
@@ -225,16 +229,20 @@ public class PindelResult {
 	}
 	
 	public int getSize() {
-		return bpRangeEnd - bpRangeStart;
+		return svLength;
+	}
+	
+	public String getSequence() {
+		return ntSeq;
 	}
 	
 	public boolean sameHit(PindelResult next, int mergeDistance) {
 		if (this.varType.equals(next.varType)) {
 			if (ChrID.equals(next.getChromo())) {
-				Interval thisInt = new Interval(bpRangeStart-mergeDistance, bpRangeEnd+mergeDistance);
-				Interval otherInt = new Interval(next.getRangeStart()-1, next.getRangeEnd()+1);
+				Interval thisInt = new Interval(bpRangeStart-mergeDistance, bpRangeStart+svLength+mergeDistance);
+				Interval otherInt = new Interval(next.getRangeStart()-1, next.getRangeStart()+next.getSize()+1);
 				
-				if (thisInt.intersects(otherInt)) {
+				if (thisInt.intersects(otherInt) && next.getSequence().equals(this.getSequence())) {
 					return true;
 				}
 			}

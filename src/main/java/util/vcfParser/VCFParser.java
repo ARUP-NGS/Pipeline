@@ -245,38 +245,37 @@ public class VCFParser implements VariantLineReader {
 		return strb.toString();
 	}
 	
-	@Override
-	public VariantRec toVariantRec() {
-		if (currentLineToks == null) {
-			return null;
-		}
-		if (headerItems == null || headerProperties == null) {
-			throw new IllegalStateException("No header information, header probably not parsed correctly.");
-		}
-	//	String chr = currentLineToks[0].toUpperCase().replace("CHR","");
-		String chr = getContig();
-		int pos = getPos(); 
-		String ref = getRef();
-		String alt = getAlt(); 
-		
-		String qualStr = currentLineToks[5];
-		double quality = -1;
-		try {
-			quality = Double.parseDouble(qualStr);
-		}
-		catch (NumberFormatException ex) {
-			//we tolerate it if we can't parse quality...
-		}
-		
-
-		//@author elainegee start
+	
+	/**
+	 * Returns a new VariantRec that has the pos, ref, and alt converted to a normalized form. This
+	 * involves removing any trailing matching bases, then removing all initial matching bases. 
+	 * @param var
+	 * @return
+	 */
+	public static VariantRec normalizeVariant(VariantRec var) {
+		return VCFParser.normalizeVariant(var, true, true);
+	}
+	
+	/**
+	 * Returns a new VariantRec that has the pos, ref, and alt converted to a normalized form. This
+	 * version gives control over whether initial or trailing matches are removed. If both are false
+	 * no modifications are performed. 
+	 * 
+	 * @param var
+	 * @return
+	 */
+	public static VariantRec normalizeVariant(VariantRec var, boolean stripInitial, boolean stripTrailing) {
+		String ref = var.getRef();
+		String alt = var.getAlt();
+		int pos = var.getStart();
 
 		//Order important here: Remove trailing bases first! IN cases where there are starting and 
 		//trailing matching bases we want to preserve the start position as much as possible, since 
 		//that is what ends up getting used for future position comparisons. 
- 
+ 		// Create sampleMetrics dictionary containing INFO & FORMAT field data, keyed by annotation
+
 		//Remove trailing characters if they are equal and subtract that many bases from end position
-		if (stripTrailingMatchingBases) {
+		if (stripTrailing) {
 			int matches = findNumberOfTrailingMatchingBases(ref, alt);						
 			if (matches > 0) {	
 				// Trim Ref
@@ -295,7 +294,7 @@ public class VCFParser implements VariantLineReader {
 
 		//Remove initial characters if they are equal and add that many bases to start position
 		//Warning: Indels may no longer be left-aligned after this procedure
-		if (stripInitialMatchingBases) {
+		if (stripInitial) {
 			int matches = findNumberOfInitialMatchingBases(ref, alt);						
 			if (matches > 0) {	
 				// Trim Ref
@@ -308,12 +307,12 @@ public class VCFParser implements VariantLineReader {
 				if (alt.length()==0){								
 					alt = "-";
 				} 
-				
+
 				//Update start position
 				pos+=matches;				
 			}
 		}
-		
+
 		//Update end position
 		Integer end=null;
 		if (alt.equals("-")) {
@@ -321,16 +320,57 @@ public class VCFParser implements VariantLineReader {
 		}
 		else {
 			end = pos + ref.length();
-		}				
+		}
+
+
+		VariantRec normalizedVariant = new VariantRec(var.getContig(), pos, end, ref, alt, var.getQuality(), var.isHetero());
+		//Don't forget to copy over annotations and properties...
+		for(String key : var.getAnnotationKeys()) {
+			normalizedVariant.addAnnotation(key, var.getAnnotation(key));
+		}
+		for(String key : var.getPropertyKeys()) {
+			normalizedVariant.addProperty(key, var.getProperty(key));
+		}
+		normalizedVariant.setGene(var.getGene());
+		return normalizedVariant;
+	}
+	
+	
+	
+	@Override
+	public VariantRec toVariantRec() {
+		if (currentLineToks == null) {
+			return null;
+		}
+		if (headerItems == null || headerProperties == null) {
+			throw new IllegalStateException("No header information, header probably not parsed correctly.");
+		}
+
+		//	String chr = currentLineToks[0].toUpperCase().replace("CHR","");
+		String chr = getContig();
+		int pos = getPos(); 
+		String ref = getRef();
+		String alt = getAlt(); 
+		
+		String qualStr = currentLineToks[5];
+		double quality = -1;
+		try {
+			quality = Double.parseDouble(qualStr);
+		}
+		catch (NumberFormatException ex) {
+			//we tolerate it if we can't parse quality...
+		}
 		
 
-		// Create sampleMetrics dictionary containing INFO & FORMAT field data, keyed by annotation
+		//@author elainegee start
+
 		sampleMetrics = createSampleMetricsDict(); //Stores sample-specific key=value pairs from VCF entry from FORMAT & INFO, not header	
 
 		
 		//Create new variant record
 		boolean isHet = isHetero();
-		VariantRec var = new VariantRec(chr, pos, end, ref, alt, quality, isHet);
+		VariantRec var = new VariantRec(chr, pos, pos + ref.length(), ref, alt, quality, isHet);
+		var = normalizeVariant(var, stripInitialMatchingBases, stripTrailingMatchingBases);
 		var.setQuality(quality);
 
 		// Get certain values					

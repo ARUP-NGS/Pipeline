@@ -1,14 +1,6 @@
 package operator.variant;
 
-import java.io.IOException;
-import java.util.logging.Logger;
-
 import operator.OperationFailedException;
-import operator.annovar.Annotator;
-
-import org.broad.tribble.readers.TabixReader;
-
-import pipeline.Pipeline;
 import buffer.variant.VariantRec;
 
 /**
@@ -22,69 +14,15 @@ import buffer.variant.VariantRec;
  * @author brendan
  *
  */
-public class TGPTabixAnnotator extends Annotator {
+public class TGPTabixAnnotator extends AbstractTabixAnnotator {
 
 	public static final String TGP_SITES_PATH = "tgp.sites.path";
-	private boolean initialized = false;
-	private TabixReader reader = null;
-	
-	private void initializeReader() {
-		String filePath = this.getAttribute(TGP_SITES_PATH);
-		if (filePath == null) {
-			filePath = this.getPipelineProperty(TGP_SITES_PATH);
-		}
 		
-		if (filePath == null) {
-			throw new IllegalArgumentException("Path to 1000 Genomes frequency data not specified, use " + TGP_SITES_PATH);
-		}
-		
-		try {
-			reader = new TabixReader(filePath);
-		} catch (IOException e) {
-			throw new IllegalArgumentException("Error opening TGP data at path " + filePath + " error : " + e.getMessage());
-		}
-		initialized = true;
-	}
-	
 	@Override
-	public void annotateVariant(VariantRec var) throws OperationFailedException {
-		if (! initialized) {
-			initializeReader();
-		}
-		
-		if (reader == null) {
-			throw new OperationFailedException("Could not initialize tabix reader", this);
-		}
-		
-		String contig = var.getContig();
-		Integer pos = var.getStart();
-		
-		String queryStr = contig + ":" + pos + "-" + (pos);
-		
-		try {
-			TabixReader.Iterator iter = reader.query(queryStr);
-
-			if(iter != null) {
-				try {
-					String val = iter.next();
-					while(val != null) {
-						boolean ok = addAnnotationsFromString(var, val);
-						if (ok)
-							break;
-						val = iter.next();
-					}
-				} catch (IOException e) {
-					throw new OperationFailedException("Error reading TGP data file: " + e.getMessage(), this);
-				}
-			}
-		}
-		catch (RuntimeException rex) {
-			//Bad contigs will cause an array out-of-bounds exception to be thrown by
-			//the tabix reader. There's not much we can do about this since the methods
-			//are private... right now we just ignore it and skip this variant
-		}
+	protected String getPathToTabixedFile() {
+		return searchForAttribute(TGP_SITES_PATH);
 	}
-
+	
 	/**
 	 * Checks to see if the string provided matches the contig, position, and alt of the variants given. 
 	 * If so, parses the frequency information from the string and annotates the variant.
@@ -93,24 +31,9 @@ public class TGPTabixAnnotator extends Annotator {
 	 * @param str
 	 * @throws OperationFailedException
 	 */
-	private boolean addAnnotationsFromString(VariantRec var, String str) throws OperationFailedException {
+	protected boolean addAnnotationsFromString(VariantRec var, String str) {
 		String[] toks = str.split("\t");
-		if (! toks[0].equals(var.getContig())) {
-			//We expect that sometimes we'll not get the right contig
-			return false;
-		}
-		if (! toks[1].equals("" + var.getStart())) {
-			//We expect that sometimes we'll not get the right position (not sure why exactly... tabix doesn't work perfectly I guess			return;
-		}
-		if ( (!toks[3].equals(var.getRef())) && toks[2].length()==1 && var.getRef().length() ==1) {
-			Logger.getLogger(Pipeline.primaryLoggerName).warning("Ref alleles don't match in TGP annotator");
-			return false;
-		}
-		if (! toks[4].equals(var.getAlt())) {
-			//Not an error, this may happen sometimes
-			return false;
-		}
-		
+				
 		String[] formatToks = toks[7].split(";");
 		String overallFreqStr = valueForKey(formatToks, "AF");
 		if (overallFreqStr != null) {
@@ -147,4 +70,6 @@ public class TGPTabixAnnotator extends Annotator {
 		}
 		return null;
 	}
+
+	
 }
