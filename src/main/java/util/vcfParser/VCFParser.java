@@ -111,16 +111,21 @@ public class VCFParser implements VariantLineReader {
 			sampleIndexes.put(toks[i].trim(), i-9);
 		}
 		
-		//Infer creator. FreeBayes (*freeBayes*) & ion torrent (*Torrent*freeBayes*) define a source= field in the header
-		//but GATK does not
+		//Infer creator from source= field in the header. Accepted creators: FreeBayes (freeBayes*), ion torrent (*Torrent*), Real Time Genomics (RTG*), Complete Genomics (CGAPipeline*) 
+		//EXCEPT for GATK, which looks for UnifiedGenotyper= or GATKCommandLine= fields
 		creator =  headerProperties.get("source");
-		if (creator == null) {
-			if (headerProperties.containsKey("UnifiedGenotyper") || headerProperties.containsKey("GATKCommandLine")) {
+		if (creator != null) {
+			if (creator.startsWith("SelectVariants")) {
+				creator = "GATK / UnifiedGenotyper";
+			} else if (!(creator.startsWith("freeBayes")) && !(creator.contains("Torrent")) && !(creator.startsWith("RTG")) && !(creator.startsWith("CGAPipeline"))) {
+				throw new IOException("Cannot determine variant caller that generated VCF. Header property '##source' must be start with 'freeBayes' or 'CGAPipeline' or contain 'Torrent' or 'RTG' or 'SelectVariants'.");
+			}
+		} else {
+			if ((headerProperties.containsKey("UnifiedGenotyper")) || (headerProperties.containsKey("GATKCommandLine"))) {
 				creator = "GATK / UnifiedGenotyper";
 			} else {
-				throw new IOException("Cannot determine variant caller that generated VCF. No header property for source nor UnifiedGenotyper/GATKCommandLine");
+				throw new IOException("Cannot determine variant caller that generated VCF. No '##source' header property found, and header does not contain '##GATKCommandLine'.");
 			}
-			
 		}
 	}
 	
@@ -719,9 +724,9 @@ public class VCFParser implements VariantLineReader {
 		} else if (creator.startsWith("Torrent")){
 			annoStr = "FAO";
 			annoIdx = altIndex; //FAO only contains infor for alternate allele
-		} else if (creator.startsWith("RTG")) { //RTG variant caller
+		} else if (creator.startsWith("RTG") || creator.startsWith("CGAPipeline")) { //RTG variant caller or Complete Genomics
 			annoStr = "AD";
-			annoIdx = altIndex; //AD contains depth for REF
+			annoIdx = altIndex; //AD does not contain depth for REF
 		} else {
 			annoStr = "AD";
 			annoIdx = altIndex + 1; //AD contains depth for REF

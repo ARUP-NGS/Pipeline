@@ -8,7 +8,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.tools.ant.types.CommandlineJava.SysProperties;
 import org.broad.tribble.readers.TabixReader;
+
 
 /**
  * Stores information about variants that have previously been observed at ARUP, right now 
@@ -17,13 +19,13 @@ import org.broad.tribble.readers.TabixReader;
  * @author brendan
  *
  */
-public class UK65KExomesDB {
+public class ExAC65KExomesDB {
 
 	private File dbFile;
 	private Map<Integer, String> headerToks = new HashMap<Integer, String>();
 	private TabixReader reader = null;
 	
-	public UK65KExomesDB(File dbFile) throws IOException {
+	public ExAC65KExomesDB(File dbFile) throws IOException {
 		if (! dbFile.exists()) {
 			throw new IOException("File " + dbFile.getAbsolutePath() + " does not exist");
 		}
@@ -60,13 +62,20 @@ public class UK65KExomesDB {
 						
 						if (qPos == pos) {
 							//Found one..
+							//System.out.println("Hey, I found one! Let's see if I can pull the information I need.");
 							
 							String sampleINFO = toks[7];
+							//System.out.println("I found sampleINFO. This information is: " + sampleINFO);
 							String[] InfoPairs= sampleINFO.split(";");
 							LinkedHashMap<String, String> CountsFreqs = new LinkedHashMap<String, String>();
 							for(String pair: InfoPairs){
 								CountsFreqs.put(pair.split("=")[0], pair.split("=")[1]);
 							}
+							/*
+							for(String key: CountsFreqs.keySet()){
+								System.out.println("I am currently iterating through keys: " + key);
+							}
+							*/
 							ArrayList<String> ReturnList = new ArrayList<String>();
 							
 							// Getting general frequencies and zygosities
@@ -79,12 +88,15 @@ public class UK65KExomesDB {
 							double HetFreq = Double.parseDouble(CountsFreqs.get("AC_Het"))/AlleleCount;
 							ReturnList.add(String.valueOf(HetFreq));
 							
+							
+							//System.out.println("Now attempting to get ethnicity-specific frequencies.");
 							// Getting ethnicity-specific frequencies and zygosities
 							double NumCalledAllelesAfr = Double.parseDouble(CountsFreqs.get("AN_AFR"));
 							double AlleleFreqAfr = (double)Integer.parseInt(CountsFreqs.get("AC_AFR"))/NumCalledAllelesAfr;
 							ReturnList.add(String.valueOf(AlleleFreqAfr));
 							double HomFreqAfr = (double)Integer.parseInt(CountsFreqs.get("Hom_AFR"))/NumCalledAllelesAfr;
 							ReturnList.add(String.valueOf(HomFreqAfr));
+							//System.out.println("HomFreqAfr = " + String.valueOf(HomFreqAfr));
 							double HetFreqAfr = ((double)Integer.parseInt(CountsFreqs.get("AC_AFR"))-(double)Integer.parseInt(CountsFreqs.get("Hom_AFR"))*2)/(NumCalledAllelesAfr);
 							ReturnList.add(String.valueOf(HetFreqAfr));
 							
@@ -104,6 +116,7 @@ public class UK65KExomesDB {
 							double HetFreqEas = ((double)Integer.parseInt(CountsFreqs.get("AC_EAS"))-(double)Integer.parseInt(CountsFreqs.get("Hom_EAS"))*2)/(NumCalledAllelesEas);
 							ReturnList.add(String.valueOf(HetFreqEas));
 							
+							//System.out.println("Starting Finnish parsing.");
 							double NumCalledAllelesFin = Double.parseDouble(CountsFreqs.get("AN_FIN"));
 							double AlleleFreqFin = (double)Integer.parseInt(CountsFreqs.get("AC_FIN"))/NumCalledAllelesFin;
 							ReturnList.add(String.valueOf(AlleleFreqFin));
@@ -129,7 +142,7 @@ public class UK65KExomesDB {
 							ReturnList.add(String.valueOf(HetFreqSas));
 							
 							String overallStr[] = ReturnList.toArray(new String[ReturnList.size()]);
-							
+							//System.out.println("Returning string " + Joiner.on("\t").join(overallStr));
 							return overallStr;
 	
 						}
