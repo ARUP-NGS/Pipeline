@@ -12,7 +12,9 @@ import buffer.variant.VariantRec;
 
 /**
  * This is (well, should be) the base class for all annotators that read a Tabix-ed
- * vcf file to get their annotation info 
+ * vcf file to get their annotation info. This handles several important functions such 
+ * as creation of the TabixReader andnormalization of variants that are read in from the tabix.
+ * 
  * @author brendan
  *
  */
@@ -20,7 +22,6 @@ public abstract class AbstractTabixAnnotator extends Annotator {
 
 	private boolean initialized = false;
 	private TabixReader reader = null;
-	
 	
 	/**
 	 * Should return the path to the file we want to read
@@ -32,7 +33,9 @@ public abstract class AbstractTabixAnnotator extends Annotator {
 	/**
 	 * Subclasses should override this method to actually perform the annotations.
 	 * The VariantRec is the variant to annotate, and the 'line' argument is the information
-	 * we get from the VCF
+	 * we get from the VCF. Usually, annotators will extract some information from the line 
+	 * (like allele frequency, dbSNP ids, etc. etc) and turn that into an annotation or property 
+	 * for the VariantToAnnotate
 	 * @param var
 	 * @param vcfLine
 	 */
@@ -73,7 +76,11 @@ public abstract class AbstractTabixAnnotator extends Annotator {
 	}
 	
 	
-	
+	/**
+	 * This actually annotates the variant - it performs new tabix query, then converts the
+	 * result to a normalized VariantRec, then sees if the normalized VariantRec matches the
+	 * variant we want to annotate. If so 
+	 */
 	@Override
 	public void annotateVariant(VariantRec varToAnnotate) throws OperationFailedException {
 		if (! initialized) {
@@ -90,6 +97,7 @@ public abstract class AbstractTabixAnnotator extends Annotator {
 		String queryStr = contig + ":" + (pos-10) + "-" + (pos+10);
 		
 		try {
+			//Perform the lookup
 			TabixReader.Iterator iter = reader.query(queryStr);
 
 			if(iter != null) {
@@ -99,7 +107,10 @@ public abstract class AbstractTabixAnnotator extends Annotator {
 					while(val != null) {
 						String[] toks = val.split("\t");
 						if (toks.length > 6) {
+							//Convert the result (which is a line of a VCF file) into a variant rec
 							VariantRec queryResultVar = new VariantRec(toks[0], Integer.parseInt(toks[1]), Integer.parseInt(toks[1])+toks[3].length(), toks[3], toks[4]);
+							//Important: Normalize the record so that it will match the 
+							//variants in the variant pool that we want to annotate
 							queryResultVar = VCFParser.normalizeVariant(queryResultVar);
 							
 							//Make sure the (normalized) variant we get from the tabix query matches the
@@ -107,7 +118,8 @@ public abstract class AbstractTabixAnnotator extends Annotator {
 							if (queryResultVar.getContig().equals(varToAnnotate.getContig())
 									&& queryResultVar.getStart() == varToAnnotate.getStart()
 									&& queryResultVar.getRef().equals(varToAnnotate.getRef())
-									&& queryResultVar.getAlt().equals(varToAnnotate.getAlt())) { 
+									&& queryResultVar.getAlt().equals(varToAnnotate.getAlt())) {
+								//Everything looks good, so go ahead and annotate
 								boolean ok = addAnnotationsFromString(varToAnnotate, val);
 								if (ok)
 									break;
