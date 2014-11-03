@@ -4,4 +4,5 @@
 	<entry key="propKey">value</entry>
 	<entry key="key2">value2</entry>
 	<entry key="key3">value3</entry>
+	<entry key="UK10K.path">/home/chrisk/references/UK10K_COHORT.20140722.sites.vcf.gz</entry>
 </properties>
