@@ -1,0 +1,17 @@
+
+<!-- Uses annovar to annotate the given VCF file. This will produce lots of different output files... -->
+<Pipeline>
+
+
+
+<InputVCF class="buffer.VCFFile" filename="/home/chrisk/workspace/Pipeline/src/test/java/testvcfs/UK10K_500lines.vcf" />
+
+<VariantPool class="buffer.variant.VariantPool">
+	<InputVCF />
+</VariantPool>
+
+<GeneAnnotate class="operator.variant.UK10KAnnotator">
+	<VariantPool />
+</GeneAnnotate>
+
+</Pipeline>
