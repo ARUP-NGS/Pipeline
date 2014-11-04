@@ -4,7 +4,7 @@
 
 
 
-<InputVCF class="buffer.VCFFile" filename="/home/chrisk/workspace/Pipeline/src/test/java/testvcfs/UK10K_500lines.vcf" />
+<InputVCF class="buffer.VCFFile" filename="src/test/java/testvcfs/myeloid.vcf" />
 
 <VariantPool class="buffer.variant.VariantPool">
 	<InputVCF />
