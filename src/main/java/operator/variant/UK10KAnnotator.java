@@ -1,5 +1,6 @@
 package operator.variant;
 
+import java.io.IOException;
 import operator.OperationFailedException;
 import buffer.variant.VariantRec;
 
@@ -28,7 +29,8 @@ public class UK10KAnnotator extends AbstractTabixAnnotator {
 	protected String getPathToTabixedFile() {
 		return searchForAttribute(UK10K_PATH);
 	}
-	
+
+
 	/**
 	 * Parses allele frequency annotation from the given string and 
 	 * converts it to a property on the variant
@@ -36,20 +38,24 @@ public class UK10KAnnotator extends AbstractTabixAnnotator {
 	 * @param str
 	 * @throws OperationFailedException
 	 */
-	protected boolean addAnnotationsFromString(VariantRec var, String str) {
-		String[] toks = str.split("\t");
-				
+
+	@Override
+	protected boolean addAnnotationsFromString(VariantRec var, String val) {
+		String[] toks = val.split("\t");
+
+	
+
 		String[] formatToks = toks[7].split(";");
-		String overallFreqStr = valueForKey(formatToks, "AF");
+		String overallFreqStr = valueForKey(formatToks, "AF=");
 		if (overallFreqStr != null) {
 			Double af = Double.parseDouble(overallFreqStr);
 			var.addProperty(VariantRec.UK10K_ALLELE_FREQ, af);
-			//System.out.println("af=  "+ af);
 		}
 		
 		return true;
 	}
-
+	
+	
 	private static String valueForKey(String[] toks, String key) {
 		for(int i=0; i<toks.length; i++) {
 			if (toks[i].startsWith(key)) {
