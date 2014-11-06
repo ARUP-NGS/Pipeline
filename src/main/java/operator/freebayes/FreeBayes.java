@@ -37,26 +37,29 @@ public class FreeBayes extends IOOperator {
 	public static final String MISMATCH_QUALITY_MIN="mismatch.quality.min";
 	public static final String EXTRA_OPTIONS="FB.options";
 	
-	String freeBayesPath = null;
-	String minMapScore = "30"; //Defaults to more stringent options because I felt like it, no good reason.
-	String minBaseScore = "20";//Ibid.
-	String readMismatchLimit = "0";//Ibid.
-	String mismatchQualityMin = "10"; //Default quality for FreeBayes. I imagine it could be pretty useful, so I'm writing it in.
-	String bedFilePath = "";
-	String extraOptions = "";
-	public void performOperation() throws OperationFailedException {
-		
-		ReferenceFile refBuf = (ReferenceFile) this.getInputBufferForClass(ReferenceFile.class);
-		FileBuffer outputVCF = this.getOutputBufferForClass(VCFFile.class);
-		List<FileBuffer> inputBuffers = this.getAllInputBuffersForClass(BAMFile.class);
-		FileBuffer inputBED = this.getInputBufferForClass(BEDFile.class);
-		Logger.getLogger(Pipeline.primaryLoggerName).info("Freebayes is looking for SNPs with reference " + refBuf.getFilename() + " in source BAM file of " + inputBuffers.get(0).getFilename() + "." );
-
+	protected String freeBayesPath = null;
+	protected String minMapScore = "30"; //Defaults to more stringent options because I felt like it, no good reason.
+	protected String minBaseScore = "20";//Ibid.
+	protected String readMismatchLimit = "0";//Ibid.
+	protected String mismatchQualityMin = "10"; //Default quality for FreeBayes. I imagine it could be pretty useful, so I'm writing it in.
+	protected String bedFileOpt = "";
+	protected String extraOptions = "";
+	protected String inputBAMs = "";
+	protected ReferenceFile refBuf = null;
+	protected FileBuffer outputVCF = null;
+	protected List<FileBuffer> inputBuffers;
+	protected BEDFile inputBED = null;
+	
+	protected void parseOptions() {
+		FileBuffer inputBEDfb = this.getInputBufferForClass(BEDFile.class);
 		if(inputBED != null) {
-			bedFilePath = " -t " + inputBED.getAbsolutePath();
+			inputBED = (BEDFile)inputBEDfb;
+			bedFileOpt = " -t " + inputBED.getAbsolutePath();
+		} else {
+			bedFileOpt = "";
 		}
 		
-		String inputBAMs = "";
+		
 		List<FileBuffer> inputBAMBuffers = this.getAllInputBuffersForClass(BAMFile.class);
 		for(FileBuffer bamBuffer : inputBAMBuffers) {
 			inputBAMs = inputBAMs + " -b " + bamBuffer.getAbsolutePath();
@@ -65,17 +68,28 @@ public class FreeBayes extends IOOperator {
 		if (extraOptions == null || extraOptions.equals("null")) {
 			extraOptions = "";
 		}
-		
-		String command = freeBayesPath
+		inputBuffers = this.getAllInputBuffersForClass(BAMFile.class);
+		refBuf = (ReferenceFile) this.getInputBufferForClass(ReferenceFile.class);
+		outputVCF = this.getOutputBufferForClass(VCFFile.class);
+	}
+	
+	protected String getCommand(String bedFileOpt) {
+		return  freeBayesPath
 				+ " --fasta-reference " + refBuf.getAbsolutePath()
 				+ inputBAMs
 				+  " -m " + minMapScore + " -q " + minBaseScore + " -U " + readMismatchLimit + " -Q " + mismatchQualityMin
-				+ bedFilePath + " -v " + outputVCF.getAbsolutePath() + " " + extraOptions;
-
-		Logger.getLogger(Pipeline.primaryLoggerName).info(this.getObjectLabel() + " is executing: " + command);
+				+ bedFileOpt + " -v " + outputVCF.getAbsolutePath() + " " + extraOptions;
+	}
+	
+	public void performOperation() throws OperationFailedException {	
+		
+		parseOptions();
+		Logger.getLogger(Pipeline.primaryLoggerName).info("Freebayes is looking for SNPs with reference " + refBuf.getFilename() + " in source BAM file of " + inputBuffers.get(0).getFilename() + "." );
+		
+		Logger.getLogger(Pipeline.primaryLoggerName).info(this.getObjectLabel() + " is executing: " + getCommand(bedFileOpt));
 
 		
-		executeCommand(command);
+		executeCommand(getCommand(bedFileOpt));
 	}
 
 	@Override
