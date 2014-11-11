@@ -326,4 +326,19 @@ public abstract class Operator extends PipelineObject {
 		
 		return nms;
 	}
+	
+	/**
+	 * Try to get the attribute associated with the given key from the XML attributes for this element.
+	 * If it doesn't exist for this element, get it from PipelineProperties. Returns null
+	 * if it cant be found anywhere. 
+	 * @param attributeKey
+	 * @return
+	 */
+	protected String searchForAttribute(String attributeKey) {
+		String filePath = this.getAttribute(attributeKey);
+		if (filePath == null) {
+			filePath = this.getPipelineProperty(attributeKey);
+		}
+		return filePath;		
+	}
 }
