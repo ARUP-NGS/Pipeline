@@ -61,22 +61,6 @@ public abstract class AbstractTabixAnnotator extends Annotator {
 	}
 	
 	/**
-	 * Try to get the attribute associated with the given key from the XML attributes for this element.
-	 * If it doesn't exist for this element, get it from PipelineProperties. Returns null
-	 * if it cant be found anywhere. 
-	 * @param attributeKey
-	 * @return
-	 */
-	protected String searchForAttribute(String attributeKey) {
-		String filePath = this.getAttribute(attributeKey);
-		if (filePath == null) {
-			filePath = this.getPipelineProperty(attributeKey);
-		}
-		return filePath;		
-	}
-	
-	
-	/**
 	 * This actually annotates the variant - it performs new tabix query, then converts the
 	 * result to a normalized VariantRec, then sees if the normalized VariantRec matches the
 	 * variant we want to annotate. If so 

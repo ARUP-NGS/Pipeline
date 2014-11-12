@@ -11,6 +11,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -1228,5 +1229,21 @@ public class VariantPool extends Operator  {
 
 	private FileBuffer inputVariants = null;
 
+
+	/*
+	 * Creates an ArrayList of VariantPool objects, one for each contig.
+	 */
+	public LinkedHashMap<String, VariantPool> splitPoolByContigs(VariantPool sourcePool){
+		LinkedHashMap<String, VariantPool> VariantPoolSet = new LinkedHashMap<String, VariantPool>();
+		
+		for(String contig : getContigs() ) {
+			VariantPool contigPool = new VariantPool();
+			for(VariantRec rec : sourcePool.getVariantsForContig(contig)){
+				contigPool.addRecord(rec);
+			}
+			VariantPoolSet.put(contig, contigPool);
+		}
+		return VariantPoolSet;
+	}
 	
 }

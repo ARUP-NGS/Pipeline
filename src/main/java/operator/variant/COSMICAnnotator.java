@@ -10,7 +10,8 @@ import pipeline.Pipeline;
 import buffer.variant.VariantRec;
 
 /**
- * Using UCSC's PFAM and Scop tables to annotate a variant's protein domain if available
+ * Retrieves COSMIC IDs from COSMIC coding vcf
+ * MUST be tabix-compressed and indexed
  * Borrowing heavily from Brendan and David's code
  * @author daniel
  * 
