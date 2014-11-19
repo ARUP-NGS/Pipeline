@@ -10,6 +10,7 @@ import org.junit.Test;
 import util.vcfParser.VCFParser;
 import util.vcfParser.VCFParser.EntryType;
 import util.vcfParser.VCFParser.HeaderEntry;
+import util.vcfParser.VCFParser.GTType;
 import buffer.variant.VariantRec;
 
 public class TestVCFParser {
@@ -26,6 +27,8 @@ public class TestVCFParser {
 	File panelVCF = new File("examples/test_panel.vcf");
 	
 	File noVariantCallerHeaderVCF = new File("src/test/java/testvcfs/noVariantHeader.vcf");
+	
+	File completeGenomicsVCF = new File("src/test/java/testvcfs/completeGenomics-GTtest.vcf");
 	
 	@Test
 	public void TestReadHeader() {
@@ -148,12 +151,12 @@ public class TestVCFParser {
 					Assert.assertTrue(var.getAlt().equals(alt));
 					Assert.assertTrue(alt.equals("CTGTG"));					
 					
-					Boolean hetero = parser.isHetero();
-					Assert.assertTrue(var.isHetero() == hetero);
-					Assert.assertTrue(hetero);
+					GTType hetero = parser.isHetero();
+					Assert.assertTrue(var.isHetero() == GTType.HET);
+					Assert.assertTrue(hetero == GTType.HET);
 							
-					Boolean homo = parser.isHomo();
-					Assert.assertFalse(homo);
+					GTType homo = parser.isHomo();
+					Assert.assertTrue(homo == GTType.HET);
 							
 					Boolean phase = parser.isPhased();
 					Assert.assertFalse(phase);
@@ -191,11 +194,11 @@ public class TestVCFParser {
 					String alt = parser.getAlt();
 					Assert.assertTrue(alt.equals("CTG"));					
 					
-					Boolean hetero = parser.isHetero();
-					Assert.assertTrue(hetero);
+					GTType hetero = parser.isHetero();
+					Assert.assertTrue(hetero == GTType.HET);
 							
-					Boolean homo = parser.isHomo();
-					Assert.assertFalse(homo);
+					GTType homo = parser.isHomo();
+					Assert.assertTrue(homo == GTType.HET);
 							
 					Boolean phase = parser.isPhased();
 					Assert.assertFalse(phase);
@@ -235,8 +238,8 @@ public class TestVCFParser {
 
 				// Check second variant, first alt
 				if (i == 2) { //first variant has 2 alts
-					Boolean isVar = parserStrip.isVariant();
-					Assert.assertTrue(isVar);
+			//		Boolean isVar = parserStrip.isVariant();
+			//		Assert.assertTrue(isVar);
 					
 					Integer pos = parserStrip.getPos();
 					Assert.assertTrue(pos == 133978711);
@@ -247,11 +250,11 @@ public class TestVCFParser {
 					String alt = parserStrip.getAlt();
 					Assert.assertTrue(alt.equals("GTG"));					
 					
-					Boolean hetero = parserStrip.isHetero();
-					Assert.assertTrue(hetero);
+					GTType hetero = parserStrip.isHetero();
+					Assert.assertTrue(hetero == GTType.HET);
 							
-					Boolean homo = parserStrip.isHomo();
-					Assert.assertFalse(homo);
+					GTType homo = parserStrip.isHomo();
+					Assert.assertTrue(homo == GTType.HET);
 							
 					Boolean phase = parserStrip.isPhased();
 					Assert.assertFalse(phase);
@@ -287,11 +290,11 @@ public class TestVCFParser {
 					String alt = parserStrip.getAlt();
 					Assert.assertTrue(alt.equals("G"));					
 					
-					Boolean hetero = parserStrip.isHetero();
-					Assert.assertTrue(hetero);
+					GTType hetero = parserStrip.isHetero();
+					Assert.assertTrue(hetero == GTType.HET);
 							
-					Boolean homo = parserStrip.isHomo();
-					Assert.assertFalse(homo);
+					GTType homo = parserStrip.isHomo();
+					Assert.assertTrue(homo == GTType.HET);
 							
 					Boolean phase = parserStrip.isPhased();
 					Assert.assertFalse(phase);
@@ -325,11 +328,11 @@ public class TestVCFParser {
 				
 				// Check first variant, first alt
 				if (i == 0) {
-					Boolean hetero = parserGATK.isHetero();
-					Assert.assertTrue(hetero);
+					GTType hetero = parserGATK.isHetero();
+					Assert.assertTrue(hetero == GTType.HET);
 					
-					Boolean homo = parserGATK.isHomo();
-					Assert.assertFalse(homo);
+					GTType homo = parserGATK.isHomo();
+					Assert.assertTrue(homo == GTType.HET);
 					
 					Boolean phase = parserGATK.isPhased();
 					Assert.assertFalse(phase);
@@ -372,11 +375,11 @@ public class TestVCFParser {
 
 				// Check third variant
 				if (i == 2) {
-					Boolean hetero = parserFB.isHetero();
-					Assert.assertTrue(hetero);
+					GTType hetero = parserFB.isHetero();
+					Assert.assertTrue(hetero == GTType.HET);
 
-					Boolean homo = parserFB.isHomo();
-					Assert.assertFalse(homo);
+					GTType homo = parserFB.isHomo();
+					Assert.assertTrue(homo == GTType.HET);
 					
 					Boolean phase = parserFB.isPhased();
 					Assert.assertFalse(phase);
@@ -424,11 +427,11 @@ public class TestVCFParser {
 
 				// Check third variant
 				if (i == 2) {
-					Boolean hetero = parserTorr.isHetero();
-					Assert.assertFalse(hetero);
+					GTType hetero = parserTorr.isHetero();
+					Assert.assertTrue(hetero == GTType.HOM);
 							
-					Boolean homo = parserTorr.isHomo();
-					Assert.assertTrue(homo);
+					GTType homo = parserTorr.isHomo();
+					Assert.assertTrue(homo == GTType.HOM);
 							
 					Boolean phase = parserTorr.isPhased();
 					Assert.assertFalse(phase);
@@ -466,11 +469,11 @@ public class TestVCFParser {
 					String alt = parserTorr.getAlt();
 					Assert.assertTrue(alt.equals("ATTTTTTTC"));				
 					
-					Boolean hetero = parserTorr.isHetero();
-					Assert.assertTrue(hetero);
+					GTType hetero = parserTorr.isHetero();
+					Assert.assertTrue(hetero == GTType.HET);
 							
-					Boolean homo = parserTorr.isHomo();
-					Assert.assertFalse(homo);
+					GTType homo = parserTorr.isHomo();
+					Assert.assertTrue(homo == GTType.HET);
 							
 					Boolean phase = parserTorr.isPhased();
 					Assert.assertFalse(phase);
@@ -517,11 +520,11 @@ public class TestVCFParser {
 
 				// Check third variant
 				if (i == 2) {
-					Boolean hetero = parserTorrStrip.isHetero();
-					Assert.assertFalse(hetero);
+					GTType hetero = parserTorrStrip.isHetero();
+					Assert.assertTrue(hetero == GTType.HOM);
 							
-					Boolean homo = parserTorrStrip.isHomo();
-					Assert.assertTrue(homo);
+					GTType homo = parserTorrStrip.isHomo();
+					Assert.assertTrue(homo == GTType.HOM);
 							
 					Boolean phase = parserTorrStrip.isPhased();
 					Assert.assertFalse(phase);
@@ -559,11 +562,11 @@ public class TestVCFParser {
 					String alt = parserTorrStrip.getAlt();
 					Assert.assertTrue(alt.equals("A"));				
 					
-					Boolean hetero = parserTorrStrip.isHetero();
-					Assert.assertTrue(hetero);
+					GTType hetero = parserTorrStrip.isHetero();
+					Assert.assertTrue(hetero == GTType.HET);
 							
-					Boolean homo = parserTorrStrip.isHomo();
-					Assert.assertFalse(homo);
+					GTType homo = parserTorrStrip.isHomo();
+					Assert.assertTrue(homo == GTType.HET);
 							
 					Boolean phase = parserTorrStrip.isPhased();
 					Assert.assertFalse(phase);
@@ -606,11 +609,11 @@ public class TestVCFParser {
 
 				// Check second variant
 				if (i == 1) {
-					Boolean hetero = parserBCR.isHetero();
-					Assert.assertTrue(hetero);
+					GTType hetero = parserBCR.isHetero();
+					Assert.assertTrue(hetero == GTType.HET);
 									
-					Boolean homo = parserBCR.isHomo();
-					Assert.assertFalse(homo);
+					GTType homo = parserBCR.isHomo();
+					Assert.assertTrue(homo == GTType.HET);
 									
 					Boolean phase = parserBCR.isPhased();
 					Assert.assertFalse(phase);
@@ -650,11 +653,11 @@ public class TestVCFParser {
 			while(parserEmpty.advanceLine()) {	
 				VariantRec var = parserEmpty.toVariantRec();
 							
-				Boolean hetero = parserEmpty.isHetero();
-				Assert.assertFalse(hetero);
+				GTType hetero = parserEmpty.isHetero();
+				Assert.assertFalse(hetero == GTType.UNKNOWN);
 								
-				Boolean homo = parserEmpty.isHomo();
-				Assert.assertFalse(homo);
+				GTType homo = parserEmpty.isHomo();
+				Assert.assertTrue(homo == GTType.UNKNOWN);
 								
 				Boolean phase = parserEmpty.isPhased();
 				Assert.assertFalse(phase);
@@ -710,14 +713,14 @@ public class TestVCFParser {
 					String alt = parserPanel.getAlt();
 					Assert.assertTrue(alt.equals("A"));	
 			
-					Boolean hetero = parserPanel.isHetero();
-					Assert.assertTrue(hetero);
+					GTType hetero = parserPanel.isHetero();
+					Assert.assertTrue(hetero == GTType.HET);
 							
-					Boolean homo = parserPanel.isHomo();
-					Assert.assertFalse(homo);
+					GTType homo = parserPanel.isHomo();
+					Assert.assertTrue(homo == GTType.HET);
 					
-					boolean hom = (!var.isHetero());
-					Assert.assertFalse(hom);
+					GTType hom = (var.isHetero());
+					Assert.assertTrue(hom == GTType.HET);
 					
 				}
 				else if (i == 14) {
@@ -734,42 +737,42 @@ public class TestVCFParser {
 						String alt = parserPanel.getAlt();
 						Assert.assertTrue(alt.equals("T"));	
 				
-						Boolean hetero = parserPanel.isHetero();
-						Assert.assertFalse(hetero);
+						GTType hetero = parserPanel.isHetero();
+						Assert.assertTrue(hetero == GTType.HOM);
 								
-						Boolean homo = parserPanel.isHomo();
-						Assert.assertTrue(homo);
+						GTType homo = parserPanel.isHomo();
+						Assert.assertTrue(homo == GTType.HOM);
 						
-						boolean hom = (!var.isHetero()); //Test the variant itself
-						Assert.assertTrue(hom);
+						GTType hom = var.isHetero(); //Test the variant itself
+						Assert.assertTrue(hom == GTType.HOM);
 					}			
 				else if (i == 15) {
 					// Check the 16th variant (hom)
 							Integer pos = parserPanel.getPos();
 							Assert.assertTrue(pos == 228163453);
 									
-							Boolean hetero = parserPanel.isHetero();
-							Assert.assertFalse(hetero);
+							GTType hetero = parserPanel.isHetero();
+							Assert.assertTrue(hetero == GTType.HOM);
 									
-							Boolean homo = parserPanel.isHomo();
-							Assert.assertTrue(homo);
+							GTType homo = parserPanel.isHomo();
+							Assert.assertTrue(homo == GTType.HOM);
 							
-							boolean hom = (!var.isHetero()); //Test the variant itself
-							Assert.assertTrue(hom);
+							GTType hom = var.isHetero(); //Test the variant itself
+							Assert.assertTrue(hom == GTType.HOM);
 						}			
 				else if (i == 16) {
 					// Check the 17th variant (hom)
 							Integer pos = parserPanel.getPos();
 							Assert.assertTrue(pos == 228168748);
 									
-							Boolean hetero = parserPanel.isHetero();
-							Assert.assertFalse(hetero);
+							GTType hetero = parserPanel.isHetero();
+							Assert.assertTrue(hetero == GTType.HOM);
 									
-							Boolean homo = parserPanel.isHomo();
-							Assert.assertTrue(homo);
+							GTType homo = parserPanel.isHomo();
+							Assert.assertTrue(homo == GTType.HOM);
 							
-							boolean hom = (!var.isHetero()); //Test the variant itself
-							Assert.assertTrue(hom);
+							GTType hom = var.isHetero(); //Test the variant itself
+							Assert.assertTrue(hom == GTType.HOM);
 						}		
 					i++;							
 			}
@@ -782,5 +785,55 @@ public class TestVCFParser {
 		}
 		
 	}
+	
+	@Test
+	public void TestGTParsing() {
+		
+		try {
+			VCFParser parserGT = new VCFParser(completeGenomicsVCF);
+			
+						//Go through file
+			int i=0;
+			while(parserGT.advanceLine()) {	
+				VariantRec var = parserGT.toVariantRec();
+			
+				
+				if (i == 0) {	
+					// Check the first variant (GT="1/.")
+					GTType hetero = parserGT.isHetero();
+					Assert.assertTrue(hetero == GTType.UNKNOWN);
+				} else if (i == 1) {
+					// Check the 2nd  variant (GT="1|0")
+					GTType hetero = parserGT.isHetero();
+					Assert.assertTrue(hetero == GTType.HET);
+				} else if (i == 2) {
+					// Check the 3rd  variant (GT=".")
+					GTType hetero = parserGT.isHetero();
+					Assert.assertTrue(hetero == GTType.UNKNOWN);
+				} else if (i == 3) {
+					// Check the 4th  variant (GT="0|.")
+					
+					GTType hetero = parserGT.isHetero();
+					Assert.assertTrue(hetero == GTType.UNKNOWN);
+				} else if (i == 3) {
+					// Check the last  variant (GT="1")
+					GTType hetero = parserGT.isHetero();
+					Assert.assertTrue(hetero == GTType.HEMI);
+				}
+				
+				i++;		
+			}
+			
+			System.err.println("\tVCFParser tests on parsing genotypes from Complete Genomics VCF passed.");			
+						
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			Assert.assertTrue(false);
+		}
+			
+		
+	}
+	
 }
 	

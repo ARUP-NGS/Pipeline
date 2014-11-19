@@ -30,6 +30,7 @@ import operator.variant.FPComputer;
 import operator.variant.MedDirWriter;
 import util.flatFilesReader.DBNSFPReader;
 import util.vcfParser.VCFParser;
+import util.vcfParser.VCFParser.GTType;
 import buffer.BAMFile;
 import buffer.BAMMetrics;
 import buffer.BEDFile;
@@ -1036,7 +1037,7 @@ public class VarUtils {
 						popFreq = var.getProperty(VariantRec.POP_FREQUENCY);
 						eurFreq = var.getProperty(VariantRec.EUR_FREQUENCY);
 						int alleles = 1;
-						if (! (var.isHetero())) {
+						if ( var.isHetero() == GTType.HOM ) {
 							alleles = 2;
 						}
 						alleleCount += alleles;
@@ -1132,7 +1133,7 @@ public class VarUtils {
 							String varGene = var.getAnnotation(VariantRec.GENE_NAME);
 							Double val = var.getProperty(anno);
 							int count = 1;
-							if (! var.isHetero()) {
+							if ( var.isHetero() == GTType.HOM) {
 								count = 2;
 							}
 							if (varGene != null && val != null) {
@@ -1194,7 +1195,7 @@ public class VarUtils {
 						String gene = var.getAnnotation(VariantRec.GENE_NAME);
 						Double val = var.getProperty(anno);
 						int count = 1;
-						if (! var.isHetero()) {
+						if ( var.isHetero() == GTType.HOM) {
 							count = 2;
 						}
 						if (gene != null && val != null) {
@@ -1631,7 +1632,7 @@ public class VarUtils {
 					Double prop = var.getProperty(key);
 					String gene = var.getAnnotation(VariantRec.GENE_NAME);
 					int alleles = 1;
-					if (! var.isHetero())
+					if ( var.isHetero() == GTType.HOM )
 						alleles = 2;
 					
 					if (gene != null && prop != null) {
@@ -1651,7 +1652,7 @@ public class VarUtils {
 //				VariantPool geneVars = filterByGene(vars, genes, reverse);
 //				for(String contig : geneVars.getContigs()) {
 //					for(VariantRec var : geneVars.getVariantsForContig(contig)) {
-//						if (var.isHetero())
+//						if (var.isHetero() == GTType.HET)
 //							System.out.println("1\t" + var.getPropertyOrAnnotation(key));
 //						else 
 //							System.out.println("2\t" + var.getPropertyOrAnnotation(key));
@@ -1760,9 +1761,9 @@ public class VarUtils {
 						totHapMapVar++;
 						truePoz++;
 						int flag = 0;
-						if (var.isHetero())
+						if (var.isHetero() == GTType.HET)
 							flag++;
-						if (sampleVar.isHetero())
+						if (sampleVar.isHetero() == GTType.HET)
 							flag++;
 						if (flag==1)
 							wrongZygosity++;
@@ -2273,10 +2274,10 @@ public class VarUtils {
 					
 					//Variant is homozygous
 					if (isInB) {
-						poolFinal.addRecord(new VariantRec(contig, varA.getStart(), varA.getEnd(), varA.getRef(), varA.getAlt(), 100.0, false));
+						poolFinal.addRecord(new VariantRec(contig, varA.getStart(), varA.getEnd(), varA.getRef(), varA.getAlt(), 100.0, GTType.HOM));
 					}
 					else {
-						poolFinal.addRecord(new VariantRec(contig, varA.getStart(), varA.getEnd(), varA.getRef(), varA.getAlt(), 100.0, true));
+						poolFinal.addRecord(new VariantRec(contig, varA.getStart(), varA.getEnd(), varA.getRef(), varA.getAlt(), 100.0, GTType.HET));
 					}
 					
 				}
@@ -2287,7 +2288,7 @@ public class VarUtils {
 				for(VariantRec varB : poolB.getVariantsForContig(contig)) {
 					boolean isInA = poolA.findRecord(varB.getContig(), varB.getStart(), varB.getRef(), varB.getAlt()) != null;
 					if (! isInA) {
-						poolFinal.addRecord(new VariantRec(contig, varB.getStart(), varB.getEnd(), varB.getRef(), varB.getAlt(), 100.0, true));
+						poolFinal.addRecord(new VariantRec(contig, varB.getStart(), varB.getEnd(), varB.getRef(), varB.getAlt(), 100.0, GTType.HET));
 					}
 				}
 			}
@@ -3185,8 +3186,13 @@ public class VarUtils {
 					VariantRec var = pool.findRecordNoWarn(contig, interval.end);
 					if (var != null) {
 						String hetStr = "het";
-						if (! var.isHetero())
+						if ( var.isHetero() == GTType.HOM) {
 							hetStr = "hom";
+						} else if ( var.isHetero() == GTType.HEMI) {
+							hetStr = "hemi";
+						} else if ( var.isHetero() == GTType.UNKNOWN) {
+							hetStr = "unknown";
+						}
 						System.out.print(hetStr + ";" + var.getQuality() +";" + var.getProperty("depth") + "\t");
 					}
 					else {

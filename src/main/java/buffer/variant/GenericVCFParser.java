@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import util.VCFLineParser;
+import util.VCFLineParser.GTType;
+
 
 /**
  * A somewhat more flexible and generic vcf-parsing line reader
@@ -66,7 +68,7 @@ public class GenericVCFParser extends VCFLineParser {
 				//no worries, quality will be at default
 			}
 			
-			Boolean hetero = isHetero();
+			GTType hetero = isHetero();
 								
 			rec = new VariantRec(contig, start, end,  ref, alt, quality, hetero);
 			Integer depth = getDepth();

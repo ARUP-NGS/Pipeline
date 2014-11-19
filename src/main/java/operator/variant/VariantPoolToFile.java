@@ -18,6 +18,7 @@ import pipeline.PipelineObject;
 import buffer.CSVFile;
 import buffer.variant.VariantPool;
 import buffer.variant.VariantRec;
+import util.vcfParser.VCFParser.GTType;
 
 /**
  * Writes a variant pool to a CSV file, in the format expected by most
@@ -59,9 +60,14 @@ public class VariantPoolToFile extends VariantPoolWriter {
 			depthStr = "" + depth;
 		
 		String hetStr = "het";
-		if (! rec.isHetero())
+		if ( rec.isHetero() == GTType.HOM ) {
 			hetStr = "hom";
-		
+		} else if ( rec.isHetero() == GTType.HEMI ) {
+			hetStr = "hemi";
+		} else if ( rec.isHetero() == GTType.UNKNOWN ) {
+			hetStr = "unknown";
+		}
+					
 		String gqStr = "-";
 		Double gq = rec.getProperty(VariantRec.GENOTYPE_QUALITY);
 		if (gq != null)

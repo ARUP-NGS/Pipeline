@@ -13,6 +13,7 @@ import java.util.Map;
 import org.w3c.dom.NodeList;
 
 import pipeline.PipelineObject;
+import util.vcfParser.VCFParser.GTType;
 
 /**
  * Reads a CSV file and produces VariantRecords from it, typically one variant per line
@@ -145,7 +146,7 @@ public class CSVLineReader extends PipelineObject implements VariantLineReader  
 			String alt = getAlt(toks);
 			Double qual = getQuality(toks);
 			Double depth = getDepth(toks); 
-			boolean isHet = getHet(toks);
+			GTType isHet = getHet(toks);
 			Double genoQual = getGenotypeQuality(toks);
 
 
@@ -252,8 +253,16 @@ public class CSVLineReader extends PipelineObject implements VariantLineReader  
 			return 0.0;
 	}
 	
-	protected Boolean getHet(String[] toks) {
-		return toks[7].contains("het");
+	protected GTType getHet(String[] toks) {
+		if (toks[7].contains("het")) {
+			return GTType.HET;
+		} else if (toks[7].contains("hom")) {
+			return GTType.HOM;
+		} else if (toks[7].contains("hemi")){
+			return GTType.HEMI;
+		} else {
+			return GTType.UNKNOWN;
+		}
 	}
 	
 	protected Double getGenotypeQuality(String[] toks) {

@@ -7,6 +7,7 @@ import java.util.Comparator;
 
 import operator.variant.VariantPoolWriter;
 import buffer.variant.VariantRec;
+import util.vcfParser.VCFParser.GTType;
 
 public class GeneRankWriter extends VariantPoolWriter {
 
@@ -76,11 +77,14 @@ public class GeneRankWriter extends VariantPoolWriter {
 				if (var == null)
 					val = "ref";
 				else {
-					if (var.isHetero()) {
+					if (var.isHetero() == GTType.HET) {
 						val = "het";
-					}
-					else {
+					} else if (var.isHetero() == GTType.HOM) {
 						val = "hom";
+					} else if (var.isHetero() == GTType.HEMI) {
+						val = "hemi";
+					} else if (var.isHetero() == GTType.UNKNOWN) {
+						val = "unknown";
 					}
 				}
 			}
@@ -89,11 +93,14 @@ public class GeneRankWriter extends VariantPoolWriter {
 				if (var == null)
 					val = "ref";
 				else {
-					if (var.isHetero()) {
+					if (var.isHetero() == GTType.HET) {
 						val = "het";
-					}
-					else {
+					} else if (var.isHetero() == GTType.HOM) {
 						val = "hom";
+					} else if (var.isHetero() == GTType.HEMI) {
+						val = "hemi";
+					} else if (var.isHetero() == GTType.UNKNOWN) {
+						val = "unknown";
 					}
 				}
 			}
@@ -102,11 +109,14 @@ public class GeneRankWriter extends VariantPoolWriter {
 				if (var == null)
 					val = "ref";
 				else {
-					if (var.isHetero()) {
+					if (var.isHetero() == GTType.HET) {
 						val = "het";
-					}
-					else {
+					} else if (var.isHetero() == GTType.HOM) {
 						val = "hom";
+					} else if (var.isHetero() == GTType.HEMI) {
+						val = "hemi";
+					} else if (var.isHetero() == GTType.UNKNOWN) {
+						val = "unknown";
 					}
 				}
 			}
@@ -115,11 +125,14 @@ public class GeneRankWriter extends VariantPoolWriter {
 				if (var == null)
 					val = "ref";
 				else {
-					if (var.isHetero()) {
+					if (var.isHetero() == GTType.HET) {
 						val = "het";
-					}
-					else {
+					} else if (var.isHetero() == GTType.HOM) {
 						val = "hom";
+					} else if (var.isHetero() == GTType.HEMI) {
+						val = "hemi";
+					} else if (var.isHetero() == GTType.UNKNOWN) {
+						val = "unknown";
 					}
 				}
 			}

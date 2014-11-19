@@ -17,6 +17,7 @@ import pipeline.Pipeline;
 import pipeline.PipelineObject;
 import pipeline.PipelineXMLConstants;
 import util.vcfParser.VCFParser;
+import util.vcfParser.VCFParser.GTType;
 import buffer.AnnovarInputFile;
 import buffer.CSVFile;
 import buffer.VCFFile;
@@ -225,8 +226,13 @@ public abstract class AnnovarAnnotator extends Annotator {
 	
 	public static void writeVariantToAnnovarInput(VariantRec rec, Writer writer) throws IOException {
 		String het = "het";
-		if (!rec.isHetero())
+		if (rec.isHetero() == GTType.HOM) {
 			het = "hom";
+		} else if (rec.isHetero() == GTType.HEMI) {
+			het = "hemi";
+		} else if (rec.isHetero() == GTType.UNKNOWN) {
+			het = "unknown";
+		}
 		writer.write(rec.getContig() + "\t" + 
 					 rec.getStart() + "\t" + 
 					 (rec.getStart() + rec.getRef().length()-1) + "\t" + 

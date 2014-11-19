@@ -4,6 +4,7 @@ import java.io.PrintStream;
 
 import operator.variant.VariantPoolWriter;
 import buffer.variant.VariantRec;
+import util.vcfParser.VCFParser.GTType;
 
 public class SimulConsultWriter extends VariantPoolWriter {
 
@@ -26,7 +27,7 @@ public class SimulConsultWriter extends VariantPoolWriter {
 		outputStream.print("\t"); //10 pRef
 		outputStream.print("\t"); //11 pAlt
 		outputStream.print((""+rec.getAnnotation(VariantRec.RSNUM)).replace("null",  "") + "\t"); //12 rsid
-		outputStream.print((rec.isHetero() ? "Het" : "Hom") + "\t"); //13 ZygP
+		outputStream.print((rec.isHetero() == GTType.HET ? "Het" : "Hom") + "\t"); //13 ZygP
 		outputStream.print("\t"); //14 zygM
 		outputStream.print("\t"); //15 zygF
 		outputStream.print(rec.getAnnotation(VariantRec.VARIANT_TYPE) + "\t"); //16 type

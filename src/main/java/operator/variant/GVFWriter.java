@@ -4,6 +4,7 @@ import java.io.PrintStream;
 import java.util.Date;
 
 import buffer.variant.VariantRec;
+import util.vcfParser.VCFParser.GTType;
 
 /**
  * Writes a variant pool in GVF format. Right now we make sure this is compatible with the
@@ -76,7 +77,7 @@ public class GVFWriter extends VariantPoolWriter {
 	
 	
 	private static String getZygosityStr(VariantRec rec) {
-		if (rec.isHetero()) {
+		if (rec.isHetero() == GTType.HET) {
 			return "heterozygous";
 		}
 		else {
