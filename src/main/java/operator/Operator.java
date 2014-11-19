@@ -264,11 +264,16 @@ public abstract class Operator extends PipelineObject {
 	protected Map<String, String> loadPreferredNMs(String nmsFilePath) {
 		Map<String, String> preferredNMs = new HashMap<String,String>();		
 
+		String useDefaultNMsStr = this.getAttribute("use.default.nms");
+		boolean useDefaultNMs = true;
+		if (useDefaultNMsStr != null) {
+			useDefaultNMs = Boolean.parseBoolean(useDefaultNMsStr);
+		}
 		
 		try {
 			//First, load default NMs from the Pipeline properties, if it exists
 			String defaultPreferredNMs = this.getPipelineProperty("default.preferred.nms");
-			if (defaultPreferredNMs != null) {
+			if (defaultPreferredNMs != null && useDefaultNMs) {
 				Logger.getLogger(Pipeline.primaryLoggerName).info("Loading default preferred nms from " + defaultPreferredNMs);
 				File dpnms = new File(defaultPreferredNMs);
 				if (dpnms.exists()) {

@@ -6,10 +6,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
+
+import util.smallMap.SmallMap;
 
 /**
  * A class to store some basic information about a single variant
@@ -25,8 +26,8 @@ public class VariantRec {
 	String alt;
 	Double qual;
 	protected boolean isHetero;
-	protected Map<String, Double> props = new HashMap<String, Double>();
-	protected Map<String, String> annotations = new HashMap<String, String>();
+	protected Map<String, Double> props = new SmallMap<String, Double>(); 
+	protected Map<String, String> annotations = new SmallMap<String, String>(); 
 	Gene gene;
 	
 	public VariantRec(String contig, 
