@@ -3,6 +3,8 @@ package buffer.variant;
 import java.io.File;
 import java.io.IOException;
 
+import util.vcfParser.VCFParser.GTType;
+
 /**
  * This line reader attempts to read gene-related information, such as gene name, nm number, and exon function
  * from a csv file. Right now, it's assumed that the csv file was generated in the standard csv-format
@@ -61,7 +63,7 @@ public class GeneLineReader extends CSVLineReader {
 			popFreq = Double.parseDouble(popFreqStr);
 		}
 		
-		VariantRec rec = new VariantRec(contig, start, start+ref.length(), ref, alt, 10.0, true);
+		VariantRec rec = new VariantRec(contig, start, start+ref.length(), ref, alt, 10.0, GTType.HET);
 		rec.addAnnotation(VariantRec.GENE_NAME, geneName);
 		rec.addAnnotation(VariantRec.VARIANT_TYPE, varType);
 		rec.addAnnotation(VariantRec.EXON_FUNCTION, varFunc);

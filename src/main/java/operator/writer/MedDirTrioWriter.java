@@ -19,6 +19,7 @@ import pipeline.Pipeline;
 import pipeline.PipelineObject;
 import buffer.variant.VariantPool;
 import buffer.variant.VariantRec;
+import util.vcfParser.VCFParser.GTType;
 
 public class MedDirTrioWriter extends VariantPoolWriter {
 
@@ -130,10 +131,15 @@ public class MedDirTrioWriter extends VariantPoolWriter {
 			val = rec.getPropertyOrAnnotation(keys[i]).trim();
 
 			if (keys[i].equals("zygosity")) {
-				if (rec.isHetero())
+				if (rec.isHetero() == GTType.HET) {
 					val = "het";
-				else 
+				} else if (rec.isHetero() == GTType.HOM) {
 					val = "hom";
+				} else if (rec.isHetero() == GTType.HEMI) {
+					val = "hemi";
+				} else if (rec.isHetero() == GTType.UNKNOWN) {
+					val = "unknown";
+				}
 			}
 			
 			
@@ -281,11 +287,15 @@ public class MedDirTrioWriter extends VariantPoolWriter {
 			return "ref";
 		else {
 			if (par1Var.getAlt().equals(rec.getAlt())) {
-				if (par1Var.isHetero()) {
+				if (par1Var.isHetero() == GTType.HET) {
 					return "het";
-				}
-				else 
+				} else if (par1Var.isHetero() == GTType.HOM) { 
 					return "hom";
+				} else if (par1Var.isHetero() == GTType.HEMI) { 
+					return "hemi";
+				} else { 
+					return "unknown";
+				}
 			}
 			else {
 				return par1Var.getAlt();

@@ -7,8 +7,10 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import util.VCFLineParser;
+import util.vcfParser.VCFParser.GTType;
 import buffer.variant.CSVLineReader;
 import buffer.variant.VariantRec;
+
 import gene.Gene;
 import buffer.CSVFile;
 
@@ -78,8 +80,8 @@ public class TestCSVLineReader {
 					Assert.assertTrue(depth==108.0);
 
 					// Check heterozygosity
-					boolean het = rec.isHetero();
-					Assert.assertTrue(het);
+					GTType het = rec.isHetero();
+					Assert.assertTrue(het == GTType.HET);
 					
 					// Check genotype quality
 					Double genotypeQual = rec.getProperty(VariantRec.GENOTYPE_QUALITY);
@@ -183,8 +185,8 @@ public class TestCSVLineReader {
 						Assert.assertTrue(depth==13.0);
 
 						// Check heterozygosity
-						boolean het = rec.isHetero();
-						Assert.assertTrue(het);
+						GTType het = rec.isHetero();
+						Assert.assertTrue(het == GTType.HET);
 						
 						// Check genotype quality
 						Double genotypeQual = rec.getProperty(VariantRec.GENOTYPE_QUALITY);
@@ -287,9 +289,9 @@ public class TestCSVLineReader {
 					Double depth = rec.getProperty(VariantRec.DEPTH);
 					Assert.assertTrue(depth==1635.0);
 
-					// Check heterozygosity
-					boolean het = rec.isHetero();
-					Assert.assertFalse(het);
+					// Check heterozygosity (hom)
+					GTType het = rec.isHetero();
+					Assert.assertTrue(het == GTType.HOM);
 					
 					// Check genotype quality
 					Double genotypeQual = rec.getProperty(VariantRec.GENOTYPE_QUALITY);
@@ -398,8 +400,8 @@ public class TestCSVLineReader {
 					Assert.assertTrue(depth==21779.0);
 
 					// Check heterozygosity
-					boolean het = rec.isHetero();
-					Assert.assertTrue(het);
+					GTType het = rec.isHetero();
+					Assert.assertTrue(het == GTType.HET);
 					
 					// Check genotype quality
 					Double genotypeQual = rec.getProperty(VariantRec.GENOTYPE_QUALITY);
@@ -527,8 +529,8 @@ public class TestCSVLineReader {
 					Assert.assertTrue(depth==18.0);
 
 					// Check heterozygosity
-					boolean het = rec.isHetero();
-					Assert.assertTrue(het);
+					GTType het = rec.isHetero();
+					Assert.assertTrue(het == GTType.HET);
 					
 					// Check genotype quality
 					Double genotypeQual = rec.getProperty(VariantRec.GENOTYPE_QUALITY);
@@ -607,8 +609,8 @@ public class TestCSVLineReader {
 					Assert.assertTrue(depth==13.0);
 
 					// Check heterozygosity
-					boolean het = rec.isHetero();
-					Assert.assertTrue(het);
+					GTType het = rec.isHetero();
+					Assert.assertTrue(het == GTType.HET);
 					
 					// Check genotype quality
 					Double genotypeQual = rec.getProperty(VariantRec.GENOTYPE_QUALITY);
@@ -686,9 +688,9 @@ public class TestCSVLineReader {
 					Double depth = rec.getProperty(VariantRec.DEPTH);
 					Assert.assertTrue(depth==3.0);
 
-					// Check heterozygosity
-					boolean het = rec.isHetero();
-					Assert.assertFalse(het);
+					// Check heterozygosity (hom)
+					GTType het = rec.isHetero();
+					Assert.assertTrue(het == GTType.HOM);
 					
 					// Check genotype quality
 					Double genotypeQual = rec.getProperty(VariantRec.GENOTYPE_QUALITY);
@@ -767,8 +769,8 @@ public class TestCSVLineReader {
 					Assert.assertTrue(depth==42.0);
 
 					// Check heterozygosity
-					boolean het = rec.isHetero();
-					Assert.assertTrue(het);
+					GTType het = rec.isHetero();
+					Assert.assertTrue(het == GTType.HET);
 					
 					// Check genotype quality
 					Double genotypeQual = rec.getProperty(VariantRec.GENOTYPE_QUALITY);

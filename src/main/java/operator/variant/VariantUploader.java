@@ -18,6 +18,7 @@ import org.w3c.dom.NodeList;
 import pipeline.Pipeline;
 import pipeline.PipelineObject;
 import util.HttpUtils;
+import util.vcfParser.VCFParser.GTType;
 import buffer.variant.VariantPool;
 import buffer.variant.VariantRec;
 
@@ -68,7 +69,7 @@ public class VariantUploader extends Operator {
 				row.put("ref", r.getRef());
 				row.put("alt", r.getAlt());
 				int count = 0;
-				if (r.isHetero()) {
+				if (r.isHetero() == GTType.HET) {
 					count = 1;
 				}
 				else {

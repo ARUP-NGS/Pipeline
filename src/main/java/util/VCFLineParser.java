@@ -16,6 +16,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import pipeline.PipelineObject;
+import util.vcfParser.VCFParser.GTType;
 import buffer.VCFFile;
 import buffer.variant.VariantLineReader;
 import buffer.variant.VariantRec;
@@ -102,6 +103,7 @@ public class VCFLineParser extends PipelineObject implements VariantLineReader  
 		public VCFLineParser(VCFFile file) throws IOException {
 			this(file.getFile());
 		}
+				
 		
 		public void setInputStream(InputStream stream) throws IOException {
 			this.reader = new BufferedReader(new InputStreamReader(stream));
@@ -560,15 +562,15 @@ public class VCFLineParser extends PipelineObject implements VariantLineReader  
 		/**
 		 * 
 		 */
-		public boolean isHetero() {
+		public GTType isHetero() {
 			if (lineToks != null) {
 			
 				updateFormatIfNeeded();
 			
 				if (formatToks == null)
-					return false;
+					return GTType.UNKNOWN;
 				if (gtCol < 0) {
-					return false;
+					return GTType.UNKNOWN;
 				}
 			
 				String[] formatValues = lineToks[sampleColumn].split(":");
@@ -580,22 +582,22 @@ public class VCFLineParser extends PipelineObject implements VariantLineReader  
 				
 				if (GTStr.charAt(1) == '/' || GTStr.charAt(1) == '|') {
 					if (GTStr.charAt(0) != GTStr.charAt(2))
-						return true;
+						return GTType.HET;
 					else
-						return false;
+						return GTType.HOM;
 				}
 				else {
 					throw new IllegalStateException("Genotype separator char does not seem to be normal (found " + GTStr.charAt(1) + ")");
 				}
 			}
 			else {
-				return false;
+				return GTType.UNKNOWN;
 			}
 			
 		}
 		
-		public boolean isHomo() {
-			return ! isHetero();
+		public GTType isHomo() {
+			return isHetero();
 		}
 
 		public String getCurrentLine() {

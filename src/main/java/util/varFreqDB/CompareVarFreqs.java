@@ -11,6 +11,7 @@ import buffer.BEDFile;
 import buffer.variant.TinyVCFParser;
 import buffer.variant.VariantPool;
 import buffer.variant.VariantRec;
+import util.vcfParser.VCFParser.GTType;
 
 public class CompareVarFreqs {
 
@@ -133,7 +134,7 @@ public class CompareVarFreqs {
 						VariantRec queryVar = info.getPool().findRecordNoWarn(contig, var.getStart());
 
 						if (queryVar != null) {
-							if (queryVar.isHetero()) {
+							if (queryVar.isHetero() == GTType.HET) {
 								incrementProperty(var, typeKey+HETS);
 								incrementProperty(var, HETS);
 							}

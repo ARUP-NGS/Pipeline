@@ -8,6 +8,8 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 
+import util.VCFLineParser.GTType;
+
 public class GVFLineReader implements VariantLineReader {
 	
 	public static final String REFERENCE_SEQ = "Reference_seq=";
@@ -68,8 +70,9 @@ public class GVFLineReader implements VariantLineReader {
 		String alt = getAlt(ref, attrs);
 		Double quality = Double.parseDouble(toks[5]); 
 		boolean het = isHet(attrs);
+		GTType zyg = getZygosity(attrs);
 		
-		VariantRec rec = new VariantRec(contig, start, end,  ref, alt, quality, het );
+		VariantRec rec = new VariantRec(contig, start, end,  ref, alt, quality, zyg );
 		
 		Double totDepth = new Double(getDepth(attrs));
 		rec.addProperty(VariantRec.DEPTH, totDepth);
@@ -175,6 +178,23 @@ public class GVFLineReader implements VariantLineReader {
 		return false;
 	}
 	
+	private GTType getZygosity(String[] attrs) {
+		for(int i=0; i<attrs.length; i++) {
+			if (attrs[i].contains(ZYGOSITY)) {
+				if ( attrs[i].contains("het") || attrs[i].contains("Het")) {
+					return GTType.HET;
+				} else if ( attrs[i].contains("hom") || attrs[i].contains("Hom")) {
+					return GTType.HOM;
+				} else if ( attrs[i].contains("hemi") || attrs[i].contains("Hemi")) {
+					return GTType.HEMI;
+				} else {
+					return GTType.UNKNOWN;
+				}
+			} 
+		}
+		return GTType.UNKNOWN;
+		
+	}
 	
 	public static void main(String[] args) {
 		

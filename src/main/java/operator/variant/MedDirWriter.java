@@ -13,6 +13,7 @@ import ncbi.GeneInfoDB;
 import org.apache.log4j.Logger;
 
 import pipeline.Pipeline;
+import util.vcfParser.VCFParser.GTType;
 import buffer.variant.VariantPool;
 import buffer.variant.VariantRec;
 
@@ -171,7 +172,15 @@ public class MedDirWriter extends VariantPoolWriter {
 			val = getAnnotation(key, rec); //Searches for variant annotation, if none found the gene annotation
 			
 			if (key.equals("zygosity")) {
-				val = rec.isHetero() ? "het" : "hom";
+				if ( rec.isHetero() == GTType.HET ) {
+					val = "het"; 
+				} else if ( rec.isHetero() == GTType.HOM ) {
+					val = "hom";
+				} else if ( rec.isHetero() == GTType.HEMI ) {
+					val = "hemi";
+				} else if ( rec.isHetero() == GTType.UNKNOWN ) {
+					val = "unknown";
+				}
 			}
 			
 			if (key.endsWith(".zygosity")) {
@@ -188,11 +197,14 @@ public class MedDirWriter extends VariantPoolWriter {
 						if (var == null)
 							val = "ref";
 						else {
-							if (var.isHetero()) {
+							if (var.isHetero() == GTType.HET) {
 								val = "het";
-							}
-							else {
+							} else if (var.isHetero() == GTType.HOM){
 								val = "hom";
+							} else if (var.isHetero() == GTType.HEMI){
+								val = "hemi";
+							} else if (var.isHetero() == GTType.UNKNOWN){
+								val = "unknown";
 							}
 						}
 					}
@@ -338,11 +350,15 @@ public class MedDirWriter extends VariantPoolWriter {
 			return "ref";
 		else {
 			if (par1Var.getAlt().equals(rec.getAlt())) {
-				if (par1Var.isHetero()) {
+				if (par1Var.isHetero() == GTType.HET) {
 					return "het";
-				}
-				else 
+				} else if (par1Var.isHetero() == GTType.HOM) { 
 					return "hom";
+				} else if (par1Var.isHetero() == GTType.HEMI) { 
+					return "hemi";
+				} else { 
+					return "unknown";
+				}
 			}
 			else {
 				return par1Var.getAlt();

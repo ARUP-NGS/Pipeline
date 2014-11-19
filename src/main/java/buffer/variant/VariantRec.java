@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.TreeSet;
 
 import util.smallMap.SmallMap;
+import util.vcfParser.VCFParser.GTType;
 
 /**
  * A class to store some basic information about a single variant
@@ -25,9 +26,10 @@ public class VariantRec {
 	String ref;
 	String alt;
 	Double qual;
-	protected boolean isHetero;
+	protected GTType isHetero;
 	protected Map<String, Double> props = new SmallMap<String, Double>(); 
 	protected Map<String, String> annotations = new SmallMap<String, String>(); 
+
 	Gene gene;
 	
 	public VariantRec(String contig, 
@@ -41,7 +43,7 @@ public class VariantRec {
 		this.ref = ref;
 		this.alt = alt;
 		this.qual = 1000.0;
-		this.isHetero = true;
+		this.isHetero = GTType.UNKNOWN;
 	}
 	
 	public VariantRec(String contig, 
@@ -50,7 +52,7 @@ public class VariantRec {
 							String ref, 
 							String alt, 
 							Double qual, 
-							boolean isHetero) {
+							GTType isHetero) {
 		this.contig = contig;
 		this.start = start;
 		this.end = end;
@@ -357,7 +359,7 @@ public class VariantRec {
 		return qual;
 	}
 	
-	public boolean isHetero() {
+	public GTType isHetero() {
 		return isHetero;
 	}
 	
@@ -401,8 +403,13 @@ public class VariantRec {
 			exFunc = exType;
 		
 		String het = "het";
-		if (! isHetero())
+		if (isHetero() == GTType.HOM) {
 			het = "hom";
+		} else if (isHetero() == GTType.HEMI) {
+			het = "hemi";
+		} else if (isHetero() == GTType.UNKNOWN){
+			het = "unknown";
+		}
 		
 		return contig + "\t" + start + "\t" + end + "\t" + gene + "\t" + variantType + "\t" + exFunc + "\t" + het ;  
 	}
@@ -431,8 +438,13 @@ public class VariantRec {
 	 */
 	public String toSimpleString() {
 		String het = "het";
-		if (! isHetero())
+		if (isHetero() == GTType.HOM) {
 			het = "hom";
+		} else if (isHetero() == GTType.HEMI) {
+			het = "hemi";
+		} else if (isHetero() == GTType.UNKNOWN) {
+			het = "unknown";
+		}
 		
 		Double depth = getProperty(VariantRec.DEPTH);
 		String depthStr = "-";

@@ -30,6 +30,7 @@ import buffer.variant.VariantPool;
 import buffer.variant.VariantRec;
 import pipeline.Pipeline;
 import util.vcfParser.VCFParser;
+import util.vcfParser.VCFParser.GTType;
 
 public class CompareVCF extends IOOperator {
 
@@ -101,7 +102,7 @@ public class CompareVCF extends IOOperator {
 		try {
 			VCFParser vp = new VCFParser(file);
 			while (vp.advanceLine()) {
-				if (vp.isHetero())
+				if (vp.isHetero() == GTType.HET) 
 					count++;
 			}
 		} catch (IOException e) {

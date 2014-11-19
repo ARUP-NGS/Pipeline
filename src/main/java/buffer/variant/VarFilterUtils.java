@@ -1,5 +1,7 @@
 package buffer.variant;
 
+import util.vcfParser.VCFParser.GTType;
+
 /**
  * Contains static utils for obtaining a variety of oft-used variant filters
  * @author brendan
@@ -63,7 +65,7 @@ public class VarFilterUtils {
 
 		@Override
 		public boolean passes(VariantRec rec) {
-			return !rec.isHetero();
+			return rec.isHetero() == GTType.HOM;
 		}
 		
 	}
@@ -82,7 +84,7 @@ public class VarFilterUtils {
 
 		@Override
 		public boolean passes(VariantRec rec) {
-			return rec.isHetero();
+			return rec.isHetero() == GTType.HET;
 		}
 		
 	}
