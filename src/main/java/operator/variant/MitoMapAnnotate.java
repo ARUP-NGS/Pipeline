@@ -42,13 +42,12 @@ public class MitoMapAnnotate extends Annotator {
 		try {
 			dbInfo = mitoMapFreqDB.getInfoForPosition(var.getContig(), var.getStart(), var.getAlt());
 			if (dbInfo != null) {
-				var.addProperty(VariantRec.ARUP_OVERALL_FREQ, Double.parseDouble(dbInfo[0]));
-				var.addAnnotation(VariantRec.ARUP_FREQ_DETAILS, dbInfo[1]);
+				var.addProperty(VariantRec.MITOMAP_FREQ, Double.parseDouble(dbInfo[0]));
+				var.addAnnotation(VariantRec.MITOMAP_ALLELE_ID, dbInfo[1]);
 				
 			}
 			else {
-				var.addProperty(VariantRec.ARUP_OVERALL_FREQ, 0.0);
-				var.addAnnotation(VariantRec.ARUP_FREQ_DETAILS, "Total samples: 0");
+				//I am hell itself; nobody's here. -R. Lowell
 			}
 			
 		} catch (IOException e) {
