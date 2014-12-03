@@ -63,11 +63,13 @@ public class VarViewerWriter extends VariantPoolWriter {
 			 VariantRec.COSMIC_ID,
 			 VariantRec.COSMIC_COUNT,
 			 VariantRec.UK10K_ALLELE_FREQ,
+			 VariantRec.EXOMES_63K_FREQ,
 			 VariantRec.EXOMES_63K_AFR_FREQ,
 			 VariantRec.EXOMES_63K_AMR_FREQ,
 			 VariantRec.EXOMES_63K_EAS_FREQ,
 			 VariantRec.EXOMES_63K_FIN_FREQ,
 			 VariantRec.EXOMES_63K_NFE_FREQ,
+			 VariantRec.EXOMES_63K_OTH_FREQ,
 			 VariantRec.EXOMES_63K_SAS_FREQ,
 			 VariantRec.EXOMES_63K_AC_HET,
 			 VariantRec.EXOMES_63K_AFR_HET,
@@ -75,6 +77,7 @@ public class VarViewerWriter extends VariantPoolWriter {
 			 VariantRec.EXOMES_63K_EAS_HET,
 			 VariantRec.EXOMES_63K_FIN_HET,
 			 VariantRec.EXOMES_63K_NFE_HET,
+			 VariantRec.EXOMES_63K_OTH_HET,
 			 VariantRec.EXOMES_63K_SAS_HET,
 			 VariantRec.EXOMES_63K_AC_HOM,
 			 VariantRec.EXOMES_63K_AFR_HOM,
@@ -82,7 +85,10 @@ public class VarViewerWriter extends VariantPoolWriter {
 			 VariantRec.EXOMES_63K_EAS_HOM,
 			 VariantRec.EXOMES_63K_FIN_HOM,
 			 VariantRec.EXOMES_63K_NFE_HOM,
-			 VariantRec.EXOMES_63K_SAS_HOM
+			 VariantRec.EXOMES_63K_OTH_HOM,
+			 VariantRec.EXOMES_63K_SAS_HOM,
+			 VariantRec.MITOMAP_FREQ,
+			 VariantRec.MITOMAP_ALLELE_ID
 			 }));
 	
 	public final static List<String> geneKeys = new ArrayList<String>( Arrays.asList(new String[]{
