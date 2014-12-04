@@ -7,9 +7,9 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import util.VCFLineParser;
+import util.vcfParser.VCFParser.GTType;
 import buffer.VCFFile;
 import buffer.variant.VariantRec;
-import util.VCFLineParser.GTType;
 
 /**
  * Unit test for VCFLine parser
@@ -66,7 +66,7 @@ public class TestVCFLineParser {
 					Assert.assertTrue(qual==105.76);
 					
 					// Check heterozygosity
-					GTType het = reader.isHetero();
+					util.vcfParser.VCFParser.GTType het = reader.isHetero();
 					Assert.assertTrue(het == GTType.HET);
 					
 					// Check genotype quality
