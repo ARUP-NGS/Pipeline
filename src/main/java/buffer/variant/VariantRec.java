@@ -826,6 +826,8 @@ public class VariantRec {
 	public static final String EXOMES_63K_OTH_FREQ = "exomes63K.al.freq.oth";
 	public static final String EXOMES_63K_OTH_HET = "exomes63K.al.freq.oth.het";
 	public static final String EXOMES_63K_OTH_HOM = "exomes63K.al.freq.oth.hom";
+	public static final String MITOMAP_FREQ = "mitomap.db.freq";
+	public static final String MITOMAP_ALLELE_ID = "mitomap.allele.id";
 
 	
 	//Added by Chrisk
