@@ -44,11 +44,11 @@ public class TestUK10K extends TestCase {
 			//Check to see if UK10KAnnotator is adding the correct AF value annotations
 			UK10KAnnotator annotator = (UK10KAnnotator)ppl.getObjectHandler().getObjectForLabel("GeneAnnotate");
 
-			VariantPool vars = annotator.getVariants();
-			
+			VariantPool vars = annotator.getVariants();	
 			
 
 			VariantRec var = vars.findRecord("2", 25458546, "C" , "T");
+			System.out.println("UK10K var:  "+var);
 			Assert.assertTrue(var != null);
 			Assert.assertTrue(var.getProperty(VariantRec.UK10K_ALLELE_FREQ).equals(0.588336));
 			

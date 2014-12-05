@@ -46,10 +46,11 @@ public class UK10KAnnotator extends AbstractTabixAnnotator {
 
 		String[] formatToks = toks[7].split(";");
 		String overallFreqStr = valueForKey(formatToks, "AF=");
-		System.out.println("overallFreqStr:   "+overallFreqStr);
 		if (overallFreqStr != null) {
 			Double af = Double.parseDouble(overallFreqStr);
 			var.addProperty(VariantRec.UK10K_ALLELE_FREQ, af);
+			System.out.println(var);
+			System.out.println("af:  "+af);
 		}
 		
 		return true;
