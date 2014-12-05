@@ -31,6 +31,7 @@ public class ExAC63KExomesAnnotator extends AbstractTabixAnnotator {
 	 * @param str The VCF line corresponding to the variant - this gets parsed to find the annotations we want to attach to the string 
 	 * @throws OperationFailedException
 	 */
+	@Override
 	protected boolean addAnnotationsFromString(VariantRec var, String str) {
 		String[] toks = str.split("\t");
 				

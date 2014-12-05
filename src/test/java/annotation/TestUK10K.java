@@ -3,9 +3,12 @@ package annotation;
 import java.io.File;
 
 import junit.framework.TestCase;
+import org.junit.Assert;
+
 import operator.variant.UK10KAnnotator;
 
-import org.junit.Assert;
+//import org.junit.Assert;
+//import junit.framework.Assert;
 
 import pipeline.Pipeline;
 import buffer.variant.VariantPool;
@@ -45,11 +48,13 @@ public class TestUK10K extends TestCase {
 			//Check to see if UK10KAnnotator is adding the correct AF value annotations
 			UK10KAnnotator annotator = (UK10KAnnotator)ppl.getObjectHandler().getObjectForLabel("GeneAnnotate");
 
-			VariantPool vars = annotator.getVariants();
+			VariantPool vars = annotator.getVariants();	
 			
-			
+			//Check all variants are in the pool
+			Assert.assertEquals(90, vars.size());
 
 			VariantRec var = vars.findRecord("2", 25458546, "C" , "T");
+			System.out.println("UK10K var:  "+var);
 			Assert.assertTrue(var != null);
 			Assert.assertTrue(var.getProperty(VariantRec.UK10K_ALLELE_FREQ).equals(0.588336));
 			
