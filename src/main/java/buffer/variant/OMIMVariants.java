@@ -8,6 +8,8 @@ import java.io.IOException;
 import pipeline.ObjectHandler;
 import pipeline.Pipeline;
 
+import util.vcfParser.VCFParser.GTType;
+
 /**
  * This variant pool stores info for all OMIM entries stored as text files in a
  * directory (directory usually stored in .pipelineprops.xml). This variant pool
@@ -69,7 +71,7 @@ public class OMIMVariants extends VariantPool {
 			Integer end = Integer.parseInt(toks[4]);
 			String idStr = toks[8].replace("ID=", "").replace(";","");
 			
-			VariantRec rec = new VariantRec(contig, start, end, "-", "-", 0.0, false);
+			VariantRec rec = new VariantRec(contig, start, end, "-", "-", 0.0, GTType.UNKNOWN);
 			rec.addAnnotation(VariantRec.OMIM_ID, idStr);
 			addRecordNoSort(rec);
 			line = reader.readLine();

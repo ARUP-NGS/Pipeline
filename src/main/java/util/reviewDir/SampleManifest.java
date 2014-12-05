@@ -86,4 +86,8 @@ public class SampleManifest {
 		return files.get(QC_JSON);
 	}
 	
+	public File getAnnotatedVars() {
+		return files.get(ANNOTATED_VARS);
+	}
+	
 }

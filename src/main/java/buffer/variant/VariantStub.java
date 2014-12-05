@@ -1,5 +1,7 @@
 package buffer.variant;
 
+import util.vcfParser.VCFParser.GTType;
+
 
 /**
  * A tiny version of variant rec that does not store any properties or annotations. 
@@ -9,7 +11,7 @@ package buffer.variant;
 public class VariantStub extends VariantRec {
 
 	
-	public VariantStub(String contig, int start, int end, String ref, String alt, boolean isHet) {
+	public VariantStub(String contig, int start, int end, String ref, String alt, GTType isHet) {
 		super(contig, start, end, ref, alt);
 		props = null;
 		annotations = null;

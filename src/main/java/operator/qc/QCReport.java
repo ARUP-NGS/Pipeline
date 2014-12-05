@@ -51,6 +51,7 @@ import pipeline.PipelineObject;
 import util.ElapsedTimeFormatter;
 import util.QueuedLogHandler;
 import util.StringWriter;
+import util.vcfParser.VCFParser.GTType;
 import buffer.BAMFile;
 import buffer.BAMMetrics;
 import buffer.BEDFile;
@@ -414,7 +415,7 @@ public class QCReport extends Operator {
 				}
 				if (var.isIndel())
 					indelQualHisto.addValue(var.getQuality());
-				if (var.isHetero()) 
+				if (var.isHetero() == GTType.HET) 
 					hetQualHisto.addValue(var.getQuality());
 				else {
 					homoQualHisto.addValue(var.getQuality());

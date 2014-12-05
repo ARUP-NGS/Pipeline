@@ -3,6 +3,7 @@ package operator.variant;
 import java.io.PrintStream;
 
 import buffer.variant.VariantRec;
+import util.vcfParser.VCFParser.GTType;
 
 public class EmitHGMD extends VariantPoolWriter {
 
@@ -22,8 +23,13 @@ public class EmitHGMD extends VariantPoolWriter {
 			Double quality = rec.getQuality();
 			
 			String hetStr = "het";
-			if (! rec.isHetero())
+			if (rec.isHetero() == GTType.HOM) {
 				hetStr = "hom";
+			} else if (rec.isHetero() == GTType.HEMI) {
+				hetStr = "hemi";
+			} else if (rec.isHetero() == GTType.UNKNOWN) {
+				hetStr = "unknown";
+			}
 			
 			out.println(geneName + "\t" + pDot + "\t" + cDot + "\t" + hetStr + "\t" + depth + "\t" + quality + "\t" + hgmdHit);
 		}

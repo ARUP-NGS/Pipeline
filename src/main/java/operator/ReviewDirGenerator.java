@@ -40,6 +40,7 @@ import buffer.VCFFile;
 public class ReviewDirGenerator extends Operator {
 
 	public static final String DEST_DIR = "destination.dir";
+	public static final String CREATE_JSON_VARIANTS = "create.json.variants";
 	
 	String sampleName = "unknown";
 	String submitter = "unknown";
@@ -324,6 +325,9 @@ public class ReviewDirGenerator extends Operator {
 			throw new IllegalArgumentException("Root path MUST be absolute");
 		}
 		
+		String jsonCreationAttr = searchForAttribute(CREATE_JSON_VARIANTS);
+		if(jsonCreationAttr != null)
+			this.createJSONVariants = Boolean.parseBoolean(jsonCreationAttr);
 		
 		sampleName = this.getAttribute("sample");
 		submitter = this.getAttribute("submitter");

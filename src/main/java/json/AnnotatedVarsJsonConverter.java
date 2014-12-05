@@ -2,6 +2,7 @@ package json;
 
 import java.util.List;
 
+import util.vcfParser.VCFParser.GTType;
 import buffer.variant.VariantRec;
 
 public class AnnotatedVarsJsonConverter {
@@ -50,11 +51,14 @@ public class AnnotatedVarsJsonConverter {
 		varObj.put("ref", var.getRef());
 		varObj.put("alt", var.getAlt());
 		String zyg = "";
-		if (var.isHetero()) {
+		if (var.isHetero() == GTType.HET) {
 			zyg = "het";
-		}
-		else {
+		} else if (var.isHetero() == GTType.HOM) {
 			zyg = "hom";
+		} else if (var.isHetero() == GTType.HEMI) {
+			zyg = "hemi";
+		} else if (var.isHetero() == GTType.UNKNOWN) {
+			zyg = "unknown";
 		}
 		varObj.put("zygosity", zyg);
 		

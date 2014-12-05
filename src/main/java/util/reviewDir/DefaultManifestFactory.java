@@ -63,6 +63,11 @@ public class DefaultManifestFactory implements ManifestReader {
 			if (file != null) {
 				files.put(SampleManifest.VCF, file);
 			}
+			
+			File varsFile = fileBySuffix(vcfDir.listFiles(), "csv");
+			if (varsFile != null) {
+				files.put(SampleManifest.ANNOTATED_VARS, varsFile);
+			}
 		}
 
 		File logDir = fileByName(subdirs, "log");
@@ -89,6 +94,8 @@ public class DefaultManifestFactory implements ManifestReader {
 				files.put(SampleManifest.QC_JSON, file);
 			}
 		}
+		
+		
 			
 		return files;
 	}

@@ -21,6 +21,10 @@ import json.JSONObject;
 import math.Histogram;
 import net.sf.samtools.util.DateParser;
 import util.prereviewDataGen.AnalysisTypeConverter;
+import util.reviewDir.ManifestParseException;
+import util.reviewDir.ReviewDirectory;
+import buffer.variant.VariantPool;
+import buffer.variant.VariantRec;
 
 /**
  * A smallish utility to read QC data from qc.json files
@@ -788,39 +792,67 @@ Average Total Number of Variants
 		return formatter.format(histo.lowerHPD(0.025)) + "\t" + formatter.format(histo.lowerHPD(0.05)) + "\t" + formatter.format(histo.upperHPD(0.05)) + "\t" + formatter.format(histo.upperHPD(0.025)) + "\t"; 
 	}
 	
-	
-//	private static String formatQAListVals(List<Double> vals) {
-//		DecimalFormat formatter = new DecimalFormat("0.0##");
-//		if (vals.size() < 3) {
-//			return "Not enough data (" + vals.size() + " elements)";
-//		}
-//		Collections.sort(vals);
-//		Double min = vals.get(0);
-//		Double max = vals.get( vals.size() - 1 );
-//		Histogram histo = new Histogram(min, max, vals.size());
-//		for(Double x : vals) {
-//			histo.addValue(x);
-//		}
-//		
-//		return formatter.format(min) + "\t" +  
-//	}
-	
-	
-	
-	
-	
+	private static List<String> compareForKey(VariantPool poolA, VariantPool poolB, String annoKey, PrintStream out) {
+		int missingInB =0;
+		List<String> misMatches = new ArrayList<String>();
+		int perfectMatches = 0;
+		int notAnnotated = 0;
+		for(String contig : poolA.getContigs()) {
+			
+			for(VariantRec aVar : poolA.getVariantsForContig(contig)) {
+				VariantRec bVar = poolB.findRecord(aVar.getContig(), aVar.getStart(), aVar.getRef(), aVar.getAlt());
+				if (bVar == null) {
+					missingInB++;
+				} else {
+					String valA = aVar.getPropertyOrAnnotation(annoKey);
+					String valB = bVar.getPropertyOrAnnotation(annoKey);
+					if ((valA == null && valB == null) || (valA.equals("-") && valB.equals("-"))) {
+						notAnnotated++;
+						continue;
+					}
+					if (valA.equals(valB)) {
+						perfectMatches++;
+					} else {
+						misMatches.add(aVar.toString() + "\t" + valA + " != " + valB);
+					}
+				}
+			}
+		}
+		
+		
+		
+		
+		
+		if (misMatches.size()>0) {
+			out.println("*********************\n Found " + misMatches.size() + " mismatching annotations for key: " + annoKey + "\n First 10 mismatches:");
+			for(int i=0; i<Math.min(10, misMatches.size()); i++) {
+				out.println("\t" + misMatches.get(i));
+			}
+			out.println("*****************");
+		} else {
+			out.println("No discordant annotations for key " + annoKey);
+		}
+		
+		return misMatches;
+	}
 	
 	private static void performComparison(List<String> paths, PrintStream out) throws IOException {
 		if (paths.size() != 2) {
 			out.println("Please enter two directories to compare.");
 			return;
 		}
+	
 		
-		String sampleAId = sampleIDFromManifest(new File(paths.get(0) + "/sampleManifest.txt"));
-		String sampleBId = sampleIDFromManifest(new File(paths.get(1) + "/sampleManifest.txt"));
-		out.println("Comparing " + sampleAId + " to " + sampleBId);
 		
 		try {
+			
+			ReviewDirectory dirA = new ReviewDirectory(paths.get(0));
+			ReviewDirectory dirB = new ReviewDirectory(paths.get(1));
+			
+			String sampleAId = dirA.getSampleName();
+			String sampleBId = dirB.getSampleName();
+			out.println("Comparing " + sampleAId + " to " + sampleBId);
+			
 			JSONObject qcA = toJSONObj(paths.get(0));
 			JSONObject qcB = toJSONObj(paths.get(1));
 			
@@ -847,7 +879,43 @@ Average Total Number of Variants
 			out.println("       % > 25:\t" + above25A + "\t" + above25B);
 			out.println("       % > 50:\t" + above50A + "\t" + above50B);
 			
+			VariantPool vcfVarsA = dirA.getVariantsFromVCF();
+			VariantPool vcfVarsB = dirB.getVariantsFromVCF();
+			
+			out.println("VCF Variants:");
+			out.println("\tTotal variants\tSNPs\tIndels\tHets");
+			out.println(dirA.getSampleName() +"\t" + vcfVarsA.size() + '\t' + vcfVarsA.countSNPs() + "\t" + (vcfVarsA.countInsertions()+vcfVarsA.countDeletions()) + "\t" + ("" + 100.0*vcfVarsA.countHeteros()/vcfVarsA.size()).substring(0, 5));
+			out.println(dirB.getSampleName() +"\t" + vcfVarsB.size() + '\t' + vcfVarsB.countSNPs() + "\t" + (vcfVarsB.countInsertions()+vcfVarsA.countDeletions()) + "\t" + ("" + 100.0*vcfVarsA.countHeteros()/vcfVarsB.size()).substring(0, 5));
+			
+			if (vcfVarsA.size() != vcfVarsB.size()) {
+				out.println("****************************************");
+				out.println("Differing numbers of variants identified in VCF files!");
+				out.println("****************************************\n");
+			}
+			
+			VariantPool csvVarsA = dirA.getVariantsFromCSV();
+			VariantPool csvVarsB = dirB.getVariantsFromCSV();
+			
+			if (csvVarsA.size() != vcfVarsA.size()) {
+				out.println("******************\n WARNING: VCF variant count (" + vcfVarsA.size() + ") not equal to CSV variant count (" + csvVarsA.size() + ") in sample " + sampleAId + "\n*****************************");
+			}
+			if (csvVarsB.size() != vcfVarsB.size()) {
+				out.println("******************\n WARNING: VCF variant count (" + vcfVarsB.size() + ") not equal to CSV variant count  (" + csvVarsB.size() + ") in sample " + sampleBId);
+			}
+			
+			
+			compareForKey(csvVarsA, csvVarsB, VariantRec.POP_FREQUENCY, out);
+			compareForKey(csvVarsA, csvVarsB, VariantRec.EXOMES_FREQ, out);
+			compareForKey(csvVarsA, csvVarsB, VariantRec.GENE_NAME, out);
+			compareForKey(csvVarsA, csvVarsB, VariantRec.HGMD_HIT, out);
+			compareForKey(csvVarsA, csvVarsB, VariantRec.CDOT, out);
+			
+			
+			
 		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (ManifestParseException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}

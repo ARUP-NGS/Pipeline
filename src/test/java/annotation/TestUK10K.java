@@ -2,9 +2,11 @@ package annotation;
 
 import java.io.File;
 
-import junit.framework.Assert;
 import junit.framework.TestCase;
 import operator.variant.UK10KAnnotator;
+
+import org.junit.Assert;
+
 import pipeline.Pipeline;
 import buffer.variant.VariantPool;
 import buffer.variant.VariantRec;
@@ -12,16 +14,15 @@ import buffer.variant.VariantRec;
 
 
 
+/**
+ * Testing the UK10KAnnotator. Currently (11/4/2014) using the myeloid.vcf and the first ~1000
+ * lines of the UK10K vcf file along with several others.
+ * 
+ * 
+ * NOTE: In cases where you are checking indels, you will need to increment the pos +1
+ * 	and strip off the first base in the ref and alt. If only a single base, put a dash.
+ */
 public class TestUK10K extends TestCase {
-	
-	/**
-	 * Testing the UK10KAnnotator. Currently (11/4/2014) using the myeloid.vcf and the first ~1000
-	 * lines of the UK10K vcf file along with several others.
-	 * 
-	 * 
-	 * NOTE: In cases where you are checking indels, you will need to increment the pos +1
-	 * 	and strip off the first base in the ref and alt. If only a single base, put a dash.
-	 */
 	
 	
 	File inputFile = new File("src/test/java/annotation/testUK10K.xml");

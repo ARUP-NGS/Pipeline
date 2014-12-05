@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import util.vcfParser.VCFParser.GTType;
+
 public class IonTorrentXLSParser extends CSVLineReader {
 
 	private boolean headerHasBeenRead = false;
@@ -73,7 +75,7 @@ public class IonTorrentXLSParser extends CSVLineReader {
 			Double depth = Double.parseDouble(toks[4]);
 			
 			
-			boolean isHet = false;
+			//boolean isHet = false;
 
 
 			if (alt.length() != ref.length()) {
@@ -90,7 +92,7 @@ public class IonTorrentXLSParser extends CSVLineReader {
 
 			}
 
-			rec = new VariantRec(contig, start, start+ref.length(), ref, alt, qual, isHet);
+			rec = new VariantRec(contig, start, start+ref.length(), ref, alt, qual, GTType.UNKNOWN);
 			rec.addProperty(VariantRec.DEPTH, depth);
 
 			/**

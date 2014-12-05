@@ -27,6 +27,8 @@ import buffer.variant.VariantFilter;
 import buffer.variant.VariantPool;
 import buffer.variant.VariantRec;
 
+import util.vcfParser.VCFParser.GTType;
+
 public class CompoundHetFinder extends Operator {
 
 	private VariantPool kidPool = null;
@@ -147,20 +149,26 @@ public class CompoundHetFinder extends Operator {
 			VariantRec par1Var2 = parent1Pool.findRecordNoWarn(hit.kidVar2.getContig(), hit.kidVar2.getStart());
 			//If par1Var1 exists (variant 1 is in parent 1), then create a string with the zygosity in parent 1
 			if (par1Var1 != null) {
-				if (par1Var1.isHetero()) {
+				if (par1Var1.isHetero() == GTType.HET) {
 					par1Var1Zyg = "het";
-				}
-				else {
+				} else if (par1Var1.isHetero() == GTType.HOM) {
 					par1Var1Zyg = "hom";
+				} else if (par1Var1.isHetero() == GTType.HEMI) {
+					par1Var1Zyg = "hemi";
+				} else if (par1Var1.isHetero() == GTType.UNKNOWN) {
+					par1Var1Zyg = "unknown";
 				}
 			}
 			
 			if (par1Var2 != null) {
-				if (par1Var2.isHetero()) {
+				if (par1Var2.isHetero() == GTType.HET) {
 					par1Var2Zyg = "het";
-				}
-				else {
+				} else if (par1Var2.isHetero() == GTType.HOM) {
 					par1Var2Zyg = "hom";
+				} else if (par1Var2.isHetero() == GTType.HEMI) {
+					par1Var2Zyg = "hemi";
+				} else if (par1Var2.isHetero() == GTType.UNKNOWN) {
+					par1Var2Zyg = "unknown";
 				}
 			}
 		}
@@ -172,20 +180,26 @@ public class CompoundHetFinder extends Operator {
 			
 			//If par1Var1 exists (variant 1 is in parent 1), then create a string with the zygosity in parent 1
 			if (par2Var1 != null) {
-				if (par2Var1.isHetero()) {
+				if (par2Var1.isHetero() == GTType.HET) {
 					par2Var1Zyg = "het";
-				}
-				else {
+				} else if (par2Var1.isHetero() == GTType.HOM) {
 					par2Var1Zyg = "hom";
+				} else if (par2Var1.isHetero() == GTType.HEMI) {
+					par2Var1Zyg = "hemi";
+				} else if (par2Var1.isHetero() == GTType.UNKNOWN) {
+					par2Var1Zyg = "unknown";
 				}
 			}
 			
 			if (par2Var2 != null) {
-				if (par2Var2.isHetero()) {
+				if (par2Var2.isHetero() == GTType.HET) {
 					par2Var2Zyg = "het";
-				}
-				else {
+				} else if (par2Var2.isHetero() == GTType.HOM) {
 					par2Var2Zyg = "hom";
+				} else if (par2Var2.isHetero() == GTType.HEMI) {
+					par2Var2Zyg = "hemi";
+				} else if (par2Var2.isHetero() == GTType.UNKNOWN) {
+					par2Var2Zyg = "unknown";
 				}
 			}
 		}
@@ -341,7 +355,7 @@ public class CompoundHetFinder extends Operator {
 		
 		
 		for(VariantRec rec : kidList) {
-			if (rec.isHetero()) {
+			if (rec.isHetero() == GTType.HET) {
 				//Kid variant is het, determine if this variant is present as a het in
 				//one parent but not the other....
 				
@@ -405,7 +419,7 @@ public class CompoundHetFinder extends Operator {
 		VariantRec kidHit2 = null;
 		
 		for(VariantRec rec : kidList) {
-			if (rec.isHetero()) {
+			if (rec.isHetero() == GTType.HET) {
 				boolean parHet = isHetero(rec.getStart(), parList);
 				VariantRec parVar = contains(rec.getStart(), parList);
 				boolean parContains = parVar != null;
@@ -444,7 +458,7 @@ public class CompoundHetFinder extends Operator {
 	 */
 	public static boolean isHetero(int pos, List<VariantRec> list) {
 		for(VariantRec rec : list) {
-			if (rec.getStart()==pos && rec.isHetero()) {
+			if (rec.getStart()==pos && rec.isHetero() == GTType.HET) {
 				return true;
 			}
 		}

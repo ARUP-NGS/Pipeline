@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -119,6 +120,8 @@ public class VCFParser implements VariantLineReader {
 		if (creator != null) {
 			if (creator.startsWith("SelectVariants")) {
 				creator = "GATK / UnifiedGenotyper";
+			} else if (creator.startsWith("CGAPipeline")) {
+				creator = "CompleteGenomics";				
 			} else if (!(creator.startsWith("freeBayes")) && !(creator.contains("Torrent")) && !(creator.startsWith("RTG")) && !(creator.startsWith("CGAPipeline"))) {
 				throw new IOException("Cannot determine variant caller that generated VCF. Header property '##source' must be start with 'freeBayes' or 'CGAPipeline' or contain 'Torrent' or 'RTG' or 'SelectVariants'.");
 			}
@@ -359,6 +362,8 @@ public class VCFParser implements VariantLineReader {
 		String ref = getRef();
 		String alt = getAlt(); 
 		
+		//System.out.println(chr + "/" + pos + "/" + ref + "/" + alt); 
+			
 		String qualStr = currentLineToks[5];
 		double quality = -1;
 		try {
@@ -372,10 +377,9 @@ public class VCFParser implements VariantLineReader {
 		//@author elainegee start
 
 		sampleMetrics = createSampleMetricsDict(); //Stores sample-specific key=value pairs from VCF entry from FORMAT & INFO, not header	
-
-		
+	
 		//Create new variant record
-		boolean isHet = isHetero();
+		GTType isHet = isHetero();
 		VariantRec var = new VariantRec(chr, pos, pos + ref.length(), ref, alt, quality, isHet);
 		var = normalizeVariant(var, stripInitialMatchingBases, stripTrailingMatchingBases);
 		var.setQuality(quality);
@@ -418,6 +422,9 @@ public class VCFParser implements VariantLineReader {
 
 	}
 	
+	public enum GTType {
+		HET, HOM, HEMI, UNKNOWN
+	}
 	
 	public enum EntryType {
 		FORMAT, INFO
@@ -726,7 +733,7 @@ public class VCFParser implements VariantLineReader {
 		} else if (creator.startsWith("Torrent")){
 			annoStr = "FAO";
 			annoIdx = altIndex; //FAO only contains infor for alternate allele
-		} else if (creator.startsWith("RTG") || creator.startsWith("CGAPipeline")) { //RTG variant caller or Complete Genomics
+		} else if (creator.startsWith("RTG") || creator.equals("CompleteGenomics")) { //RTG variant caller or Complete Genomics
 			annoStr = "AD";
 			annoIdx = altIndex; //AD does not contain depth for REF
 		} else {
@@ -809,11 +816,11 @@ public class VCFParser implements VariantLineReader {
 		String genoQualStr = getSampleMetricsStr("GT");
 		if (!genoQualStr.equals(null)) {
 			if (genoQualStr.contains("|")) {
-				return "|";
+				return "\\|"; //Pipe character needs to be a regex, otherwise considered an empty string in split command
 			} else if (genoQualStr.contains("/"))  {
 				return "/";
 			} else {
-				throw new IllegalStateException("Genotype separator char does not seem to be normal (i.e. | or /).");
+				throw new IllegalStateException("Genotype separator char does not seem to be normal (i.e. | or /). GT field in VCF given as '" + genoQualStr + "'.");
 			}
 		} else {
 			throw new IllegalStateException("No genotype ('GT') specified in VCF.");
@@ -824,7 +831,7 @@ public class VCFParser implements VariantLineReader {
 	 * Returns true if the genotype is not ./. or 0/0 
 	 * @author elainegee
 	 * @return
-	 */
+
 	public boolean isVariant() {
 		//Determine if GT delimiter is valid
 		String delim=null;
@@ -844,24 +851,41 @@ public class VCFParser implements VariantLineReader {
 		}				
 	}
 	
+	*/
+	
 	/**
 	 * Determine if variant is heterozygous
 	 * @author elainegee
+	 * @return 
 	 * @return
 	 */
-	public boolean isHetero() {
+	public GTType isHetero() {
 		//Get GT from sampleMetrics dictionary
 		String genoQualStr = getSampleMetricsStr("GT");
 		try {
-			String delim = getGTDelimitor();
-			String[] gtToks = genoQualStr.split(delim);
-		
-			String refGT = gtToks[0]; //Allele1 genotype
-			String altGT = gtToks[1]; //Allele2 genotype
-			if (refGT.equals(altGT)) {
-				return false;
+			if (genoQualStr.length() == 1) {
+				if(genoQualStr.equals(".")) {
+					//Handle case when VCF is missing info
+					return GTType.UNKNOWN;
+				} else { 
+					//Handle hemizygous cases (male X, M)
+					return GTType.HEMI;
+				}				
 			} else {
-				return true;
+				//Determine if HET or HOM
+				String delim = getGTDelimitor();
+				String[] gtToks = genoQualStr.trim().split(delim);
+
+				String refGT = gtToks[0]; //Allele1 genotype
+				String altGT = gtToks[1]; //Allele2 genotype
+				if (refGT.equals(".") || altGT.equals(".")) {
+					//missing genotype for allele
+					return GTType.UNKNOWN;
+				} else if (refGT.equals(altGT)) {
+					return GTType.HOM;
+				} else {
+					return GTType.HET;
+				}
 			}
 		} catch (IllegalStateException ise) {
 			throw new IllegalStateException ("Error processing request:", ise);
@@ -873,8 +897,9 @@ public class VCFParser implements VariantLineReader {
 	 * @author elainegee
 	 * @return
 	 */
-	public boolean isHomo() {
-		return ! isHetero();
+	public GTType isHomo() {
+		GTType ans = isHetero();
+		return ans;
 	}
 	
 	/**
@@ -886,7 +911,7 @@ public class VCFParser implements VariantLineReader {
 		//Get GT from sampleMetrics dictionary
 		try {
 			String delim = getGTDelimitor();
-			if (delim.equals("|")) {
+			if (delim.equals("|")) { 
 				return true;
 			} else {
 				return false;

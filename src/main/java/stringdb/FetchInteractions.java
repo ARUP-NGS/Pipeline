@@ -76,20 +76,23 @@ public class FetchInteractions {
 		public double score;
 	}
 	
-//	public static void main(String[] args) {
-//		List<String> ids = new ArrayList<String>();
-//		ids.add("ENG");
-//		ids.add("ACVRL1");
-//		ids.add("BMP9");
-//		ids.add("SMAD4");
-//		
-//		FetchInteractions fetcher = new FetchInteractions();
-//		try {
-//			fetcher.getInteractionsList(ids);
-//		} catch (IOException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-//		
-//	}
+	public static void main(String[] args) {
+		List<String> ids = new ArrayList<String>();
+		ids.add("ENG");
+		ids.add("ACVRL1");
+		ids.add("BMP9");
+		ids.add("SMAD4");
+		
+		FetchInteractions fetcher = new FetchInteractions();
+		try {
+			List<InteractionNode> nodes = fetcher.getInteractionsList(ids);
+			for(InteractionNode node : nodes) {
+				System.out.println(node.first + "-" + node.second + " : " + node.score);
+			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
 }

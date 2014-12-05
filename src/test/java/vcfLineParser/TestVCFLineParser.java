@@ -7,6 +7,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import util.VCFLineParser;
+import util.vcfParser.VCFParser.GTType;
 import buffer.VCFFile;
 import buffer.variant.VariantRec;
 
@@ -65,8 +66,8 @@ public class TestVCFLineParser {
 					Assert.assertTrue(qual==105.76);
 					
 					// Check heterozygosity
-					boolean het = reader.isHetero();
-					Assert.assertTrue(het);
+					util.vcfParser.VCFParser.GTType het = reader.isHetero();
+					Assert.assertTrue(het == GTType.HET);
 					
 					// Check genotype quality
 					Double genotypeQual = reader.getGenotypeQuality();
@@ -131,8 +132,8 @@ public class TestVCFLineParser {
 					Assert.assertTrue(qual==276.864);
 					
 					// Check heterozygosity
-					boolean het = reader.isHetero();
-					Assert.assertTrue(het);
+					GTType het = reader.isHetero();
+					Assert.assertTrue(het == GTType.HET);
 					
 					// Check genotype quality
 					Double genotypeQual = reader.getGenotypeQuality();
@@ -199,9 +200,9 @@ public class TestVCFLineParser {
 						Double qual = reader.getQuality();
 						Assert.assertTrue(qual==23829.3);
 						
-						// Check heterozygosity
-						boolean het = reader.isHetero();
-						Assert.assertFalse(het);
+						// Check heterozygosity (hom)
+						GTType het = reader.isHetero();
+						Assert.assertTrue(het == GTType.HOM);
 						
 						// Check genotype quality
 						Double genotypeQual = reader.getGenotypeQuality();
@@ -265,9 +266,9 @@ public class TestVCFLineParser {
 						Double qual = reader.getQuality();
 						Assert.assertTrue(qual==2160.3);
 						
-						// Check heterozygosity
-						boolean het = reader.isHetero();
-						Assert.assertTrue(het);
+						// Check heterozygosity (het)
+						GTType het = reader.isHetero();
+						Assert.assertTrue(het == GTType.HET);
 						
 						// Check genotype quality
 						Double genotypeQual = reader.getGenotypeQuality();
@@ -326,9 +327,9 @@ public class TestVCFLineParser {
 					Double qual = reader.getQuality();
 					Assert.assertTrue(qual.equals(-1.0));
 					
-					//Check heterozygosity
-					boolean het = reader.isHetero();
-					Assert.assertFalse(het);
+					//Check heterozygosity (Unknown)
+					GTType het = reader.isHetero();
+					Assert.assertTrue(het == GTType.UNKNOWN);
 
 					
 					// Check genotype quality
@@ -394,9 +395,9 @@ public class TestVCFLineParser {
 					Double qual = reader.getQuality();
 					Assert.assertTrue(qual==439.999);
 					
-					// Check heterozygosity
-					boolean het = reader.isHetero();
-					Assert.assertTrue(het);
+					// Check heterozygosity (het)
+					GTType het = reader.isHetero();
+					Assert.assertTrue(het == GTType.HET);
 					
 					// Check genotype quality
 					Double genotypeQual = reader.getGenotypeQuality();
@@ -444,9 +445,9 @@ public class TestVCFLineParser {
 					Double qual = reader.getQuality();
 					Assert.assertTrue(qual==276.864);
 					
-					// Check heterozygosity
-					boolean het = reader.isHetero();
-					Assert.assertTrue(het);
+					// Check heterozygosity (het)
+					GTType het = reader.isHetero();
+					Assert.assertTrue(het == GTType.HET);
 					
 					// Check genotype quality
 					Double genotypeQual = reader.getGenotypeQuality();
@@ -490,9 +491,9 @@ public class TestVCFLineParser {
 					Double qual = reader.getQuality();
 					Assert.assertTrue(qual==88.9478);
 					
-					// Check heterozygosity
-					boolean het = reader.isHetero();
-					Assert.assertFalse(het);
+					// Check heterozygosity (hom)
+					GTType het = reader.isHetero();
+					Assert.assertTrue(het == GTType.HOM);
 					
 					// Check genotype quality
 					Double genotypeQual = reader.getGenotypeQuality();
@@ -533,9 +534,9 @@ public class TestVCFLineParser {
 					Double qual = reader.getQuality();
 					Assert.assertTrue(qual==531.427);
 					
-					// Check heterozygosity
-					boolean het = reader.isHetero();
-					Assert.assertTrue(het);
+					// Check heterozygosity (het)
+					GTType het = reader.isHetero();
+					Assert.assertTrue(het == GTType.HET);
 					
 					// Check genotype quality
 					Double genotypeQual = reader.getGenotypeQuality();
