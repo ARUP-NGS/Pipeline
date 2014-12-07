@@ -1,0 +1,20 @@
+
+<Pipeline>
+
+
+
+<InputVCF class="buffer.VCFFile" filename="src/test/java/testvcfs/testMITOMAP.vcf" />
+
+
+<VariantPool class="buffer.variant.VariantPool">
+	<InputVCF />
+</VariantPool>
+
+
+<!--Comment out the annotator you are not using-->
+<!--GeneAnnotate class="operator.variant.MITOMAPcoding"-->
+<GeneAnnotate class="operator.variant.MITOMAP_rRNAtRNA">
+	<VariantPool />
+</GeneAnnotate>
+
+</Pipeline>
