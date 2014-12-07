@@ -5,7 +5,8 @@ import java.io.File;
 import junit.framework.TestCase;
 import operator.variant.UK10KAnnotator;
 
-import org.junit.Assert;
+//import org.junit.Assert;
+import junit.framework.Assert;
 
 import pipeline.Pipeline;
 import buffer.variant.VariantPool;

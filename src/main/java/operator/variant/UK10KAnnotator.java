@@ -49,8 +49,6 @@ public class UK10KAnnotator extends AbstractTabixAnnotator {
 		if (overallFreqStr != null) {
 			Double af = Double.parseDouble(overallFreqStr);
 			var.addProperty(VariantRec.UK10K_ALLELE_FREQ, af);
-			System.out.println(var);
-			System.out.println("af:  "+af);
 		}
 		
 		return true;
