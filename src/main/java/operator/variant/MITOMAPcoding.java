@@ -29,8 +29,6 @@ public class MITOMAPcoding extends AbstractTabixAnnotator {
 			String info = toks[7];
 			String[] infoTok= info.split(";");
 			String disease = valueForKey(infoTok, "disease=");
-			//System.out.print("var:  "+var);
-			//System.out.println("  val:  "+val);
 			
 			if(disease !=null)
 			{

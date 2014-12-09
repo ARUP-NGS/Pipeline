@@ -10,10 +10,7 @@
 	<InputVCF />
 </VariantPool>
 
-
-<!--Comment out the annotator you are not using-->
-<!--GeneAnnotate class="operator.variant.MITOMAPcoding"-->
-<GeneAnnotate class="operator.variant.MITOMAP_rRNAtRNA">
+<GeneAnnotate class="operator.variant.MITOMAPcoding">
 	<VariantPool />
 </GeneAnnotate>
 
