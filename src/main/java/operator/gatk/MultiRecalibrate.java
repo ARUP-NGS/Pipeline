@@ -14,6 +14,7 @@ import operator.OperationFailedException;
 import pipeline.Pipeline;
 import pipeline.PipelineXMLConstants;
 import util.ElapsedTimeFormatter;
+import util.bamUtil.ReadCounter;
 import buffer.BAMFile;
 import buffer.CSVFile;
 import buffer.FileBuffer;
@@ -50,11 +51,18 @@ public class MultiRecalibrate extends MultiOperator {
 		
 		List<BAMFile> inputBAMs = new ArrayList<BAMFile>();
 		List<CSVFile> recalDataFiles = new ArrayList<CSVFile>(); //Stores recalibration data
+		
 		for(int i=0; i<inputFiles.getFileCount(); i++) {
 			if (inputFiles.getFile(i) instanceof BAMFile) {
-				inputBAMs.add( (BAMFile) inputFiles.getFile(i) );
-				String recalFileName = inputFiles.getFile(i).getAbsolutePath().replace(".bam", ".recal.csv");
-				recalDataFiles.add(new CSVFile(new File(recalFileName)));
+				BAMFile bam = (BAMFile) inputFiles.getFile(i);
+				if (ReadCounter.hasAtLeastXReads(bam, 100)) {
+					inputBAMs.add( bam );
+					String recalFileName = inputFiles.getFile(i).getAbsolutePath().replace(".bam", ".recal.csv");
+					recalDataFiles.add(new CSVFile(new File(recalFileName)));
+				}
+				else {
+					logger.info("Input BAM file " +inputFiles.getFile(i).getFilename() + " doesn't have enough reads, not attempting a recal");
+				}
 			}
 		}
 		
