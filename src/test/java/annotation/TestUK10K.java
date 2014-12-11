@@ -7,9 +7,6 @@ import org.junit.Assert;
 
 import operator.variant.UK10KAnnotator;
 
-//import org.junit.Assert;
-//import junit.framework.Assert;
-
 import pipeline.Pipeline;
 import buffer.variant.VariantPool;
 import buffer.variant.VariantRec;

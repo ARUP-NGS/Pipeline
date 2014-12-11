@@ -1,0 +1,17 @@
+
+<Pipeline>
+
+
+
+<InputVCF class="buffer.VCFFile" filename="src/test/java/testvcfs/testMITOMAP.vcf" />
+
+
+<VariantPool class="buffer.variant.VariantPool">
+	<InputVCF />
+</VariantPool>
+
+<GeneAnnotate class="operator.variant.MITOMAP_rRNAtRNA">
+	<VariantPool />
+</GeneAnnotate>
+
+</Pipeline>
