@@ -140,7 +140,7 @@ public class VariantPool extends Operator  {
 		}
 		if (inputVariants != null) {
 			varLineReader.setFile(inputVariants.getFile());
-			varLineReader.advanceLine(); // I think this shouldn't be here - setFile already primes the reader, currentLine should then be ready
+			//varLineReader.advanceLine(); // this shouldn't be here - setFile already primes the reader, currentLine should then be ready
 		}
 		
 		//int lineNumber = 0;

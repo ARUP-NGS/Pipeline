@@ -1,0 +1,18 @@
+
+<!-- Template for testing ExAC -->
+<!-- 2014-12-10, E.Gee -->
+<Pipeline>
+
+
+<variants class="buffer.VCFFile" filename="src/test/java/testvcfs/myeloid.vcf" />
+
+<!-- Push variants into a 'variant pool' that can we easily manipulate -->
+<VariantPool class="buffer.variant.VariantPool">
+	<variants />
+</VariantPool>
+
+<GeneAnnotate class="operator.variant.ExAC63KExomesAnnotator">
+ <VariantPool />
+</GeneAnnotate>
+
+</Pipeline>

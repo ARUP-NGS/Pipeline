@@ -1,0 +1,14 @@
+
+<!-- Template for testing loading of variant pool -->
+<!-- 2014-12-11, E.Gee -->
+<Pipeline>
+
+
+<variants class="buffer.VCFFile" filename="src/test/java/testvcfs/myeloid.vcf" />
+
+<!-- Push variants into a 'variant pool' that can we easily manipulate -->
+<VariantPool class="buffer.variant.VariantPool">
+	<variants />
+</VariantPool>
+
+</Pipeline>

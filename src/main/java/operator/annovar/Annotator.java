@@ -68,7 +68,7 @@ public abstract class Annotator extends Operator {
 
 		for(String contig : variants.getContigs()) {
 			for(VariantRec rec : variants.getVariantsForContig(contig)) {
-				//TODO veryify that recEnd is not incorrect for two alt alleles
+				//TODO verify that recEnd is not incorrect for two alt alleles
 				Integer recLength = rec.getRef().length() - rec.getAlt().length(); //if >0 Indicates a deletion
 				if (recLength < 0) { //Indicates that it is an insertion
 					recLength = 0; 

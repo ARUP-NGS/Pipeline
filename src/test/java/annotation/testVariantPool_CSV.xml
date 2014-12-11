@@ -1,0 +1,14 @@
+
+<!-- Template for testing loading of Variant Pool -->
+<!-- 2014-12-11, E.Gee -->
+<Pipeline>
+
+
+<variants class="buffer.CSVFile" filename="src/test/java/testcsvs/gatksingle_annotated.csv" />
+
+<!-- Push variants into a 'variant pool' that can we easily manipulate -->
+<VariantPool class="buffer.variant.VariantPool">
+	<variants />
+</VariantPool>
+
+</Pipeline>
