@@ -901,6 +901,7 @@ public class QCReport extends Operator {
 					try {
 						featureLookup = new ExonLookupService();
 						String featureFile = getPipelineProperty("feature.file");
+						featureLookup.setPreferredNMs( loadPreferredNMs(null));
 						featureLookup.buildExonMap(new File(featureFile));
 					}
 					catch (IOException ex) {
