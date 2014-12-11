@@ -30,10 +30,6 @@ public class TestExAC63KExomesAnnotator extends TestCase {
 			pplVCF.stopAllLogging();
 			pplVCF.execute();
 
-			//Get variants input into VariantPool XML element 
-			VariantPool VP = (VariantPool)pplVCF.getObjectHandler().getObjectForLabel("VariantPool");
-			int VPsize = VP.size();
-			Assert.assertEquals(90, VPsize);
 			//Get variants input into annotator from XML element
 			ExAC63KExomesAnnotator annotator = (ExAC63KExomesAnnotator)pplVCF.getObjectHandler().getObjectForLabel("GeneAnnotate");
 			VariantPool vars = annotator.getVariants();
@@ -54,10 +50,6 @@ public class TestExAC63KExomesAnnotator extends TestCase {
 			pplCSV.stopAllLogging();
 			pplCSV.execute();
 
-			//Get variants from XML element
-			VariantPool VP = (VariantPool)pplCSV.getObjectHandler().getObjectForLabel("VariantPool");
-			int VPsize = VP.size();
-			Assert.assertEquals(889, VPsize);
 			//Get variants input into annotator from XML element
 			ExAC63KExomesAnnotator annotator = (ExAC63KExomesAnnotator)pplCSV.getObjectHandler().getObjectForLabel("GeneAnnotate");
 			VariantPool vars = annotator.getVariants();
