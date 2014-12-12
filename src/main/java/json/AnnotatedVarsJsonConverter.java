@@ -1,6 +1,8 @@
 package json;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import util.vcfParser.VCFParser.GTType;
 import buffer.variant.VariantRec;
@@ -9,6 +11,7 @@ public class AnnotatedVarsJsonConverter {
 	
 	//If set, all variants will 
 	private List<String> ensureKeys = null;
+	private Set<String> excludeKeys = new HashSet<String>(); //These annotations will not be included
 	
 	//When set, all json objects will specify this key, even if not every variant has
 	//a property or annotation associated with the key
@@ -16,17 +19,31 @@ public class AnnotatedVarsJsonConverter {
 		this.ensureKeys = keys;
 	}
 	
+	public void setExcludeKeys(List<String> excludes) {
+		excludeKeys = new HashSet<String>();
+		for(String key : excludes) {
+			excludeKeys.add(key);
+		}
+	}
+	
 	public JSONObject toJSON(VariantRec var) throws JSONException {
 		JSONObject varObj = new JSONObject();
 		
 		for(String key : var.getAnnotationKeys()) {
-			varObj.put(key, var.getAnnotation(key));
+			if (!excludeKeys.contains(key)) {
+				varObj.put(key, var.getAnnotation(key));
+			}
 		}
 		
 		for(String key : var.getPropertyKeys()) {
+			if (excludeKeys.contains(key)) {
+				continue;
+			}
+			
 			//See if we can parse an int first.
 			try {
 				int val = Integer.parseInt("" + var.getProperty(key));
+				
 				varObj.put(key, val);
 				continue;
 			}
@@ -51,13 +68,13 @@ public class AnnotatedVarsJsonConverter {
 		varObj.put("ref", var.getRef());
 		varObj.put("alt", var.getAlt());
 		String zyg = "";
-		if (var.isHetero() == GTType.HET) {
+		if (var.getGenotype() == GTType.HET) {
 			zyg = "het";
-		} else if (var.isHetero() == GTType.HOM) {
+		} else if (var.getGenotype() == GTType.HOM) {
 			zyg = "hom";
-		} else if (var.isHetero() == GTType.HEMI) {
+		} else if (var.getGenotype() == GTType.HEMI) {
 			zyg = "hemi";
-		} else if (var.isHetero() == GTType.UNKNOWN) {
+		} else if (var.getGenotype() == GTType.UNKNOWN) {
 			zyg = "unknown";
 		}
 		varObj.put("zygosity", zyg);

@@ -77,13 +77,13 @@ public class GeneRankWriter extends VariantPoolWriter {
 				if (var == null)
 					val = "ref";
 				else {
-					if (var.isHetero() == GTType.HET) {
+					if (var.getGenotype() == GTType.HET) {
 						val = "het";
-					} else if (var.isHetero() == GTType.HOM) {
+					} else if (var.getGenotype() == GTType.HOM) {
 						val = "hom";
-					} else if (var.isHetero() == GTType.HEMI) {
+					} else if (var.getGenotype() == GTType.HEMI) {
 						val = "hemi";
-					} else if (var.isHetero() == GTType.UNKNOWN) {
+					} else if (var.getGenotype() == GTType.UNKNOWN) {
 						val = "unknown";
 					}
 				}
@@ -93,13 +93,13 @@ public class GeneRankWriter extends VariantPoolWriter {
 				if (var == null)
 					val = "ref";
 				else {
-					if (var.isHetero() == GTType.HET) {
+					if (var.getGenotype() == GTType.HET) {
 						val = "het";
-					} else if (var.isHetero() == GTType.HOM) {
+					} else if (var.getGenotype() == GTType.HOM) {
 						val = "hom";
-					} else if (var.isHetero() == GTType.HEMI) {
+					} else if (var.getGenotype() == GTType.HEMI) {
 						val = "hemi";
-					} else if (var.isHetero() == GTType.UNKNOWN) {
+					} else if (var.getGenotype() == GTType.UNKNOWN) {
 						val = "unknown";
 					}
 				}
@@ -109,13 +109,13 @@ public class GeneRankWriter extends VariantPoolWriter {
 				if (var == null)
 					val = "ref";
 				else {
-					if (var.isHetero() == GTType.HET) {
+					if (var.getGenotype() == GTType.HET) {
 						val = "het";
-					} else if (var.isHetero() == GTType.HOM) {
+					} else if (var.getGenotype() == GTType.HOM) {
 						val = "hom";
-					} else if (var.isHetero() == GTType.HEMI) {
+					} else if (var.getGenotype() == GTType.HEMI) {
 						val = "hemi";
-					} else if (var.isHetero() == GTType.UNKNOWN) {
+					} else if (var.getGenotype() == GTType.UNKNOWN) {
 						val = "unknown";
 					}
 				}
@@ -125,13 +125,13 @@ public class GeneRankWriter extends VariantPoolWriter {
 				if (var == null)
 					val = "ref";
 				else {
-					if (var.isHetero() == GTType.HET) {
+					if (var.getGenotype() == GTType.HET) {
 						val = "het";
-					} else if (var.isHetero() == GTType.HOM) {
+					} else if (var.getGenotype() == GTType.HOM) {
 						val = "hom";
-					} else if (var.isHetero() == GTType.HEMI) {
+					} else if (var.getGenotype() == GTType.HEMI) {
 						val = "hemi";
-					} else if (var.isHetero() == GTType.UNKNOWN) {
+					} else if (var.getGenotype() == GTType.UNKNOWN) {
 						val = "unknown";
 					}
 				}

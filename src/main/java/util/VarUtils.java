@@ -1037,7 +1037,7 @@ public class VarUtils {
 						popFreq = var.getProperty(VariantRec.POP_FREQUENCY);
 						eurFreq = var.getProperty(VariantRec.EUR_FREQUENCY);
 						int alleles = 1;
-						if ( var.isHetero() == GTType.HOM ) {
+						if ( var.getGenotype() == GTType.HOM ) {
 							alleles = 2;
 						}
 						alleleCount += alleles;
@@ -1133,7 +1133,7 @@ public class VarUtils {
 							String varGene = var.getAnnotation(VariantRec.GENE_NAME);
 							Double val = var.getProperty(anno);
 							int count = 1;
-							if ( var.isHetero() == GTType.HOM) {
+							if ( var.getGenotype() == GTType.HOM) {
 								count = 2;
 							}
 							if (varGene != null && val != null) {
@@ -1195,7 +1195,7 @@ public class VarUtils {
 						String gene = var.getAnnotation(VariantRec.GENE_NAME);
 						Double val = var.getProperty(anno);
 						int count = 1;
-						if ( var.isHetero() == GTType.HOM) {
+						if ( var.getGenotype() == GTType.HOM) {
 							count = 2;
 						}
 						if (gene != null && val != null) {
@@ -1632,7 +1632,7 @@ public class VarUtils {
 					Double prop = var.getProperty(key);
 					String gene = var.getAnnotation(VariantRec.GENE_NAME);
 					int alleles = 1;
-					if ( var.isHetero() == GTType.HOM )
+					if ( var.getGenotype() == GTType.HOM )
 						alleles = 2;
 					
 					if (gene != null && prop != null) {
@@ -1761,9 +1761,9 @@ public class VarUtils {
 						totHapMapVar++;
 						truePoz++;
 						int flag = 0;
-						if (var.isHetero() == GTType.HET)
+						if (var.getGenotype() == GTType.HET)
 							flag++;
-						if (sampleVar.isHetero() == GTType.HET)
+						if (sampleVar.getGenotype() == GTType.HET)
 							flag++;
 						if (flag==1)
 							wrongZygosity++;
@@ -2089,7 +2089,8 @@ public class VarUtils {
 			//Don't strip initial matching bases from the vcf, this screws up the position
 			//and will break ROC calculation
 			VCFParser vcfReader = new VCFParser(new File(args[3]));
-			vcfReader.setStripInitialMatchingBases(false);
+			vcfReader.setStripInitialMatchingBases(true);
+			vcfReader.setStripTrailingMatchingBases(true);
 			VariantPool qVars = new VariantPool(vcfReader);
 						
 			double minQuality = Double.MAX_VALUE;
@@ -3186,11 +3187,11 @@ public class VarUtils {
 					VariantRec var = pool.findRecordNoWarn(contig, interval.end);
 					if (var != null) {
 						String hetStr = "het";
-						if ( var.isHetero() == GTType.HOM) {
+						if ( var.getGenotype() == GTType.HOM) {
 							hetStr = "hom";
-						} else if ( var.isHetero() == GTType.HEMI) {
+						} else if ( var.getGenotype() == GTType.HEMI) {
 							hetStr = "hemi";
-						} else if ( var.isHetero() == GTType.UNKNOWN) {
+						} else if ( var.getGenotype() == GTType.UNKNOWN) {
 							hetStr = "unknown";
 						}
 						System.out.print(hetStr + ";" + var.getQuality() +";" + var.getProperty("depth") + "\t");

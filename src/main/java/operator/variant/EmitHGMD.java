@@ -23,11 +23,11 @@ public class EmitHGMD extends VariantPoolWriter {
 			Double quality = rec.getQuality();
 			
 			String hetStr = "het";
-			if (rec.isHetero() == GTType.HOM) {
+			if (rec.getGenotype() == GTType.HOM) {
 				hetStr = "hom";
-			} else if (rec.isHetero() == GTType.HEMI) {
+			} else if (rec.getGenotype() == GTType.HEMI) {
 				hetStr = "hemi";
-			} else if (rec.isHetero() == GTType.UNKNOWN) {
+			} else if (rec.getGenotype() == GTType.UNKNOWN) {
 				hetStr = "unknown";
 			}
 			

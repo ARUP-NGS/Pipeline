@@ -152,7 +152,7 @@ public class TestVCFParser {
 					Assert.assertTrue(alt.equals("CTGTG"));					
 					
 					GTType hetero = parser.isHetero();
-					Assert.assertTrue(var.isHetero() == GTType.HET);
+					Assert.assertTrue(var.getGenotype() == GTType.HET);
 					Assert.assertTrue(hetero == GTType.HET);
 							
 					GTType homo = parser.isHomo();
@@ -719,7 +719,7 @@ public class TestVCFParser {
 					GTType homo = parserPanel.isHomo();
 					Assert.assertTrue(homo == GTType.HET);
 					
-					GTType hom = (var.isHetero());
+					GTType hom = (var.getGenotype());
 					Assert.assertTrue(hom == GTType.HET);
 					
 				}
@@ -743,7 +743,7 @@ public class TestVCFParser {
 						GTType homo = parserPanel.isHomo();
 						Assert.assertTrue(homo == GTType.HOM);
 						
-						GTType hom = var.isHetero(); //Test the variant itself
+						GTType hom = var.getGenotype(); //Test the variant itself
 						Assert.assertTrue(hom == GTType.HOM);
 					}			
 				else if (i == 15) {
@@ -757,7 +757,7 @@ public class TestVCFParser {
 							GTType homo = parserPanel.isHomo();
 							Assert.assertTrue(homo == GTType.HOM);
 							
-							GTType hom = var.isHetero(); //Test the variant itself
+							GTType hom = var.getGenotype(); //Test the variant itself
 							Assert.assertTrue(hom == GTType.HOM);
 						}			
 				else if (i == 16) {
@@ -771,7 +771,7 @@ public class TestVCFParser {
 							GTType homo = parserPanel.isHomo();
 							Assert.assertTrue(homo == GTType.HOM);
 							
-							GTType hom = var.isHetero(); //Test the variant itself
+							GTType hom = var.getGenotype(); //Test the variant itself
 							Assert.assertTrue(hom == GTType.HOM);
 						}		
 					i++;							
