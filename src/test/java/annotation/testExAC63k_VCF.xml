@@ -4,7 +4,7 @@
 <Pipeline>
 
 
-<variants class="buffer.VCFFile" filename="src/test/java/testvcfs/myeloid.vcf" />
+<variants class="buffer.VCFFile" filename="src/test/java/testvcfs/gatksingle.vcf" />
 
 <!-- Push variants into a 'variant pool' that can we easily manipulate -->
 <VariantPool class="buffer.variant.VariantPool">
