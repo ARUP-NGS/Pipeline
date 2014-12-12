@@ -359,7 +359,7 @@ public class VariantRec {
 		return qual;
 	}
 	
-	public GTType isHetero() {
+	public GTType getGenotype() {
 		return isHetero;
 	}
 	
@@ -403,11 +403,11 @@ public class VariantRec {
 			exFunc = exType;
 		
 		String het = "het";
-		if (isHetero() == GTType.HOM) {
+		if (getGenotype() == GTType.HOM) {
 			het = "hom";
-		} else if (isHetero() == GTType.HEMI) {
+		} else if (getGenotype() == GTType.HEMI) {
 			het = "hemi";
-		} else if (isHetero() == GTType.UNKNOWN){
+		} else if (getGenotype() == GTType.UNKNOWN){
 			het = "unknown";
 		}
 		
@@ -438,11 +438,11 @@ public class VariantRec {
 	 */
 	public String toSimpleString() {
 		String het = "het";
-		if (isHetero() == GTType.HOM) {
+		if (getGenotype() == GTType.HOM) {
 			het = "hom";
-		} else if (isHetero() == GTType.HEMI) {
+		} else if (getGenotype() == GTType.HEMI) {
 			het = "hemi";
-		} else if (isHetero() == GTType.UNKNOWN) {
+		} else if (getGenotype() == GTType.UNKNOWN) {
 			het = "unknown";
 		}
 		

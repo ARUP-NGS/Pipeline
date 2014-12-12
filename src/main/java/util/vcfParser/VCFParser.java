@@ -333,7 +333,7 @@ public class VCFParser implements VariantLineReader {
 		}
 
 
-		VariantRec normalizedVariant = new VariantRec(var.getContig(), pos, end, ref, alt, var.getQuality(), var.isHetero());
+		VariantRec normalizedVariant = new VariantRec(var.getContig(), pos, end, ref, alt, var.getQuality(), var.getGenotype());
 		//Don't forget to copy over annotations and properties...
 		for(String key : var.getAnnotationKeys()) {
 			normalizedVariant.addAnnotation(key, var.getAnnotation(key));

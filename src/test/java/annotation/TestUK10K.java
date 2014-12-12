@@ -3,10 +3,9 @@ package annotation;
 import java.io.File;
 
 import junit.framework.TestCase;
-import operator.variant.UK10KAnnotator;
+import org.junit.Assert;
 
-//import org.junit.Assert;
-import junit.framework.Assert;
+import operator.variant.UK10KAnnotator;
 
 import pipeline.Pipeline;
 import buffer.variant.VariantPool;
@@ -48,6 +47,8 @@ public class TestUK10K extends TestCase {
 
 			VariantPool vars = annotator.getVariants();	
 			
+			//Check all variants are in the pool
+			Assert.assertEquals(90, vars.size());
 
 			VariantRec var = vars.findRecord("2", 25458546, "C" , "T");
 			System.out.println("UK10K var:  "+var);

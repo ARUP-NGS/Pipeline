@@ -16,6 +16,37 @@ import buffer.BAMFile;
  */
 public class ReadCounter {
 
+	
+	/**
+	 * Returns true if the bam file given exists and has at least the given number of reads. 
+	 * @param bam
+	 * @return
+	 */
+	public static boolean hasAtLeastXReads(BAMFile bam, int numberOfReads) {
+		if (!bam.getFile().exists()) {
+			return false;
+		}
+		
+		
+		final SAMFileReader inputSam = new SAMFileReader(bam.getFile());
+		inputSam.setValidationStringency(ValidationStringency.LENIENT);
+		
+		Map<String, Long> readCounts = new HashMap<String, Long>();
+		
+		int readCount = 0;
+		for (final SAMRecord samRecord : inputSam) {
+			readCount++;
+			if (readCount >= numberOfReads) {
+				inputSam.close();
+				return true;
+			}
+		}
+		
+		
+		inputSam.close();
+		return false;
+	}
+	
 	/**
 	 * Returns a Map of chromosome name to number of reads that map to it with mapping quality >= minMQScore
 	 * Reads with MQ strictly less than the score provided are ignored.

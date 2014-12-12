@@ -134,7 +134,7 @@ public class CompareVarFreqs {
 						VariantRec queryVar = info.getPool().findRecordNoWarn(contig, var.getStart());
 
 						if (queryVar != null) {
-							if (queryVar.isHetero() == GTType.HET) {
+							if (queryVar.getGenotype() == GTType.HET) {
 								incrementProperty(var, typeKey+HETS);
 								incrementProperty(var, HETS);
 							}

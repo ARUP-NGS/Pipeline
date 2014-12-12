@@ -415,7 +415,7 @@ public class QCReport extends Operator {
 				}
 				if (var.isIndel())
 					indelQualHisto.addValue(var.getQuality());
-				if (var.isHetero() == GTType.HET) 
+				if (var.getGenotype() == GTType.HET) 
 					hetQualHisto.addValue(var.getQuality());
 				else {
 					homoQualHisto.addValue(var.getQuality());
@@ -901,6 +901,7 @@ public class QCReport extends Operator {
 					try {
 						featureLookup = new ExonLookupService();
 						String featureFile = getPipelineProperty("feature.file");
+						featureLookup.setPreferredNMs( loadPreferredNMs(null));
 						featureLookup.buildExonMap(new File(featureFile));
 					}
 					catch (IOException ex) {

@@ -140,7 +140,7 @@ public class VariantPool extends Operator  {
 		}
 		if (inputVariants != null) {
 			varLineReader.setFile(inputVariants.getFile());
-			varLineReader.advanceLine(); // I think this shouldn't be here - setFile already primes the reader, currentLine should then be ready
+			//varLineReader.advanceLine(); // this shouldn't be here - setFile already primes the reader, currentLine should then be ready
 		}
 		
 		//int lineNumber = 0;
@@ -666,11 +666,11 @@ public class VariantPool extends Operator  {
 				VariantRec recB = varsB.findRecordNoWarn(rec.getContig(), rec.getStart());
 				if (recB != null && rec.getAlt().equals(recB.getAlt())) {
 					rec.addAnnotation(VariantRec.altB, recB.getAlt());
-					if (recB.isHetero() == GTType.HET) {
+					if (recB.getGenotype() == GTType.HET) {
 						rec.addAnnotation(VariantRec.zygosityB, "het");
-					} else if (recB.isHetero() == GTType.HOM) {
+					} else if (recB.getGenotype() == GTType.HOM) {
 						rec.addAnnotation(VariantRec.zygosityB, "hom");
-					} else if (recB.isHetero() == GTType.HEMI) {
+					} else if (recB.getGenotype() == GTType.HEMI) {
 						rec.addAnnotation(VariantRec.zygosityB, "hemi");
 					} else {
 						rec.addAnnotation(VariantRec.zygosityB, "unknown");
@@ -810,7 +810,7 @@ public class VariantPool extends Operator  {
 		for(String contig : vars.keySet()) {
 			Collection<VariantRec> varRecs = this.getVariantsForContig(contig);
 			for(VariantRec rec : varRecs) {
-				if (rec.isHetero() == GTType.HET) 
+				if (rec.getGenotype() == GTType.HET) 
 					count++;
 			}
 		}

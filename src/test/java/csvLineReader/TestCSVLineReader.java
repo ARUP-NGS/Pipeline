@@ -80,7 +80,7 @@ public class TestCSVLineReader {
 					Assert.assertTrue(depth==108.0);
 
 					// Check heterozygosity
-					GTType het = rec.isHetero();
+					GTType het = rec.getGenotype();
 					Assert.assertTrue(het == GTType.HET);
 					
 					// Check genotype quality
@@ -185,7 +185,7 @@ public class TestCSVLineReader {
 						Assert.assertTrue(depth==13.0);
 
 						// Check heterozygosity
-						GTType het = rec.isHetero();
+						GTType het = rec.getGenotype();
 						Assert.assertTrue(het == GTType.HET);
 						
 						// Check genotype quality
@@ -290,7 +290,7 @@ public class TestCSVLineReader {
 					Assert.assertTrue(depth==1635.0);
 
 					// Check heterozygosity (hom)
-					GTType het = rec.isHetero();
+					GTType het = rec.getGenotype();
 					Assert.assertTrue(het == GTType.HOM);
 					
 					// Check genotype quality
@@ -400,7 +400,7 @@ public class TestCSVLineReader {
 					Assert.assertTrue(depth==21779.0);
 
 					// Check heterozygosity
-					GTType het = rec.isHetero();
+					GTType het = rec.getGenotype();
 					Assert.assertTrue(het == GTType.HET);
 					
 					// Check genotype quality
@@ -529,7 +529,7 @@ public class TestCSVLineReader {
 					Assert.assertTrue(depth==18.0);
 
 					// Check heterozygosity
-					GTType het = rec.isHetero();
+					GTType het = rec.getGenotype();
 					Assert.assertTrue(het == GTType.HET);
 					
 					// Check genotype quality
@@ -609,7 +609,7 @@ public class TestCSVLineReader {
 					Assert.assertTrue(depth==13.0);
 
 					// Check heterozygosity
-					GTType het = rec.isHetero();
+					GTType het = rec.getGenotype();
 					Assert.assertTrue(het == GTType.HET);
 					
 					// Check genotype quality
@@ -689,7 +689,7 @@ public class TestCSVLineReader {
 					Assert.assertTrue(depth==3.0);
 
 					// Check heterozygosity (hom)
-					GTType het = rec.isHetero();
+					GTType het = rec.getGenotype();
 					Assert.assertTrue(het == GTType.HOM);
 					
 					// Check genotype quality
@@ -769,7 +769,7 @@ public class TestCSVLineReader {
 					Assert.assertTrue(depth==42.0);
 
 					// Check heterozygosity
-					GTType het = rec.isHetero();
+					GTType het = rec.getGenotype();
 					Assert.assertTrue(het == GTType.HET);
 					
 					// Check genotype quality
