@@ -151,8 +151,12 @@ public class TestVCFParser {
 					Assert.assertTrue(var.getAlt().equals(alt));
 					Assert.assertTrue(alt.equals("CTGTG"));					
 					
+					String gt = parser.getGT();
+					Assert.assertTrue(gt.equals("CTGTG/CTG"));
+					Assert.assertTrue(var.getGenotype().equals("CTGTG/CTG"));
+					
 					GTType hetero = parser.isHetero();
-					Assert.assertTrue(var.getGenotype() == GTType.HET);
+					Assert.assertTrue(var.getZygosity() == GTType.HET);
 					Assert.assertTrue(hetero == GTType.HET);
 							
 					GTType homo = parser.isHomo();
@@ -160,6 +164,10 @@ public class TestVCFParser {
 							
 					Boolean phase = parser.isPhased();
 					Assert.assertFalse(phase);
+
+					Assert.assertTrue(var.getProperty(VariantRec.VCF_POS).equals(new Double(133978709)));
+					Assert.assertTrue(var.getAnnotation(VariantRec.VCF_REF).equals("CTC"));
+					Assert.assertTrue(var.getAnnotation(VariantRec.VCF_ALT).equals("CTGTG"));
 												
 					Integer depth = parser.getDepth();
 					Assert.assertTrue(var.getProperty(VariantRec.DEPTH).equals( new Double(depth)));
@@ -183,7 +191,7 @@ public class TestVCFParser {
 					
 				}
 				
-				// Check first variant, second alt
+				// Check second variant, second alt
 				if (i == 3) {
 					Integer pos = parser.getPos();
 					Assert.assertTrue(pos == 133978709);
@@ -192,7 +200,10 @@ public class TestVCFParser {
 					Assert.assertTrue(ref.equals("CTC"));
 					
 					String alt = parser.getAlt();
-					Assert.assertTrue(alt.equals("CTG"));					
+					Assert.assertTrue(alt.equals("CTG"));		
+					
+					String genotype = parser.getGT();
+					Assert.assertTrue(genotype.equals("CTGTG/CTG")); //need to trim this
 					
 					GTType hetero = parser.isHetero();
 					Assert.assertTrue(hetero == GTType.HET);
@@ -203,6 +214,10 @@ public class TestVCFParser {
 					Boolean phase = parser.isPhased();
 					Assert.assertFalse(phase);
 												
+					Assert.assertTrue(var.getProperty(VariantRec.VCF_POS).equals(new Double(133978709)));
+					Assert.assertTrue(var.getAnnotation(VariantRec.VCF_REF).equals("CTC"));
+					Assert.assertTrue(var.getAnnotation(VariantRec.VCF_ALT).equals("CTG"));
+					
 					Integer depth = parser.getDepth();
 					Assert.assertTrue(depth==13);
 
@@ -250,6 +265,9 @@ public class TestVCFParser {
 					String alt = parserStrip.getAlt();
 					Assert.assertTrue(alt.equals("GTG"));					
 					
+					String genotype = parserStrip.getGT();
+					Assert.assertTrue(genotype.equals("CTGTG/CTG")); //need to trim this
+										
 					GTType hetero = parserStrip.isHetero();
 					Assert.assertTrue(hetero == GTType.HET);
 							
@@ -258,6 +276,10 @@ public class TestVCFParser {
 							
 					Boolean phase = parserStrip.isPhased();
 					Assert.assertFalse(phase);
+					
+					Assert.assertTrue(var.getProperty(VariantRec.VCF_POS).equals(new Double(133978709)));
+					Assert.assertTrue(var.getAnnotation(VariantRec.VCF_REF).equals("CTC"));
+					Assert.assertTrue(var.getAnnotation(VariantRec.VCF_ALT).equals("CTGTG"));
 												
 					Integer depth = parserStrip.getDepth();
 					Assert.assertTrue(depth==13);
@@ -279,7 +301,7 @@ public class TestVCFParser {
 							
 				}
 						
-				// Check first variant, second alt
+				// Check second variant, second alt
 				if (i == 3) {
 					Integer pos = parserStrip.getPos();
 					Assert.assertTrue(pos == 133978711);
@@ -288,8 +310,11 @@ public class TestVCFParser {
 					Assert.assertTrue(ref.equals("C"));
 					
 					String alt = parserStrip.getAlt();
-					Assert.assertTrue(alt.equals("G"));					
+					Assert.assertTrue(alt.equals("G"));	
 					
+					String genotype = parserStrip.getGT();
+					Assert.assertTrue(genotype.equals("CTGTG/CTG")); //need to trim this
+										
 					GTType hetero = parserStrip.isHetero();
 					Assert.assertTrue(hetero == GTType.HET);
 							
@@ -298,6 +323,10 @@ public class TestVCFParser {
 							
 					Boolean phase = parserStrip.isPhased();
 					Assert.assertFalse(phase);
+					
+					Assert.assertTrue(var.getProperty(VariantRec.VCF_POS).equals(new Double(133978709)));
+					Assert.assertTrue(var.getAnnotation(VariantRec.VCF_REF).equals("CTC"));
+					Assert.assertTrue(var.getAnnotation(VariantRec.VCF_ALT).equals("CTG"));
 												
 					Integer depth = parserStrip.getDepth();
 					Assert.assertTrue(depth==13);
@@ -328,6 +357,9 @@ public class TestVCFParser {
 				
 				// Check first variant, first alt
 				if (i == 0) {
+					String genotype = parserGATK.getGT();
+					Assert.assertTrue(genotype.equals("G/C"));
+					
 					GTType hetero = parserGATK.isHetero();
 					Assert.assertTrue(hetero == GTType.HET);
 					
@@ -336,6 +368,10 @@ public class TestVCFParser {
 					
 					Boolean phase = parserGATK.isPhased();
 					Assert.assertFalse(phase);
+					
+					Assert.assertTrue(var.getProperty(VariantRec.VCF_POS).equals(new Double(14673)));
+					Assert.assertTrue(var.getAnnotation(VariantRec.VCF_REF).equals("G"));
+					Assert.assertTrue(var.getAnnotation(VariantRec.VCF_ALT).equals("C"));
 					
 					Integer depth = parserGATK.getDepth();
 					Assert.assertTrue(depth==41);
@@ -375,6 +411,9 @@ public class TestVCFParser {
 
 				// Check third variant
 				if (i == 2) {
+					String genotype = parserFB.getGT();
+					Assert.assertTrue(genotype.equals("C/A"));
+					
 					GTType hetero = parserFB.isHetero();
 					Assert.assertTrue(hetero == GTType.HET);
 
@@ -383,6 +422,10 @@ public class TestVCFParser {
 					
 					Boolean phase = parserFB.isPhased();
 					Assert.assertFalse(phase);
+					
+					Assert.assertTrue(var.getProperty(VariantRec.VCF_POS).equals(new Double(11863)));
+					Assert.assertTrue(var.getAnnotation(VariantRec.VCF_REF).equals("C"));
+					Assert.assertTrue(var.getAnnotation(VariantRec.VCF_ALT).equals("A"));
 					
 					Integer depth = parserFB.getDepth();
 					Assert.assertTrue(depth==7);
@@ -411,7 +454,7 @@ public class TestVCFParser {
 			Assert.assertTrue(false);
 		}
 		
-		//Check fields for solid tumor VCF (Ion Torrent), don't strip trailing matching bases
+		//Check fields for solid tumor VCF (Ion Torrent), don't strip trailing matching bases (default true) but strip initial matching bases (default true)
 		try {
 			VCFParser parserTorr = new VCFParser(solidTumorVCF);
 			
@@ -422,11 +465,14 @@ public class TestVCFParser {
 			
 			//Go through file
 			int i=0;
-			while(parserTorr.advanceLine() && i<3) {	
-				VariantRec var = parserTorr.toVariantRec();
-
+			while(parserTorr.advanceLine()) {	
 				// Check third variant
 				if (i == 2) {
+					VariantRec var = parserTorr.toVariantRec();
+					
+					String genotype = parserTorr.getGT();
+					Assert.assertTrue(genotype.equals("G/G"));
+					
 					GTType hetero = parserTorr.isHetero();
 					Assert.assertTrue(hetero == GTType.HOM);
 							
@@ -435,7 +481,11 @@ public class TestVCFParser {
 							
 					Boolean phase = parserTorr.isPhased();
 					Assert.assertFalse(phase);
-							
+					
+					Assert.assertTrue(var.getProperty(VariantRec.VCF_POS).equals(new Double(55141055)));
+					Assert.assertTrue(var.getAnnotation(VariantRec.VCF_REF).equals("A"));
+					Assert.assertTrue(var.getAnnotation(VariantRec.VCF_ALT).equals("G"));
+					
 					Integer depth = parserTorr.getDepth();
 					Assert.assertTrue(depth==1119);
 
@@ -455,57 +505,26 @@ public class TestVCFParser {
 					Assert.assertTrue(rp.equals(-1.0));
 				}
 				
-				// Check last variant
-				if (i == 20) {					
-					String chrom = parserTorr.getContig();
-					Assert.assertTrue(chrom.equals("11"));
+				// Check second to last variant, which will break VCFParser since GT is 2/3 but there is just 1 alt
+				if (i == 19) {					
+					//Variant is not compatible with GT
+					try {
+						VariantRec var = parserTorr.toVariantRec();
+						Assert.assertTrue(false); //should not get to this step
+					} catch (IllegalStateException e) {
+						// expect this variant to break VCFParser
+					}
 					
-					Integer pos = parserTorr.getPos();
-					Assert.assertTrue(pos == 108225624);
-						
-					String ref = parserTorr.getRef();
-					Assert.assertTrue(ref.equals("TATTTTTTTTC"));
-						
-					String alt = parserTorr.getAlt();
-					Assert.assertTrue(alt.equals("ATTTTTTTC"));				
-					
-					GTType hetero = parserTorr.isHetero();
-					Assert.assertTrue(hetero == GTType.HET);
-							
-					GTType homo = parserTorr.isHomo();
-					Assert.assertTrue(homo == GTType.HET);
-							
-					Boolean phase = parserTorr.isPhased();
-					Assert.assertFalse(phase);
-							
-					Integer depth = parserTorr.getDepth();
-					Assert.assertTrue(depth==234);
-
-					Integer varDepth = parserTorr.getVariantDepth();
-					Assert.assertTrue(varDepth==220);
-							
-					Double genotypeQual = parserTorr.getGenotypeQuality();
-					Assert.assertTrue(genotypeQual.equals(17.0));
-						
-					Double vqsr = parserTorr.getVQSR();
-					Assert.assertTrue(vqsr.equals(-1.0));
-							
-					Double fs = parserTorr.getStrandBiasScore();
-					Assert.assertTrue(fs.equals(0.5));
-					
-					Double rp = parserTorr.getRPScore();
-					Assert.assertTrue(rp.equals(-1.0));
 				}
-				
-				
+								
 				i++;		
 
 			}
 			System.err.println("\tVCFParser tests for parsing variants passed on a solid tumor VCF (Ion Torrent) (don't strip trailing matching bases).");
-		} catch (IOException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 			Assert.assertTrue(false);
-		}
+		} 
 		
 		//Check fields for solid tumor VCF (Ion Torrent), do strip trailing matching bases
 		try {
@@ -515,19 +534,27 @@ public class TestVCFParser {
 			
 			//Go through file
 			int i=0;
-			while(parserTorrStrip.advanceLine() && i<3) {	
-				VariantRec var = parserTorrStrip.toVariantRec();
-
+			while(parserTorrStrip.advanceLine() && i < 20) {
+						
 				// Check third variant
 				if (i == 2) {
+					VariantRec var = parserTorrStrip.toVariantRec();
+					
+					String genotype = parserTorrStrip.getGT();
+					Assert.assertTrue(genotype.equals("G/G"));
+						
 					GTType hetero = parserTorrStrip.isHetero();
 					Assert.assertTrue(hetero == GTType.HOM);
-							
+						
 					GTType homo = parserTorrStrip.isHomo();
 					Assert.assertTrue(homo == GTType.HOM);
 							
 					Boolean phase = parserTorrStrip.isPhased();
 					Assert.assertFalse(phase);
+					
+					Assert.assertTrue(var.getProperty(VariantRec.VCF_POS).equals(new Double(55141055)));
+					Assert.assertTrue(var.getAnnotation(VariantRec.VCF_REF).equals("A"));
+					Assert.assertTrue(var.getAnnotation(VariantRec.VCF_ALT).equals("G"));				
 							
 					Integer depth = parserTorrStrip.getDepth();
 					Assert.assertTrue(depth==1119);
@@ -540,55 +567,25 @@ public class TestVCFParser {
 						
 					Double vqsr = parserTorrStrip.getVQSR();
 					Assert.assertTrue(vqsr.equals(-1.0));
-							
+						
 					Double fs = parserTorrStrip.getStrandBiasScore();
 					Assert.assertTrue(fs.equals(0.5));
 					
 					Double rp = parserTorrStrip.getRPScore();
 					Assert.assertTrue(rp.equals(-1.0));
-				}
+					
+				} 
 				
-				// Check last variant
-				if (i == 20) {		
-					String chrom = parserTorrStrip.getContig();
-					Assert.assertTrue(chrom.equals("11"));
-					
-					Integer pos = parserTorrStrip.getPos();
-					Assert.assertTrue(pos == 108225624);
-						
-					String ref = parserTorrStrip.getRef();
-					Assert.assertTrue(ref.equals("TAT"));
-						
-					String alt = parserTorrStrip.getAlt();
-					Assert.assertTrue(alt.equals("A"));				
-					
-					GTType hetero = parserTorrStrip.isHetero();
-					Assert.assertTrue(hetero == GTType.HET);
-							
-					GTType homo = parserTorrStrip.isHomo();
-					Assert.assertTrue(homo == GTType.HET);
-							
-					Boolean phase = parserTorrStrip.isPhased();
-					Assert.assertFalse(phase);
-							
-					Integer depth = parserTorrStrip.getDepth();
-					Assert.assertTrue(depth==234);
-
-					Integer varDepth = parserTorrStrip.getVariantDepth();
-					Assert.assertTrue(varDepth==220);
-							
-					Double genotypeQual = parserTorrStrip.getGenotypeQuality();
-					Assert.assertTrue(genotypeQual.equals(17.0));
-						
-					Double vqsr = parserTorrStrip.getVQSR();
-					Assert.assertTrue(vqsr.equals(-1.0));
-							
-					Double fs = parserTorrStrip.getStrandBiasScore();
-					Assert.assertTrue(fs.equals(0.5));
-					
-					Double rp = parserTorrStrip.getRPScore();
-					Assert.assertTrue(rp.equals(-1.0));
-				}					
+				//Check second to last variant
+				if (i==19) {
+					//Variant is not compatible with GT
+					try {
+						VariantRec var = parserTorrStrip.toVariantRec();
+						Assert.assertTrue(false); //should not get to this step
+					} catch (IllegalStateException e) {
+						// expect this variant to break VCFParser
+					}
+				}		
 							
 				i++;		
 
@@ -609,6 +606,9 @@ public class TestVCFParser {
 
 				// Check second variant
 				if (i == 1) {
+					String genotype = parserBCR.getGT();
+					Assert.assertTrue(genotype.equals("C/T"));
+					
 					GTType hetero = parserBCR.isHetero();
 					Assert.assertTrue(hetero == GTType.HET);
 									
@@ -617,6 +617,10 @@ public class TestVCFParser {
 									
 					Boolean phase = parserBCR.isPhased();
 					Assert.assertFalse(phase);
+					
+					Assert.assertTrue(var.getProperty(VariantRec.VCF_POS).equals(new Double(944)));
+					Assert.assertTrue(var.getAnnotation(VariantRec.VCF_REF).equals("C"));
+					Assert.assertTrue(var.getAnnotation(VariantRec.VCF_ALT).equals("T"));
 									
 					Integer depth = parserBCR.getDepth();
 					Assert.assertTrue(depth==1983);
@@ -652,6 +656,9 @@ public class TestVCFParser {
 			//Go through file			
 			while(parserEmpty.advanceLine()) {	
 				VariantRec var = parserEmpty.toVariantRec();
+				
+				String genotype = parserEmpty.getGT();
+				Assert.assertTrue(genotype.equals("-"));
 							
 				GTType hetero = parserEmpty.isHetero();
 				Assert.assertFalse(hetero == GTType.UNKNOWN);
@@ -661,6 +668,10 @@ public class TestVCFParser {
 								
 				Boolean phase = parserEmpty.isPhased();
 				Assert.assertFalse(phase);
+				
+				Assert.assertTrue(var.getProperty(VariantRec.VCF_POS).equals(new Double(-1)));
+				Assert.assertTrue(var.getAnnotation(VariantRec.VCF_REF).equals("-"));
+				Assert.assertTrue(var.getAnnotation(VariantRec.VCF_ALT).equals("-"));
 									
 				Integer depth = parserEmpty.getDepth();
 				Assert.assertTrue(depth==-1);
@@ -711,7 +722,10 @@ public class TestVCFParser {
 					Assert.assertTrue(ref.equals("G"));
 				
 					String alt = parserPanel.getAlt();
-					Assert.assertTrue(alt.equals("A"));	
+					Assert.assertTrue(alt.equals("A"));
+					
+					String genotype = parserPanel.getGT();
+					Assert.assertTrue(genotype.equals("G/A"));
 			
 					GTType hetero = parserPanel.isHetero();
 					Assert.assertTrue(hetero == GTType.HET);
@@ -719,7 +733,7 @@ public class TestVCFParser {
 					GTType homo = parserPanel.isHomo();
 					Assert.assertTrue(homo == GTType.HET);
 					
-					GTType hom = (var.getGenotype());
+					GTType hom = (var.getZygosity());
 					Assert.assertTrue(hom == GTType.HET);
 					
 				}
@@ -736,6 +750,9 @@ public class TestVCFParser {
 					
 						String alt = parserPanel.getAlt();
 						Assert.assertTrue(alt.equals("T"));	
+						
+						String genotype = parserPanel.getGT();
+						Assert.assertTrue(genotype.equals("T/T"));
 				
 						GTType hetero = parserPanel.isHetero();
 						Assert.assertTrue(hetero == GTType.HOM);
@@ -743,13 +760,16 @@ public class TestVCFParser {
 						GTType homo = parserPanel.isHomo();
 						Assert.assertTrue(homo == GTType.HOM);
 						
-						GTType hom = var.getGenotype(); //Test the variant itself
+						GTType hom = var.getZygosity(); //Test the variant itself
 						Assert.assertTrue(hom == GTType.HOM);
 					}			
 				else if (i == 15) {
 					// Check the 16th variant (hom)
 							Integer pos = parserPanel.getPos();
 							Assert.assertTrue(pos == 228163453);
+							
+							String genotype = parserPanel.getGT();
+							Assert.assertTrue(genotype.equals("A/A"));
 									
 							GTType hetero = parserPanel.isHetero();
 							Assert.assertTrue(hetero == GTType.HOM);
@@ -757,13 +777,16 @@ public class TestVCFParser {
 							GTType homo = parserPanel.isHomo();
 							Assert.assertTrue(homo == GTType.HOM);
 							
-							GTType hom = var.getGenotype(); //Test the variant itself
+							GTType hom = var.getZygosity(); //Test the variant itself
 							Assert.assertTrue(hom == GTType.HOM);
 						}			
 				else if (i == 16) {
 					// Check the 17th variant (hom)
 							Integer pos = parserPanel.getPos();
 							Assert.assertTrue(pos == 228168748);
+							
+							String genotype = parserPanel.getGT();
+							Assert.assertTrue(genotype.equals("A/A"));
 									
 							GTType hetero = parserPanel.isHetero();
 							Assert.assertTrue(hetero == GTType.HOM);
@@ -771,7 +794,7 @@ public class TestVCFParser {
 							GTType homo = parserPanel.isHomo();
 							Assert.assertTrue(homo == GTType.HOM);
 							
-							GTType hom = var.getGenotype(); //Test the variant itself
+							GTType hom = var.getZygosity(); //Test the variant itself
 							Assert.assertTrue(hom == GTType.HOM);
 						}		
 					i++;							
@@ -796,27 +819,60 @@ public class TestVCFParser {
 			int i=0;
 			while(parserGT.advanceLine()) {	
 				VariantRec var = parserGT.toVariantRec();
-			
 				
 				if (i == 0) {	
 					// Check the first variant (GT="1/.")
+					Assert.assertTrue(var.getProperty(VariantRec.VCF_POS).equals(new Double(2668245)));
+					Assert.assertTrue(var.getAnnotation(VariantRec.VCF_REF).equals("CA"));
+					Assert.assertTrue(var.getAnnotation(VariantRec.VCF_ALT).equals("C"));
+
+					String genotype = parserGT.getGT();
+					Assert.assertTrue(genotype.equals("C/."));
+					
 					GTType hetero = parserGT.isHetero();
 					Assert.assertTrue(hetero == GTType.UNKNOWN);
 				} else if (i == 1) {
 					// Check the 2nd  variant (GT="1|0")
+					Assert.assertTrue(var.getProperty(VariantRec.VCF_POS).equals(new Double(2289063)));
+					Assert.assertTrue(var.getAnnotation(VariantRec.VCF_REF).equals("T"));
+					Assert.assertTrue(var.getAnnotation(VariantRec.VCF_ALT).equals("G"));
+
+					String genotype = parserGT.getGT();
+					Assert.assertTrue(genotype.equals("G|T"));
+					
 					GTType hetero = parserGT.isHetero();
 					Assert.assertTrue(hetero == GTType.HET);
 				} else if (i == 2) {
-					// Check the 3rd  variant (GT=".")
-					GTType hetero = parserGT.isHetero();
-					Assert.assertTrue(hetero == GTType.UNKNOWN);
-				} else if (i == 3) {
-					// Check the 4th  variant (GT="0|.")
+					// Check the 3rd  variant (GT="0|.")
+					Assert.assertTrue(var.getProperty(VariantRec.VCF_POS).equals(new Double(1813054)));
+					Assert.assertTrue(var.getAnnotation(VariantRec.VCF_REF).equals("T"));
+					Assert.assertTrue(var.getAnnotation(VariantRec.VCF_ALT).equals("."));
+					
+					String genotype = parserGT.getGT();
+					Assert.assertTrue(genotype.equals("T|."));
 					
 					GTType hetero = parserGT.isHetero();
 					Assert.assertTrue(hetero == GTType.UNKNOWN);
 				} else if (i == 3) {
+					// Check the 4th  variant (GT=".")
+					Assert.assertTrue(var.getProperty(VariantRec.VCF_POS).equals(new Double(2699516)));
+					Assert.assertTrue(var.getAnnotation(VariantRec.VCF_REF).equals("GTTAA"));
+					Assert.assertTrue(var.getAnnotation(VariantRec.VCF_ALT).equals("."));
+					
+					String genotype = parserGT.getGT();
+					Assert.assertTrue(genotype.equals("."));
+					
+					GTType hetero = parserGT.isHetero();
+					Assert.assertTrue(hetero == GTType.UNKNOWN);
+				} else if (i == 4) {
 					// Check the last  variant (GT="1")
+					Assert.assertTrue(var.getProperty(VariantRec.VCF_POS).equals(new Double(2701185)));
+					Assert.assertTrue(var.getAnnotation(VariantRec.VCF_REF).equals("C"));
+					Assert.assertTrue(var.getAnnotation(VariantRec.VCF_ALT).equals("T"));
+			
+					String genotype = parserGT.getGT();
+					Assert.assertTrue(genotype.equals("T"));
+					
 					GTType hetero = parserGT.isHetero();
 					Assert.assertTrue(hetero == GTType.HEMI);
 				}

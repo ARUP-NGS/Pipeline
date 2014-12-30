@@ -278,7 +278,7 @@ public class VCFParser implements VariantLineReader {
 		String ref = var.getRef();
 		String alt = var.getAlt();
 		int pos = var.getStart();
-
+		
 		//Order important here: Remove trailing bases first! IN cases where there are starting and 
 		//trailing matching bases we want to preserve the start position as much as possible, since 
 		//that is what ends up getting used for future position comparisons. 
@@ -333,7 +333,7 @@ public class VCFParser implements VariantLineReader {
 		}
 
 
-		VariantRec normalizedVariant = new VariantRec(var.getContig(), pos, end, ref, alt, var.getQuality(), var.getGenotype());
+		VariantRec normalizedVariant = new VariantRec(var.getContig(), pos, end, ref, alt, var.getQuality(), var.getGenotype(), var.getZygosity());
 		//Don't forget to copy over annotations and properties...
 		for(String key : var.getAnnotationKeys()) {
 			normalizedVariant.addAnnotation(key, var.getAnnotation(key));
@@ -356,12 +356,11 @@ public class VCFParser implements VariantLineReader {
 			throw new IllegalStateException("No header information, header probably not parsed correctly.");
 		}
 
-		//	String chr = currentLineToks[0].toUpperCase().replace("CHR","");
 		String chr = getContig();
 		int pos = getPos(); 
 		String ref = getRef();
-		String alt = getAlt(); 
-		
+		String alt = getAlt(); //pulls out current alt
+			
 		//System.out.println(chr + "/" + pos + "/" + ref + "/" + alt); 
 			
 		String qualStr = currentLineToks[5];
@@ -379,12 +378,18 @@ public class VCFParser implements VariantLineReader {
 		sampleMetrics = createSampleMetricsDict(); //Stores sample-specific key=value pairs from VCF entry from FORMAT & INFO, not header	
 	
 		//Create new variant record
+		String genotype = getGT();
 		GTType isHet = isHetero();
-		VariantRec var = new VariantRec(chr, pos, pos + ref.length(), ref, alt, quality, isHet);
+		VariantRec var = new VariantRec(chr, pos, pos + ref.length(), ref, alt, quality, genotype, isHet);
 		var = normalizeVariant(var, stripInitialMatchingBases, stripTrailingMatchingBases);
 		var.setQuality(quality);
 
-		// Get certain values					
+		//Store original VCF position, ref, & alt (untrimmed direct from file) as an annotation
+		var.addProperty(VariantRec.VCF_POS, (double) pos);
+		var.addAnnotation(VariantRec.VCF_REF, ref);
+		var.addAnnotation(VariantRec.VCF_ALT, alt);
+		 
+		// Get certain values
 		Integer depth = getDepth();
 		if (depth != null) {
 			var.addProperty(VariantRec.DEPTH, new Double(depth));
@@ -701,6 +706,25 @@ public class VCFParser implements VariantLineReader {
 	}	
 	
 	/**
+	 * String array of reference & all alternate sequences for variant
+	 * @author elainegee
+	 * @return
+	 */
+	public String[] getSeqArray() {
+		if (currentLineToks != null) {
+			String[] alts = currentLineToks[4].split(",");
+			String[] allseq = new String[alts.length + 1];
+			allseq[0] = currentLineToks[3];
+			for (int i=0; i< alts.length; i++) {
+				allseq[i+1] = alts[i];
+			}
+			return allseq; 
+		} else {
+			return new String[0];
+		}
+	}	
+		
+	/**
 	 * Total read depth at locus from INFO column, identified by "DP" and specified for the particular ALT
 	 * @author elainegee
 	 * @return
@@ -805,6 +829,72 @@ public class VCFParser implements VariantLineReader {
 		return rp;	
 	}
 	
+	/**
+	 * Returns the genotype sequence alleles 
+	 * @author elainegee
+	 * @return
+	 */
+	public String getGT() throws IllegalStateException {
+		//Get GT from sampleMetrics dictionary
+		String genoQualStr = getSampleMetricsStr("GT");
+		// Grab array of ref & alternates
+		String[] sequences = getSeqArray();
+		
+		if (!genoQualStr.equals(null)) {		
+			//Grab genotype sequence alleles when there are 2 alleles		
+			String delimRegex = getGTDelimitor();
+			String[] GTToks;
+			if (!delimRegex.equals("")) {
+				//Parse out sequences if available
+				GTToks = genoQualStr.split(delimRegex);
+				String delim;
+				if (delimRegex == "\\|") {
+						delim = "|";
+				} else {
+						delim = delimRegex;								
+				}
+			
+				// Get alternate alleles
+				String gtAlleles = "";
+				for (int i=0; i < 2; i++) {
+					String currentIdxStr = GTToks[i];
+					if (currentIdxStr.equals(".")) {
+						gtAlleles +=  currentIdxStr;
+					} else {
+						int currentIdx = Integer.parseInt(GTToks[i]);
+						//Throw an error if index exceeds the number of alts in VCF
+						if (currentIdx >= sequences.length) {
+							throw new IllegalStateException("ERROR: VCF malformed! Genotype given as '" + String.valueOf(currentIdx) + 
+									"', but there are only '" + String.valueOf(sequences.length - 1) + "' alternate(s) in the VCF (GT value: '" 
+									+ genoQualStr + "') for chr/pos/ref/alt: " + getContig() + "/" + getPos() + "/" + getRef() + "/" + getAlt());
+						}
+						gtAlleles += sequences[currentIdx];					
+					}
+					if (i == 0) {
+							gtAlleles += delim;					 
+					}								
+				}
+				return gtAlleles; 
+			} else {
+				//Grab genotype sequence for haplotype chromosomes
+				if (!genoQualStr.equals(".")) {
+					int currentIdx = Integer.parseInt(genoQualStr);
+					//Throw an error if index exceeds the number of alts in VCF
+					if (currentIdx >= sequences.length) {
+						throw new IllegalStateException("ERROR: VCF malformed! Genotype given as '" + String.valueOf(currentIdx) + 
+								"', but there are only '" + String.valueOf(sequences.length - 1) + "alternates in the VCF (GT value: '" 
+								+ genoQualStr + "'");
+					}
+					return sequences[currentIdx];
+				} else {
+					//GT undefined, i.e. "."
+					return genoQualStr;
+				}
+			}
+		} else {
+			throw new IllegalStateException("No genotype ('GT') specified in VCF.");
+		}
+	}
 	
 	/**
 	 * Returns the genotype delimiter, if properly separated
@@ -820,38 +910,18 @@ public class VCFParser implements VariantLineReader {
 			} else if (genoQualStr.contains("/"))  {
 				return "/";
 			} else {
-				throw new IllegalStateException("Genotype separator char does not seem to be normal (i.e. | or /). GT field in VCF given as '" + genoQualStr + "'.");
+				//Handle halploid chromosomes (X & M)
+				if ((genoQualStr.length() == 1 && getContig().equals("X")) || (genoQualStr.length() == 1 && getContig().equals("M"))) {
+					return "";
+				} else {
+					throw new IllegalStateException("Genotype separator char does not seem to be normal (i.e. | or /). GT field in VCF given as '" + genoQualStr + "'.");
+				}
 			}
 		} else {
 			throw new IllegalStateException("No genotype ('GT') specified in VCF.");
 		}
 	}
 	
-	/**
-	 * Returns true if the genotype is not ./. or 0/0 
-	 * @author elainegee
-	 * @return
-
-	public boolean isVariant() {
-		//Determine if GT delimiter is valid
-		String delim=null;
-		try {
-			delim = getGTDelimitor();			
-		} catch (IllegalStateException ise) {
-			throw new IllegalStateException ("Error processing request:", ise);
-		}
-		//Get GT from sampleMetrics dictionary
-		String genoQualStr = getSampleMetricsStr("GT");
-		
-		String[] GQToks = genoQualStr.split(delim);
-		if ((GQToks[0].equals(".") && GQToks[1].equals(".")) || (GQToks[0].equals("0") && GQToks[1].equals("0"))) {
-			return false;
-		} else {
-			return true;
-		}				
-	}
-	
-	*/
 	
 	/**
 	 * Determine if variant is heterozygous

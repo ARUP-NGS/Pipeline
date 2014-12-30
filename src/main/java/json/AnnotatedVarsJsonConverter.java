@@ -68,13 +68,13 @@ public class AnnotatedVarsJsonConverter {
 		varObj.put("ref", var.getRef());
 		varObj.put("alt", var.getAlt());
 		String zyg = "";
-		if (var.getGenotype() == GTType.HET) {
+		if (var.getZygosity() == GTType.HET) {
 			zyg = "het";
-		} else if (var.getGenotype() == GTType.HOM) {
+		} else if (var.getZygosity() == GTType.HOM) {
 			zyg = "hom";
-		} else if (var.getGenotype() == GTType.HEMI) {
+		} else if (var.getZygosity() == GTType.HEMI) {
 			zyg = "hemi";
-		} else if (var.getGenotype() == GTType.UNKNOWN) {
+		} else if (var.getZygosity() == GTType.UNKNOWN) {
 			zyg = "unknown";
 		}
 		varObj.put("zygosity", zyg);

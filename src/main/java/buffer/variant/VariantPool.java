@@ -48,7 +48,7 @@ public class VariantPool extends Operator  {
 	public static final String STRIPTRAILINGMATCHINGBASEPARAM = "strip.trailing.matching.bases"; //if specified as attribute, otherwise default to true (i.e. will strip)
 	
 	protected Map<String, List<VariantRec>>  vars = new HashMap<String, List<VariantRec>>();
-	private VariantRec qRec = new VariantRec("?", 0, 0, "x", "x", 0.0, GTType.UNKNOWN);
+	private VariantRec qRec = new VariantRec("?", 0, 0, "x", "x", 0.0, "./.", GTType.UNKNOWN);
 	private boolean operationPerformed = false; //Set to true when performOperation called, avoids loading variants multiple times
 	
 	protected VariantLineReader varLineReader = null;
@@ -666,11 +666,11 @@ public class VariantPool extends Operator  {
 				VariantRec recB = varsB.findRecordNoWarn(rec.getContig(), rec.getStart());
 				if (recB != null && rec.getAlt().equals(recB.getAlt())) {
 					rec.addAnnotation(VariantRec.altB, recB.getAlt());
-					if (recB.getGenotype() == GTType.HET) {
+					if (recB.getZygosity() == GTType.HET) {
 						rec.addAnnotation(VariantRec.zygosityB, "het");
-					} else if (recB.getGenotype() == GTType.HOM) {
+					} else if (recB.getZygosity() == GTType.HOM) {
 						rec.addAnnotation(VariantRec.zygosityB, "hom");
-					} else if (recB.getGenotype() == GTType.HEMI) {
+					} else if (recB.getZygosity() == GTType.HEMI) {
 						rec.addAnnotation(VariantRec.zygosityB, "hemi");
 					} else {
 						rec.addAnnotation(VariantRec.zygosityB, "unknown");
@@ -718,7 +718,7 @@ public class VariantPool extends Operator  {
 			return false;
 		}
 		
-		VariantRec qRec = new VariantRec(contig, pos, pos, "x", "x", 0.0, GTType.UNKNOWN);
+		VariantRec qRec = new VariantRec(contig, pos, pos, "x", "x", 0.0, "./.",GTType.UNKNOWN);
 		
 		int index = Collections.binarySearch(varList, qRec, VariantRec.getPositionComparator());
 		//This pool does not contain a variant at the given position
@@ -810,7 +810,7 @@ public class VariantPool extends Operator  {
 		for(String contig : vars.keySet()) {
 			Collection<VariantRec> varRecs = this.getVariantsForContig(contig);
 			for(VariantRec rec : varRecs) {
-				if (rec.getGenotype() == GTType.HET) 
+				if (rec.getZygosity() == GTType.HET) 
 					count++;
 			}
 		}
@@ -876,7 +876,7 @@ public class VariantPool extends Operator  {
 			return false;
 		}
 		
-		VariantRec qRec = new VariantRec(contig, pos, pos, "x", "x", 0.0, GTType.UNKNOWN);
+		VariantRec qRec = new VariantRec(contig, pos, pos, "x", "x", 0.0, "./.", GTType.UNKNOWN);
 		
 		int index = Collections.binarySearch(varList, qRec, VariantRec.getPositionComparator());
 		if (index < 0) {
@@ -1160,7 +1160,7 @@ public class VariantPool extends Operator  {
 					e.printStackTrace();
 				}
 			for(String symbol : geneDB.getAllGenes()) {
-				VariantRec rec = new VariantRec("Z", 1, 2, "X", "X", 100.0, GTType.HET);
+				VariantRec rec = new VariantRec("Z", 1, 2, "X", "X", 100.0, "./.", GTType.HET); //should this be GTType.UNKNOWN?
 				rec.addAnnotation(VariantRec.GENE_NAME, symbol);
 				this.addRecordNoSort(rec);
 			}

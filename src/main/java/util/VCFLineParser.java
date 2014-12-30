@@ -7,6 +7,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -297,7 +298,7 @@ public class VCFLineParser extends PipelineObject implements VariantLineReader  
 					String alt = getAlt();
 					int start = getStart();
 					int end = ref.length();
-					
+					String genotype = getGenotype();
 
 					//Remove initial characters if they are equal (across all alt alleles) and add that many bases to start position
 					//Warning: Indels may no longer be left-aligned after this procedure
@@ -340,7 +341,7 @@ public class VCFLineParser extends PipelineObject implements VariantLineReader  
 						}
 					}
 
-					rec = new VariantRec(contig, start, end,  ref, alt, getQuality(), isHetero() );
+					rec = new VariantRec(contig, start, end,  ref, alt, getQuality(), genotype, isHetero());
 					Integer depth = getDepth();
 					if (depth != null)
 						rec.addProperty(VariantRec.DEPTH, new Double(depth));
@@ -534,6 +535,24 @@ public class VCFLineParser extends PipelineObject implements VariantLineReader  
 			else
 				return "?";
 		}
+		
+		public String getGenotype() {
+			if (lineToks != null) {
+				updateFormatIfNeeded();
+			
+				if (formatToks == null) {
+					return "./.";
+				}
+				
+				String[] formatValues = lineToks[sampleColumn].split(":");
+				String GTStr = formatValues[gtCol];
+				return GTStr;
+			} else {
+				return "./.";
+			}
+		}
+			
+			
 		
 		public String getAlt() {
 			if (lineToks != null) {

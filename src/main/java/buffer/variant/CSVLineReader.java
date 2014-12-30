@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -145,6 +146,7 @@ public class CSVLineReader extends PipelineObject implements VariantLineReader  
 			String ref = getRef(toks);
 			String alt = getAlt(toks);
 			Double qual = getQuality(toks);
+			String genotype = getGenotype(toks);
 			Double depth = getDepth(toks); 
 			GTType isHet = getHet(toks);
 			Double genoQual = getGenotypeQuality(toks);
@@ -165,7 +167,7 @@ public class CSVLineReader extends PipelineObject implements VariantLineReader  
 
 			}
 
-			rec = new VariantRec(contig, start, start+ref.length(), ref, alt, qual, isHet);
+			rec = new VariantRec(contig, start, start+ref.length(), ref, alt, qual, genotype, isHet);
 			rec.addProperty(VariantRec.DEPTH, depth);
 			rec.addProperty(VariantRec.GENOTYPE_QUALITY, genoQual);
 
@@ -227,6 +229,23 @@ public class CSVLineReader extends PipelineObject implements VariantLineReader  
 	protected String getAlt(String[] toks) {
 		return toks[4];
 	}
+	
+	protected String getGenotype(String[] toks) {
+		//Determine if genotype contained in CSV
+		List<String> headerList = Arrays.asList(headerToks);
+		if (headerList.contains("genotype")) {
+			int gtIdx=-1;
+			for (int i=0; i < headerToks.length; i ++) {
+				if (headerToks[i].equals("genotype")) {
+					return toks[i];
+				}	
+			}
+			return "./.";
+		} else {
+			return "./.";
+		}
+	}
+	
 	
 	protected Double getQuality(String[] toks) {
 		if (toks.length < 6)

@@ -226,11 +226,11 @@ public abstract class AnnovarAnnotator extends Annotator {
 	
 	public static void writeVariantToAnnovarInput(VariantRec rec, Writer writer) throws IOException {
 		String het = "het";
-		if (rec.getGenotype() == GTType.HOM) {
+		if (rec.getZygosity() == GTType.HOM) {
 			het = "hom";
-		} else if (rec.getGenotype() == GTType.HEMI) {
+		} else if (rec.getZygosity() == GTType.HEMI) {
 			het = "hemi";
-		} else if (rec.getGenotype() == GTType.UNKNOWN) {
+		} else if (rec.getZygosity() == GTType.UNKNOWN) {
 			het = "unknown";
 		}
 		writer.write(rec.getContig() + "\t" + 
