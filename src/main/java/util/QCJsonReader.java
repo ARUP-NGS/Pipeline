@@ -371,22 +371,19 @@ public class QCJsonReader {
 	
 	/**
 	 * Average Sequencing Depth of Target Regions
-Percent Bases with Base Quality > 30
-Percent Targeted Bases Covered
-Percent Variants that are Deletions
-Percent Variants that are Insertions
-Percent Targeted Bases with < 10x Coverage
-Percent Sequence Reads Mapped to Reference
-Percent Targeted Bases with No Coverage
-Percent of Variants Considered Novel
+X	Mean coverage
+X	Percent Bases with Base Quality > 30
+X	Percent Variants that are Indels
+X	Percent Targeted Bases with > 15x Coverage	
+X	Percent of Variants not in 1000 Genomes
+X	Variants per Mega Base
+X	Mean total variant count
++	Number of exons < 15x mean coverage	
+
 Number of Sanger Requests Total (Average per Sample)
 Number of Sanger Requests Confirmed (Average per Sample)
 Number of Sanger Requests not Confirmed (Average per Sample)
-Percent Variants Considered Single Nucleotide Variants
-Targeted Bases
-Variants per Mega Base
-Transition Transversion Ratio
-Average Total Number of Variants
+
 	 * @param paths
 	 * @param out
 	 * @param converter
@@ -405,7 +402,11 @@ Average Total Number of Variants
 				}
 				
 				//Skip everything except aort's and both types of mitos. 
-				if (!(analysisType.toLowerCase().contains("aort") || analysisType.toLowerCase().contains("mito"))) {
+				if (!(analysisType.toLowerCase().contains("aort") 
+						|| analysisType.toLowerCase().contains("mito")
+						|| analysisType.toLowerCase().contains("noonan")
+						|| analysisType.toLowerCase().contains("gicapan")
+						|| analysisType.toLowerCase().contains("exome"))) {
 					continue;
 				}
 				QCInfoList qcList = analysisMap.get(analysisType);
@@ -420,17 +421,18 @@ Average Total Number of Variants
 
 				Double mean = finalCov.getDouble("mean.coverage");
 				double above0 = fracAbove.getDouble(2);
-				Double below10 = 1.0-fracAbove.getDouble(10);
-				Double above10 = fracAbove.getDouble(10);
+				
+				Double above15 = fracAbove.getDouble(15);
+				Double above200 = fracAbove.getDouble(200);
 				qcList.add("mean.coverage", mean);
-				qcList.add("no.coverage", 100.0*(1.0-above0));
+				//qcList.add("no.coverage", 100.0*(1.0-above0));
 				
-				qcList.add("frac.above.10", 100.0*above10);
-				qcList.add("frac.below.10", 100.0*below10);
-//				qcList.add("frac.above.0", above0);
-//				qcList.add("frac.above.20", above20);
-//				qcList.add("frac.above.50", above50);
-				
+				if (analysisType.toLowerCase().contains("genome")) {
+					qcList.add("frac.above.200", 100.0*above200);
+				} else {
+					qcList.add("frac.above.15", 100.0*above15);
+				}
+//				
 				
 				
 				JSONObject rawBam = obj.getJSONObject("raw.bam.metrics");
@@ -446,13 +448,13 @@ Average Total Number of Variants
 					q30Bases = q30Bases*10;
 				}
 				qcList.add("bases.above.q30", q30Bases);
-				qcList.add("reads.on.target", 100.0* (1.0-rawBam.getDouble("unmapped.reads")/rawReadCount));
+				//qcList.add("reads.on.target", 100.0* (1.0-rawBam.getDouble("unmapped.reads")/rawReadCount));
 				
 				
 				JSONObject finalBam = obj.getJSONObject("final.bam.metrics");
 				Double finalReadCount = finalBam.getDouble("total.reads");
 				double percentDups = (rawReadCount - finalReadCount)/rawReadCount;
-				qcList.add("percent.dups", 100.0*percentDups);
+				//qcList.add("percent.dups", 100.0*percentDups);
 				
 				Double insertionCount = Double.NaN;
 				Double deletionCount = Double.NaN;
@@ -472,13 +474,16 @@ Average Total Number of Variants
 					tstv = variants.getDouble("total.tt.ratio");
 					knownVars = variants.getDouble("total.known");
 					
-					double percentInsertions = insertionCount / varCount * 100.0;
-					qcList.add("insertion.frac", percentInsertions);
+					//double percentInsertions = insertionCount / varCount * 100.0;
+					//qcList.add("insertion.frac", percentInsertions);
 					
-					double percentDeletions = deletionCount / varCount * 100.0;
-					qcList.add("deletion.frac", percentDeletions);
+					//double percentDeletions = deletionCount / varCount * 100.0;
+					//qcList.add("deletion.frac", percentDeletions);
+
+					double percentIndels = (insertionCount + deletionCount)/varCount * 100.0;
+					qcList.add("indel.percent", percentIndels);
 					
-					qcList.add("tstv.ratio", tstv);					
+					//qcList.add("tstv.ratio", tstv);					
 				}
 				catch (JSONException e) {
 
@@ -490,17 +495,17 @@ Average Total Number of Variants
 						long extent = obj.getLong("capture.extent");
 						varsPerBaseCalled = varCount / (double)extent;
 						qcList.add("vars.per.megabase", varsPerBaseCalled*1e6);
-						qcList.add("targeted.bases", new Double(extent));
+						//qcList.add("targeted.bases", new Double(extent));
 					}
 				}
 				catch (JSONException e) {
 
 				}
 				
-				qcList.add("snp.frac", 100.0*snpCount/varCount);
+				//qcList.add("snp.frac", 100.0*snpCount/varCount);
 				
 				if (varCount > 0) {
-					novelFrac = 1.0 - knownVars/varCount;
+					novelFrac = (1.0 - knownVars/varCount)*100.0;
 					qcList.add("novel.vars.fraction", novelFrac);
 				}
 				else {
@@ -531,19 +536,20 @@ Average Total Number of Variants
 				if (metric.equals("total.variants")) out.print("Average Total Number of Variants");
 				if (metric.equals("novel.vars.fraction")) out.print("Percent of Variants Considered Novel");
 				if (metric.equals("snp.frac")) out.print("Percent Variants Considered Single Nucleotide Variants");
-				if (metric.equals("insertion.frac")) out.print("Percent Variants that are Insertions");
-				if (metric.equals("deletion.frac")) out.print("Percent Variants that are Deletions");
+				if (metric.equals("indel.percent")) out.print("Percent Variants that are Indels");
 				if (metric.equals("vars.per.megabase")) out.print("Variants per megabase");
 				if (metric.equals("tstv.ratio")) out.print("Transition Transversion Ratio");
 				if (metric.equals("mean.coverage")) out.print("Average Sequencing Depth of Target Regions");
 				if (metric.equals("no.coverage")) out.print("Percent Targeted Bases with No Coverage");
 				if (metric.equals("frac.below.10")) out.print("Percent Targeted Bases with < 10x Coverage");
 				if (metric.equals("frac.above.10")) out.print("% Bases > 10 coverage");
+				if (metric.equals("frac.above.15")) out.print("% Bases > 15 coverage");
+				if (metric.equals("frac.above.200")) out.print("% Bases > 200 coverage");
 				if (metric.equals("bases.above.q30")) out.print("Percent Bases with Base Quality > 30");
 				if (metric.equals("frac.above.0")) out.print("Percent Targeted Bases Covered");
 				if (metric.equals("targeted.bases")) out.print("Targeted Bases");
-				if (metric.equals("percent.dups")) out.print("% PCR duplicates removed");
-				if (metric.equals("reads.on.target")) out.print("Percent Sequence Reads Mapped to Reference");
+				//if (metric.equals("percent.dups")) out.print("% PCR duplicates removed");
+				//if (metric.equals("reads.on.target")) out.print("Percent Sequence Reads Mapped to Reference");
 				
 				List<Double> vals = qcItems.getValsForMetric(metric);
 				

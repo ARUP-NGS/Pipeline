@@ -7,13 +7,13 @@ import java.util.List;
 
 import util.reviewDir.ManifestParseException;
 import util.reviewDir.SampleManifest;
+import util.vcfParser.VCFParser;
+import util.vcfParser.VCFParser.GTType;
 import buffer.BEDFile;
-import buffer.variant.TinyVCFParser;
 import buffer.variant.VariantPool;
 import buffer.variant.VariantRec;
-import util.vcfParser.VCFParser.GTType;
 
-public class CompareVarFreqs {
+public class ComputeVarFreqs {
 
 	//Map from analysis type to collection of variants
 	public static final String SAMPLES = "samples";
@@ -173,7 +173,7 @@ public class CompareVarFreqs {
 					}
 					
 
-					System.out.print(contig + "\t" + var.getStart() + "\t" + var.getRef() + "\t" + var.getAlt());
+					System.out.print(contig + "\t" + var.getStart() + "\t" + var.getRef() + "\t" + var.getAlt() + "\toverall");
 					System.out.println("\t" + ("" + (int)Math.round(totSamples)) + "\t" + ("" + (int)Math.round(hets)) + "\t" + ("" + (int)Math.round(homs)));
 					
 					for(String type : analysisTypes) {
@@ -208,7 +208,7 @@ public class CompareVarFreqs {
 	}
 	
 	public static void main(String[] args) {
-		CompareVarFreqs cFreqs = new CompareVarFreqs();
+		ComputeVarFreqs cFreqs = new ComputeVarFreqs();
 		
 		int added = 0;
 		for(int i=0; i<args.length; i++) {
@@ -250,7 +250,7 @@ public class CompareVarFreqs {
 		
 		public VariantPool getPool() throws IOException {
 			if (pool == null) {
-				pool = new VariantPool(new TinyVCFParser(source));
+				pool = new VariantPool(new VCFParser(source));
 			}
 			return pool;
 		}

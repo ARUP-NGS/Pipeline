@@ -55,8 +55,8 @@ public class ExonLookupService extends BasicIntervalContainer {
 			String exonLoc = toks[6].toUpperCase(); //Should be either 'unk' 'cds' '5UTR' or similar
 			exonLoc = exonLoc.replace("UNK", "");
 			exonLoc = exonLoc.replace("CDS", "Coding");
-			exonLoc = exonLoc.replace("5UTR", "5'UTR");
-			exonLoc = exonLoc.replace("3UTR", "3'UTR");
+			exonLoc = exonLoc.replace("5UTR", "5 UTR");
+			exonLoc = exonLoc.replace("3UTR", "3 UTR");
 			exonLoc = exonLoc.replace("/", " / ");
 			
 			if (exonLoc.length()>1 && !exonLoc.equals("INTRON")) {

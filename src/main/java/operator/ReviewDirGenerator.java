@@ -204,6 +204,11 @@ public class ReviewDirGenerator extends Operator {
 				//link location from the status finalizer, which actually creates this link
 				writer.write("bam.link=results/" + finalBAM.getFilename() + "\n");
 			}
+			
+			if (capture != null) {
+				writer.write("bed.link=results/" + capture.getFilename() + "\n");
+
+			}
 			if (qcReport != null) {
 				writer.write("qc.dir=" +  qcReport.getOutputDir() + "\n");
 				//WARNING: Bad code here. This should be updated to make sure we're getting the correct
