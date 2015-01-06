@@ -19,24 +19,24 @@ public class TestJSONVarsAnnotator extends TestCase {
 		
 		VariantPool pool = new VariantPool();
 		
-		VariantRec varA = new VariantRec("1", 10, 11, "A", "G", 100.0, GTType.HET);
+		VariantRec varA = new VariantRec("1", 10, 11, "A", "G", 100.0, "A/G", GTType.HET);
 		varA.addProperty(VariantRec.POP_FREQUENCY, 0.1);
 		varA.addProperty(VariantRec.EXOMES_FREQ, 0.123);
 		varA.addAnnotation(VariantRec.CDOT, "c.A450T");
 		varA.addAnnotation(VariantRec.GENE_NAME, "BANG");
 		pool.addRecord(varA);
 		
-		VariantRec varB = new VariantRec("1", 15, 17, "AAA", "G", 100.0, GTType.HOM);
+		VariantRec varB = new VariantRec("1", 15, 17, "AAA", "G", 100.0, "AAA/AAA",GTType.HOM);
 		varB.addProperty(VariantRec.POP_FREQUENCY, 0.2);
 		varB.addAnnotation(VariantRec.GENE_NAME, "BANG");
 		pool.addRecord(varB);
 		
-		VariantRec varC = new VariantRec("1", 20, 21, "TA", "GC", 100.0, GTType.HOM);
+		VariantRec varC = new VariantRec("1", 20, 21, "TA", "GC", 100.0, "GC/GC", GTType.HOM);
 		varC.addProperty(VariantRec.POP_FREQUENCY, 0.5);
 		varC.addAnnotation(VariantRec.GENE_NAME, "BLAH");
 		pool.addRecord(varC);
 		
-		VariantRec varD = new VariantRec("2", 50, 51, "-", "G", 100.0, GTType.HET);
+		VariantRec varD = new VariantRec("2", 50, 51, "-", "G", 100.0, "-/G",GTType.HET);
 		varD.addProperty(VariantRec.POP_FREQUENCY, 0.2);
 		varD.addProperty(VariantRec.EXOMES_FREQ, 0.25);
 		varD.addAnnotation(VariantRec.GENE_NAME, "BLAH");

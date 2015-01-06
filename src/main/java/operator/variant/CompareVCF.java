@@ -130,7 +130,7 @@ public class CompareVCF extends IOOperator {
 					pair.b = match;
 
 					if (rec.getAlt().equals(match.getAlt())) {
-						if (rec.getGenotype() == match.getGenotype()) {
+						if (rec.getZygosity() == match.getZygosity()) {
 							perfectMatch.add(pair);
 						} else {
 							difZygote.add(pair); // Alt allele matches, but
@@ -214,7 +214,7 @@ public class CompareVCF extends IOOperator {
 					System.out.println(rec.getAlt() + " is rec alt while "
 							+ match.getAlt() + " is the match alt.");
 					if (rec.getAlt().equals(match.getAlt())) {
-						if (rec.getGenotype() == match.getGenotype()) {
+						if (rec.getZygosity() == match.getZygosity()) {
 							perfectMatch.add(pair);
 						} else {
 							difZygote.add(pair); // Alt allele matches, but

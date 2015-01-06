@@ -131,13 +131,13 @@ public class MedDirTrioWriter extends VariantPoolWriter {
 			val = rec.getPropertyOrAnnotation(keys[i]).trim();
 
 			if (keys[i].equals("zygosity")) {
-				if (rec.getGenotype() == GTType.HET) {
+				if (rec.getZygosity() == GTType.HET) {
 					val = "het";
-				} else if (rec.getGenotype() == GTType.HOM) {
+				} else if (rec.getZygosity() == GTType.HOM) {
 					val = "hom";
-				} else if (rec.getGenotype() == GTType.HEMI) {
+				} else if (rec.getZygosity() == GTType.HEMI) {
 					val = "hemi";
-				} else if (rec.getGenotype() == GTType.UNKNOWN) {
+				} else if (rec.getZygosity() == GTType.UNKNOWN) {
 					val = "unknown";
 				}
 			}
@@ -287,11 +287,11 @@ public class MedDirTrioWriter extends VariantPoolWriter {
 			return "ref";
 		else {
 			if (par1Var.getAlt().equals(rec.getAlt())) {
-				if (par1Var.getGenotype() == GTType.HET) {
+				if (par1Var.getZygosity() == GTType.HET) {
 					return "het";
-				} else if (par1Var.getGenotype() == GTType.HOM) { 
+				} else if (par1Var.getZygosity() == GTType.HOM) { 
 					return "hom";
-				} else if (par1Var.getGenotype() == GTType.HEMI) { 
+				} else if (par1Var.getZygosity() == GTType.HEMI) { 
 					return "hemi";
 				} else { 
 					return "unknown";

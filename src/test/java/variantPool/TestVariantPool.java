@@ -39,13 +39,13 @@ public class TestVariantPool {
 		
 		
 		try {
+			//The solid tumor VCF contains a malformed GT
 			VariantPool pool = new VariantPool(new VCFFile(solidTumorVCF));
-			Assert.assertEquals(20, pool.size());
-			Assert.assertNotNull(pool.findRecord("17", 7579472));
-			Assert.assertNotNull(pool.findRecord("2", 212578300, "C", "T"));
+			Assert.assertTrue(false); //should not reach this
 		} catch (IOException e) {
-			e.printStackTrace();
-			Assert.fail();
+			//expected
+		} catch (IllegalStateException e) {
+			//expected
 		}
 		
 						

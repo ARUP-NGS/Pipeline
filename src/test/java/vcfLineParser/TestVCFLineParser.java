@@ -441,6 +441,10 @@ public class TestVCFLineParser {
 					String alt = reader.getAlt();
 					Assert.assertTrue(alt.equals("CTGTG,CTG"));
 					
+					//Check genotype
+					String genotype=reader.getGenotype();
+					Assert.assertTrue(genotype.equals("1/2"));
+					
 					// Check quality
 					Double qual = reader.getQuality();
 					Assert.assertTrue(qual==276.864);

@@ -49,6 +49,7 @@ public class GeneLineReader extends CSVLineReader {
 		Integer start = getStart(toks);
 		String ref = getRef(toks);
 		String alt = getAlt(toks);
+		String genotype  = getGenotype(toks);
 		
 		Integer end = getEnd(toks);
 		String geneName = getValueForHeader(VariantRec.GENE_NAME, toks);
@@ -63,7 +64,7 @@ public class GeneLineReader extends CSVLineReader {
 			popFreq = Double.parseDouble(popFreqStr);
 		}
 		
-		VariantRec rec = new VariantRec(contig, start, start+ref.length(), ref, alt, 10.0, GTType.HET);
+		VariantRec rec = new VariantRec(contig, start, start+ref.length(), ref, alt, 10.0, genotype, GTType.HET);
 		rec.addAnnotation(VariantRec.GENE_NAME, geneName);
 		rec.addAnnotation(VariantRec.VARIANT_TYPE, varType);
 		rec.addAnnotation(VariantRec.EXON_FUNCTION, varFunc);

@@ -60,11 +60,11 @@ public class VariantPoolToFile extends VariantPoolWriter {
 			depthStr = "" + depth;
 		
 		String hetStr = "het";
-		if ( rec.getGenotype() == GTType.HOM ) {
+		if ( rec.getZygosity() == GTType.HOM ) {
 			hetStr = "hom";
-		} else if ( rec.getGenotype() == GTType.HEMI ) {
+		} else if ( rec.getZygosity() == GTType.HEMI ) {
 			hetStr = "hemi";
-		} else if ( rec.getGenotype() == GTType.UNKNOWN ) {
+		} else if ( rec.getZygosity() == GTType.UNKNOWN ) {
 			hetStr = "unknown";
 		}
 					

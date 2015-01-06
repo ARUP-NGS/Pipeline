@@ -134,7 +134,7 @@ public class ComputeVarFreqs {
 						VariantRec queryVar = info.getPool().findRecordNoWarn(contig, var.getStart());
 
 						if (queryVar != null) {
-							if (queryVar.getGenotype() == GTType.HET) {
+							if (queryVar.getZygosity() == GTType.HET) {
 								incrementProperty(var, typeKey+HETS);
 								incrementProperty(var, HETS);
 							}
