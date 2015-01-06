@@ -95,23 +95,23 @@ public class TestMITOMAP extends TestCase {
 			
 			VariantRec var7 = vars.findRecord("M",622,"G","A");
 			Assert.assertTrue(var7 != null);
-			Assert.assertTrue(var7.getAnnotation(VariantRec.MITOMAP_DIS_tRNArRNA).equals("EXIT & Deafness"));
+			Assert.assertTrue(var7.getAnnotation(VariantRec.MITOMAP_DIS_CODING).equals("EXIT & Deafness"));
 			
 			VariantRec var8 = vars.findRecord("M",960,"-","C");
 			Assert.assertTrue(var8 != null);
-			Assert.assertTrue(var8.getAnnotation(VariantRec.MITOMAP_DIS_tRNArRNA).equals("Possibly DEAF-associated"));
+			Assert.assertTrue(var8.getAnnotation(VariantRec.MITOMAP_DIS_CODING).equals("Possibly DEAF-associated"));
 			
 			VariantRec var10 = vars.findRecord("M",4285,"T","C");
 			Assert.assertTrue(var10 != null);
-			Assert.assertTrue(var10.getAnnotation(VariantRec.MITOMAP_DIS_tRNArRNA).equals("CPEO"));
+			Assert.assertTrue(var10.getAnnotation(VariantRec.MITOMAP_DIS_CODING).equals("CPEO"));
 			
 			VariantRec var11 = vars.findRecord("M",4401,"A","G");
 			Assert.assertTrue(var11 != null);
-			Assert.assertTrue(var11.getAnnotation(VariantRec.MITOMAP_DIS_tRNArRNA).equals("Hypertension+Ventricular Hypertrophy"));
+			Assert.assertTrue(var11.getAnnotation(VariantRec.MITOMAP_DIS_CODING).equals("Hypertension+Ventricular Hypertrophy"));
 			
 			VariantRec var12 = vars.findRecord("M",7445,"A","C");
 			Assert.assertTrue(var12 != null);
-			Assert.assertTrue(var12.getAnnotation(VariantRec.MITOMAP_DIS_tRNArRNA).equals("DEAF"));
+			Assert.assertTrue(var12.getAnnotation(VariantRec.MITOMAP_DIS_CODING).equals("DEAF"));
 						
 			
 		} catch (Exception ex) {

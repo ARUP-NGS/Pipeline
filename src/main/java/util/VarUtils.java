@@ -1961,7 +1961,6 @@ public class VarUtils {
 			System.out.println("If more than two, result will be A - B - C... - N, so all subsequence files are subtracted from first given file");
 			return;
 		}
-		System.out.println("INSIDE THE SUBTRACT");
 		
 		List<VariantPool> pools = new ArrayList<VariantPool>();
 		

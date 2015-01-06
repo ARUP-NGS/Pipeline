@@ -41,7 +41,7 @@ public class MITOMAP_rRNAtRNA extends AbstractTabixAnnotator {
 			
 			if(disease !=null)
 			{
-				var.addAnnotation(VariantRec.MITOMAP_DIS_tRNArRNA, disease);
+				var.addAnnotation(VariantRec.MITOMAP_DIS_CODING, disease);
 			}
 			return true;
 	}
