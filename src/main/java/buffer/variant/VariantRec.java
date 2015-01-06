@@ -26,7 +26,8 @@ public class VariantRec {
 	String ref;
 	String alt;
 	Double qual;
-	protected GTType isHetero;
+	String GT;
+	protected GTType zygosity;
 	protected Map<String, Double> props = new SmallMap<String, Double>(); 
 	protected Map<String, String> annotations = new SmallMap<String, String>(); 
 
@@ -43,7 +44,8 @@ public class VariantRec {
 		this.ref = ref;
 		this.alt = alt;
 		this.qual = 1000.0;
-		this.isHetero = GTType.UNKNOWN;
+		this.GT = "-/-";
+		this.zygosity = GTType.UNKNOWN;
 	}
 	
 	public VariantRec(String contig, 
@@ -51,15 +53,17 @@ public class VariantRec {
 							int end, 
 							String ref, 
 							String alt, 
-							Double qual, 
-							GTType isHetero) {
+							Double qual,
+							String GT,
+							GTType zygosity) {
 		this.contig = contig;
 		this.start = start;
 		this.end = end;
 		this.ref = ref;
 		this.alt = alt;
 		this.qual = qual;
-		this.isHetero = isHetero;
+		this.GT = GT;
+		this.zygosity = zygosity;
 	}
 	
 	public synchronized void addProperty(String key, Double val) {
@@ -359,8 +363,12 @@ public class VariantRec {
 		return qual;
 	}
 	
-	public GTType getGenotype() {
-		return isHetero;
+	public String getGenotype() {
+		return GT;
+	}
+	
+	public GTType getZygosity() {
+		return zygosity;
 	}
 	
 	
@@ -381,13 +389,15 @@ public class VariantRec {
 	 * 1. contig
 	 * 2. start
 	 * 3. end
-	 * 4. gene name
-	 * 5. variant type
-	 * 6. exon function (- if not an exon)
-	 * 7. hetero/homo
+	 * 4. genotype
+	 * 5. gene name
+	 * 6. variant type
+	 * 7. exon function (- if not an exon)
+	 * 8. hetero/homo
 	 * @return
 	 */
 	public String toBasicString() {
+
 		String gene = getAnnotation(VariantRec.GENE_NAME);
 		if (gene == null)
 			gene = "-";
@@ -403,15 +413,15 @@ public class VariantRec {
 			exFunc = exType;
 		
 		String het = "het";
-		if (getGenotype() == GTType.HOM) {
+		if (getZygosity() == GTType.HOM) {
 			het = "hom";
-		} else if (getGenotype() == GTType.HEMI) {
+		} else if (getZygosity() == GTType.HEMI) {
 			het = "hemi";
-		} else if (getGenotype() == GTType.UNKNOWN){
+		} else if (getZygosity() == GTType.UNKNOWN){
 			het = "unknown";
 		}
 		
-		return contig + "\t" + start + "\t" + end + "\t" + gene + "\t" + variantType + "\t" + exFunc + "\t" + het ;  
+		return contig + "\t" + start + "\t" + end + "\t" + GT + "\t" + gene + "\t" + variantType + "\t" + exFunc + "\t" + het ;  
 	}
 	
 	/**
@@ -438,11 +448,11 @@ public class VariantRec {
 	 */
 	public String toSimpleString() {
 		String het = "het";
-		if (getGenotype() == GTType.HOM) {
+		if (getZygosity() == GTType.HOM) {
 			het = "hom";
-		} else if (getGenotype() == GTType.HEMI) {
+		} else if (getZygosity() == GTType.HEMI) {
 			het = "hemi";
-		} else if (getGenotype() == GTType.UNKNOWN) {
+		} else if (getZygosity() == GTType.UNKNOWN) {
 			het = "unknown";
 		}
 		
@@ -723,6 +733,10 @@ public class VariantRec {
 	
 	
 	//A few oft-used property / annotation keys
+	public static final String GENOTYPE = "genotype";
+	public static final String VCF_POS = "vcf.position";
+	public static final String VCF_REF = "vcf.ref";
+	public static final String VCF_ALT = "vcf.variant";
 	public static final String EFFECT_PREDICTION = "effect.prediction";
 	public static final String EFFECT_PREDICTION2 = "effect.prediction2";
 	public static final String POP_FREQUENCY = "pop.freq";

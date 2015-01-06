@@ -77,7 +77,7 @@ public class GVFWriter extends VariantPoolWriter {
 	
 	
 	private static String getZygosityStr(VariantRec rec) {
-		if (rec.getGenotype() == GTType.HET) {
+		if (rec.getZygosity() == GTType.HET) {
 			return "heterozygous";
 		}
 		else {

@@ -11,15 +11,16 @@ import util.vcfParser.VCFParser.GTType;
 public class VariantStub extends VariantRec {
 
 	
-	public VariantStub(String contig, int start, int end, String ref, String alt, GTType isHet) {
+	public VariantStub(String contig, int start, int end, String ref, String alt, String genotype, GTType isHet) {
 		super(contig, start, end, ref, alt);
 		props = null;
 		annotations = null;
-		super.isHetero = isHet;
+		super.GT = genotype;
+		super.zygosity = isHet;
 	}
 	
 	public VariantRec toFullRecord() {
-		return new VariantRec(contig, start, end, ref, alt, 100.0, super.isHetero);
+		return new VariantRec(contig, start, end, ref, alt, 100.0, super.GT, super.zygosity);
 	}
 	
 	public synchronized void addProperty(String key, Double val) {

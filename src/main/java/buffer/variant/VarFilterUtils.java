@@ -65,7 +65,7 @@ public class VarFilterUtils {
 
 		@Override
 		public boolean passes(VariantRec rec) {
-			return rec.getGenotype() == GTType.HOM;
+			return rec.getZygosity() == GTType.HOM;
 		}
 		
 	}
@@ -84,7 +84,7 @@ public class VarFilterUtils {
 
 		@Override
 		public boolean passes(VariantRec rec) {
-			return rec.getGenotype() == GTType.HET;
+			return rec.getZygosity() == GTType.HET;
 		}
 		
 	}

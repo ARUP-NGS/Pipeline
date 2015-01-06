@@ -1037,7 +1037,7 @@ public class VarUtils {
 						popFreq = var.getProperty(VariantRec.POP_FREQUENCY);
 						eurFreq = var.getProperty(VariantRec.EUR_FREQUENCY);
 						int alleles = 1;
-						if ( var.getGenotype() == GTType.HOM ) {
+						if ( var.getZygosity() == GTType.HOM ) {
 							alleles = 2;
 						}
 						alleleCount += alleles;
@@ -1133,7 +1133,7 @@ public class VarUtils {
 							String varGene = var.getAnnotation(VariantRec.GENE_NAME);
 							Double val = var.getProperty(anno);
 							int count = 1;
-							if ( var.getGenotype() == GTType.HOM) {
+							if ( var.getZygosity() == GTType.HOM) {
 								count = 2;
 							}
 							if (varGene != null && val != null) {
@@ -1195,7 +1195,7 @@ public class VarUtils {
 						String gene = var.getAnnotation(VariantRec.GENE_NAME);
 						Double val = var.getProperty(anno);
 						int count = 1;
-						if ( var.getGenotype() == GTType.HOM) {
+						if ( var.getZygosity() == GTType.HOM) {
 							count = 2;
 						}
 						if (gene != null && val != null) {
@@ -1632,7 +1632,7 @@ public class VarUtils {
 					Double prop = var.getProperty(key);
 					String gene = var.getAnnotation(VariantRec.GENE_NAME);
 					int alleles = 1;
-					if ( var.getGenotype() == GTType.HOM )
+					if ( var.getZygosity() == GTType.HOM )
 						alleles = 2;
 					
 					if (gene != null && prop != null) {
@@ -1761,9 +1761,9 @@ public class VarUtils {
 						totHapMapVar++;
 						truePoz++;
 						int flag = 0;
-						if (var.getGenotype() == GTType.HET)
+						if (var.getZygosity() == GTType.HET)
 							flag++;
-						if (sampleVar.getGenotype() == GTType.HET)
+						if (sampleVar.getZygosity() == GTType.HET)
 							flag++;
 						if (flag==1)
 							wrongZygosity++;
@@ -2275,10 +2275,10 @@ public class VarUtils {
 					
 					//Variant is homozygous
 					if (isInB) {
-						poolFinal.addRecord(new VariantRec(contig, varA.getStart(), varA.getEnd(), varA.getRef(), varA.getAlt(), 100.0, GTType.HOM));
+						poolFinal.addRecord(new VariantRec(contig, varA.getStart(), varA.getEnd(), varA.getRef(), varA.getAlt(), 100.0, varA.getGenotype(), GTType.HOM));
 					}
 					else {
-						poolFinal.addRecord(new VariantRec(contig, varA.getStart(), varA.getEnd(), varA.getRef(), varA.getAlt(), 100.0, GTType.HET));
+						poolFinal.addRecord(new VariantRec(contig, varA.getStart(), varA.getEnd(), varA.getRef(), varA.getAlt(), 100.0, varA.getGenotype(), GTType.HET));
 					}
 					
 				}
@@ -2289,7 +2289,7 @@ public class VarUtils {
 				for(VariantRec varB : poolB.getVariantsForContig(contig)) {
 					boolean isInA = poolA.findRecord(varB.getContig(), varB.getStart(), varB.getRef(), varB.getAlt()) != null;
 					if (! isInA) {
-						poolFinal.addRecord(new VariantRec(contig, varB.getStart(), varB.getEnd(), varB.getRef(), varB.getAlt(), 100.0, GTType.HET));
+						poolFinal.addRecord(new VariantRec(contig, varB.getStart(), varB.getEnd(), varB.getRef(), varB.getAlt(), 100.0, varB.getGenotype(), GTType.HET));
 					}
 				}
 			}
@@ -3187,11 +3187,11 @@ public class VarUtils {
 					VariantRec var = pool.findRecordNoWarn(contig, interval.end);
 					if (var != null) {
 						String hetStr = "het";
-						if ( var.getGenotype() == GTType.HOM) {
+						if ( var.getZygosity() == GTType.HOM) {
 							hetStr = "hom";
-						} else if ( var.getGenotype() == GTType.HEMI) {
+						} else if ( var.getZygosity() == GTType.HEMI) {
 							hetStr = "hemi";
-						} else if ( var.getGenotype() == GTType.UNKNOWN) {
+						} else if ( var.getZygosity() == GTType.UNKNOWN) {
 							hetStr = "unknown";
 						}
 						System.out.print(hetStr + ";" + var.getQuality() +";" + var.getProperty("depth") + "\t");

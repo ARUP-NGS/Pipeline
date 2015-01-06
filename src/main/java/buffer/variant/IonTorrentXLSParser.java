@@ -92,7 +92,7 @@ public class IonTorrentXLSParser extends CSVLineReader {
 
 			}
 
-			rec = new VariantRec(contig, start, start+ref.length(), ref, alt, qual, GTType.UNKNOWN);
+			rec = new VariantRec(contig, start, start+ref.length(), ref, alt, qual, "./.",GTType.UNKNOWN);
 			rec.addProperty(VariantRec.DEPTH, depth);
 
 			/**

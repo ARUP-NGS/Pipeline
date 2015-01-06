@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.zip.GZIPOutputStream;
@@ -48,7 +49,26 @@ public class JSONVarsGenerator {
 		//end
 		
 		AnnotatedVarsJsonConverter converter = new AnnotatedVarsJsonConverter();
-
+		converter.setExcludeKeys( Arrays.asList(new String[]{
+				VariantRec.EXOMES_63K_AC_HET, 
+				VariantRec.EXOMES_63K_AC_HOM,
+				VariantRec.EXOMES_63K_AFR_HET,
+				VariantRec.EXOMES_63K_AFR_HOM,
+				VariantRec.EXOMES_63K_AMR_HET,
+				VariantRec.EXOMES_63K_AMR_HOM,
+				VariantRec.EXOMES_63K_EAS_HET,
+				VariantRec.EXOMES_63K_EAS_HOM,
+				VariantRec.EXOMES_63K_FIN_HET,
+				VariantRec.EXOMES_63K_FIN_HOM,
+				VariantRec.EXOMES_63K_NFE_HET,
+				VariantRec.EXOMES_63K_NFE_HOM,
+				VariantRec.EXOMES_63K_OTH_HET,
+				VariantRec.EXOMES_63K_OTH_HOM,
+				VariantRec.EXOMES_63K_SAS_HET,
+				VariantRec.EXOMES_63K_SAS_HOM,
+				VariantRec.EXOMES_63K_AC_HET
+				}));
+		
 		JSONArray jsonVarList = new JSONArray();
 		
 		Set<String> keys = new HashSet<String>();

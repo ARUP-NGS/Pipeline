@@ -18,7 +18,11 @@ import buffer.variant.VariantRec;
 public class VarViewerWriter extends VariantPoolWriter {
 
 	public final static List<String> keys = new ArrayList<String>( Arrays.asList(new String[]{
-			VariantRec.GENE_NAME,
+			 VariantRec.GENOTYPE,
+			 VariantRec.VCF_POS,
+			 VariantRec.VCF_REF,
+			 VariantRec.VCF_ALT,
+			 VariantRec.GENE_NAME,
 			 VariantRec.NM_NUMBER,
 			 VariantRec.CDOT,
 			 VariantRec.PDOT,

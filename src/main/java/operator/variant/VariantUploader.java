@@ -69,7 +69,7 @@ public class VariantUploader extends Operator {
 				row.put("ref", r.getRef());
 				row.put("alt", r.getAlt());
 				int count = 0;
-				if (r.getGenotype() == GTType.HET) {
+				if (r.getZygosity() == GTType.HET) {
 					count = 1;
 				}
 				else {
