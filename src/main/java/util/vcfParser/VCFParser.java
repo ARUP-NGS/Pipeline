@@ -4,7 +4,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -958,7 +957,11 @@ public class VCFParser implements VariantLineReader {
 				}
 			}
 		} catch (IllegalStateException ise) {
-			throw new IllegalStateException ("Error processing request:", ise);
+			//This situation can arise sometimes even in normal operation, for instance where we attempt
+			//to parse the zygosity of somatic mutations called with ploidylevel = 50 (which happens for
+			//myeloid samples), in this case the 'genotype' is 1/1/1/1/1/1/1/1/1..., which produces an error
+			System.err.println("Warning: Could not parse genotype from " + genoQualStr);
+			return GTType.UNKNOWN;
 		}
 	}
 		

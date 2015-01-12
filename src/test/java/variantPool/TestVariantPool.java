@@ -2,17 +2,51 @@ package variantPool;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
 
 import pipeline.Pipeline;
-import buffer.VCFFile;
 import buffer.CSVFile;
+import buffer.VCFFile;
 import buffer.variant.VariantPool;
+import buffer.variant.VariantRec;
 
 
 public class TestVariantPool {
+	
+	
+	//The adding variants algorithm is actually a little tricky and involves merging two sorted
+	//lists, so some tests for it are warranted. 
+	@Test
+	public void TestAddVariants() {
+		VariantPool poolA;
+		VariantPool poolB;
+		
+		//Generate some random variants to add
+		int varsToAdd = 10000;
+		int maxChrLength = 1000000;
+		List<VariantRec> vars = new ArrayList<VariantRec>();
+		while(vars.size() < varsToAdd) {
+			int pos = (int)(Math.random()*maxChrLength);
+			VariantRec rec = new VariantRec("1", pos, pos+1, "A", "C");
+			vars.add(rec);
+		}
+		
+		poolA = new VariantPool(vars);
+		poolB = new VariantPool(vars);
+		
+		poolA.addAll(poolB, true);
+		Assert.assertTrue(poolA.size() == 2*varsToAdd);
+	
+	
+		poolA = new VariantPool(vars);
+		poolA.addAll(poolB, false);
+		System.out.println("Pool A size is " + poolA.size() + " but should be " + varsToAdd);
+		Assert.assertTrue(poolA.size() == varsToAdd);
+	}
 	
 	@Test
 	public void TestVariantPoolCreation() {

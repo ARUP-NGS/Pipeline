@@ -28,13 +28,12 @@ import org.w3c.dom.NodeList;
 import pipeline.Pipeline;
 import pipeline.PipelineObject;
 import util.vcfParser.VCFParser;
+import util.vcfParser.VCFParser.GTType;
 import buffer.BEDFile;
 import buffer.CSVFile;
 import buffer.FileBuffer;
 import buffer.ReferenceFile;
 import buffer.VCFFile;
-
-import util.vcfParser.VCFParser.GTType;
 
 /**
  * Base class for things that maintain a collection of VariantRecs
@@ -68,6 +67,7 @@ public class VariantPool extends Operator  {
 			}
 			contig.add(v);
 		}
+		sortAllContigs();
 	}
 	
 	/**

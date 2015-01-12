@@ -29,6 +29,7 @@ public class ComputeVarFreqs {
 		boolean include = info.hasProperty("include.in.freq.calc") && Boolean.parseBoolean(info.getProperty("include.in.freq.calc"));
 		if (! include) {
 			System.err.println("Sample " + info.getSampleName() + " " + info.getAnalysisType() + " flagged for non-inclusion, skipping.");
+			return false;
 		}
 		String analysis = info.getAnalysisType();
 		if (analysis.contains("(")) {
@@ -250,7 +251,8 @@ public class ComputeVarFreqs {
 		
 		public VariantPool getPool() throws IOException {
 			if (pool == null) {
-				pool = new VariantPool(new VCFParser(source));
+				VCFParser vcfParser = new VCFParser(source);
+				pool = new VariantPool(vcfParser);
 			}
 			return pool;
 		}

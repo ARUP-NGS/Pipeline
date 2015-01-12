@@ -670,7 +670,11 @@ public class VariantRec {
 		@Override
 		public int compare(VariantRec o1, VariantRec o2) {
 			if (o1 == o2 || (o1.equals(o2))) {
-				return 0;
+				int result = o1.getRef().compareTo(o2.getRef());
+				if (result == 0) {
+					result = o1.getAlt().compareTo(o2.getAlt());
+				}
+				return result;
 			}
 
 			return o1.start - o2.start;
