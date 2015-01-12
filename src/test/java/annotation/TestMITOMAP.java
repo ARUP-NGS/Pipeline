@@ -42,31 +42,31 @@ public class TestMITOMAP extends TestCase {
 			
 			VariantPool vars = annotator.getVariants();	
 			
-			VariantRec var = vars.findRecord("M",150,"C","T");
+			VariantRec var = vars.findRecord("MT",195,"T","C");
 			Assert.assertTrue(var != null);
-			Assert.assertTrue(var.getAnnotation(VariantRec.MITOMAP_DIS_CODING).equals("Longevity / Cervical Carcinoma / HPV infection risk"));
+			Assert.assertTrue(var.getAnnotation(VariantRec.MITOMAP_DIS_CODING).equals("BD-associated"));
 			
-			VariantRec var1 = vars.findRecord("M",3733,"G","A");
+			VariantRec var1 = vars.findRecord("MT",3733,"G","A");
 			Assert.assertTrue(var1 != null);
 			Assert.assertTrue(var1.getAnnotation(VariantRec.MITOMAP_DIS_CODING).equals("LHON"));
 			
-			VariantRec var2 = vars.findRecord("M",12425,"A","-");
+			VariantRec var2 = vars.findRecord("MT",12425,"A","-");
 			Assert.assertTrue(var2 != null);
 			Assert.assertTrue(var2.getAnnotation(VariantRec.MITOMAP_DIS_CODING).equals("Mitochondrial Myopathy & Renal Failure"));		
 			
-			VariantRec var3 = vars.findRecord("M",3733,"G","C");
+			VariantRec var3 = vars.findRecord("MT",3733,"G","C");
 			Assert.assertTrue(var3 != null);
 			Assert.assertTrue(var3.getAnnotation(VariantRec.MITOMAP_DIS_CODING).equals("LHON"));
 			
-			VariantRec var4 = vars.findRecord("M",9479,"TTTTTCTTCGCAGGA","-");
+			VariantRec var4 = vars.findRecord("MT",9479,"TTTTTCTTCGCAGGA","-");
 			Assert.assertTrue(var4 != null);
 			Assert.assertTrue(var4.getAnnotation(VariantRec.MITOMAP_DIS_CODING).equals("Myoglobinuria"));
 			
-			VariantRec var5 = vars.findRecord("M",15498,"GGCGACCCAGACAATTATACCCTA","-");
+			VariantRec var5 = vars.findRecord("MT",15498,"GGCGACCCAGACAATTATACCCTA","-");
 			Assert.assertTrue(var5 != null);
 			Assert.assertTrue(var5.getAnnotation(VariantRec.MITOMAP_DIS_CODING).equals("EXIT"));	
 			
-			VariantRec var6 = vars.findRecord("M",15498, "G","A");
+			VariantRec var6 = vars.findRecord("MT",15498, "G","A");
 			Assert.assertTrue(var6 != null);
 			Assert.assertTrue(var6.getAnnotation(VariantRec.MITOMAP_DIS_CODING).equals("HiCM / WPW, DEAF"));	
 			
@@ -93,25 +93,25 @@ public class TestMITOMAP extends TestCase {
 			
 			VariantPool vars = annotator2.getVariants();	
 			
-			VariantRec var7 = vars.findRecord("M",622,"G","A");
+			VariantRec var7 = vars.findRecord("MT",622,"G","A");
 			Assert.assertTrue(var7 != null);
-			Assert.assertTrue(var7.getAnnotation(VariantRec.MITOMAP_DIS_tRNArRNA).equals("EXIT & Deafness"));
+			Assert.assertTrue(var7.getAnnotation(VariantRec.MITOMAP_DIS_CODING).equals("EXIT & Deafness"));
 			
-			VariantRec var8 = vars.findRecord("M",960,"-","C");
+			VariantRec var8 = vars.findRecord("MT",960,"-","C");
 			Assert.assertTrue(var8 != null);
-			Assert.assertTrue(var8.getAnnotation(VariantRec.MITOMAP_DIS_tRNArRNA).equals("Possibly DEAF-associated"));
+			Assert.assertTrue(var8.getAnnotation(VariantRec.MITOMAP_DIS_CODING).equals("Possibly DEAF-associated"));
 			
-			VariantRec var10 = vars.findRecord("M",4285,"T","C");
+			VariantRec var10 = vars.findRecord("MT",4285,"T","C");
 			Assert.assertTrue(var10 != null);
-			Assert.assertTrue(var10.getAnnotation(VariantRec.MITOMAP_DIS_tRNArRNA).equals("CPEO"));
+			Assert.assertTrue(var10.getAnnotation(VariantRec.MITOMAP_DIS_CODING).equals("CPEO"));
 			
-			VariantRec var11 = vars.findRecord("M",4401,"A","G");
+			VariantRec var11 = vars.findRecord("MT",4401,"A","G");
 			Assert.assertTrue(var11 != null);
-			Assert.assertTrue(var11.getAnnotation(VariantRec.MITOMAP_DIS_tRNArRNA).equals("Hypertension+Ventricular Hypertrophy"));
+			Assert.assertTrue(var11.getAnnotation(VariantRec.MITOMAP_DIS_CODING).equals("Hypertension+Ventricular Hypertrophy"));
 			
-			VariantRec var12 = vars.findRecord("M",7445,"A","C");
+			VariantRec var12 = vars.findRecord("MT",7445,"A","C");
 			Assert.assertTrue(var12 != null);
-			Assert.assertTrue(var12.getAnnotation(VariantRec.MITOMAP_DIS_tRNArRNA).equals("DEAF"));
+			Assert.assertTrue(var12.getAnnotation(VariantRec.MITOMAP_DIS_CODING).equals("DEAF"));
 						
 			
 		} catch (Exception ex) {

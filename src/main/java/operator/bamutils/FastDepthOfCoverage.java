@@ -32,6 +32,12 @@ public class FastDepthOfCoverage extends IOOperator {
 		BAMFile bam = (BAMFile) this.getInputBufferForClass(BAMFile.class);
 		DOCMetrics metrics = (DOCMetrics) getOutputBufferForClass(DOCMetrics.class);
 		
+		try {
+			intervals.buildIntervalsMap();
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 		
 		try {
 			CoverageCalculator covCalc = new CoverageCalculator(bam.getFile(), intervals);
