@@ -558,11 +558,11 @@ public class OncologyUtils extends IOOperator {
 					Map<String, Object> geneDetails = new HashMap<String, Object>(); //details for one gene
 					geneDetails.put("name", geneToks[i]);
 					geneDetails.put("exon", exonToks[i]);					
-					geneDetails.put("COSMICID", cosmicid_trim);
 					geneList.add(geneDetails);
 				}
 				
 				//Load up parameters for given locus
+				target.put("COSMICID", cosmicid_trim);
 				target.put("locus", targetFusion);
 				HashMap<String, Object> locusData = (HashMap<String, Object>) rnaFusion.get(targetFusion);					
 				target.put("count", locusData.get("count"));
