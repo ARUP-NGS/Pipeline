@@ -543,14 +543,22 @@ public class OncologyUtils extends IOOperator {
 				String exonStr = toks[1];
 				String[] exonToks = getExonToksFromLocusStr(exonStr);
 				String cosmicid = "";
+				String cosmicid_trim = "";
 				if (toks.length > 2) {
 					cosmicid = toks[2];
+					Pattern cosf = Pattern.compile("^COSF(\\d+)$"); //remove label
+					Matcher m = cosf.matcher(cosmicid);
+					if (m.find()) {
+						cosmicid_trim = m.group(1);
+					} else {
+						cosmicid_trim = cosmicid;
+					}
 				}	
 				for (int i=0; i < geneToks.length; i++) {
 					Map<String, Object> geneDetails = new HashMap<String, Object>(); //details for one gene
 					geneDetails.put("name", geneToks[i]);
 					geneDetails.put("exon", exonToks[i]);					
-					geneDetails.put("COSMICID", cosmicid);
+					geneDetails.put("COSMICID", cosmicid_trim);
 					geneList.add(geneDetails);
 				}
 				
