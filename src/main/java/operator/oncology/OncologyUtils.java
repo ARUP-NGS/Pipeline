@@ -7,11 +7,16 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import com.sun.org.apache.xerces.internal.impl.xpath.regex.ParseException;
 
 import json.JSONException;
 import json.JSONObject;
@@ -29,7 +34,7 @@ import buffer.JSONBuffer;
 import buffer.ReferenceFile;
 
 /*
- * @author daniel
+ * @author daniel/elaine
  * Calculates ratios and counts for alignments to multiple custom reference files. 
  * 
  * 
@@ -391,15 +396,7 @@ public class OncologyUtils extends IOOperator {
 		//Build rescue step map
 		Map<String, Object> rnaRescue = new HashMap<String, Object>();
 		rnaRescue = buildFractionCountMap(FusionSplitContigs, fusionSplitCounts, fusionSplitFrac);
-
-		// Build final results map to be converted to JSON
-		Map<String, Object> finalResults = new HashMap<String, Object>();
-		finalResults.put("summary", summary);
-		finalResults.put("rna.ratio", rnaRatio);
-		finalResults.put("rna.fusion", rnaFusion);
-		finalResults.put("rna.adjusted.ratio", rnaRatioAdjusted);
-		finalResults.put("rna.rescue", rnaRescue);
-		JSONObject json = new JSONObject(finalResults);
+	
 		// Convert final results to JSON
 		JSONObject summaryjson = new JSONObject(summary);
 		String summaryStr = summaryjson.toString();
@@ -437,20 +434,34 @@ public class OncologyUtils extends IOOperator {
 		System.out.println(rescueStr + "is rescue str");
 		// System.out.printf( "JSON: %s", json.toString(2) );
 
+		// Build final results map to be converted to JSON (OLD format for Validation)
+		Map<String, Object> finalResults = new HashMap<String, Object>();
+		finalResults.put("summary", summary);
+		finalResults.put("rna.ratio", rnaRatio);
+		finalResults.put("rna.fusion", rnaFusion);
+		finalResults.put("rna.adjusted.ratio", rnaRatioAdjusted);
+		finalResults.put("rna.rescue", rnaRescue);
+		JSONObject json = new JSONObject(finalResults);
 		// Get the json string, then compress it to a byte array
 		String str = json.toString();
-
+		
+		String strNGSWeb = getJSONStrforNGSWeb(summary, rnaFusion, rnaRatio, rnaRatioAdjusted, 
+				FusionContigs, RatioContigSets, RatioContigs);
+		
 		// Makes the JSON string human-readable. Requires GSON library.
-		/*
-		 * Gson gson = new GsonBuilder().setPrettyPrinting().create();
-		 * JsonParser jp = new JsonParser(); JsonElement je =
-		 * jp.parse(json.toString()); String str = gson.toJson(je);
-		 */
-		byte[] bytes = CompressGZIP.compressGZIP(str);
+		/**
+		Gson gson = new GsonBuilder().setPrettyPrinting().create();
+		JsonParser jp = new JsonParser(); 
+		JsonElement je = jp.parse(json.toString()); 
+		String str = gson.toJson(je);
+		*/
+		
+		byte[] bytes = CompressGZIP.compressGZIP(strNGSWeb);
+		//byte[] bytes = CompressGZIP.compressGZIP(str);
 
-		finalResults.put( "summary", summary );
-		finalResults.put( "rna.ratio", rnaRatio );
-		finalResults.put( "rna.fusion", rnaFusion );
+		//finalResults.put( "summary", summary );
+		//finalResults.put( "rna.ratio", rnaRatio );
+		//finalResults.put( "rna.fusion", rnaFusion );
 
 		//byte[] bytes = CompressGZIP.compressGZIP(prettyJsonString);
 
@@ -462,6 +473,188 @@ public class OncologyUtils extends IOOperator {
 		writer.write(bytes);
 		writer.close();
 		return;
+	}
+	
+	/**
+	 * Writes out an NGS-Web friendly JSON output (contains Summary & Fusions keys). 
+	 * Requires the previously calculated summary (read coverage), rnaFusion (counts), rnaRatio
+	 * (counts for the contigs in the ratio reference), & rnaRatioAdjusted ((3'-5')/(hk genes)
+	 * calc for potential/novel fusion genes) HashMaps & String arrays FusionContigs 
+	 * (contains all target contigs) &  RatioContigSets (potential positive/novel fusion genes)
+	 * 
+	 * @author elainegee
+	 * @return
+	 * @throws IOException 
+	 */
+	private String getJSONStrforNGSWeb(Map<String, Object> summary, 
+			Map<String, Object> rnaFusion, 
+			Map<String, Object> rnaRatio, Map<String, Object> rnaRatioAdjusted, 
+			String[] FusionContigs, String[] RatioContigSets, String[] RatioContigs) throws IOException {
+		
+		// Build final results map to be converted to JSON (NEW format for NGS.Web) 
+		Map<String, Object> finalResultsNGSWeb = new HashMap<String, Object>();
+		
+		// Load up summary dictionary
+		Map<String, Object> sumStats = new HashMap<String, Object>();
+		sumStats.put("RatioMappedReads", summary.get("count of reads mapped to ratio reference"));
+		sumStats.put("FusionMappedReads", summary.get("count of reads mapped to fusion reference"));
+		finalResultsNGSWeb.put("Summary", sumStats);
+		
+		//Load up fusions dictionary, including housekeeping, target, & potential novel translocations
+		Map<String, Object> fusions = new HashMap<String, Object>();
+		//Load up housekeeping genes (ENCTRL = expression neutral control)
+		String[] housekeepingGenes = {"MYC.ENCTRL.E2E3", "ITGB7.ENCTRL.E14E15", 
+		                              "LMNA.ENCTRL.E3E4", "HMBS.ENCTRL.E8E9","TBP.ENCTRL.E3E4"};
+		List<Map<String, Object>> listHKMaps = new ArrayList<Map<String, Object>>();
+		for (String hkgene: housekeepingGenes){
+			Map<String, Object> housekeeping = new HashMap<String, Object>();
+			//Get gene name, exonStart, exonStop
+			Map<String, Object> geneDetails = new HashMap<String, Object>();
+			String[] toks=hkgene.split("\\.");
+			// Get gene
+			String gene = toks[0];
+			geneDetails.put("name", gene);
+			//Get exonStart, exonStop
+			String exonStr = toks[2];
+			String[] exonToks = getExonToksFromLocusStr(exonStr);
+			geneDetails.put("exonStart", exonToks[0]);
+			geneDetails.put("exonStop", exonToks[1]);
+			//Load up parameters for given locus
+			housekeeping.put("locus", hkgene);
+			HashMap<String, Object> locusData = (HashMap<String, Object>) rnaFusion.get(hkgene);					
+			housekeeping.put("count", locusData.get("count"));
+			housekeeping.put("gene", geneDetails);
+			listHKMaps.add(housekeeping);
+			
+		}
+		//Add housekeeping genes to fusion map
+		fusions.put("HouseKeeping", listHKMaps);
+
+		//Load up target fusions (NOTE: FusionContigs contains control genes that will be skipped)
+		String fusion = "";
+		List<Map<String, Object>> listTargetMaps = new ArrayList<Map<String, Object>>();
+		for (String targetFusion: FusionContigs) {
+			if (!targetFusion.contains("ENCTRL")) {
+				Map<String, Object> target = new HashMap<String, Object>(); //contains all fusion info
+				ArrayList<Map> geneList = new ArrayList<Map>(); //contains both genes of fusion
+				//Get gene name, exonStart, exonStop
+				String[] toks=targetFusion.split("\\.");
+				String[] geneToks = toks[0].split("\\-");
+				String exonStr = toks[1];
+				String[] exonToks = getExonToksFromLocusStr(exonStr);
+				String cosmicid = "";
+				String cosmicid_trim = "";
+				if (toks.length > 2) {
+					cosmicid = toks[2];
+					Pattern cosf = Pattern.compile("^COSF(\\d+)$"); //remove label
+					Matcher m = cosf.matcher(cosmicid);
+					if (m.find()) {
+						cosmicid_trim = m.group(1);
+					} else {
+						cosmicid_trim = cosmicid;
+					}
+				}	
+				for (int i=0; i < geneToks.length; i++) {
+					Map<String, Object> geneDetails = new HashMap<String, Object>(); //details for one gene
+					geneDetails.put("name", geneToks[i]);
+					geneDetails.put("exon", exonToks[i]);					
+					geneList.add(geneDetails);
+				}
+				
+				//Load up parameters for given locus
+				target.put("COSMICID", cosmicid_trim);
+				target.put("locus", targetFusion);
+				HashMap<String, Object> locusData = (HashMap<String, Object>) rnaFusion.get(targetFusion);					
+				target.put("count", locusData.get("count"));
+				target.put("genes", geneList);
+				listTargetMaps.add(target);
+			}
+		}
+		//Add target fusions to fusion map
+		fusions.put("Target", listTargetMaps);
+
+				
+		//Load up PotentialNovel fusions
+		List<Map<String, Object>> listPotNovelMaps = new ArrayList<Map<String, Object>>();
+		for (String PotNovelFusion: RatioContigSets) {  
+			Map<String, Object> potNovel = new HashMap<String, Object>();
+			Map<String, Object> geneDetails = new HashMap<String, Object>();
+			//Get gene name, exonStart, exonStop
+			String[] toks=PotNovelFusion.split("\\.");
+			String gene = toks[0];
+			geneDetails.put("name", gene);	
+			//Get read count for 3' (this is in the RatioContigSets)
+			ArrayList<String> countList = new ArrayList<String>();
+			HashMap<String, Object> countData_3p = (HashMap<String, Object>) rnaRatio.get(PotNovelFusion);
+			Long count_3p = (Long) countData_3p.get("count");
+			countList.add(count_3p.toString());
+			//Get read count for 5'
+			String pattern_5p = gene + ".5" + toks[1].substring(1) +"." + toks[2]; 
+			String PotNovelFusion_5p = "";
+			//Find 5' partner in RatioContigs
+			ArrayList<String> listRatioContigs = new ArrayList<String>();
+			for (String ratioContig: RatioContigs) {
+				listRatioContigs.add(ratioContig);
+			}
+			for (int i=0; i<RatioContigs.length; i++) {
+				String ratioContig = RatioContigs[i]; 
+				if (ratioContig.startsWith(pattern_5p)) {
+					PotNovelFusion_5p = ratioContig;
+				} else if (i == (RatioContigs.length - 1) && PotNovelFusion_5p.length() == 0) {
+					throw new IOException("5' partner contig for RNA ratio locus '" + PotNovelFusion + "' that starts with '" + pattern_5p + "' not found in list of ratio contigs: " + listRatioContigs.toString());
+				}
+			}
+			HashMap<String, Object> countData_5p = (HashMap<String, Object>) rnaRatio.get(PotNovelFusion_5p);
+			Long count_5p = (Long) countData_5p.get("count");
+			countList.add(count_5p.toString());			
+			potNovel.put("count", countList.toString());
+			
+			//Load up parameters for given locus
+			ArrayList<String> locusList = new ArrayList<String>();
+			locusList.add(PotNovelFusion);
+			locusList.add(PotNovelFusion_5p);
+			potNovel.put("locus", locusList.toString()); 
+			
+			HashMap<String, Object> fractionData = (HashMap<String, Object>) rnaRatioAdjusted.get(PotNovelFusion);					
+			potNovel.put("fraction", fractionData.get("fraction"));
+			potNovel.put("gene", geneDetails);
+			listPotNovelMaps.add(potNovel);
+		}
+		//Add potential positive/novel fusions to fusion map
+		fusions.put("PotentialNovel", listPotNovelMaps);
+		
+		//Create final fusions HashMap to output
+		finalResultsNGSWeb.put("Fusions", fusions);
+		
+		// Get the json string
+		JSONObject jsonNGSWeb = new JSONObject(finalResultsNGSWeb);		
+		String result = jsonNGSWeb.toString();
+		return result;
+	}
+	
+	/**
+	 * Extracts the exon start & exon stop from the exon string found  in the contig name
+	 * e.g. E2E3 generates exonStart=2, exonStop=3 returned as ["2", "3"]
+	 * 
+	 * @author elainegee
+	 * @return
+	 */
+	private String[] getExonToksFromLocusStr(String exonStr) throws IOException {
+		String exonStart = "";
+		String exonStop = "";
+		try {
+			Pattern pattern = Pattern.compile("[a-zA-Z](\\d+)[a-zA-Z](\\d+)");
+			Matcher matcher = pattern.matcher(exonStr);
+			while (matcher.find()) {
+				exonStart = matcher.group(1);
+				exonStop = matcher.group(2);
+			}			
+		} catch (ParseException e) {
+				e.printStackTrace();			
+				throw new IOException("Could not extract exon start & exon stop from string " + exonStr);						
+		}
+		String[] results = {exonStart, exonStop};
+		return results;
 	}
 
 	/**

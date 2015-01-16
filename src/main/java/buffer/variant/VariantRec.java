@@ -348,7 +348,7 @@ public class VariantRec {
 	}
 	
 	public String getContig() {
-		return contig;
+			return contig;
 	}
 	
 	public int getStart() {

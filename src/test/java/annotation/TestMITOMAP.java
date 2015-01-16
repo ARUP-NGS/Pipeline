@@ -64,11 +64,11 @@ public class TestMITOMAP extends TestCase {
 			
 			VariantRec var5 = vars.findRecord("MT",15498,"GGCGACCCAGACAATTATACCCTA","-");
 			Assert.assertTrue(var5 != null);
-			Assert.assertTrue(var5.getAnnotation(VariantRec.MITOMAP_DIS_CODING).equals("EXIT"));	
+			Assert.assertTrue(var5.getAnnotation(VariantRec.MITOMAP_DIS_CODING).equals("EXIT"));
 			
 			VariantRec var6 = vars.findRecord("MT",15498, "G","A");
 			Assert.assertTrue(var6 != null);
-			Assert.assertTrue(var6.getAnnotation(VariantRec.MITOMAP_DIS_CODING).equals("HiCM / WPW, DEAF"));	
+			Assert.assertTrue(var6.getAnnotation(VariantRec.MITOMAP_DIS_CODING).equals("HiCM / WPW, DEAF"));
 			
 
 						
