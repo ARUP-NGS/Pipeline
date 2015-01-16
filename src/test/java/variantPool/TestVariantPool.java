@@ -39,13 +39,22 @@ public class TestVariantPool {
 		poolB = new VariantPool(vars);
 		
 		poolA.addAll(poolB, true);
+		System.out.println("Pool A size is " + poolA.size() + " and should be " + 2*varsToAdd);
 		Assert.assertTrue(poolA.size() == 2*varsToAdd);
 	
 	
+		vars.clear();
+		vars.add(  new VariantRec("1", 1, 2, "A", "C") );
+		vars.add(  new VariantRec("1", 2, 3, "A", "C") );
+		vars.add(  new VariantRec("1", 2, 3, "A", "C") );
+		vars.add(  new VariantRec("1", 2, 3, "A", "C") );
+		vars.add(  new VariantRec("1", 4, 5, "A", "C") );
+		vars.add(  new VariantRec("1", 5, 6, "A", "C") );
+		
 		poolA = new VariantPool(vars);
-		poolA.addAll(poolB, false);
-		System.out.println("Pool A size is " + poolA.size() + " but should be " + varsToAdd);
-		Assert.assertTrue(poolA.size() == varsToAdd);
+		poolA.addAll(poolA, false);
+		System.out.println("Pool A size is " + poolA.size() + " and should be " + 4);
+		Assert.assertTrue(poolA.size() == 4);
 	}
 	
 	@Test

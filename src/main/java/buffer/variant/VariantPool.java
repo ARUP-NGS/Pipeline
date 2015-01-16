@@ -474,7 +474,7 @@ public class VariantPool extends Operator  {
 					}
 					if (cVar.getStart() < sVar.getStart()) {
 						
-						if ((!allowDups) && (prevVar == null || prevVar.getStart() != cVar.getStart() || !prevVar.getRef().equals(cVar.getRef()) || !prevVar.getAlt().equals(cVar.getAlt()))) {
+						if (allowDups || (prevVar == null || prevVar.getStart() != cVar.getStart() || !prevVar.getRef().equals(cVar.getRef()) || !prevVar.getAlt().equals(cVar.getAlt()))) {
 							mergedVars.add(cVar);
 						}
 						
@@ -487,7 +487,7 @@ public class VariantPool extends Operator  {
 					}
 					else {
 						
-						if ((!allowDups) && (prevVar == null || prevVar.getStart() != sVar.getStart() || !prevVar.getRef().equals(sVar.getRef()) || !prevVar.getAlt() .equals(sVar.getAlt()))) {
+						if (allowDups || (prevVar == null || prevVar.getStart() != sVar.getStart() || !prevVar.getRef().equals(sVar.getRef()) || !prevVar.getAlt() .equals(sVar.getAlt()))) {
 							mergedVars.add(sVar);
 						}
 						try {
