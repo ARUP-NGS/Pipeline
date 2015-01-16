@@ -454,6 +454,8 @@ public class VariantPool extends Operator  {
 				VariantRec sVar = sIt.next();
 				
 				while(cVar != null && sVar != null) {
+
+					
 					//If we're not allowing duplicates, and sVar and cVar are at the same position,
 					//then advance the source iterator and don't add anything to the mergedVars list
 					if ((!allowDups) && cVar.getStart() == sVar.getStart()) {
@@ -466,8 +468,16 @@ public class VariantPool extends Operator  {
 						continue;
 					}
 					
+					VariantRec prevVar = null;
+					if (mergedVars.size() > 0) {
+						prevVar = mergedVars.get(mergedVars.size()-1);
+					}
 					if (cVar.getStart() < sVar.getStart()) {
-						mergedVars.add(cVar);
+						
+						if ((!allowDups) && (prevVar == null || prevVar.getStart() != cVar.getStart() || !prevVar.getRef().equals(cVar.getRef()) || !prevVar.getAlt().equals(cVar.getAlt()))) {
+							mergedVars.add(cVar);
+						}
+						
 						try {
 							cVar = cIt.next();
 						}
@@ -476,7 +486,10 @@ public class VariantPool extends Operator  {
 						}
 					}
 					else {
-						mergedVars.add(sVar);
+						
+						if ((!allowDups) && (prevVar == null || prevVar.getStart() != sVar.getStart() || !prevVar.getRef().equals(sVar.getRef()) || !prevVar.getAlt() .equals(sVar.getAlt()))) {
+							mergedVars.add(sVar);
+						}
 						try {
 							sVar = sIt.next();
 						}

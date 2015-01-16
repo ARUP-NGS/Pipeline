@@ -26,7 +26,11 @@ public class ComputeVarFreqs {
 		System.err.println("Adding sample : " + info.getSampleName() + " :" + info.getAnalysisType());
 		File vcf = info.getVCF();
 		File bed = info.getBED();
-		boolean include = info.hasProperty("include.in.freq.calc") && Boolean.parseBoolean(info.getProperty("include.in.freq.calc"));
+		boolean include = true;
+		if (info.hasProperty("include.in.freq.calc")) {
+			include =   Boolean.parseBoolean(info.getProperty("include.in.freq.calc"));	
+		}
+		
 		if (! include) {
 			System.err.println("Sample " + info.getSampleName() + " " + info.getAnalysisType() + " flagged for non-inclusion, skipping.");
 			return false;

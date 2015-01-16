@@ -37,6 +37,14 @@ public abstract class IntervalsFile extends FileBuffer implements HasIntervals {
 	 * @return
 	 */
 	public Collection<String> getContigs() {
+		if (!isMapCreated()) {
+			try {
+				buildIntervalsMap();
+			} catch (IOException e) {
+				e.printStackTrace();
+				return null;
+			}
+		}
 		return intervals.keySet();
 	}
 	
