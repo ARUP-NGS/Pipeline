@@ -31,15 +31,11 @@ public class FastDepthOfCoverage extends IOOperator {
 		BEDFile intervals = (BEDFile) this.getInputBufferForClass(BEDFile.class);
 		BAMFile bam = (BAMFile) this.getInputBufferForClass(BAMFile.class);
 		DOCMetrics metrics = (DOCMetrics) getOutputBufferForClass(DOCMetrics.class);
-		
+				
 		try {
 			intervals.buildIntervalsMap();
-		} catch (IOException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-		
-		try {
+
+			
 			CoverageCalculator covCalc = new CoverageCalculator(bam.getFile(), intervals);
 			covCalc.setThreadCount( getPipelineOwner().getThreadCount() );
 			
@@ -63,7 +59,7 @@ public class FastDepthOfCoverage extends IOOperator {
 			metrics.setFractionAboveCutoff(covAboveCutoffs);
 			
 			
-			System.out.println("Mean depth: " + mean);
+			Logger.getLogger(Pipeline.primaryLoggerName).info(getObjectLabel() + " Found mean depth : " + mean);
 			
 		} catch (IOException e) {
 			e.printStackTrace();

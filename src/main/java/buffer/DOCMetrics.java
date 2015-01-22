@@ -86,6 +86,9 @@ public class DOCMetrics extends FileBuffer implements JSONString {
 	}
 
 	public static double[] toPrecision(double[] vals, int precision) {
+		if (vals==null) {
+			return new double[0];
+		}
 		for(int i=0; i<vals.length; i++) {
 			vals[i] = toPrecision(vals[i], precision);
 		}
