@@ -28,6 +28,8 @@ public abstract class FileBuffer extends PipelineObject {
 	protected File file;
 	protected Map<String, String> properties = new HashMap<String, String>();
 	
+	private String uniqTag = null;
+	
 	public FileBuffer() {
 		//Blank on purpose, we just need to make sure there's a no-arg constructor
 	}
@@ -48,6 +50,18 @@ public abstract class FileBuffer extends PipelineObject {
 	
 	public Collection<String> getAttributeKeys() {
 		return properties.keySet();
+	}
+	
+	/**
+	 * Returns an 8-character 'tag' for this object that doesn't change over the course of the run.
+	 * Currently used to append uniq-ifying tags to bamlinks and bed links
+	 * @return
+	 */
+	public String getUniqueTag() {
+		if (uniqTag == null) {
+			uniqTag = util.StringUtils.randomStr(8);
+		}
+		return uniqTag;
 	}
 	
 	/**
@@ -163,4 +177,6 @@ public abstract class FileBuffer extends PipelineObject {
 	 * @return
 	 */
 	public abstract String getTypeStr();
+	
+	
 }

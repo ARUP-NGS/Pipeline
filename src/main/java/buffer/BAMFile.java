@@ -7,11 +7,16 @@ import java.security.NoSuchAlgorithmException;
 import net.sf.samtools.SAMFileReader;
 import net.sf.samtools.SAMFileReader.ValidationStringency;
 import net.sf.samtools.SAMRecord;
+import util.bamWindow.BamWindow;
 
 public class BAMFile extends FileBuffer implements HasMD5 {
 
 	//Stores MD5Sum when computed
 	protected String md = null;
+	
+	//BamWindows make it easy to examine the reads in the wrapped .bam file
+	//so we can do things like compute coverage. We initialize lazily here
+	private BamWindow bamWindow = null;
 	
 	public BAMFile() {
 		//blank on purpose
@@ -30,7 +35,14 @@ public class BAMFile extends FileBuffer implements HasMD5 {
 		return true;
 	}
 	
-	
+	public int depthAtSite(String chr, int pos) {
+		if (bamWindow == null) {
+			bamWindow = new BamWindow(this.getFile());
+		}
+		bamWindow.advanceTo(chr, pos);
+		return bamWindow.size();
+	}
+		
 	
 	@Override
 	public String getTypeStr() {

@@ -851,5 +851,6 @@ public class VariantRec {
 	public static final String MITOMAP_HETEROPLASMY = "mitomap.heteroplasmy";//added just in case (currently not implemented)
 	public static final String UK10K_ALLELE_FREQ= "uk10k.frequency";
 	
+	public static final String AF = "AF";
 }
 

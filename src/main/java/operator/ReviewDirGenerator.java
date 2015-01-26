@@ -201,12 +201,12 @@ public class ReviewDirGenerator extends Operator {
 			if (finalBAM != null) {
 				writer.write("bam.file=bam/" + finalBAM.getFilename() + "\n");
 				//WARNING: Bad code here. This should be updated to make sure we're getting the correct
-				//link location from the status finalizer, which actually creates this link
-				writer.write("bam.link=results/" + finalBAM.getFilename() + "\n");
+				//link location from the LinkCreator, which actually creates this link
+				writer.write("bam.link=results/" + finalBAM.getFilename().replace(".bam", "") + "-" + finalBAM.getUniqueTag() + ".bam" + "\n");
 			}
 			
 			if (capture != null) {
-				writer.write("bed.link=results/" + capture.getFilename() + "\n");
+				writer.write("bed.link=results/" + capture.getFilename().replace(".bed", "") + "-" + capture.getUniqueTag() + ".bed" + "\n");
 
 			}
 			if (qcReport != null) {

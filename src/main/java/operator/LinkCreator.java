@@ -34,7 +34,7 @@ public class LinkCreator extends Operator {
 
 	@Override
 	public void performOperation() throws OperationFailedException {
-		linkName = finalBam.getFilename(); 
+		linkName = finalBam.getFilename().replace(".bam", "") + "-" + finalBam.getUniqueTag() + ".bam"; 
 		String linkTarget = finalBam.getAbsolutePath();
 
 		
@@ -43,7 +43,7 @@ public class LinkCreator extends Operator {
 		createLink(linkTarget + ".bai", webRoot +  resultDir + linkName + ".bai" );
 		
 		if (capture != null) {
-			String captureLinkName = capture.getFilename();
+			String captureLinkName = capture.getFilename().replace(".bed", "") + "-" + capture.getUniqueTag() + ".bed";
 			String captureLinkTarget = capture.getAbsolutePath();
 			createLink(captureLinkTarget, webRoot +  resultDir + captureLinkName );
 		}

@@ -4,7 +4,9 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -48,6 +50,13 @@ public class VCFParser implements VariantLineReader {
 	private boolean stripInitialMatchingBases = true; //defaults to true (i.e. will trim)
 	private boolean stripTrailingMatchingBases = true; //defaults to true (i.e. will trim)
 	
+	//Annotators in  this list are used to grab additional pieces of info from the vcf line
+	//and convert them into annotations. They can be set via addVCFMetricsAnnotator(..)
+	private List<VCFMetricsAnnotator> annotators = new ArrayList<VCFMetricsAnnotator>();
+	
+	//If true, will die if source cannot be identified from header
+	private boolean failIfNoSource = true;
+	
 	public VCFParser(File source) throws IOException {
 		setFile(source); //Initializes reader and parses the header information
 	}
@@ -71,7 +80,14 @@ public class VCFParser implements VariantLineReader {
 		sampleIndex = sampleIndexes.get(sampleName);
 	}
 	
-
+	/**
+	 * Add a new annotator to that will examine the vcf line and convert some data from it into
+	 * an annotation.
+	 * @param anno
+	 */
+	public void addVCFMetricsAnnotator(VCFMetricsAnnotator anno) {
+		annotators.add(anno);
+	}
 	
 	/**
 	 * Read the header of the file, including the list of samples, but do not parse any variants
@@ -122,15 +138,27 @@ public class VCFParser implements VariantLineReader {
 			} else if (creator.startsWith("CGAPipeline")) {
 				creator = "CompleteGenomics";				
 			} else if (!(creator.startsWith("freeBayes")) && !(creator.contains("Torrent")) && !(creator.startsWith("RTG")) && !(creator.startsWith("CGAPipeline"))) {
-				throw new IOException("Cannot determine variant caller that generated VCF. Header property '##source' must be start with 'freeBayes' or 'CGAPipeline' or contain 'Torrent' or 'RTG' or 'SelectVariants'.");
+				if (failIfNoSource) {
+					throw new IOException("Cannot determine variant caller that generated VCF. Header property '##source' must be start with 'freeBayes' or 'CGAPipeline' or contain 'Torrent' or 'RTG' or 'SelectVariants'.");
+				}
 			}
 		} else {
 			if ((headerProperties.containsKey("UnifiedGenotyper")) || (headerProperties.containsKey("GATKCommandLine"))) {
 				creator = "GATK / UnifiedGenotyper";
 			} else {
-				throw new IOException(NO_SOURCE_WARNING_MESSAGE);
+				if (failIfNoSource) {
+					throw new IOException(NO_SOURCE_WARNING_MESSAGE);
+				}
 			}
 		}
+	}
+	
+	/**
+	 * If set to false, won't die if source cannot be identified. 
+	 * @param fail
+	 */
+	public void setFailIfNoSource(boolean fail) {
+		this.failIfNoSource = fail;
 	}
 	
 	/**
@@ -212,6 +240,7 @@ public class VCFParser implements VariantLineReader {
 	 */
 	@Override
 	public boolean advanceLine() throws IOException {
+		sampleMetrics = null;
 		altIndex++;
 		if (altIndex == altsInCurrentLine) {
 			
@@ -421,6 +450,11 @@ public class VCFParser implements VariantLineReader {
 		
 		//@author elainegee stop
 		
+		//Iterator over all annotators and cause them to annotator if need be
+		for(VCFMetricsAnnotator vcfAnnotator : annotators) {
+			vcfAnnotator.addAnnotation(var, sampleMetrics);
+		}
+		
 		return var;
 		
 
@@ -534,10 +568,10 @@ public class VCFParser implements VariantLineReader {
 	 *  Return key-value pairs in final sampleMetrics dictionary containing metrics from both INFO & FORMAT fields
 	 *  @author elainegee
 	 */
-	public HashMap<String, String> createSampleMetricsDict(){
+	public Map<String, String> createSampleMetricsDict(){
 		// Create dictionaries from key-value pairs from INFO & FORMAT fields
-		HashMap<String, String> finalDict = createINFODict();
-		HashMap<String, String>  formatDict = createFORMATDict();
+		Map<String, String> finalDict = createINFODict();
+		Map<String, String>  formatDict = createFORMATDict();
 
 		// Add information from FORMAT dictionary into final dictionary to return
 		for (Map.Entry<String, String> entry: formatDict.entrySet()){
@@ -571,7 +605,7 @@ public class VCFParser implements VariantLineReader {
 	 *  Creates a dictionary of INFO key-value pairs by storing info from column 8 in VCF format 4.1
 	 *  @author elainegee
 	 */
-	public HashMap<String, String> createINFODict(){
+	private Map<String, String> createINFODict(){
 		HashMap<String, String> dict = new HashMap<String, String>();
 		//Tokenize INFO keys & values
 		String[] infoToks = currentLineToks[7].split(";"); //INFO key-value pairs
@@ -595,9 +629,15 @@ public class VCFParser implements VariantLineReader {
 	 *  according to FORMAT key (column 9 in VCF format 4.1)
 	 *  @author elainegee
 	 */
-	public HashMap<String, String> createFORMATDict(){
+	private Map<String, String> createFORMATDict(){
 		HashMap<String, String> dict = new HashMap<String, String>();
 		//Tokenize FORMAT keys & values
+		
+		//Abort if there's no format data
+		if (currentLineToks.length < 9) {
+			return dict;
+		}
+		
 		String[] formatKeys = currentLineToks[8].split(":"); //FORMAT keys
 		String[] formatData = currentLineToks[9].split(":"); //sample-specific FORMAT values
 		
@@ -839,7 +879,7 @@ public class VCFParser implements VariantLineReader {
 		// Grab array of ref & alternates
 		String[] sequences = getSeqArray();
 		
-		if (!genoQualStr.equals(null)) {		
+		if (genoQualStr != null) {		
 			//Grab genotype sequence alleles when there are 2 alleles		
 			String delimRegex = getGTDelimitor();
 			String[] GTToks;
@@ -891,7 +931,7 @@ public class VCFParser implements VariantLineReader {
 				}
 			}
 		} else {
-			throw new IllegalStateException("No genotype ('GT') specified in VCF.");
+			return ".";
 		}
 	}
 	
@@ -931,6 +971,9 @@ public class VCFParser implements VariantLineReader {
 	public GTType isHetero() {
 		//Get GT from sampleMetrics dictionary
 		String genoQualStr = getSampleMetricsStr("GT");
+		if (genoQualStr == null) {
+			return GTType.UNKNOWN;
+		}
 		try {
 			if (genoQualStr.length() == 1) {
 				if(genoQualStr.equals(".")) {

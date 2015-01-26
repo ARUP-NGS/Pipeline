@@ -63,7 +63,6 @@ public class SnpEffGeneAnnotate extends Annotator {
 			
 				for(String contig: variants.getContigs()) {
 					for(VariantRec rec: variants.getVariantsForContig(contig)) {
-						System.out.println("variant ref = " + rec.getRef() + "  | variant alt = " + rec.getAlt());
 						Integer recLength = rec.getRef().length() - rec.getAlt().length(); //if >0 Indicates a deletion
 						if (recLength < 0) { //Indicates that it is an insertion
 							recLength = 0; 

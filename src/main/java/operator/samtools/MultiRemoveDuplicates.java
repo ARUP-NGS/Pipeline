@@ -1,11 +1,9 @@
 package operator.samtools;
 
 import java.io.File;
+import java.util.logging.Logger;
 
 import operator.MultiOperator;
-
-import org.apache.log4j.Logger;
-
 import pipeline.Pipeline;
 import pipeline.PipelineXMLConstants;
 import buffer.BAMFile;
