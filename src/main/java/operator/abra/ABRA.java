@@ -34,12 +34,13 @@ public class ABRA extends IOOperator {
 	public static final String TEMPDIR = "tmp.dir";
 	public static final String EXTRA_OPTIONS = "abra.options";
 	public static final String REMOVE_TMP_DIR = "rm.tmp.dir";
-	String abraPath;
-	String AnalysisType;
-	String tempdir;
-	String extraOpts;
-	String threads;
-	String lowCovThreshold;
+	
+	protected String abraPath;
+	protected String AnalysisType;
+	protected String tempdir;
+	protected String extraOpts;
+	protected String threads;
+	protected String lowCovThreshold;
 	boolean RemoveTmpDir;
 
 	@Override
@@ -63,15 +64,6 @@ public class ABRA extends IOOperator {
 		if (inputBAM == null) {
 			throw new OperationFailedException("Input BAM file is null", this);
 		}
-		String command_str = "";
-		String tempdirStr;
-		String projHome = getProjectHome();
-		String tempDirName = projHome + ".io.tmp."
-				+ (int) Math.round((1e9) * Math.random());
-		if (tempdir.equals(""))
-			tempdirStr = tempDirName;
-		else
-			tempdirStr = tempdir;
 		
 		//Check the bed file to make sure it has only three columns
 		FileInputStream bedReader = new FileInputStream(bed.getAbsolutePath());
@@ -90,21 +82,30 @@ public class ABRA extends IOOperator {
 		}
 		bedscanner.close();
 		bedReader.close();
-		command_str = "java -jar " + abraPath + 
+
+
+		runAbra((ReferenceFile)refBuf, (BAMFile)inBAM, bedPath, (BAMFile)outBAM, this.getPipelineOwner().getThreadCount(),  extraOpts );		
+		return;
+	}
+
+	protected void runAbra(ReferenceFile ref, BAMFile inBAM, String bedPath, BAMFile outBAM, int threads, String extraOpts) throws OperationFailedException {
+		String tempDirName = this.getProjectHome() + "abra.tmp."	+ (int) Math.round((1e9) * Math.random());
+		
+		String command = "java -jar " + abraPath + 
 				" --in " + inBAM.getAbsolutePath() + 
 				" --ref " + ref + 
 				" --targets " + bedPath +
 				" --out " + outBAM.getAbsolutePath() +
-				" --working " + tempdirStr + " " + threads + " " + extraOpts;
+				" --working " + tempDirName +
+				" --threads " + threads + " " + extraOpts;
 		Logger.getLogger(Pipeline.primaryLoggerName).info(
-				"Command String: " + command_str);
-		executeCommand(command_str);
+				"Command String: " + command);
+		executeCommand(command);
 		Logger.getLogger(Pipeline.primaryLoggerName).info(
 				"Now removing the temporary directory.");
 		executeCommand("rm -r " + tempDirName);
-		return;
 	}
-
+	
 	@Override
 	public void initialize(NodeList children) {
 		super.initialize(children);
@@ -132,8 +133,6 @@ public class ABRA extends IOOperator {
 		}
 		this.extraOpts = extraOptsAttr;
 
-		this.threads = "--threads " + getPipelineOwner().getThreadCount();
-		
 		
 		String removeAttr = this.searchForAttribute(REMOVE_TMP_DIR);
 		if(removeAttr != null)

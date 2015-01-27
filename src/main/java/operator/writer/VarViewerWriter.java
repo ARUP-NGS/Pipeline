@@ -70,7 +70,8 @@ public class VarViewerWriter extends VariantPoolWriter {
 			 VariantRec.EXOMES_63K_FREQ,
 			 VariantRec.MITOMAP_FREQ,
 			 VariantRec.MITOMAP_ALLELE_ID,
-			 VariantRec.MITOMAP_DIS_CODING
+			 VariantRec.MITOMAP_DIS_CODING,
+			 VariantRec.POP_ALT
 			 }));
 	
 	public final static List<String> geneKeys = new ArrayList<String>( Arrays.asList(new String[]{

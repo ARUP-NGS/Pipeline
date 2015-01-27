@@ -35,6 +35,9 @@ public class MissingCommonVarFinder extends Operator {
 	//Determines minimum frequency of variant in 'common variants' to consider including
 	public static final String FREQUENCY_THRESHOLD = "freq.threshold";
 	
+	//Minimum number of reads required before claiming that we should've found a variant, but didn't
+	public static final String MIN_COVERAGE_FOR_CALLING = "cov.threshold";
+	
 	private VariantPool variants = null;
 	private BAMFile bamFile = null;
 	private BEDFile capture = null;
@@ -43,6 +46,10 @@ public class MissingCommonVarFinder extends Operator {
 	//Variants above this frequency threshold in the 'common vars' vcf
 	//but not found in the variantPool will be added
 	private Double frequencyThreshold = 0.95;
+	
+	//Number of reads present in sample to determine whether variant calling
+	//was probably possible
+	private int covThreshold = 10;
 	
 	@Override
 	public void performOperation() throws OperationFailedException,
@@ -54,8 +61,16 @@ public class MissingCommonVarFinder extends Operator {
 		if (freqAttr != null) {
 			frequencyThreshold = Double.parseDouble(freqAttr);
 		}
-		Logger.getLogger(Pipeline.primaryLoggerName).info("Missing common vars using frequency threshold of " + frequencyThreshold);
+		
+		String covAttr = this.getAttribute(MIN_COVERAGE_FOR_CALLING);
+		if (covAttr != null) {
+			covThreshold = Integer.parseInt(covAttr);
+		}
+		
+		
+		Logger.getLogger(Pipeline.primaryLoggerName).info("Missing common vars using frequency threshold: " + frequencyThreshold + " cov threshold: " + covThreshold);
 
+		
 		
 		//We iterate over the variants in the input VCF
 		VCFParser parser = new VCFParser(commonVars);
@@ -79,7 +94,7 @@ public class MissingCommonVarFinder extends Operator {
 				
 				//Is there coverage at the site? 
 				int depth = bamFile.depthAtSite(var.getContig(), var.getStart());
-				if (depth > 2) {
+				if (depth > covThreshold) {
 					VariantRec newVar = new VariantRec(var.getContig(), 
 											var.getStart(),
 											var.getEnd(),
@@ -89,7 +104,8 @@ public class MissingCommonVarFinder extends Operator {
 											"1/1",
 											GTType.HOM);
 
-					System.out.println("Adding variant " + newVar.toString());
+					newVar.addAnnotation("pop.alt", var.getAlt());
+					Logger.getLogger(Pipeline.primaryLoggerName).info("Adding variant with pop frequency " + freq + " and depth " + depth + " " + newVar.toBasicString());
 					added++;
 					variants.addRecord(newVar);
 				}

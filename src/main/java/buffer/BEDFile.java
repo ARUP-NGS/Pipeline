@@ -58,13 +58,13 @@ public class BEDFile extends IntervalsFile {
 				toks[1] = toks[1].trim();
 				toks[2] = toks[2].trim();
 				try {
-					Integer begin = Integer.parseInt(toks[1]);
-					Integer end = Integer.parseInt(toks[2]);
+					Integer begin = Integer.parseInt(toks[1])+1;
+					Integer end = Integer.parseInt(toks[2])+1;
 					Interval interval = new Interval(begin, end);
 
 					List<Interval> contigIntervals = intervals.get(contig);
 					if (contigIntervals == null) {
-						contigIntervals = new ArrayList<Interval>(2048);
+						contigIntervals = new ArrayList<Interval>(1024);
 						intervals.put(contig, contigIntervals);
 						//System.out.println("BED file adding contig: " + contig);
 					}
@@ -92,18 +92,6 @@ public class BEDFile extends IntervalsFile {
 		}
 	}
 
-	/**
-	 * Count number of bases subtended by all intervals in the list
-	 * @param list
-	 * @return
-	 */
-	private static int countSize(List<Interval> list) {
-		int size = 0;
-		for(Interval inter : list) {
-			size += inter.end - inter.begin;
-		}
-		return size;
-	}
 	
 	
 	
