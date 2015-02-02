@@ -74,6 +74,8 @@ public class QCReport extends Operator {
 	
 	public static final String EMIT_ALL_REGIONS = "emit.all.regions";
 	
+	public static final String SIMPLE_LOWCOV_REPORTING = "simple.lowcov.reporting";
+	
 	DOCMetrics rawCoverageMetrics = null;
 	DOCMetrics finalCoverageMetrics = null;
 	BAMMetrics rawBAMMetrics = null;
@@ -85,6 +87,7 @@ public class QCReport extends Operator {
 	File outputDir = null; //Directory containing qc info
 
 	private boolean emitAllRegions = false;
+	private boolean simpleLowCov = false;
 	
 	/**
 	 * Return directory containing qc output, will be null before report is written
@@ -902,7 +905,10 @@ public class QCReport extends Operator {
 						featureLookup = new ExonLookupService();
 						String featureFile = getPipelineProperty("feature.file");
 						featureLookup.setPreferredNMs( loadPreferredNMs(null));
-						featureLookup.buildExonMap(new File(featureFile));
+						if(simpleLowCov == false)
+						    featureLookup.buildExonMap(new File(featureFile));
+						else
+							featureLookup.buildExonMapWithCDSInfo(new File(featureFile));
 					}
 					catch (IOException ex) {
 						
@@ -1073,6 +1079,11 @@ public class QCReport extends Operator {
 		String emitRegionsStr = this.getAttribute(EMIT_ALL_REGIONS);
 		if (emitRegionsStr != null) {
 			emitAllRegions = Boolean.parseBoolean(emitRegionsStr);
+		}
+		
+		String simpleLowCovStr = this.getAttribute(EMIT_ALL_REGIONS);
+		if (simpleLowCovStr != null) {
+			simpleLowCov = Boolean.parseBoolean(simpleLowCovStr);
 		}
 	}
 
