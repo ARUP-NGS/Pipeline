@@ -1081,7 +1081,7 @@ public class QCReport extends Operator {
 			emitAllRegions = Boolean.parseBoolean(emitRegionsStr);
 		}
 		
-		String simpleLowCovStr = this.getAttribute(EMIT_ALL_REGIONS);
+		String simpleLowCovStr = this.getAttribute(SIMPLE_LOWCOV_REPORTING);
 		if (simpleLowCovStr != null) {
 			simpleLowCov = Boolean.parseBoolean(simpleLowCovStr);
 		}
