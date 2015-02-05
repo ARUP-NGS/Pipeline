@@ -57,13 +57,21 @@ public class BasicIntervalContainer implements HasIntervals {
 	}
 	
 	/**
-	 * Add a new interval to the exonMap, creating a new contig - and a new map - if necessary. 
+	 * Create a new interval object and add it to the exonMap, creating a new contig - and a new map - if necessary. 
 	 * @param contig
 	 * @param start
 	 * @param end
 	 * @param obj
 	 */
 	public void addInterval(String contig, int start, int end, Object obj) {
+		addInterval(contig, new Interval(start, end, obj));
+	}
+
+	/**
+	 * Add the given interval 
+	 * @param interval
+	 */
+	protected void addInterval(String contig, Interval interval) {
 		if (allIntervals == null) {
 			allIntervals = new HashMap<String, List<Interval>>();
 		}
@@ -74,9 +82,9 @@ public class BasicIntervalContainer implements HasIntervals {
 			allIntervals.put(contig, intervals);
 		}
 		
-		intervals.add(new Interval(start, end, obj));
+		intervals.add(interval);
 	}
-
+	
 	@Override
 	public Collection<String> getContigs() {
 		return allIntervals.keySet();

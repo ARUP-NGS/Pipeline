@@ -606,7 +606,7 @@ Number of Sanger Requests not Confirmed (Average per Sample)
 				
 				JSONObject rawBam = obj.getJSONObject("raw.bam.metrics");
 				Double rawReadCount = rawBam.getDouble("total.reads");
-				qcList.add("raw.reads", rawReadCount);
+				qcList.add("total.reads", rawReadCount);
 				double basesRead = rawBam.getDouble("bases.read");
 				qcList.add("bases.above.q10", rawBam.getDouble("bases.above.q10")/basesRead);
 				qcList.add("bases.above.q20", rawBam.getDouble("bases.above.q20")/basesRead);
@@ -634,7 +634,7 @@ Number of Sanger Requests not Confirmed (Average per Sample)
 				}
 				try {
 					varCount = variants.getDouble("total.vars");
-					qcList.add("total.variants", varCount);
+					qcList.add("total.vars", varCount);
 				}
 				catch (JSONException e) {
 
@@ -647,13 +647,13 @@ Number of Sanger Requests not Confirmed (Average per Sample)
 
 				}
 				indelCount = (int)(varCount - snpCount);
-				try {
-					knownSnps = variants.getDouble("total.known");
-					qcList.add("known.snps", knownSnps);
-				}
-				catch (JSONException e) {
-
-				}
+//				try {
+//					knownSnps = variants.getDouble("total.known");
+//					qcList.add("known.snps", knownSnps);
+//				}
+//				catch (JSONException e) {
+//
+//				}
 				
 				if (snpCount > 0) {
 					novelFrac = 1.0 - knownSnps/snpCount;
@@ -690,8 +690,8 @@ Number of Sanger Requests not Confirmed (Average per Sample)
 					JSONObject nocalls = obj.getJSONObject("nocalls");
 					int count = nocalls.getInt("interval.count");
 					int extent = nocalls.getInt("no.call.extent");
-					qcList.add("nocalls.region.count", new Double(count));
-					qcList.add("nocalls.extent", new Double(extent));
+					qcList.add("interval.count", new Double(count));
+					qcList.add("no.call.extent", new Double(extent));
 				} catch(Exception ex) {
 					
 				}
@@ -725,13 +725,13 @@ Number of Sanger Requests not Confirmed (Average per Sample)
 				out.print(analType + "\t");
 				
 				if (metric.equals("total.snps")) out.print("Total SNPs");				
-				if (metric.equals("total.variants")) out.print("Total variants");
+				if (metric.equals("total.vars")) out.print("Total variants");
 				if (metric.equals("known.snps")) out.print("Known SNPs");
 				if (metric.equals("total.tt.ratio")) out.print("Overall Ti/Tv");
 				if (metric.equals("known.tt")) out.print("Known Ti/Tv");
 				if (metric.equals("novel.tt")) out.print("Novel Ti/Tv");
 				if (metric.equals("mean.coverage")) out.print("Mean coverage");
-				if (metric.equals("raw.reads")) out.print("Total reads");
+				if (metric.equals("total.reads")) out.print("Total reads");
 				if (metric.equals("bases.above.q30")) out.print("Bases above Q30");
 				if (metric.equals("bases.above.q20")) out.print("Bases above Q20");
 				if (metric.equals("bases.above.q10")) out.print("Bases above Q10");
@@ -740,8 +740,8 @@ Number of Sanger Requests not Confirmed (Average per Sample)
 				if (metric.equals("frac.above.50")) out.print("Fraction above 50X");
 				if (metric.equals("percent.dups")) out.print("PCR dups. removed");
 				if (metric.equals("unmapped.reads")) out.print("Unmapped reads");
-				if (metric.equals("nocalls.region.count")) out.print("Number of no-call regions");
-				if (metric.equals("nocalls.extent")) out.print("Number no-call bases");
+				if (metric.equals("interval.count")) out.print("Number of no-call regions");
+				if (metric.equals("no.call.extent")) out.print("Number no-call bases");
 				
 				out.print("\t" + metric + "\t");
 				List<Double> vals = qcItems.getValsForMetric(metric);
@@ -749,7 +749,7 @@ Number of Sanger Requests not Confirmed (Average per Sample)
 				out.print(formattedList);
 				
 				if (metric.equals("total.snps")
-						|| metric.equals("total.variants")
+						|| metric.equals("total.vars")
 						|| metric.equals("known.tt")
 						|| metric.equals("novel.tt")
 						|| metric.equals("total.tt.ratio")) {
@@ -758,7 +758,7 @@ Number of Sanger Requests not Confirmed (Average per Sample)
 				if (metric.equals("mean.coverage")) {
 					out.print("Coverage\tfinal.coverage.metrics");
 				}
-				if (metric.equals("raw.reads")) {
+				if (metric.equals("total.reads")) {
 					out.print("Coverage\traw.bam.metrics");
 				}
 				if (metric.equals("percent.dups")) {
@@ -767,7 +767,7 @@ Number of Sanger Requests not Confirmed (Average per Sample)
 				if (metric.equals("unmapped.reads")) {
 					out.print("BAM Metrics\tNULL");
 				}
-				if (metric.startsWith("nocalls")) {
+				if (metric.startsWith("no.call") || metric.startsWith("interval.count")) {
 					out.print("BAM Metrics\tnocalls");
 				}
 				if (metric.startsWith("bases.above")) {

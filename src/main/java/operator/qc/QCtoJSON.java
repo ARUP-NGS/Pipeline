@@ -1,6 +1,7 @@
 package operator.qc;
 
 import gene.ExonLookupService;
+import gene.ExonLookupService.FeatureDescriptor;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -172,7 +173,7 @@ public class QCtoJSON extends Operator {
 					throw new IOException("Feature file " + features.getAbsolutePath() + " does not exist!");
 				}
 				featureLookup.setPreferredNMs(nms);
-				featureLookup.buildExonMap(features);
+				featureLookup.buildExonMapWithCDSInfo(features);
 			}
 			catch (IOException ex) {
 				Logger.getLogger(Pipeline.primaryLoggerName).warning("Error opening feature file, can't compute features for low coverage regions. " + ex.getLocalizedMessage());
@@ -213,7 +214,11 @@ public class QCtoJSON extends Operator {
 							if (featureLookup != null) {
 								features = featureLookup.getIntervalObjectsForRange(contig, (int)startPos, (int)endPos);							
 							}
-							String featureStr = QCReport.mergeStrings(features);
+							List<FeatureDescriptor> fds = new ArrayList<FeatureDescriptor>();
+							for(Object o : features) {
+								fds.add((FeatureDescriptor)o);
+							}
+							String featureStr = ExonLookupService.mergeFeatures(fds);
 							if (length > 1 && (featureStr.contains("exon"))) {
 								regions.add(Arrays.asList(new String[]{"chr" + toks[0] + ":" + toks[1] + " - " + toks[2], "" + length, cause, featureStr}) );
 							}

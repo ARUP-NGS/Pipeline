@@ -62,7 +62,7 @@ public class VariantUploader extends Operator {
 			json.put("result", resultDTA);
 		
 			JSONArray list = new JSONArray();
-			for(VariantRec r: vars){
+			for(VariantRec r: vars) {
 				JSONObject row = new JSONObject();
 				row.put("chr", r.getContig());
 				row.put("pos", r.getStart());
@@ -82,8 +82,10 @@ public class VariantUploader extends Operator {
 			}
 			
 			json.put("variant.list", list);
+			System.out.println("\n\n" + json + "\n\n");
 			String result = HttpUtils.HttpPostJSON(uploadURL, json);
   					
+			
 			logger.info("Uploading " + vars.size() + " variants to " + uploadURL);
 
 			if(!result.equals(success)){
@@ -103,9 +105,9 @@ public class VariantUploader extends Operator {
 		} catch (IOException e) {
 			throw new OperationFailedException("Failed to upload a JSON list of variants (IOException): " + e.getMessage(), this);
 		}
-		
-		
+			
 	}
+	
 
 	@Override
 	public void initialize(NodeList children) {

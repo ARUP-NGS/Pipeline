@@ -1,6 +1,7 @@
 package operator.qc;
 
 import gene.ExonLookupService;
+import gene.ExonLookupService.FeatureDescriptor;
 import gui.figure.FigureFactory;
 import gui.figure.heatMapFigure.HeatMapFigure;
 import gui.figure.series.XYSeriesFigure;
@@ -22,8 +23,6 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
@@ -929,7 +928,6 @@ public class QCReport extends Operator {
 						if (toks.length == 4) {
 							if (! toks[3].equals("CALLABLE")) {
 								
-								
 									try {
 										String contig = toks[0];
 										long startPos = Long.parseLong(toks[1]);
@@ -944,11 +942,19 @@ public class QCReport extends Operator {
 										if (featureLookup != null) {
 											features = featureLookup.getIntervalObjectsForRange(contig, (int)startPos, (int)endPos);							
 										}
-										String featureStr = mergeStrings(features);
-										if(simpleLowCov)
-											regions.add(Arrays.asList(new String[]{featureStr}) );
-										else
+										
+										if(simpleLowCov) {
+											List<FeatureDescriptor> fds = new ArrayList<FeatureDescriptor>();
+											for(Object o : features) {
+												fds.add((FeatureDescriptor)o);
+											}
+											String featureStr = ExonLookupService.mergeFeatures(fds);
 											regions.add(Arrays.asList(new String[]{"chr" + toks[0] + ":" + toks[1] + " - " + toks[2], "" + length, cause, featureStr}) );
+										}
+										else {
+											String featureStr = mergeStrings(features);
+											regions.add(Arrays.asList(new String[]{"chr" + toks[0] + ":" + toks[1] + " - " + toks[2], "" + length, cause, featureStr}) );
+										}
 										noCallPositions += length;
 										noCallIntervals++;
 									} catch (NumberFormatException nfe) {
@@ -965,7 +971,6 @@ public class QCReport extends Operator {
 					//We now have a list of all no-call regions with their length and feature information
 					//So sort it to prioritize the important ones and then add them to the "flagT" for
 					//formatting and output
-					Collections.sort(regions, new RegionComparator());
 					int maxNum = 250;
 					if (emitAllRegions) {
 						maxNum =Integer.MAX_VALUE;
@@ -1018,6 +1023,8 @@ public class QCReport extends Operator {
 		}
 		return str;
 	}
+	 
+	
 
 	@Override
 	public void initialize(NodeList children) {
@@ -1120,57 +1127,7 @@ public class QCReport extends Operator {
 	}
 	
 
-	/**
-	 * Compares strings of the type produced by the FeatureLookupService to prioritize those
-	 * that are in large, exonic regions
-	 * @author brendan
-	 *
-	 */
-	class RegionComparator implements Comparator<List<String>> {
-
-		@Override
-		public int compare(List<String> s0, List<String> s1) {
-		
-			int val0 = 0;
-			String f0 = s0.get(3);
-			if (f0.contains("NR_")) {
-				val0 = 1;
-			}
-			if (f0.contains("NM_")) {
-				val0 = 2;
-				if (f0.contains("exon")) {
-					val0 = 3;
-				}
-			}
-			
-			int val1 = 0;
-			String f1 = s1.get(3);
-			if (f1.contains("NR_")) {
-				val1 = 1;
-			}
-			if (f1.contains("NM_")) {
-				val1 = 2;
-				if (f1.contains("exon")) {
-					val1 = 3;
-				}
-			}
-			
-			//If values are equal, compare for length
-			if (val1 == val0) {
-				try {
-					int l1 = Integer.parseInt(s1.get(1));
-					int l0 = Integer.parseInt(s0.get(1));
-					return l1 -l0;
-				}	
-				catch(NumberFormatException nfe) {
-					//forget it, this only affects the ordering of no call regions 
-				}
-			
-			}
-			return val1 - val0;
-		}
-		
-	}
+	
 	
 	static DecimalFormat formatter = new DecimalFormat("#0.00");
 }
