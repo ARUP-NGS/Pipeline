@@ -40,6 +40,20 @@ public class ExonLookupService extends BasicIntervalContainer {
 	}
 
 	/**
+	 * Strips the transcript version identifier if present from the transcript id
+	 * e.g. NM_000123.4 becomes NM_000123
+	 * @param nm
+	 * @return
+	 */
+	private static String stripTranscriptVersion(String nm) {
+		int index = nm.indexOf(".");
+		if (index > 0) {
+			return nm.substring(0, index);
+		}
+		return nm;
+	}
+	
+	/**
 	 * Read all info from file into exonMap - this newer version uses output of
 	 * the form produced by the Scrutil / ucsc_refseq2exon_bed.py script (which
 	 * in turn uses gene / exon coordinates from the UCSC table browser) Stores
@@ -104,8 +118,7 @@ public class ExonLookupService extends BasicIntervalContainer {
 		int cdsEnd = Integer.parseInt(toks[11]) + 1;
 		char strand = toks[7].charAt(0);
 		
-		int numBases = end - start;
-		String nmInfo = toks[3];
+		String nmInfo = stripTranscriptVersion(toks[3]);
 		String geneName = toks[4];
 		String exon = toks[5];
 
