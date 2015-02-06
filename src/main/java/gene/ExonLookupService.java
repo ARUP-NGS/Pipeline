@@ -171,7 +171,22 @@ public class ExonLookupService extends BasicIntervalContainer {
 			fd.start = lower;
 			fd.end = upper;
 			interval = new Interval(lower, upper, fd);
-			intervals.add(interval);
+			
+			//See if we should add the interval based on preferred NM status
+			if (preferredNMs == null) {
+				//If nothing specified, always add
+				addInterval(contig, interval);
+			} 
+			else {
+				//Does this gene have a preferred NM? 
+				String nm = preferredNMs.get(geneName);
+				if (nm == null) {
+					//No NM for this gene, so add it
+					addInterval(contig, interval);
+				} else if (nmInfo.contains(nm)) {
+					addInterval(contig, interval);
+				}
+			}
 		}			
 		
 		return intervals;
@@ -230,7 +245,7 @@ public class ExonLookupService extends BasicIntervalContainer {
 				String nm = preferredNMs.get(geneName);
 				if (nm == null) {
 					addInterval(contig, start, end, desc);
-				} else if (nmInfo.contains(nm)) {
+				} else if (nm.contains(nmInfo)) {
 					addInterval(contig, start, end, desc);
 				}
 			}
@@ -390,9 +405,12 @@ public class ExonLookupService extends BasicIntervalContainer {
 	 
 	public static void main(String[] agrs) throws IOException {
 		ExonLookupService es = new ExonLookupService();
+		Map<String, String> prefNMs = new HashMap<String, String>();
+		prefNMs.put("TGFB2", "NM_001135599");
+		es.setPreferredNMs(prefNMs);
 		es.buildExonMapWithCDSInfo(new File("/home/brendan/resources/features20150106.v3.bed"));
 		
-		Object[] infos = es.getIntervalObjectsForRange("12", 25359000, 25359008);
+		Object[] infos = es.getIntervalObjectsForRange("1", 218519022, 218519122);
 		
 		List<FeatureDescriptor> fds = new ArrayList<FeatureDescriptor>();
 		for(Object o : infos) {
