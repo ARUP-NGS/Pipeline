@@ -1,6 +1,7 @@
 package operator.gatk;
 
 import gene.ExonLookupService;
+import gene.ExonLookupService.FeatureDescriptor;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -196,19 +197,17 @@ public class DepthOfCoverage extends IOOperator {
 				throw new IOException("Feature file " + features.getAbsolutePath() + " does not exist!");
 			}
 			featureLookup.setPreferredNMs(preferredNMs);
-			featureLookup.buildExonMap(features);
+			featureLookup.buildExonMapWithCDSInfo(features, true);
 			
 			
 			for(FlaggedInterval lowCovExon : metrics.getFlaggedIntervals()) {
 				Object[] overlappingFeatures = featureLookup.getIntervalObjectsForRange(lowCovExon.chr, lowCovExon.start, lowCovExon.end);
-				for(Object feats : overlappingFeatures) {
-					for(String feat : feats.toString().split(",")) {
-						if (feat.contains("Exon")) {
-							lowCovExon.info = lowCovExon.info + feat.replace("Coding", "") + "; ";
-						}
-					}
-					
+				List<FeatureDescriptor> fds = new ArrayList<FeatureDescriptor>();
+				for(Object o : overlappingFeatures) {
+					fds.add((FeatureDescriptor)o);
 				}
+				lowCovExon.info = ExonLookupService.mergeFeatures(fds);
+
 			}
 			
 			

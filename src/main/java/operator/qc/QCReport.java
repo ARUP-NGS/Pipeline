@@ -121,7 +121,7 @@ public class QCReport extends Operator {
 		}
 	
 		if (variantPool == null) {
-			throw new OperationFailedException("No variant pool specified", this);
+			logger.warning(getObjectLabel() + " Variant pool object is null!");
 		}
 		
 		if (rawBAMMetrics == null) {
@@ -130,7 +130,7 @@ public class QCReport extends Operator {
 		if (finalBAMMetrics == null) {
 			logger.warning(getObjectLabel() + " Final BAM Metrics object is null!");
 		}
-		logger.info("Creating qc report for raw bam file:" + rawBAMMetrics.path + "\n final BAM: " + finalBAMMetrics.path + " variant pool with:" + variantPool.size() + " variants");
+		//logger.info("Creating qc report for raw bam file:" + rawBAMMetrics.path + "\n final BAM: " + finalBAMMetrics.path + " variant pool with:" + variantPool.size() + " variants");
 		
 		String projHome = getProjectHome();				
 		
@@ -1000,7 +1000,8 @@ public class QCReport extends Operator {
 					
 				}
 				catch(Exception ex) {
-					
+					Logger.getLogger(Pipeline.primaryLoggerName).warning("Error writing BAM metrics block: " + ex.getLocalizedMessage());
+
 				}
 			}
 		}		
@@ -1086,6 +1087,11 @@ public class QCReport extends Operator {
 				}
 				// ?
 			}
+		}
+		
+		
+		if (variantPool == null) {
+			throw new IllegalArgumentException("No VariantPool object specified");
 		}
 		
 		if (rawBAMMetrics == null) {
