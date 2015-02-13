@@ -67,6 +67,14 @@ public class AnnotatedVarsJsonConverter {
 		varObj.put("quality", var.getQuality());
 		varObj.put("ref", var.getRef());
 		varObj.put("alt", var.getAlt());
+		
+		//Variant frequency defaults to 0, but gets computed from the DEPTH and VAR_DEPTH properties, if available
+		double varFreq = 0.0;
+		if (var.getProperty(VariantRec.DEPTH) != null && var.getProperty(VariantRec.DEPTH) > 0 && var.getProperty(VariantRec.VAR_DEPTH) != null) {
+			varFreq = var.getProperty(VariantRec.VAR_DEPTH) / var.getProperty(VariantRec.DEPTH);
+		}
+		varObj.put("var.freq", varFreq);
+
 		String zyg = "";
 		if (var.getZygosity() == GTType.HET) {
 			zyg = "het";
