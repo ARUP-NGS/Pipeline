@@ -11,10 +11,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.logging.Logger;
 
 import json.JSONArray;
@@ -46,6 +44,8 @@ import buffer.variant.VariantRec;
 public class QCtoJSON extends Operator {
 
 	public static final String NM_DEFS = "nm.Definitions";
+	public static final String STRICT_NMS = "strict.nm";
+	
 	private Map<String, String> nms = null;
 	
 	DOCMetrics rawCoverageMetrics = null;
@@ -56,6 +56,10 @@ public class QCtoJSON extends Operator {
 	CSVFile noCallCSV = null;
 	BEDFile captureBed = null;
 	TextBuffer jsonFile = null;
+	
+	
+	//If true, do not report regions that do not have a preferred NM specified.
+	private boolean strictNM = true;
 	
 	/**
 	 * Get the file to which the JSON output is written
@@ -173,7 +177,7 @@ public class QCtoJSON extends Operator {
 					throw new IOException("Feature file " + features.getAbsolutePath() + " does not exist!");
 				}
 				featureLookup.setPreferredNMs(nms);
-				featureLookup.buildExonMapWithCDSInfo(features);
+				featureLookup.buildExonMapWithCDSInfo(features, strictNM);
 			}
 			catch (IOException ex) {
 				Logger.getLogger(Pipeline.primaryLoggerName).warning("Error opening feature file, can't compute features for low coverage regions. " + ex.getLocalizedMessage());
@@ -419,27 +423,13 @@ public class QCtoJSON extends Operator {
 		if (finalBAMMetrics == null) {
 			throw new IllegalArgumentException("No final BAM metrics objects specified");
 		}
+	
 		
+		String strictNMStr = this.getAttribute(STRICT_NMS);
+		if (strictNMStr != null) {
+			strictNM = Boolean.parseBoolean(strictNMStr);
+		}
 	}
 
-	private Set<String> readNMMap(File file) throws IOException{
-		BufferedReader br;
-			br = new BufferedReader(new FileReader(file));
-			String line;
-			HashSet<String> nms = new HashSet<String>();
-			
-			while((line = br.readLine()) != null){
-				if (line.length()==0)
-					continue;
-				
-				String[] values = line.split("\t");
-				if (values.length != 2) {
-					Logger.getLogger(Pipeline.primaryLoggerName).warning("Could not parse preferred NM# from line: " + line);
-					continue;
-				}
-				nms.add(values[1].toUpperCase().trim());
-			}
-			br.close();
-			return nms;
-		}
+	
 }

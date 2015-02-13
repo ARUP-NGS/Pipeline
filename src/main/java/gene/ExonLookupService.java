@@ -29,10 +29,11 @@ public class ExonLookupService extends BasicIntervalContainer {
 	//Each feature gets categorized by exactly one of these
 	public enum FeatureType { CODING_EXON, UTR5, UTR3, INTRON, UNKNOWN }
 	
+	
+	//Map from gene name to transcript id (aka NM) to use for the gene. 
+	//May be null or empty. 
 	private Map<String, String> preferredNMs = null;
 
-	// If specified, we report only the regions corresponding to these nms and
-	// ignore all else.
 	
 	//If specified, we report only the regions corresponding to these nms and ignore all else. 
 	public void setPreferredNMs(Map<String, String> nms) {
@@ -60,10 +61,11 @@ public class ExonLookupService extends BasicIntervalContainer {
 	 * extra information for the modified low coverage region reporting.
 	 * While buildExonMap only
 	 * 
-	 * @param file
+	 * @param file File containing regions to parse
+	 * @param strictNMs If true, don't report non-preferred NMs
 	 * @throws IOException
 	 */
-	public void buildExonMapWithCDSInfo(File file) throws IOException {
+	public void buildExonMapWithCDSInfo(File file, boolean strictNMs) throws IOException {
 		BufferedReader reader = new BufferedReader(new FileReader(file));
 
 		String line = reader.readLine();
@@ -79,8 +81,14 @@ public class ExonLookupService extends BasicIntervalContainer {
 				} else {
 					// Does this gene have a preferred NM?
 					String nm = preferredNMs.get(fd.geneName);
+					
+					//Semi-confusing logic here: If there's no preferred NM for the gene, only
+					//add the interval is strictNMs is set. If there is a preferred NM, then only add
+					//the interval if the transcript matches the preferred transcript
 					if (nm == null) {
-						addInterval(fd.contig, interval);
+						if (!strictNMs) {
+							addInterval(fd.contig, interval);
+						}
 					} else if (fd.transcriptID.contains(nm)) {
 						addInterval(fd.contig, interval);
 					}
@@ -104,7 +112,16 @@ public class ExonLookupService extends BasicIntervalContainer {
 
 	
 
-	private List<Interval> parseIntervals(String line) {
+		/**
+		 * Examine the given line of the input file and extract from it one or more intervals to be added to
+		 * the intervals list. Each interval will contain a FeatureDescriptor object with some info
+		 * about the genomic region covered.
+		 * If 'strictNMs' is true and preferred NMs are set, then ignore all transcripts that are not preferred. 
+		 * @param line
+		 * @param strictNMs If true, ignore non-preferred transcripts
+		 * @return
+		 */
+	private static List<Interval> parseIntervals(String line) {
 		List<Interval> intervals = new ArrayList<Interval>();
 
 		String[] toks = line.split("\t");
@@ -180,26 +197,13 @@ public class ExonLookupService extends BasicIntervalContainer {
 				throw new IllegalArgumentException("Bounds inferred incorrectly, line: " + line);
 			}
 			
-			//System.out.println("Adding interval " + lower + " - " + upper + " : " + fd.toString());
+			
 			fd.start = lower;
 			fd.end = upper;
-			interval = new Interval(lower, upper, fd);
 			
-			//See if we should add the interval based on preferred NM status
-			if (preferredNMs == null) {
-				//If nothing specified, always add
-				addInterval(contig, interval);
-			} 
-			else {
-				//Does this gene have a preferred NM? 
-				String nm = preferredNMs.get(geneName);
-				if (nm == null) {
-					//No NM for this gene, so add it
-					addInterval(contig, interval);
-				} else if (nmInfo.contains(nm)) {
-					addInterval(contig, interval);
-				}
-			}
+			interval = new Interval(lower, upper, fd);
+			intervals.add(interval);
+			
 		}			
 		
 		return intervals;
@@ -280,7 +284,8 @@ public class ExonLookupService extends BasicIntervalContainer {
 		return getIntervalObjectsForRange(contig, pos, pos + 1);
 	}
 
-	public String featureToString(FeatureType ft) {
+	
+	public static String featureToString(FeatureType ft) {
 		switch (ft) {
 		case UNKNOWN:
 			return "?";
@@ -301,7 +306,7 @@ public class ExonLookupService extends BasicIntervalContainer {
 	 * @author brendan
 	 *
 	 */
-	public class FeatureDescriptor {
+	public static class FeatureDescriptor {
 
 		String geneName;
 		FeatureType featureType; 
@@ -420,10 +425,11 @@ public class ExonLookupService extends BasicIntervalContainer {
 		ExonLookupService es = new ExonLookupService();
 		Map<String, String> prefNMs = new HashMap<String, String>();
 		prefNMs.put("TGFB2", "NM_001135599");
+		prefNMs.put("CCDC107", "NM_174923");
 		es.setPreferredNMs(prefNMs);
-		es.buildExonMapWithCDSInfo(new File("/home/brendan/resources/features20150106.v3.bed"));
+		es.buildExonMapWithCDSInfo(new File("/home/brendan/resources/features20150106.v3.bed"), true);
 		
-		Object[] infos = es.getIntervalObjectsForRange("1", 218519022, 218519122);
+		Object[] infos = es.getIntervalObjectsForRange("9", 35658000, 35658400);
 		
 		List<FeatureDescriptor> fds = new ArrayList<FeatureDescriptor>();
 		for(Object o : infos) {

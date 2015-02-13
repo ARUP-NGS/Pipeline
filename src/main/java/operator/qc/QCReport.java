@@ -75,6 +75,11 @@ public class QCReport extends Operator {
 	
 	public static final String SIMPLE_LOWCOV_REPORTING = "simple.lowcov.reporting";
 	
+	
+	public static final String STRICT_NMS = "strict.nm";
+	
+	
+	
 	DOCMetrics rawCoverageMetrics = null;
 	DOCMetrics finalCoverageMetrics = null;
 	BAMMetrics rawBAMMetrics = null;
@@ -87,6 +92,7 @@ public class QCReport extends Operator {
 
 	private boolean emitAllRegions = false;
 	private boolean simpleLowCov = false;
+	private boolean strictNM = true;
 	
 	/**
 	 * Return directory containing qc output, will be null before report is written
@@ -907,7 +913,7 @@ public class QCReport extends Operator {
 						if(simpleLowCov == false)
 						    featureLookup.buildExonMap(new File(featureFile));
 						else
-							featureLookup.buildExonMapWithCDSInfo(new File(featureFile));
+							featureLookup.buildExonMapWithCDSInfo(new File(featureFile), strictNM);
 					}
 					catch (IOException ex) {
 						
@@ -934,6 +940,10 @@ public class QCReport extends Operator {
 										long endPos = Long.parseLong(toks[2]);
 										long length = endPos - startPos;
 
+										if (length==0) {
+											line = reader.readLine();
+											continue;
+										}
 										String cause = toks[3];
 										cause = cause.toLowerCase();
 										cause  = ("" + cause.charAt(0)).toUpperCase() + cause.substring(1);
@@ -1094,6 +1104,11 @@ public class QCReport extends Operator {
 		String simpleLowCovStr = this.getAttribute(SIMPLE_LOWCOV_REPORTING);
 		if (simpleLowCovStr != null) {
 			simpleLowCov = Boolean.parseBoolean(simpleLowCovStr);
+		}
+		
+		String strictNMStr = this.getAttribute(STRICT_NMS);
+		if (strictNMStr != null) {
+			strictNM = Boolean.parseBoolean(strictNMStr);
 		}
 	}
 
