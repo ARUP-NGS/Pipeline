@@ -90,8 +90,8 @@ public class VariantPool extends Operator  {
 	 * 3: ref
 	 * 4: alt
 	 * 5: qual
-	 * 6: het / hom
-	 * 7: depth
+	 * 6: depth
+	 * 7: het / hom
 	 * 8: genotype quality
 	 * 
 	 *
