@@ -2,9 +2,11 @@ package operator.oncology;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -15,8 +17,6 @@ import java.util.Set;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import com.sun.org.apache.xerces.internal.impl.xpath.regex.ParseException;
 
 import json.JSONException;
 import json.JSONObject;
@@ -33,6 +33,8 @@ import buffer.FileBuffer;
 import buffer.JSONBuffer;
 import buffer.ReferenceFile;
 
+import com.sun.org.apache.xerces.internal.impl.xpath.regex.ParseException;
+
 /*
  * @author daniel/elaine
  * Calculates ratios and counts for alignments to multiple custom reference files. 
@@ -42,6 +44,7 @@ import buffer.ReferenceFile;
 public class OncologyUtils extends IOOperator {
 
 	public static final String SAMTOOLS_PATH = "samtools.path";
+	public static final String INCLUDE_NTRK = "include.ntrk";
 	public static String defaultSamPath = "samtools";
 
 	@Override
@@ -56,12 +59,9 @@ public class OncologyUtils extends IOOperator {
 		logger.info("Beginning utilities: Checking Arguments");
 		System.out.println("Beginning utilities: Checking Arguments.");
 
-		List<FileBuffer> FastqBuffers = this
-				.getAllInputBuffersForClass(FastQFile.class); // Should contain 4 files
-		List<FileBuffer> BamBuffers = this
-				.getAllInputBuffersForClass(BAMFile.class);
-		List<FileBuffer> CustomRefBuffers = this
-				.getAllInputBuffersForClass(ReferenceFile.class);
+		List<FileBuffer> FastqBuffers = this.getAllInputBuffersForClass(FastQFile.class); // Should contain 4 files
+		List<FileBuffer> BamBuffers = this.getAllInputBuffersForClass(BAMFile.class);
+		List<FileBuffer> CustomRefBuffers = this.getAllInputBuffersForClass(ReferenceFile.class);
 
 		if (FastqBuffers.size() != 4) {
 			System.out.println(FastqBuffers.size() + " fastq files provided.");
@@ -148,25 +148,22 @@ public class OncologyUtils extends IOOperator {
 
 		// Get map containing # of reads per contig
 
-		String commandStr = samtoolsPath + " index "
-				+ BamBuffers.get(6).getAbsolutePath();
+		String commandStr = samtoolsPath + " index " + BamBuffers.get(6).getAbsolutePath();
 		executeCommand(commandStr);
-		Map<String, Long> bamRatioMap = ReadCounter.countReadsByChromosome(
-				(BAMFile) BamBuffers.get(6), 1);
+		Map<String, Long> bamRatioMap = ReadCounter.countReadsByChromosome( (BAMFile) BamBuffers.get(6), 1);
 		Set<String> keysRatio = bamRatioMap.keySet();
 		Map<String, Long> ratioMap = new HashMap<String, Long>();
 		for (String contig : RatioContigs) {
 			ratioMap.put(contig, (long) 0);
 		}
+		
 		for (String key : keysRatio) {
-			System.out.println(key + " is the key with value "
-					+ bamRatioMap.get(key).toString());
+			//System.out.println(key + " is the key with value " + bamRatioMap.get(key).toString());
 			ratioMap.put(key, bamRatioMap.get(key));
 		}
 
-		String commandStr1 = samtoolsPath + " index "
-				+ BamBuffers.get(4).getAbsolutePath();
-		System.out.println("Now executing " + commandStr1);
+		String commandStr1 = samtoolsPath + " index " + BamBuffers.get(4).getAbsolutePath();
+		//System.out.println("Now executing " + commandStr1);
 		executeCommand(commandStr1);
 		Map<String, Long> bamFusionMap = ReadCounter.countReadsByChromosome(
 				(BAMFile) BamBuffers.get(4), 1);
@@ -183,11 +180,10 @@ public class OncologyUtils extends IOOperator {
 
 		String commandStr2 = samtoolsPath + " index "
 				+ BamBuffers.get(9).getAbsolutePath();
-		System.out.println("Now executing " + commandStr2);
+		logger.info("Now executing " + commandStr2);
 		executeCommand(commandStr2);
-		Map<String, Long> bamRescueMap = ReadCounter.countReadsByChromosome(
-				(BAMFile) BamBuffers.get(9), 0);
-		System.out.println("Grabbing contigs from this bam file: " + BamBuffers.get(9).getAbsolutePath());
+		Map<String, Long> bamRescueMap = ReadCounter.countReadsByChromosome( (BAMFile) BamBuffers.get(9), 0);
+		//System.out.println("Grabbing contigs from this bam file: " + BamBuffers.get(9).getAbsolutePath());
 		Set<String> keysRescue = bamRescueMap.keySet();
 		Map<String, Long> rescueMap = new HashMap<String, Long>();
 		for (String contig : FusionSplitContigs) {
@@ -435,46 +431,50 @@ public class OncologyUtils extends IOOperator {
 		// System.out.printf( "JSON: %s", json.toString(2) );
 
 		// Build final results map to be converted to JSON (OLD format for Validation)
-		Map<String, Object> finalResults = new HashMap<String, Object>();
-		finalResults.put("summary", summary);
-		finalResults.put("rna.ratio", rnaRatio);
-		finalResults.put("rna.fusion", rnaFusion);
-		finalResults.put("rna.adjusted.ratio", rnaRatioAdjusted);
-		finalResults.put("rna.rescue", rnaRescue);
-		JSONObject json = new JSONObject(finalResults);
+//		Map<String, Object> finalResults = new HashMap<String, Object>();
+//		finalResults.put("summary", summary);
+//		finalResults.put("rna.ratio", rnaRatio);
+//		finalResults.put("rna.fusion", rnaFusion);
+//		finalResults.put("rna.adjusted.ratio", rnaRatioAdjusted);
+//		finalResults.put("rna.rescue", rnaRescue);
+		//JSONObject json = new JSONObject(finalResults);
 		// Get the json string, then compress it to a byte array
-		String str = json.toString();
+		//String str = json.toString();
 		
-		String strNGSWeb = getJSONStrforNGSWeb(summary, rnaFusion, rnaRatio, rnaRatioAdjusted, 
-				FusionContigs, RatioContigSets, RatioContigs);
+		boolean includeNTRK = false;
+		if (this.getAttribute(INCLUDE_NTRK) != null) {
+			includeNTRK = Boolean.parseBoolean(this.getAttribute(INCLUDE_NTRK));
+		}
 		
-		// Makes the JSON string human-readable. Requires GSON library.
-		/**
-		Gson gson = new GsonBuilder().setPrettyPrinting().create();
-		JsonParser jp = new JsonParser(); 
-		JsonElement je = jp.parse(json.toString()); 
-		String str = gson.toJson(je);
-		*/
+		JSONObject strNGSWebWithNTRK = getJSONStrforNGSWeb(summary, rnaFusion, rnaRatio, rnaRatioAdjusted, 
+				FusionContigs, RatioContigSets, RatioContigs, false);
 		
-		byte[] bytes = CompressGZIP.compressGZIP(strNGSWeb);
-		//byte[] bytes = CompressGZIP.compressGZIP(str);
-
-		//finalResults.put( "summary", summary );
-		//finalResults.put( "rna.ratio", rnaRatio );
-		//finalResults.put( "rna.fusion", rnaFusion );
-
-		//byte[] bytes = CompressGZIP.compressGZIP(prettyJsonString);
-
-		// Write compresssed JSON to file
-		// File dest = new File(getProjectHome() + "/rna_report.json.gz");
+		JSONObject strNGSWebWithoutNTRK = getJSONStrforNGSWeb(summary, rnaFusion, rnaRatio, rnaRatioAdjusted, 
+				FusionContigs, RatioContigSets, RatioContigs, true);
+		
+		
+		byte[] bytes;
+		if (includeNTRK) {
+			bytes = CompressGZIP.compressGZIP(strNGSWebWithNTRK.toString());
+		} else {
+			bytes = CompressGZIP.compressGZIP(strNGSWebWithoutNTRK.toString());
+		}
+		
 		File dest = this.getOutputBufferForClass(JSONBuffer.class).getFile();
-		BufferedOutputStream writer = new BufferedOutputStream(
-				new FileOutputStream(dest));
+		BufferedOutputStream writer = new BufferedOutputStream(new FileOutputStream(dest));
 		writer.write(bytes);
 		writer.close();
+		
+		
+		File withNTRKDest = new File(this.getProjectHome() + "fusions-ntrk.json");
+		BufferedWriter ntrkwriter = new BufferedWriter(new FileWriter(withNTRKDest));
+		ntrkwriter.write(strNGSWebWithNTRK.toString());
+		ntrkwriter.close();
+		
 		return;
 	}
 	
+
 	/**
 	 * Writes out an NGS-Web friendly JSON output (contains Summary & Fusions keys). 
 	 * Requires the previously calculated summary (read coverage), rnaFusion (counts), rnaRatio
@@ -486,10 +486,14 @@ public class OncologyUtils extends IOOperator {
 	 * @return
 	 * @throws IOException 
 	 */
-	private String getJSONStrforNGSWeb(Map<String, Object> summary, 
+	private JSONObject getJSONStrforNGSWeb(Map<String, Object> summary, 
 			Map<String, Object> rnaFusion, 
-			Map<String, Object> rnaRatio, Map<String, Object> rnaRatioAdjusted, 
-			String[] FusionContigs, String[] RatioContigSets, String[] RatioContigs) throws IOException {
+			Map<String, Object> rnaRatio, 
+			Map<String, Object> rnaRatioAdjusted, 
+			String[] FusionContigs, 
+			String[] RatioContigSets,
+			String[] RatioContigs,
+			boolean removeNTRK) throws IOException {
 		
 		// Build final results map to be converted to JSON (NEW format for NGS.Web) 
 		Map<String, Object> finalResultsNGSWeb = new HashMap<String, Object>();
@@ -534,7 +538,7 @@ public class OncologyUtils extends IOOperator {
 		String fusion = "";
 		List<Map<String, Object>> listTargetMaps = new ArrayList<Map<String, Object>>();
 		for (String targetFusion: FusionContigs) {
-			if (!targetFusion.contains("ENCTRL")) {
+			if (!targetFusion.contains("ENCTRL") && (removeNTRK && !(targetFusion.contains("NTRK"))) ) {
 				Map<String, Object> target = new HashMap<String, Object>(); //contains all fusion info
 				ArrayList<Map> geneList = new ArrayList<Map>(); //contains both genes of fusion
 				//Get gene name, exonStart, exonStop
@@ -628,8 +632,8 @@ public class OncologyUtils extends IOOperator {
 		
 		// Get the json string
 		JSONObject jsonNGSWeb = new JSONObject(finalResultsNGSWeb);		
-		String result = jsonNGSWeb.toString();
-		return result;
+		//String result = jsonNGSWeb.toString();
+		return jsonNGSWeb;
 	}
 	
 	/**

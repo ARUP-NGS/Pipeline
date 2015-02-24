@@ -223,6 +223,22 @@ public class QCJsonReader {
 			return;
 		}
 		
+		if (command.equals("list")) {
+			performList(paths, System.out);
+			return;
+		}
+		
+		if (command.equals("find")) {
+			paths.remove(0);
+			if (paths.size()==0) {
+				System.err.println("Please enter the term to search for followed by the list of files to search");
+				System.err.println("For example:\n\tqcReader.jar exom path1 path2 ...");
+				return;
+			}
+			performFindByType(args[1], paths, System.out);
+			return;
+		}
+		
 		if (command.startsWith("comp")) {
 			try {
 				performComparison(paths, System.out);
@@ -270,6 +286,56 @@ public class QCJsonReader {
 		}
 		
 		System.err.println("Unrecognized command");
+		
+	}
+	
+	
+	private static void performList(List<String> paths, PrintStream out) {
+		for(String path : paths) {
+			try {
+				File file = new File(path);
+				if (!file.exists() || !file.isDirectory()) {
+					continue;
+				}
+				ReviewDirectory reviewDir = new ReviewDirectory(path);
+				out.println(reviewDir.getAnalysisType() + "\t" + path);
+			} catch (Exception ex) {
+				//ignored
+			}
+		}
+	}
+
+	/**
+	 * Perform the 'list' operation, which lists the full paths of all review directories
+	 * whose analysis type matches the given query 
+	 * @param paths
+	 * @param out
+	 */
+	private static void performFindByType(String query, List<String> paths, PrintStream out) {
+		query = query.toLowerCase();
+		for(String path : paths) {
+			try {
+				File file = new File(path);
+				if (!file.exists() || !file.isDirectory()) {
+					continue;
+				}
+				ReviewDirectory reviewDir = new ReviewDirectory(path);
+				
+				String analysisType = reviewDir.getAnalysisType();
+				if (analysisType == null) {
+					continue;
+				}
+				
+				analysisType = analysisType.toLowerCase();
+				
+				if (analysisType.contains(query) || query == "*") {
+					out.println(path);
+				}
+				
+			} catch (Exception ex) {
+				//ignored on purpose
+			}
+		}
 		
 	}
 

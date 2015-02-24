@@ -31,6 +31,10 @@ public class ReviewDirectory {
 		return manifest.getSampleName();
 	}
 	
+	public String getAnalysisType() {
+		return manifest.getAnalysisType();
+	}
+	
 	public VariantPool getVariantsFromVCF() throws IOException {
 		VCFFile vcf = new VCFFile( manifest.getVCF());
 		return new VariantPool(vcf);
