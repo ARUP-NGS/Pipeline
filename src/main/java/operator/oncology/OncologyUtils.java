@@ -581,6 +581,9 @@ public class OncologyUtils extends IOOperator {
 		//Load up PotentialNovel fusions
 		List<Map<String, Object>> listPotNovelMaps = new ArrayList<Map<String, Object>>();
 		for (String PotNovelFusion: RatioContigSets) {  
+			if (removeNTRK && (PotNovelFusion.contains("NTRK"))) {
+				continue;
+			}
 			Map<String, Object> potNovel = new HashMap<String, Object>();
 			Map<String, Object> geneDetails = new HashMap<String, Object>();
 			//Get gene name, exonStart, exonStop
