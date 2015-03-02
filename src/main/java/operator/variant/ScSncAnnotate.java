@@ -97,20 +97,17 @@ public class ScSncAnnotate extends AbstractTabixAnnotator{
 		//TODO
 		
 		//should probably wrap in a try catch.
-		Double ada_score = Double.parseDouble(toks[14]);
-		Double rf_score = Double.parseDouble(toks[15]);
+		String _ada = toks[14];
+		String _rf = toks[15];
+		Double ada_score;
+		Double rf_score;
 		
-		var.addProperty(VariantRec.scSNV_ada, ada_score);
+		ada_score = Double.parseDouble(".");
+		rf_score = Double.parseDouble("test");
+		
+		var.addProperty(VariantRec.scSNV_ada, ada_score);//dont add if null
 		var.addProperty(VariantRec.scSNV_rf, rf_score);
 		//var.addProperty(VariantRec.scSNV_gene, toks[7]);
-		
-		//THIS IS WHAT IS ADDED TO VariantRec.java
-		//public static final String scSNV_gene = "scSNV.RefSeq_gene";
-		//public static final String scSNV_ada = "scSNV.ada_score";
-		//public static final String scSNV_rf = "scSNV.rf_score";
-		
-		
-	
 		
 		return true;
 	}
