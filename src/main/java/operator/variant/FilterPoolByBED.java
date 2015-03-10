@@ -2,39 +2,38 @@ package operator.variant;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.logging.Logger;
 
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import buffer.BEDFile;
-import buffer.FileBuffer;
-import buffer.MultiFileBuffer;
 import buffer.variant.VariantPool;
-import buffer.variant.VariantRec;
-
 import operator.IOOperator;
 import operator.OperationFailedException;
-import operator.Operator;
+import pipeline.Pipeline;
 import pipeline.PipelineObject;
 
-public class FilterPoolByBED extends Operator {
+public class FilterPoolByBED extends IOOperator {
 
 	VariantPool poolToFilter = null;
-	VariantPool outputPool = null;
+	public VariantPool outputPool = null;
 	BEDFile bedFile = null;
 	
 	@Override
 	public void performOperation() throws OperationFailedException {
+		Logger logger = Logger.getLogger(Pipeline.primaryLoggerName);
 		
 		try {
-			outputPool = poolToFilter.filterByBED(bedFile);
-			
+			poolToFilter.filterByBED(bedFile, outputPool);
 			
 		} catch (IOException e) {
 			e.printStackTrace();
 			throw new OperationFailedException("IO Error filtering variant pool by BED file, " + e.getMessage(), this);
 		}
+		
+		logger.info("Filtered variant pool has " + outputPool.getContigCount() + " contigs and " + outputPool.size() + " total variants");
 	}
 
 	@Override

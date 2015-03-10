@@ -1015,9 +1015,14 @@ public class VariantPool extends Operator  {
 	 * @return
 	 * @throws IOException 
 	 */
-	public VariantPool filterByBED(BEDFile bedFile) throws IOException {
-		bedFile.buildIntervalsMap();
+	public VariantPool filterByBED(BEDFile bedfile) throws IOException {
 		VariantPool pool = new VariantPool();
+		filterByBED(bedfile, pool);
+		return pool;
+	}
+	
+	public void filterByBED(BEDFile bedFile, VariantPool pool) throws IOException {
+		bedFile.buildIntervalsMap();
 		for(String contig : getContigs()) {
 			List<VariantRec> vars = getVariantsForContig(contig);
 			for(VariantRec rec : vars) {
@@ -1027,7 +1032,6 @@ public class VariantPool extends Operator  {
 			}
 		}
 		pool.sortAllContigs();
-		return pool;
 	}
 	
 	/**
