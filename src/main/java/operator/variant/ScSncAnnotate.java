@@ -91,7 +91,7 @@ public class ScSncAnnotate extends AbstractTabixAnnotator{
 
 	
 
-	@Override //TODO
+	@Override 
 	protected boolean addAnnotationsFromString(VariantRec var, String val) {
 		String[] toks = val.split("\t");
 		//TODO
@@ -99,16 +99,27 @@ public class ScSncAnnotate extends AbstractTabixAnnotator{
 		//should probably wrap in a try catch.
 		String _ada = toks[14];
 		String _rf = toks[15];
+		
 		Double ada_score;
 		Double rf_score;
 		
-		ada_score = Double.parseDouble(".");
-		rf_score = Double.parseDouble("test");
 		
-		var.addProperty(VariantRec.scSNV_ada, ada_score);//dont add if null
-		var.addProperty(VariantRec.scSNV_rf, rf_score);
-		//var.addProperty(VariantRec.scSNV_gene, toks[7]);
-		
+		try {
+			ada_score = Double.parseDouble(_ada);
+			var.addProperty(VariantRec.scSNV_ada, ada_score);
+		}
+		catch (NumberFormatException ex){ 			
+			//Thrown if the value in the tabix is not parsable "."
+			System.err.println(ex);
+		}
+		try {
+			rf_score = Double.parseDouble(_rf);
+			var.addProperty(VariantRec.scSNV_rf, rf_score);
+		}
+		 catch (NumberFormatException ex){
+			//Thrown if the value in the tabix is not parsable "."
+			System.err.println(ex);
+		}
 		return true;
 	}
 	
@@ -123,7 +134,6 @@ public class ScSncAnnotate extends AbstractTabixAnnotator{
 		if (reader == null) {
 			throw new OperationFailedException("Tabix reader not initialized", this);
 		}
-		//System.out.println( "XXXXXXXXXXXRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR");
 
 		String contig = varToAnnotate.getContig();
 		Integer pos = varToAnnotate.getStart();

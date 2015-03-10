@@ -73,7 +73,7 @@ public class VarViewerWriter extends VariantPoolWriter {
 			 VariantRec.MITOMAP_DIS_CODING,
 			 VariantRec.POP_ALT,
 			 //added by for the scSNCannotator
-			 VariantRec.scSNV_gene,
+			 //VariantRec.scSNV_gene,
 			 VariantRec.scSNV_ada,
 			 VariantRec.scSNV_rf
 			 }));

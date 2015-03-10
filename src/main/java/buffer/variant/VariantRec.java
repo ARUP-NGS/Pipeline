@@ -854,7 +854,7 @@ public class VariantRec {
 	public static final String AF = "AF";
 	public static final String POP_ALT = "pop.alt";
 	//added for ScSNV
-	public static final String scSNV_gene = "scSNV.RefSeq_gene";
+	//public static final String scSNV_gene = "scSNV.RefSeq_gene";
 	public static final String scSNV_ada = "scSNV.ada_score";
 	public static final String scSNV_rf = "scSNV.rf_score";
 	
