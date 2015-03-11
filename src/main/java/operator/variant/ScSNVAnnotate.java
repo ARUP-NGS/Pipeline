@@ -10,11 +10,11 @@ import util.vcfParser.VCFParser;
 import buffer.variant.VariantRec;
 
 /**
- * Provides information on the variants ability top impact splicing.
+ * Provides information on the variants ability to impact splicing.
  * 
  * Uses a tabix-index file.
  * 
- * Tabix file is created from db [tab] obtained form [https://sites.google.com/site/jpopgen/dbNSFP] v2.9
+ * Tabix file is created from a db [tab delimited] obtained form [https://sites.google.com/site/jpopgen/dbNSFP] v2.9
  * the file [ftp://dbnsfp:dbnsfp@dbnsfp.softgenetics.com/dbscSNV.zip] dbscSNv.zip unpacks 
  * to 24 files (chr 1 - 22, X, Y).  These files are cat together with the bash command below.
  * 
@@ -36,11 +36,12 @@ import buffer.variant.VariantRec;
  * 12	Ensembl_gene
  * 13	Ensembl_functional_consequence
  * 14	Ensembl_id_c.change_p.change
- * 15	ada_score
- * 16	rf_score
+ * 15	ada_score ****VALUE ADDED TO VARIANT RECORD
+ * 16	rf_score  ****VALUE ADDED TO VARIANT RECORD
  * 
- * this cat'd file is tabix index using the following command
- * tabix -s 1 -b 2 -e 2 dbscSNV_cat_1-22XY.tab
+ * this cat'd file is tabix index using the following commands
+ * bgzip -c dbscSNV_cat_1-22XY.tab >> dbscSNV_cat_1-22XY.tab.bgz
+ * tabix -s 1 -b 2 -e 2 dbscSNV_cat_1-22XY.tab 
  * 
  * the resulting files are:
  * 	dbscSNV_cat_1-22XY.tab.bgz  334M Feb 24
@@ -60,14 +61,15 @@ import buffer.variant.VariantRec;
  *  functional annotation of genetic variants from high-throughput sequencing data
  *   and based on human reference sequence assembly GRCh37/hg19.
  *  
+ * TESTING
+ * A truncated database was utilized; see TestScSNV for details.
  * 
  * @author Keith Simmon
  * @date February 24th 2015
  *
  */
 
-
-public class ScSncAnnotate extends AbstractTabixAnnotator{
+public class ScSNVAnnotate extends AbstractTabixAnnotator{
 	
 	private boolean initialized = false;
 	private TabixReader reader = null;
@@ -94,31 +96,22 @@ public class ScSncAnnotate extends AbstractTabixAnnotator{
 	@Override 
 	protected boolean addAnnotationsFromString(VariantRec var, String val) {
 		String[] toks = val.split("\t");
-		//TODO
-		
-		//should probably wrap in a try catch.
 		String _ada = toks[14];
 		String _rf = toks[15];
-		
-		Double ada_score;
-		Double rf_score;
-		
-		
-		try {
-			ada_score = Double.parseDouble(_ada);
-			var.addProperty(VariantRec.scSNV_ada, ada_score);
+
+		try {		
+			var.addProperty(VariantRec.scSNV_ada, Double.parseDouble(_ada));
 		}
 		catch (NumberFormatException ex){ 			
 			//Thrown if the value in the tabix is not parsable "."
-			System.err.println(ex);
+			//System.err.println(ex + ", ada: " + _ada);
 		}
 		try {
-			rf_score = Double.parseDouble(_rf);
-			var.addProperty(VariantRec.scSNV_rf, rf_score);
+			var.addProperty(VariantRec.scSNV_rf, Double.parseDouble(_rf));
 		}
 		 catch (NumberFormatException ex){
 			//Thrown if the value in the tabix is not parsable "."
-			System.err.println(ex);
+			//System.err.println(ex + ", rf:"+_rf);
 		}
 		return true;
 	}
@@ -150,12 +143,7 @@ public class ScSncAnnotate extends AbstractTabixAnnotator{
 					
 					while(val != null) {
 						String[] toks = val.split("\t"); //length of the array 16
-						//System.out.println(toks.length);
-						for (int i =0; i < toks.length; i++){
-							//System.out.print(toks[i] + " ");
-						}
-
-						
+				
 						if (toks.length > 15) {
 
 							
