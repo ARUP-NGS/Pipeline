@@ -1,0 +1,12 @@
+
+<Pipeline>
+
+<VariantPool class="buffer.variant.VariantPool">
+	<InputVCF />
+</VariantPool> 
+
+<GeneAnnotate class="operator.variant.ScSNVAnnotate">
+	<VariantPool />
+</GeneAnnotate>
+
+</Pipeline>

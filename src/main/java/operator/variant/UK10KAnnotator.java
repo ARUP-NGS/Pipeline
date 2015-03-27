@@ -1,6 +1,7 @@
 package operator.variant;
 
 import java.io.IOException;
+
 import operator.OperationFailedException;
 import buffer.variant.VariantRec;
 
@@ -43,7 +44,7 @@ public class UK10KAnnotator extends AbstractTabixAnnotator {
 	protected boolean addAnnotationsFromString(VariantRec var, String val) {
 		String[] toks = val.split("\t");
 	
-
+		
 		String[] formatToks = toks[7].split(";");
 		String overallFreqStr = valueForKey(formatToks, "AF=");
 		if (overallFreqStr != null) {
