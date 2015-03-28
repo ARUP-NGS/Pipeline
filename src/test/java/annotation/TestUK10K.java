@@ -24,8 +24,8 @@ import buffer.variant.VariantRec;
  */
 public class TestUK10K extends TestCase {
 	
-	
 	File inputFile = new File("src/test/java/annotation/testUK10K.xml");
+	
 	File propertiesFile = new File("src/test/java/core/inputFiles/testProperties.xml");
 
 	
