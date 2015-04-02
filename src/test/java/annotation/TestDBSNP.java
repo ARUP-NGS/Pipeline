@@ -1,6 +1,5 @@
 package annotation;
 
-import junit.framework.TestCase;
 
 /**
  * Created by keith simmon on 3/25/15.
@@ -12,5 +11,5 @@ import junit.framework.TestCase;
  * @author Keith Simmon
  *
  */
-public class TestDBSNP extends TestCase {
-}
+//public class TestDBSNP extends TestCase {
+//}
