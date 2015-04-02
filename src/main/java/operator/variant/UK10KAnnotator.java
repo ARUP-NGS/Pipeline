@@ -3,7 +3,6 @@ package operator.variant;
 import java.io.IOException;
 import operator.OperationFailedException;
 import buffer.variant.VariantRec;
-c
 
 /**
  * Provides allele frequency counts from the UK10K project (2010-2013)
