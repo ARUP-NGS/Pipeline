@@ -7,14 +7,22 @@ import java.util.Set;
 import util.vcfParser.VCFParser.GTType;
 import buffer.variant.VariantRec;
 
+/**
+ * Some tools to easily convert a VariantRec into a json object
+ * @author brendan
+ *
+ */
 public class AnnotatedVarsJsonConverter {
 	
 	//If set, all variants will 
 	private List<String> ensureKeys = null;
 	private Set<String> excludeKeys = new HashSet<String>(); //These annotations will not be included
 	
-	//When set, all json objects will specify this key, even if not every variant has
-	//a property or annotation associated with the key
+	/**
+	 * When set, all json objects will specify this key, even if not every variant has
+	 * a property or annotation associated with the key
+	 * @param keys
+	 */
 	public void setKeys(List<String> keys) {
 		this.ensureKeys = keys;
 	}
@@ -26,6 +34,12 @@ public class AnnotatedVarsJsonConverter {
 		}
 	}
 	
+	/**
+	 * Obtain a json representation of the given variant 
+	 * @param var
+	 * @return
+	 * @throws JSONException
+	 */
 	public JSONObject toJSON(VariantRec var) throws JSONException {
 		JSONObject varObj = new JSONObject();
 		

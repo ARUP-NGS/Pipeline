@@ -18,9 +18,6 @@ import util.Interval;
  * Scrutil script ucsc_refseq2exon_bed.py to determine gene/exon/intron
  * locations
  * 
- * A class to facilitate lookups of gene and exon (but not c.dot or p.dot) information based on
- * chromosomal position. Right now uses the output the Scrutil script ucsc_refseq2exon_bed.py
- * to determine gene/exon/intron locations
  * @author brendan
  *
  */
@@ -421,22 +418,23 @@ public class ExonLookupService extends BasicIntervalContainer {
 		 return result;
 	 }
 	 
-	public static void main(String[] agrs) throws IOException {
-		ExonLookupService es = new ExonLookupService();
-		Map<String, String> prefNMs = new HashMap<String, String>();
-		prefNMs.put("TGFB2", "NM_001135599");
-		prefNMs.put("CCDC107", "NM_174923");
-		es.setPreferredNMs(prefNMs);
-		es.buildExonMapWithCDSInfo(new File("/home/brendan/resources/features20150106.v3.bed"), true);
-		
-		Object[] infos = es.getIntervalObjectsForRange("9", 35658000, 35658400);
-		
-		List<FeatureDescriptor> fds = new ArrayList<FeatureDescriptor>();
-		for(Object o : infos) {
-			fds.add((FeatureDescriptor)o);
-		}
-		
-		System.out.println( mergeFeatures(fds) );
-	}
+//Testing only code
+//	public static void main(String[] agrs) throws IOException {
+//		ExonLookupService es = new ExonLookupService();
+//		Map<String, String> prefNMs = new HashMap<String, String>();
+//		prefNMs.put("TGFB2", "NM_001135599");
+//		prefNMs.put("CCDC107", "NM_174923");
+//		es.setPreferredNMs(prefNMs);
+//		es.buildExonMapWithCDSInfo(new File("/home/brendan/resources/features20150106.v3.bed"), true);
+//		
+//		Object[] infos = es.getIntervalObjectsForRange("9", 35658000, 35658400);
+//		
+//		List<FeatureDescriptor> fds = new ArrayList<FeatureDescriptor>();
+//		for(Object o : infos) {
+//			fds.add((FeatureDescriptor)o);
+//		}
+//		
+//		System.out.println( mergeFeatures(fds) );
+//	}
 	
 }
