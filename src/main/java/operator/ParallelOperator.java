@@ -16,7 +16,7 @@ import org.w3c.dom.NodeList;
 
 import pipeline.Pipeline;
 import pipeline.PipelineObject;
-import util.ElapsedTimeFormatter;
+import util.text.ElapsedTimeFormatter;
 
 /**
  * This operator wraps a bunch of other operators and runs them in parallel on separate threads. It
