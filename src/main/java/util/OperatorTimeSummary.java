@@ -9,6 +9,7 @@ import operator.OperationFailedException;
 import operator.Operator;
 import pipeline.Pipeline;
 import pipeline.PipelineListener;
+import util.text.ElapsedTimeFormatter;
 
 /**
  * A listener that keeps track of when each operator starts and ends so we can have a handy

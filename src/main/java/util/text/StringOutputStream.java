@@ -1,4 +1,4 @@
-package util;
+package util.text;
 
 import java.io.IOException;
 import java.io.OutputStream;

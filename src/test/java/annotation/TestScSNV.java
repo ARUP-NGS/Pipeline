@@ -1,9 +1,12 @@
 package annotation;
 
 import java.io.File;
+
 import junit.framework.TestCase;
-import org.junit.Assert;
 import operator.variant.ScSNVAnnotate;
+
+import org.junit.Assert;
+
 import pipeline.Pipeline;
 import buffer.variant.VariantRec;
 
@@ -33,7 +36,7 @@ public class TestScSNV extends TestCase {
 		try {
 			Pipeline ppl = new Pipeline(inputFile, propertiesFile.getAbsolutePath());
 			
-			ppl.setProperty("dbScSNV.path", "/home/ksimmon/ARUP_git/Pipeline/src/test/java/testcsvs/dbscSNV_cat_1-22XY_100.tab.bgz"); 
+			ppl.setProperty("dbScSNV.path", "src/test/java/testcsvs/dbscSNV_cat_1-22XY_100.tab.bgz"); 
 			ppl.initializePipeline();
 			ppl.stopAllLogging();
 			ppl.execute();
@@ -170,9 +173,9 @@ public class TestScSNV extends TestCase {
 			
 		} catch (Exception ex){
 		
-		System.err.println("Exception during testing: " + ex.getLocalizedMessage());
-		ex.printStackTrace();
-		Assert.assertTrue(false);
+			System.err.println("Exception during testing: " + ex.getLocalizedMessage());
+			ex.printStackTrace();
+			Assert.assertTrue(false);
 		}
 		
 	}

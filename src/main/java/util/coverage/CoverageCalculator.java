@@ -6,7 +6,6 @@ import java.io.PrintStream;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -16,9 +15,14 @@ import java.util.logging.Logger;
 import pipeline.Pipeline;
 import util.Interval;
 import util.bamWindow.BamWindow;
-import buffer.BEDFile;
-import buffer.IntervalsFile;
 
+/**
+ * A CoverageCalculator can quickly compute a histogram describing read depth
+ * in the given BAM file in regions defined by the intervals list. It does this using multiple threads
+ * and a BAMWindow object (one for each thread).   
+ * @author brendan
+ *
+ */
 public class CoverageCalculator {
 	
 	
@@ -26,11 +30,22 @@ public class CoverageCalculator {
 	protected HasIntervals intervals;
 	private int threads = Runtime.getRuntime().availableProcessors();
 	
+	/**
+	 * Creates a new CoverageCalculator object that will examine the given BAM file over
+	 * the given set of intervals
+	 * @param inputBam
+	 * @param intervals
+	 * @throws IOException
+	 */
 	public CoverageCalculator(File inputBam, HasIntervals intervals) throws IOException {
 		this.inputBam = inputBam;
 		this.intervals = intervals;
 	}
 
+	/**
+	 * Set the total number of threads to use. 
+	 * @param threads
+	 */
 	public void setThreadCount(int threads) {
 		this.threads = threads;
 		if (threads < 1) {
@@ -38,6 +53,32 @@ public class CoverageCalculator {
 		}
 	}
 	
+	
+	public List<IntervalCovSummary> computeCoverageByInterval() throws InterruptedException {
+		BamWindow window = new BamWindow(inputBam);
+		List<IntervalCovSummary> covs = new ArrayList<IntervalCovSummary>(1024);
+		for(String chr : intervals.getContigs()) {
+			for(Interval interval : intervals.getIntervalsForContig(chr)) {
+				int[] depths = new int[1000];
+				CoverageCalculator.calculateDepthHistogram(window, chr, interval.begin, interval.end, depths);
+				IntervalCovSummary intervalCov = new IntervalCovSummary(chr, interval, getMean(depths));
+				covs.add(intervalCov);
+			}
+		}
+		
+		window.close();
+		return covs;
+	}
+	
+	/**
+	 * Using multiple threads, compute the number of bases in the target intervals that are covered by X
+	 * reads, and return that information as a histogram. The i-th element of the histogram is the number of
+	 * positions covered by exactly i reads. For instance, if array[22]=100, then 100 positions have a 
+	 * depth of 22.   Right now the max histogram length is 22, meaning we don't keep track of depths
+	 * greater than 15000. 
+	 * @return
+	 * @throws InterruptedException
+	 */
 	public int[] computeOverallCoverage() throws InterruptedException {
 		int maxSubIntervalSize = 10000;
 		ThreadPoolExecutor pool = (ThreadPoolExecutor) Executors.newFixedThreadPool( threads );
@@ -63,7 +104,7 @@ public class CoverageCalculator {
 			}
 		}
 		
-		
+		//Wait until all threads complete
 		pool.shutdown();
 		pool.awaitTermination(10, TimeUnit.DAYS);
 
@@ -71,6 +112,13 @@ public class CoverageCalculator {
 		return overallDepths;
 	}
 	
+	
+	
+	/**
+	 * Compute the mean from the depth distribution
+	 * @param depths
+	 * @return
+	 */
 	public static double getMean(int[] depths) {
 		double tot = 0;
 		double sum = 0;
@@ -82,6 +130,11 @@ public class CoverageCalculator {
 		return tot / sum;
 	}
 	
+	/**
+	 * Compute the median of the depth distribution
+	 * @param depths
+	 * @return
+	 */
 	public static double getMedian(int[] depths) {
 		double sum = 0;
 		for(int i=0; i<depths.length; i++) {
@@ -120,6 +173,11 @@ public class CoverageCalculator {
 		return cdf;
 	}
 	
+	/**
+	 * Print a nice little summary to the given printstream
+	 * @param depths
+	 * @param out
+	 */
 	public void summarize(int[] depths, PrintStream out) {
 		int total = 0;
 		
@@ -140,30 +198,29 @@ public class CoverageCalculator {
 			out.println(i + "\t" + formatter.format(100.0 - 100.0*cdf[i]/(double)total) );
 		}
 	}
+
 	
-	public static void main(String[] args) throws IOException, InterruptedException {
+	
+	/**
+	 * Stores single-interval specific coverage information, used when we compute
+	 * coverage by interval 
+	 * @author brendan
+	 *
+	 */
+	class IntervalCovSummary {
+		String chr;
+		Interval interval;
+		double meanDepth;
 		
-		File inputBam = new File(args[0]);
-		IntervalsFile intervals = new BEDFile(new File(args[1]));
-		intervals.buildIntervalsMap();
-		
-		Date start = new Date();
-		CoverageCalculator covCalc = new CoverageCalculator(inputBam, intervals);
-		int[] depths = covCalc.computeOverallCoverage();
-		
-		
-		for(int i=0; i<depths.length; i++) {
-			System.out.println(i + "\t" + depths[i]);
+		public IntervalCovSummary(String chr, Interval interval, double meanDepth) {
+			this.chr = chr;
+			this.interval = interval;
+			this.meanDepth = meanDepth;
 		}
 		
-		covCalc.summarize(depths, System.out);
-		
-		Date end= new Date();
-		long elapsed = end.getTime() - start.getTime() ;
-		int elapsedSeconds = (int)(elapsed / 1000);
-		System.out.println("\n Elapsed time: " + elapsedSeconds + " seconds" );
-
-		
+		public String toString() {
+			return chr + ": " + interval.begin + "-" + interval.end + "\t:\t" + meanDepth;
+		}
 	}
 	
 	/**

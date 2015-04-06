@@ -6,8 +6,8 @@ import java.util.Date;
 import java.util.logging.Logger;
 
 import pipeline.Pipeline;
-import util.ElapsedTimeFormatter;
-import util.StringOutputStream;
+import util.text.ElapsedTimeFormatter;
+import util.text.StringOutputStream;
 
 /**
  * Base class for operators that invoke a system call, but do not emit their output to standard out. Unlike

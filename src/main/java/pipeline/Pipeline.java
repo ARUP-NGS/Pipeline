@@ -34,10 +34,10 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
-import util.ElapsedTimeFormatter;
-import util.LoggingOutputStream;
 import util.OperatorTimeSummary;
-import util.QueuedLogHandler;
+import util.text.ElapsedTimeFormatter;
+import util.text.LoggingOutputStream;
+import util.text.QueuedLogHandler;
 
 /**
  * Main entry point for pipeline. In main method we look for arguments that look like XML files 
@@ -47,7 +47,7 @@ import util.QueuedLogHandler;
  */
 public class Pipeline {
 
-	public static final String PIPELINE_VERSION = "1.4";
+	public static final String PIPELINE_VERSION = "1.5";
 	protected File source;
 	protected Document xmlDoc;
 	public static final String PROJECT_HOME="home";

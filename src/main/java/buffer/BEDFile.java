@@ -79,7 +79,6 @@ public class BEDFile extends IntervalsFile {
 		
 		reader.close();
 		sortAllContigs();
-		
 	}
 	
 	/**

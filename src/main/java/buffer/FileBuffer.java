@@ -59,7 +59,7 @@ public abstract class FileBuffer extends PipelineObject {
 	 */
 	public String getUniqueTag() {
 		if (uniqTag == null) {
-			uniqTag = util.StringUtils.randomStr(8);
+			uniqTag = util.text.StringUtils.randomStr(8);
 		}
 		return uniqTag;
 	}

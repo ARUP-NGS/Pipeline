@@ -14,7 +14,7 @@ import org.w3c.dom.NodeList;
 
 import pipeline.Pipeline;
 import pipeline.PipelineObject;
-import util.ElapsedTimeFormatter;
+import util.text.ElapsedTimeFormatter;
 import buffer.FileBuffer;
 import buffer.MultiFileBuffer;
 import buffer.ReferenceFile;

@@ -14,11 +14,10 @@ import net.sf.samtools.SAMFileWriter;
 import net.sf.samtools.SAMFileWriterFactory;
 import net.sf.samtools.SAMRecord;
 import net.sf.samtools.SAMFileReader.ValidationStringency;
-
 import operator.MultiOperator.TaskOperator;
 import pipeline.Pipeline;
 import pipeline.PipelineXMLConstants;
-import util.ElapsedTimeFormatter;
+import util.text.ElapsedTimeFormatter;
 import buffer.BAMFile;
 import buffer.FileBuffer;
 

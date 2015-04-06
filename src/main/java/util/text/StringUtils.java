@@ -1,4 +1,4 @@
-package util;
+package util.text;
 
 public class StringUtils {
 

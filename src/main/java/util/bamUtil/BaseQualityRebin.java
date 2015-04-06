@@ -1,4 +1,4 @@
-package util;
+package util.bamUtil;
 
 import java.io.BufferedReader;
 import java.io.File;

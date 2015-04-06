@@ -23,6 +23,7 @@ import net.sf.samtools.util.DateParser;
 import util.prereviewDataGen.AnalysisTypeConverter;
 import util.reviewDir.ManifestParseException;
 import util.reviewDir.ReviewDirectory;
+import util.text.TextTable;
 import buffer.variant.VariantPool;
 import buffer.variant.VariantRec;
 
