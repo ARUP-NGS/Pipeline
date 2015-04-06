@@ -1,10 +1,15 @@
-package util;
+package util.text;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Handler;
 import java.util.logging.LogRecord;
 
+/**
+ * A type of log handler that keeps all log information in memory. 
+ * @author brendan
+ *
+ */
 public class QueuedLogHandler extends Handler {
 
 	public static int defaultSize = 1000; //Number of records to store
@@ -16,7 +21,7 @@ public class QueuedLogHandler extends Handler {
 	}
 	
 	/**
-	 * Creat a handler that will contain at most the given number of records (default 1000)
+	 * Create a handler that will contain at most the given number of records (default 1000)
 	 * @param size
 	 */
 	public QueuedLogHandler(int size) {

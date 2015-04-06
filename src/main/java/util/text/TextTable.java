@@ -1,4 +1,4 @@
-package util;
+package util.text;
 
 import java.util.ArrayList;
 import java.util.List;
