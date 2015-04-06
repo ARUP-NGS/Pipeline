@@ -15,7 +15,10 @@ import util.Interval;
 import util.coverage.HasIntervals;
 
 /**
- * Any file that describes a list of genomic intervals
+ * Any file that describes a list of genomic intervals. Usually a BED file.
+ * Annoyingly, this can't subclass BasicIntervalContainer since it must also subclass FileBuffer
+ * Ideally, this thing would wrap some implementation of BasicIntervalContainer and delegate
+ * most methods to it, right now we're duplicating a lot of code. 
  * @author brendan
  *
  */
