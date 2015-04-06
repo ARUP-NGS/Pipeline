@@ -15,12 +15,14 @@
         <artifactId>maven-jar-plugin</artifactId>
 		<version>2.3.1</version>
         <configuration>
-          <archive>
+				 <source>1.6</source> 
+				 <target>1.6</target>
+					<archive>
             <manifest>
               <addClasspath>true</addClasspath>
 	      <mainClass>pipeline.Pipeline</mainClass>
             </manifest>
-          </archive>
+					</archive>
         </configuration>
       </plugin>
       <plugin>

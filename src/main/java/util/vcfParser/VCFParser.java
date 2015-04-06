@@ -772,12 +772,19 @@ public class VCFParser implements VariantLineReader {
 		//Get DP from sampleMetrics dictionary
 		String AnnoStr = null;
 		if (creator.contains("Torrent")){
-			AnnoStr = "FDP"; //Flow evaluator metrics reflect the corrected base calls based on model of ref, alt called by FreeBayes, & original base call
+			AnnoStr = "FDP"; //Flow evaluator metrics reflect the corrected base calls based on model of ref, alt called by FreeBayes, & original base call	
 		} else {
 			AnnoStr = "DP";
 		}
 		String depthStr = getSampleMetricsStr(AnnoStr);
 		Integer dp = convertStr2Int(depthStr);
+		
+		//Added to handle cases where the FDP is not present in the vcf file. It will default to -1.0 without this condition
+		if(dp<0 || dp.equals(null)){
+			AnnoStr="DP";
+			depthStr = getSampleMetricsStr(AnnoStr);
+			dp = convertStr2Int(depthStr);
+		}
 		return dp;				
 	}
 	
@@ -805,11 +812,18 @@ public class VCFParser implements VariantLineReader {
 		}
 		//Get alternate allele count from sampleMetrics dictionary	
 		String varDepthStr = getSampleMetricsStr(annoStr);
+		
+		//Added to handle cases where FAO is not present in the VCF file
+		if (varDepthStr == null && annoStr.equals("FAO")) {
+			annoStr="AO";
+			varDepthStr = getSampleMetricsStr(annoStr);
+		}
 		if (varDepthStr == null) {
 			return null;
 		}
 		String[] varDepthToks = varDepthStr.split(",");
 		Integer vardp = convertStr2Int(varDepthToks[annoIdx]);
+
 		return vardp;				
 	}
 	

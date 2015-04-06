@@ -362,7 +362,12 @@ public class QCtoJSON extends Operator {
 	public void initialize(NodeList children) {
 		
 		String nmDefs = this.getAttribute(NM_DEFS);
-		nms = loadPreferredNMs(nmDefs);
+		try {
+			nms = loadPreferredNMs(nmDefs);
+		} catch (IOException e) {
+			e.printStackTrace();
+			throw new IllegalArgumentException("Preferred NM files are missing:  "+ nmDefs);
+		}
 		
 		
 		

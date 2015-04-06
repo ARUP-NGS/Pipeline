@@ -88,8 +88,8 @@ public class SplitByChromosome extends IOOperator {
 		logger.info(getObjectLabel() + " found jvm argument : " + jvmARGStr);
 		
 		//If it's still null then be sure to make it the empty string
-		if (jvmARGStr == null || jvmARGStr.length()==0) {
-			jvmARGStr = "";
+    	if (jvmARGStr == null || jvmARGStr.length()==0) {
+		jvmARGStr = "";
 		}
 
 		//Submit all jobs to the thread pool

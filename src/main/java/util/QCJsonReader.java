@@ -285,9 +285,75 @@ public class QCJsonReader {
 			return;
 		}
 		
+//#CHRISK		
+		if (command.startsWith("")){
+			performMonthlyQA(paths, System.out, null);	
+			return;
+		}
+//\#CHRISK	
+		
+		
 		System.err.println("Unrecognized command");
 		
 	}
+	
+//#CHRISK	
+private static void performMonthlyQA(List<String> paths, PrintStream out, AnalysisTypeConverter converter){
+		/*
+		 * TODO:4.6.2015-???
+		 * %Raw bases greater than Q20
+		 * %Targeted bases with coverage >10
+		 * %Reads on target
+		 * %PCR duplcates removed
+		 * Variants found per targeted megabase
+		 * %variants not found in 1000 genomes (% novel variants)
+		 * het variants
+		 * Ti/Tv ratio
+		 * 
+		 * This is only for tests Myeloid, Exomes, Aortos, and Periodic Fevers.
+		 * 
+		 * PLAN: go through the qc.json file and get as much information out of it as possible!!!
+		 * 
+		 */
+		
+		for(String path : paths){
+			File file = new File(path);
+			JSONObject obj;			try {
+			File manifestFile = new File(path + "/sampleManifest.txt");
+			Map<String, String> manifest = readManifest(manifestFile);
+			Date analysisDate = new Date( Long.parseLong(manifest.get("analysis.start.time")));
+			String analysisType = analysisTypeFromManifest(manifestFile).replace(" (v. 1.0)", "");
+			if (converter != null) {
+				analysisType = converter.convert(analysisType);
+			}
+			if (!(analysisType.toLowerCase().contains("aort") || analysisType.toLowerCase().startsWith("mye") || analysisType.toLowerCase().contains("periodic") || analysisType.toLowerCase().contains("exome"))) {
+				System.out.println("Analysis type: "+ analysisType);
+					continue;
+			}
+
+		}
+		catch (Exception ex) {
+			//ignored on purpose
+		}
+			try {
+				obj = toJSONObj(path);
+				JSONObject rawq20 = obj.getJSONObject("bases.above.q20");//%Raw bases greater than Q20
+			} catch (IOException e) {
+				e.printStackTrace();
+				throw new IllegalArgumentException("JSON file does not exist!!!!");
+			} catch (JSONException e) {
+				
+			}
+			
+			if(! file.exists() || !file.isDirectory()){
+				System.out.println("File or directory: "+file+" does not exist!!!");
+				continue;
+			}
+
+		}
+		
+}
+//#\CHRISK
 	
 	
 	private static void performList(List<String> paths, PrintStream out) {
