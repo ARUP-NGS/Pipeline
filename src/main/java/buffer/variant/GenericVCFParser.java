@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import util.VCFLineParser;
-import util.VCFLineParser.GTType;
+import util.vcfParser.VCFParser.GTType;
 
 
 /**

@@ -47,6 +47,22 @@ public class VariantRec {
 		this.GT = "-/-";
 		this.zygosity = GTType.UNKNOWN;
 	}
+
+	public VariantRec(String contig, 
+			int start, 
+			int end, 
+			String ref, 
+			String alt,
+			Double qual,
+			GTType zygosity) {
+		this.contig = contig;
+		this.start = start;
+		this.end = end;
+		this.ref = ref;
+		this.alt = alt;
+		this.qual = qual;
+		this.zygosity = zygosity;
+	}
 	
 	public VariantRec(String contig, 
 							int start, 
