@@ -25,6 +25,7 @@ import util.reviewDir.ManifestParseException;
 import util.reviewDir.ReviewDirectory;
 import buffer.variant.VariantPool;
 import buffer.variant.VariantRec;
+import util.text.TextTable;
 
 /**
  * A smallish utility to read QC data from qc.json files
