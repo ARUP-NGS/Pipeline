@@ -3,6 +3,7 @@ package util.coverage;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -43,8 +44,13 @@ public class CovCalcApp {
 				System.err.println("Beginning execution for "+ inputBam.getName());
 				covCalc = new CoverageCalculator(inputBam, intervals);
 				sampleResults = covCalc.computeCoverageByInterval();
+				
+				//results are initially in more-or-less random order, so sort them by interval position
+				//so at least it's consistent. May differ from order in input BED file
+				Collections.sort(sampleResults);
 				System.err.println("Finished execution for "+ inputBam.getName());
 			} catch (IOException e) {
+				System.err.println("Exception encountered for " +inputBam.getName() + ": " + e.getLocalizedMessage());
 				ex = e;
 			} catch (InterruptedException e) {
 				ex = e;
@@ -100,7 +106,7 @@ public class CovCalcApp {
 			return;
 		}
 		
-		int threads = Runtime.getRuntime().availableProcessors();
+		int threads = 8;
 		ThreadPoolExecutor pool = (ThreadPoolExecutor) Executors.newFixedThreadPool(threads);
 		
 		
@@ -130,9 +136,20 @@ public class CovCalcApp {
 		pool.shutdown();
 		pool.awaitTermination(10, TimeUnit.DAYS);
 		
+		//Scan for exceptions, build a list of those that succeeded 
+		
+		List<CovRunner> worked = new ArrayList<CovRunner>();
+		for(CovRunner cr : runners) {
+			if (cr.getException() != null) {
+				System.err.println("Ignoring " + cr.inputBam.getName() + " which failed, exception: " + cr.getException().getLocalizedMessage());
+			} else {
+				worked.add(cr);
+			}
+		}
+		
 		for(int i=0; i<intervals.getIntervalCount(); i++) {
-			//System.out.print(runners.get(0).getResults().get(i).chr + ":" + runners.get(0).getResults().get(i).interval);
-			for(CovRunner cr : runners) {
+			System.out.print(runners.get(0).getResults().get(i).chr + ":" + runners.get(0).getResults().get(i).interval);
+			for(CovRunner cr : worked) {
 				System.out.print(cr.getResults().get(i).meanDepth + "\t");	
 			}
 			System.out.println();

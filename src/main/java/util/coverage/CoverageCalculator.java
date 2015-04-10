@@ -59,7 +59,7 @@ public class CoverageCalculator {
 		List<IntervalCovSummary> covs = new ArrayList<IntervalCovSummary>(1024);
 		for(String chr : intervals.getContigs()) {
 			for(Interval interval : intervals.getIntervalsForContig(chr)) {
-				int[] depths = new int[1000];
+				int[] depths = new int[2048];
 				CoverageCalculator.calculateDepthHistogram(window, chr, interval.begin, interval.end, depths);
 				IntervalCovSummary intervalCov = new IntervalCovSummary(chr, interval, getMean(depths));
 				covs.add(intervalCov);
@@ -207,7 +207,7 @@ public class CoverageCalculator {
 	 * @author brendan
 	 *
 	 */
-	class IntervalCovSummary {
+	class IntervalCovSummary implements Comparable<IntervalCovSummary> {
 		String chr;
 		Interval interval;
 		double meanDepth;
@@ -220,6 +220,26 @@ public class CoverageCalculator {
 		
 		public String toString() {
 			return chr + ": " + interval.begin + "-" + interval.end + "\t:\t" + meanDepth;
+		}
+
+		@Override
+		/**
+		 * Compare interval coverage summaries based on interval position
+		 */
+		public int compareTo(IntervalCovSummary ic) {
+			if (! this.chr.equals(ic.chr)) {
+				//Annoyingly, see if we can parse integers from the chr names... 
+				try {
+					Integer chr1val = Integer.parseInt(this.chr);
+					Integer chr2val = Integer.parseInt(ic.chr);
+					return chr1val.compareTo(chr2val);
+				} catch (Exception ex) {
+					//Don't worry about it, we're probably just looking at chr X or something
+				}
+				return chr.compareTo(ic.chr);
+			} else {
+				return this.interval.compareTo(ic.interval);
+			}
 		}
 	}
 	
