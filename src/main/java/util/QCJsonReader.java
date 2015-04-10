@@ -23,9 +23,9 @@ import net.sf.samtools.util.DateParser;
 import util.prereviewDataGen.AnalysisTypeConverter;
 import util.reviewDir.ManifestParseException;
 import util.reviewDir.ReviewDirectory;
-import util.text.TextTable;
 import buffer.variant.VariantPool;
 import buffer.variant.VariantRec;
+import util.text.TextTable;
 
 /**
  * A smallish utility to read QC data from qc.json files
@@ -286,9 +286,240 @@ public class QCJsonReader {
 			return;
 		}
 		
+//#CHRISK		
+		if (command.startsWith("monthlyQA")){
+			performMonthlyQA(paths, System.out, null);	
+			return;
+		}
+//\#CHRISK	
+		
+		
 		System.err.println("Unrecognized command");
 		
 	}
+	
+//#CHRISK	
+private static void performMonthlyQA(List<String> paths, PrintStream out, AnalysisTypeConverter converter){
+		/*
+		 * TODO:4.6.2015-???
+		 * %Raw bases greater than Q20 --check
+		 * %Targeted bases with coverage >10 --###double check this one!!!
+		 * %Reads on target	--check
+		 * %PCR duplicates removed (raw total reads - final number of reads?)
+		 * Variants found per targeted megabase --check
+		 * %variants not found in 1000 genomes (% novel variants)  --check
+		 * het variants  --check
+		 * Ti/Tv ratio --check
+		 * 
+		 * This is only for tests Myeloid, Exomes, Aortos, and Periodic Fevers.
+		 * 
+		 * PLAN: go through the qc.json file and get as much information out of it as possible!!!
+		 * 
+		 */
+		TextTable data = new TextTable(new String[]{"Bases>Q20,%ReadsOnTarget,%Targeted bases cov >10,%novel variants,Ti/Tv Ratio,het vars,Vars per target megabase,PCR dups rem"});
+		String[] qaData = new String[8];
+		List<String[]> periodicTests = new ArrayList<String[]>();
+		List<String[]> aortTests = new ArrayList<String[]>();
+		List<String[]> exomeTests = new ArrayList<String[]>();
+		List<String[]> myeloidTests = new ArrayList<String[]>();
+	
+	for(String path : paths){
+			File file = new File(path);
+			JSONObject obj;	
+			qaData = new String[qaData.length];
+		try {
+			File manifestFile = new File(path + "/sampleManifest.txt");
+			//System.out.println("manifest file path: "+manifestFile.getAbsolutePath());
+			Map<String, String> manifest = readManifest(manifestFile);
+			Date analysisDate = new Date( Long.parseLong(manifest.get("analysis.start.time")));
+			String analysisType = analysisTypeFromManifest(manifestFile).replace(" (v. 1.0)", "");
+			if (converter != null) {
+				analysisType = converter.convert(analysisType);
+			}
+			if (!(analysisType.toLowerCase().contains("aort") || analysisType.toLowerCase().startsWith("mye") || analysisType.toLowerCase().contains("periodic") || analysisType.toLowerCase().contains("exome"))) {
+					continue;
+			}
+		//Right now, I am only looking at one sample. This will need to be fixed to take more cases!!
+		//I'm thinking of using a python script to execute this one sample at a time, printing out a table, and then getting metrics from there
+		//Make an array that holds all of the sample arrays? then do the math from there?
+			//try {
+				obj = toJSONObj(path);
+				JSONObject rawbamMetrics = obj.getJSONObject("raw.bam.metrics");
+				Double preDupRem = rawbamMetrics.getDouble("total.reads");
+				JSONObject bamMetrics = obj.getJSONObject("final.bam.metrics");
+				Double rawq20 = bamMetrics.getDouble("bases.above.q20");//%Raw bases greater than Q20
+				Double unmapped = bamMetrics.getDouble("unmapped.reads"); //%Reads on target
+				Double mapped = bamMetrics.getDouble("total.reads");// %Reads on target
+				JSONObject getCov = obj.getJSONObject("final.coverage.metrics");//%Targeted bases with coverage >10
+				JSONArray basesAbove10 = getCov.getJSONArray("fraction.above.cov.cutoff");//%Targeted bases with coverage >10
+				JSONObject varMetrics = obj.getJSONObject("variant.metrics");
+				Double knownVars= varMetrics.getDouble("total.known"); //%variants not found in 1000 genomes (% novel variants)
+				Double totalVars = varMetrics.getDouble("total.vars"); //%variants not found in 1000 genomes (% novel variants)
+				Double titvRatio = varMetrics.getDouble("total.tt.ratio");//Ti/Tv ratio
+				Double hetVars = varMetrics.getDouble("total.het.vars");//het variants
+				
+				//looping through qc.json without creating an object to get the capture.extent value
+				BufferedReader br = new BufferedReader(new FileReader(path+"/qc/qc.json"));
+				String currentLine;
+				String [] capBases;
+				String [] captureBases;
+				String one="";
+				String numCaptureBases="";
+				while ((currentLine=br.readLine())!=null){
+					if(currentLine.contains("capture.extent")){
+						capBases=currentLine.split("capture.extent\":");
+						one=capBases[1];
+						captureBases=one.split(",");
+						numCaptureBases=captureBases[0];
+					}
+					
+				}
+				qaData[0] = formatter.format(rawq20);
+				qaData[1] = formatter.format(100-(unmapped/mapped));
+				qaData[2] = formatter.format(basesAbove10.getDouble(3));
+				qaData[3] = formatter.format(((totalVars-knownVars)/totalVars)*100);//This may need to change to factor in more samples. Like, getting total number of vars and total number of known THEN getting percentage
+				qaData[4] = formatter.format(titvRatio);
+				qaData[5] = formatter.format(hetVars);
+				qaData[6] = formatter.format((totalVars/(Integer.parseInt(numCaptureBases)/1000)));
+				qaData[7] = formatter.format(preDupRem-mapped);
+			
+			if(! file.exists() || !file.isDirectory()){
+				System.out.println("File or directory: "+file+" does not exist!!!");
+				continue;
+			}
+			
+			//System.out.println("periodic Array List: ");
+			//set up "keys" for each test? Throw above into individual if conditions so that it knows which array to put the below values into.
+			if ((analysisType.toLowerCase().contains("aort"))) {
+				System.out.println("analysis type: "+analysisType);
+				aortTests.add(qaData);
+			}
+			if ((analysisType.toLowerCase().contains("mye"))){
+				System.out.println("analysis type: "+analysisType);	
+				myeloidTests.add(qaData);
+			}
+			if ((analysisType.toLowerCase().contains("periodic"))){
+				System.out.println("analysis type: "+analysisType);	
+				periodicTests.add(qaData);
+			}
+			if ((analysisType.toLowerCase().contains("exome"))){
+				System.out.println("analysis type: "+analysisType);
+				exomeTests.add(qaData);
+			}
+
+
+		} catch (IOException e) {
+				e.printStackTrace();
+				throw new IllegalArgumentException("JSON file does not exist!!!!");
+		} catch (JSONException e) {
+				
+		}
+	}
+	Double pbasesQ20Tot=0.0; Double preadsTargetTot=0.0; Double ppercTargBaseTot=0.0; Double ptitvratioTot = 0.0; Double ppercNovel=0.0; Double phetTot=0.0; Double pvarsMegaTot=0.0; Double pPCRdupTot=0.0;
+	Double ebasesQ20Tot=0.0; Double ereadsTargetTot=0.0; Double epercTargBaseTot=0.0; Double etitvratioTot = 0.0; Double epercNovel=0.0; Double ehetTot=0.0; Double evarsMegaTot=0.0; Double ePCRdupTot=0.0;
+	Double mbasesQ20Tot=0.0; Double mreadsTargetTot=0.0; Double mpercTargBaseTot=0.0; Double mtitvratioTot = 0.0; Double mpercNovel=0.0; Double mhetTot=0.0; Double mvarsMegaTot=0.0; Double mPCRdupTot=0.0;
+	Double abasesQ20Tot=0.0; Double areadsTargetTot=0.0; Double apercTargBaseTot=0.0; Double atitvratioTot = 0.0; Double apercNovel=0.0; Double ahetTot=0.0; Double avarsMegaTot=0.0; Double aPCRdupTot=0.0;
+
+	for(String[] val : periodicTests){
+		if(!val.equals(null)){
+			pbasesQ20Tot+=Double.parseDouble(val[0]);
+			preadsTargetTot+=Double.parseDouble(val[1]);
+			ppercTargBaseTot+=Double.parseDouble(val[2]);
+			ptitvratioTot+=Double.parseDouble(val[3]);
+			ppercNovel+=Double.parseDouble(val[4]);
+			phetTot+=Double.parseDouble(val[5]);
+			pvarsMegaTot+=Double.parseDouble(val[6]);
+			pPCRdupTot+=Double.parseDouble(val[7]);
+		}
+		
+	}
+	for(String[] val : aortTests){
+		if(!val.equals(null)){
+			abasesQ20Tot+=Double.parseDouble(val[0]);
+			areadsTargetTot+=Double.parseDouble(val[1]);
+			apercTargBaseTot+=Double.parseDouble(val[2]);
+			atitvratioTot+=Double.parseDouble(val[3]);
+			apercNovel+=Double.parseDouble(val[4]);
+			ahetTot+=Double.parseDouble(val[5]);
+			avarsMegaTot+=Double.parseDouble(val[6]);
+			aPCRdupTot+=Double.parseDouble(val[7]);
+		}
+	}
+	for(String[] val : exomeTests){
+		if(!val.equals(null)){
+			ebasesQ20Tot+=Double.parseDouble(val[0]);
+			ereadsTargetTot+=Double.parseDouble(val[1]);
+			epercTargBaseTot+=Double.parseDouble(val[2]);
+			etitvratioTot+=Double.parseDouble(val[3]);
+			epercNovel+=Double.parseDouble(val[4]);
+			ehetTot+=Double.parseDouble(val[5]);
+			evarsMegaTot+=Double.parseDouble(val[6]);
+			ePCRdupTot+=Double.parseDouble(val[7]);
+		}
+	}
+	for(String[] val : myeloidTests){
+		if(!val.equals(null)){
+			mbasesQ20Tot+=Double.parseDouble(val[0]);
+			mreadsTargetTot+=Double.parseDouble(val[1]);
+			mpercTargBaseTot+=Double.parseDouble(val[2]);
+			mtitvratioTot+=Double.parseDouble(val[3]);
+			mpercNovel+=Double.parseDouble(val[4]);
+			mhetTot+=Double.parseDouble(val[5]);
+			mvarsMegaTot+=Double.parseDouble(val[6]);
+			mPCRdupTot+=Double.parseDouble(val[7]);
+		}
+	}
+	Double myeBaseq20avg=mbasesQ20Tot/myeloidTests.size();
+	Double myereadTargavg=mreadsTargetTot/myeloidTests.size();
+	Double myeTargBaseavg=mpercTargBaseTot/myeloidTests.size();
+	Double myeTiTvratioavg=mtitvratioTot/myeloidTests.size();
+	Double myeNovelavg=mpercNovel/myeloidTests.size();
+	Double myeHetavg=mhetTot/myeloidTests.size();
+	Double myeVarsperMegaavg= mvarsMegaTot/myeloidTests.size();
+	Double myePCRdupRemavg=mPCRdupTot/myeloidTests.size();
+	
+	Double pfvBaseq20avg=pbasesQ20Tot/periodicTests.size();
+	Double pfvreadTargavg=preadsTargetTot/periodicTests.size();
+	Double pfvTargBaseavg=ppercTargBaseTot/periodicTests.size();
+	Double pfvTiTvratioavg=ptitvratioTot/periodicTests.size();
+	Double pfvNovelavg=ppercNovel/periodicTests.size();
+	Double pfvHetavg=phetTot/periodicTests.size();
+	Double pfvVarsperMegaavg=pvarsMegaTot/periodicTests.size();
+	Double pfvPCRdupRemavg=pPCRdupTot/periodicTests.size();
+	
+	Double exomBaseq20avg=ebasesQ20Tot/exomeTests.size();
+	Double exomreadTargavg=ereadsTargetTot/exomeTests.size();
+	Double exomTargBaseavg=epercTargBaseTot/exomeTests.size();
+	Double exomTiTvratioavg=etitvratioTot/exomeTests.size();
+	Double exomNovelavg=epercNovel/exomeTests.size();
+	Double exomHetavg=ehetTot/exomeTests.size();
+	Double exomVarsperMegaavg=evarsMegaTot/exomeTests.size();
+	Double exomPCRdupRemavg=ePCRdupTot/exomeTests.size();
+	
+	Double aortBaseq20avg=abasesQ20Tot/aortTests.size();
+	Double aortreadTargavg=areadsTargetTot/aortTests.size();
+	Double aortTargBaseavg=apercTargBaseTot/aortTests.size();
+	Double aortTiTvratioavg=atitvratioTot/aortTests.size();
+	Double aortNovelavg=apercNovel/aortTests.size();
+	Double aortHetavg=ahetTot/aortTests.size();
+	Double aortVarsperMegaavg=avarsMegaTot/aortTests.size();
+	Double aortPCRdupRemavg=aPCRdupTot/aortTests.size();
+	
+	System.out.println("Periodic Fevers Averages");
+	System.out.println(data);
+	System.out.println(pfvBaseq20avg+","+pfvreadTargavg+","+pfvTargBaseavg+","+pfvTiTvratioavg+","+pfvNovelavg+","+pfvHetavg+","+pfvVarsperMegaavg+","+pfvPCRdupRemavg);
+	System.out.println("Exome Averages");
+	System.out.println(data);
+	System.out.println(exomBaseq20avg+","+exomreadTargavg+","+exomTargBaseavg+","+exomTiTvratioavg+","+exomNovelavg+","+exomHetavg+","+exomVarsperMegaavg+","+exomPCRdupRemavg);
+	System.out.println("Aortopathies Averages");
+	System.out.println(data);
+	System.out.println(aortBaseq20avg+","+aortreadTargavg+","+aortTargBaseavg+","+aortTiTvratioavg+","+aortNovelavg+","+aortHetavg+","+aortVarsperMegaavg+","+aortPCRdupRemavg);
+	System.out.println("Myeloid Averages");
+	System.out.println(data);
+	System.out.println(myeBaseq20avg+","+myereadTargavg+","+myeTargBaseavg+","+myeTiTvratioavg+","+myeNovelavg+","+myeHetavg+","+myeVarsperMegaavg+","+myePCRdupRemavg);
+
+}
+//#\CHRISK
 	
 	
 	private static void performList(List<String> paths, PrintStream out) {

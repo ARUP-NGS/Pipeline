@@ -83,6 +83,7 @@ public abstract class MultiOperator extends IOOperator {
 	public void performOperation() throws OperationFailedException {
 		threadPool = (ThreadPoolExecutor) Executors.newFixedThreadPool( getPreferredThreadCount() );
 		
+		
 		Date start = new Date();
 		Logger logger = Logger.getLogger(Pipeline.primaryLoggerName);
 		if (inputFiles == null) {

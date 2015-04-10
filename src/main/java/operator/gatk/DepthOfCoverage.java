@@ -73,7 +73,13 @@ public class DepthOfCoverage extends IOOperator {
 		
 		
 		String preferredNMsPath = this.getAttribute(NM_DEFS);
-		Map<String, String> preferredNMs = loadPreferredNMs(preferredNMsPath);
+		Map<String, String> preferredNMs;
+		try {
+			preferredNMs = loadPreferredNMs(preferredNMsPath);
+		} catch (IOException e1) {
+			e1.printStackTrace();
+			throw new IllegalArgumentException("Could not read NMs file:  " +preferredNMsPath);
+		}
 		
 		if (jvmARGStr == null || jvmARGStr.length()==0) {
 			jvmARGStr = (String) getPipelineProperty(JVM_ARGS);

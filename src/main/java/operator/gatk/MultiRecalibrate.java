@@ -146,6 +146,7 @@ public class MultiRecalibrate extends MultiOperator {
 		addOutputFile(recalBamFile);
 		
 		String command = "java " + defaultMemOptions + " " + jvmARGStr + " -jar " + gatkPath + 
+
 				" -R " + reference.getAbsolutePath() + 
 				" -I " + inputBuffer.getAbsolutePath() + 
 				" -T TableRecalibration " + 

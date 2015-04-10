@@ -8,19 +8,21 @@
   <name>Pipeline</name>
   <url>http://maven.apache.org</url>
 
-   <build>
+	<build>
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
-		<version>2.3.1</version>
+				<version>2.3.1</version>
         <configuration>
-          <archive>
+					<archive>
             <manifest>
               <addClasspath>true</addClasspath>
-	      <mainClass>pipeline.Pipeline</mainClass>
+							<mainClass>pipeline.Pipeline</mainClass>
+							<source>1.6</source>
+							<target>1.6</target>
             </manifest>
-          </archive>
+					</archive>
         </configuration>
       </plugin>
       <plugin>

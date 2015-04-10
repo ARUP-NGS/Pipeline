@@ -260,8 +260,9 @@ public abstract class Operator extends PipelineObject {
 	 * Returns a Map from GeneName -> TranscriptID specifying which transcripts to use for which genes
 	 * @param nmsFilePath
 	 * @return
+	 * @throws IOException 
 	 */
-	protected Map<String, String> loadPreferredNMs(String nmsFilePath) {
+	protected Map<String, String> loadPreferredNMs(String nmsFilePath) throws IOException {
 		Map<String, String> preferredNMs = new HashMap<String,String>();		
 
 		String useDefaultNMsStr = this.getAttribute("use.default.nms");
@@ -270,7 +271,7 @@ public abstract class Operator extends PipelineObject {
 			useDefaultNMs = Boolean.parseBoolean(useDefaultNMsStr);
 		}
 		
-		try {
+		
 			//First, load default NMs from the Pipeline properties, if it exists
 			String defaultPreferredNMs = this.getPipelineProperty("default.preferred.nms");
 			if (defaultPreferredNMs != null && useDefaultNMs) {
@@ -279,7 +280,7 @@ public abstract class Operator extends PipelineObject {
 				if (dpnms.exists()) {
 					preferredNMs = readNMFile(dpnms);
 				}
-			}
+			
 
 			//Now load the specific nms for this operator
 			if (nmsFilePath != null) {
@@ -294,11 +295,7 @@ public abstract class Operator extends PipelineObject {
 
 			
 			Logger.getLogger(Pipeline.primaryLoggerName).info("Loaded " + preferredNMs.size() + " preferred transcripts");
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
+			}
 		return preferredNMs;		
 	}
 

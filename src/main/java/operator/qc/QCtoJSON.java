@@ -289,6 +289,7 @@ public class QCtoJSON extends Operator {
 			return true;
 		}
 		catch (JSONException ex) {
+			Logger.getLogger(Pipeline.primaryLoggerName).warning("Error writing to JSON for key '" + key + "', given value '" + value + "' (expected double).");
 			return false;
 		}
 	}
@@ -330,9 +331,13 @@ public class QCtoJSON extends Operator {
 		double[] ttRatios = new double[2];
 		if (knowns.countSNPs()>0) {
 			ttRatios[0] = knowns.computeTTRatio();
+		} else if (knowns.countSNPs()==0) {
+			ttRatios[0] = Double.NaN; //set to NaN so that known.tt won't be written to the qc.json when there are no known variants
 		}
 		if (novels.countSNPs()>0) {
 			ttRatios[1] = novels.computeTTRatio();
+		} else if (novels.countSNPs()==0) {
+			ttRatios[1] = Double.NaN; //set to NaN so that novel.tt won't be written to the qc.json when there are no known variants
 		}
 		return ttRatios;
 	}
@@ -362,7 +367,12 @@ public class QCtoJSON extends Operator {
 	public void initialize(NodeList children) {
 		
 		String nmDefs = this.getAttribute(NM_DEFS);
-		nms = loadPreferredNMs(nmDefs);
+		try {
+			nms = loadPreferredNMs(nmDefs);
+		} catch (IOException e) {
+			e.printStackTrace();
+			throw new IllegalArgumentException("Preferred NM files are missing:  "+ nmDefs);
+		}
 		
 		
 		

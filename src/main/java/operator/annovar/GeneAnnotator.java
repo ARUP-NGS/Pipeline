@@ -56,7 +56,12 @@ public class GeneAnnotator extends AnnovarAnnotator {
 		String nmFile = this.getAttribute("nm.Definitions");
 		if(nmFile != null) {
 			Logger.getLogger(Pipeline.primaryLoggerName).info("Reading in defined NM #s from file: " + nmFile);
-			nmMap = loadPreferredNMs(nmFile);
+			try {
+				nmMap = loadPreferredNMs(nmFile);
+			} catch (IOException e) {
+				e.printStackTrace();
+				throw new IllegalArgumentException("Could not read NMs file:  " +nmFile);
+			}
 		}
 		
 		try {

@@ -18,6 +18,7 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+
 import json.JSONException;
 import json.JSONObject;
 import operator.IOOperator;
@@ -33,7 +34,6 @@ import buffer.FileBuffer;
 import buffer.JSONBuffer;
 import buffer.ReferenceFile;
 
-import com.sun.org.apache.xerces.internal.impl.xpath.regex.ParseException;
 
 /*
  * @author daniel/elaine
@@ -646,19 +646,14 @@ public class OncologyUtils extends IOOperator {
 	 * @author elainegee
 	 * @return
 	 */
-	private String[] getExonToksFromLocusStr(String exonStr) throws IOException {
+	public static String[] getExonToksFromLocusStr(String exonStr) {
 		String exonStart = "";
 		String exonStop = "";
-		try {
-			Pattern pattern = Pattern.compile("[a-zA-Z](\\d+)[a-zA-Z](\\d+)");
-			Matcher matcher = pattern.matcher(exonStr);
-			while (matcher.find()) {
-				exonStart = matcher.group(1);
-				exonStop = matcher.group(2);
-			}			
-		} catch (ParseException e) {
-				e.printStackTrace();			
-				throw new IOException("Could not extract exon start & exon stop from string " + exonStr);						
+		Pattern pattern = Pattern.compile("[a-zA-Z](\\d+)[a-zA-Z](\\d+)");
+		Matcher matcher = pattern.matcher(exonStr);
+		while (matcher.find()) {
+			exonStart = matcher.group(1);
+			exonStop = matcher.group(2);
 		}
 		String[] results = {exonStart, exonStop};
 		return results;

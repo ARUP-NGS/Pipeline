@@ -479,7 +479,13 @@ public class SnpEffGeneAnnotate extends Annotator {
 		}
 		
 		String nmDefs = this.getAttribute(NM_DEFS);
-		nmMap = loadPreferredNMs(nmDefs);
+		try {
+			nmMap = loadPreferredNMs(nmDefs);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			throw new IllegalArgumentException("Could not read NMs file:  " +nmDefs);
+		}
 		
 	}
 	
