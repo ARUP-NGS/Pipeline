@@ -1,108 +1,45 @@
 package operator.variant;
 
-import java.io.IOException;
-import java.util.logging.Logger;
-
-import operator.OperationFailedException;
-import operator.annovar.Annotator;
-
-import org.broad.tribble.readers.TabixReader;
-
-import pipeline.Pipeline;
 import buffer.variant.VariantRec;
 
+
 /**
- * Uses dbSNP info downloaded directly from NCBI for annotations The raw data is obtained from
+ * Uses dbSNP info downloaded from NCBI for annotations The raw data is obtained from
  * ftp://ftp.ncbi.nlm.nih.gov/snp/organisms/human_9606/VCF/common_all.vcf.gz
  *  and is tabix-indexed
+ *
+ *  This vcf file should be run through VCFtidy inorder to deconvolute variants recorded on
+ *  a single line (e.g. ref=A, alt=AT,AAT,ACT) if a variant is encountered with this attribute
+ *  an error will be thrown and pipeline will exit.  THe pipeline properties files should point
+ *  to the vcftidy'd database.
+ *
+ *
  * @author brendan
+ * @author keith simmon - moved under the AbstactTabixAnnotator class
+
  *
  */
-
-public class DBSNPAnnotator extends Annotator {
-
+public class DBSNPAnnotator extends AbstractTabixAnnotator {
+    /**
+     * Parses allele frequency annotation from the given string and
+     * converts it to a property on the variant
+     * @param var
+     * @param str
+     * @throws operator.OperationFailedException
+     */
     public static final String DBSNP_PATH = "dbsnp.path";
-    private boolean initialized = false;
-    private TabixReader reader = null;
-
-    private void initializeReader() {
-        String filePath = this.getAttribute(DBSNP_PATH);
-        if (filePath == null) {
-            filePath = this.getPipelineProperty(DBSNP_PATH);
-        }
-
-        if (filePath == null) {
-            throw new IllegalArgumentException("Path to dbSNP data not specified, use " + DBSNP_PATH);
-        }
-
-        Logger.getLogger(Pipeline.primaryLoggerName).info("Initializing dbSNP annotator using data file: " + filePath);
-
-        try {
-            reader = new TabixReader(filePath);
-        } catch (IOException e) {
-            throw new IllegalArgumentException("Error opening dbSNP data at path " + filePath + " error : " + e.getMessage());
-        }
-        initialized = true;
-    }
 
     @Override
-    public void annotateVariant(VariantRec var) throws OperationFailedException {
-        if (reader == null) {
-            initializeReader();
-        }
+    protected String getPathToTabixedFile() {return searchForAttribute(DBSNP_PATH);}
 
-        if (reader == null) {
-            throw new OperationFailedException("Could not initialize tabix reader", this);
-        }
-
-        String contig = var.getContig();
-        Integer pos = var.getStart();
-
-        String queryStr = contig + ":" + pos + "-" + (pos);
-        //int count = 0;
-        try {
-            TabixReader.Iterator iter = reader.query(queryStr);
-
-            if(iter != null) {
-                try {
-                    String val = iter.next();
-                    while(val != null) {
-                        boolean ok = addAnnotationsFromString(var, val);
-                        if (ok) {
-                            break;
-                        }
-                        val = iter.next();
-                    }
-                } catch (IOException e) {
-                    throw new OperationFailedException("Error reading dbSNP data file: " + e.getMessage(), this);
-                }
-            }
-        }
-        catch (RuntimeException rex) {
-            //Bad contigs will cause an array out-of-bounds exception to be thrown by
-            //the tabix reader. There's not much we can do about this since the methods
-            //are private... right now we just ignore it and skip this variant
-        }
-
-    }
-
-
-    private boolean addAnnotationsFromString(VariantRec var, String str) throws OperationFailedException {
+    @Override
+    protected boolean addAnnotationsFromString(VariantRec var, String str) {
         String[] toks = str.split("\t");
-        if (! toks[0].equals(var.getContig())) {
-            //We expect that sometimes we'll not get the right contig
-            return false;
-        }
-        if (! toks[1].equals("" + var.getStart())) {
-            //We expect that sometimes we'll not get the right position (not sure why exactly... tabix doesn't work perfectly I guess			return;
-        }
-
-        if (toks[4].equals(var.getAlt())) {
-            String rsNum = toks[2];
-            var.addAnnotation(VariantRec.RSNUM, rsNum);
-            return true;
-        }
-        return false;
+        String rsNum = toks[2];
+        var.addAnnotation(VariantRec.RSNUM, rsNum);
+        return true;
     }
-
 }
+
+	
+
