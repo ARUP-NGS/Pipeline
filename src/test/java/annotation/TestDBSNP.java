@@ -15,7 +15,7 @@ import util.vcfParser.VCFParser;
  * This test validates the DBSNP database, the test was created when the annotator was moved under the
  * AbstractTabixAnnotator.
  *
- * A truncated database was created from the nomrmilized database which was downloaded on
+ * A truncated database was created from the normalized database which was downloaded on
  * April 4th 2015. The python script used to create the test database is located on scriutils git
  *
  *

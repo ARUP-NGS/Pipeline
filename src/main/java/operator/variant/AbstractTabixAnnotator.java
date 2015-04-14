@@ -64,7 +64,8 @@ public abstract class AbstractTabixAnnotator extends Annotator {
 	public void check_variant(String referenceAlt) throws OperationFailedException {
 		if (referenceAlt.contains(",")) {
 			throw new OperationFailedException(
-					"The database contains mulitple ALT alleles on a single line.  Use a vcfTidy'd version of the DB",
+					"The database contains multiple ALT alleles on a single line.  It should be normilized" +
+							"prior to use.",
 					this);
 		}
 	}

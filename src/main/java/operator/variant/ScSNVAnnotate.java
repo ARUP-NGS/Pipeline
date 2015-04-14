@@ -153,19 +153,22 @@ public class ScSNVAnnotate extends AbstractTabixAnnotator{
 							//Important: Normalize the record so that it will match the 
 							//variants in the variant pool that we want to annotate
 							queryResultVar = VCFParser.normalizeVariant(queryResultVar);
-							
+
+							//Added this to throw an error if the DB has multiple Alt on a single line
+							check_variant(queryResultVar.getAlt());
 							//Make sure the (normalized) variant we get from the tabix query matches the
 							//variant we want to annotate
-							
-							if (queryResultVar.getContig().equals(varToAnnotate.getContig())
-									&& queryResultVar.getStart() == varToAnnotate.getStart()
-									&& queryResultVar.getRef().equals(varToAnnotate.getRef())
-									&& queryResultVar.getAlt().equals(varToAnnotate.getAlt())) {
-								//Everything looks good, so go ahead and annotate
-								boolean ok = addAnnotationsFromString(varToAnnotate, val);
-								
-								if (ok)
-									break;
+							for (int i = 0; i < varToAnnotate.getAllAlts().length; i++) {
+								if (queryResultVar.getContig().equals(varToAnnotate.getContig())
+										&& queryResultVar.getStart() == varToAnnotate.getStart()
+										&& queryResultVar.getRef().equals(varToAnnotate.getRef())
+										&& queryResultVar.getAlt().equals(varToAnnotate.getAllAlts()[i])) {
+									//Everything looks good, so go ahead and annotate
+									boolean ok = addAnnotationsFromString(varToAnnotate, val);
+
+									if (ok)
+										break;
+								}
 							}
 						}
 						val = iter.next();
