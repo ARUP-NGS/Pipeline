@@ -104,8 +104,9 @@ public class TestDBNSFP extends TestCase {
             thrown = true;
             System.err.println("Exception during testing: " + ex.getLocalizedMessage());
             ex.printStackTrace();
-            Assert.assertTrue(false);
+
         }
+        Assert.assertFalse(thrown);
     }
 
     public void testLastDBVariantAllAnnotations() {
@@ -158,8 +159,8 @@ public class TestDBNSFP extends TestCase {
             thrown = true;
             System.err.println("Exception during testing: " + ex.getLocalizedMessage());
             ex.printStackTrace();
-            Assert.assertTrue(false);
         }
+        Assert.assertFalse(thrown);
     }
 
 
@@ -214,9 +215,8 @@ public class TestDBNSFP extends TestCase {
             thrown = true;
             System.err.println("Exception during testing: " + ex.getLocalizedMessage());
             ex.printStackTrace();
-            Assert.assertTrue(false);
         }
-
+        Assert.assertFalse(thrown);
     }
 
     public void testSiftScore() {
@@ -237,8 +237,8 @@ public class TestDBNSFP extends TestCase {
             thrown = true;
             System.err.println("Exception during testing: " + ex.getLocalizedMessage());
             ex.printStackTrace();
-            Assert.assertTrue(false);
         }
+        Assert.assertFalse(thrown);
     }
 
     public void testPOLYPHEN_SCORE() {
@@ -259,8 +259,8 @@ public class TestDBNSFP extends TestCase {
             thrown = true;
             System.err.println("Exception during testing: " + ex.getLocalizedMessage());
             ex.printStackTrace();
-            Assert.assertTrue(false);
         }
+        Assert.assertFalse(thrown);
     }
 
     public void testPOLYPHEN_HVAR_SCORE() {
@@ -281,8 +281,8 @@ public class TestDBNSFP extends TestCase {
             thrown = true;
             System.err.println("Exception during testing: " + ex.getLocalizedMessage());
             ex.printStackTrace();
-            Assert.assertTrue(false);
         }
+        Assert.assertFalse(thrown);
     }
 
     public void testLRT_SCORE() {
@@ -301,8 +301,8 @@ public class TestDBNSFP extends TestCase {
             thrown = true;
             System.err.println("Exception during testing: " + ex.getLocalizedMessage());
             ex.printStackTrace();
-            Assert.assertTrue(false);
         }
+        Assert.assertFalse(thrown);
     }
 
     public void testMT_SCORE() {
@@ -320,8 +320,8 @@ public class TestDBNSFP extends TestCase {
             thrown = true;
             System.err.println("Exception during testing: " + ex.getLocalizedMessage());
             ex.printStackTrace();
-            Assert.assertTrue(false);
         }
+        Assert.assertFalse(thrown);
     }
 
     public void testMA_SCORE() {
@@ -339,8 +339,8 @@ public class TestDBNSFP extends TestCase {
             thrown = true;
             System.err.println("Exception during testing: " + ex.getLocalizedMessage());
             ex.printStackTrace();
-            Assert.assertTrue(false);
         }
+        Assert.assertFalse(thrown);
     }
 
     public void testGERP_NR_SCORE() {
@@ -358,8 +358,8 @@ public class TestDBNSFP extends TestCase {
             thrown = true;
             System.err.println("Exception during testing: " + ex.getLocalizedMessage());
             ex.printStackTrace();
-            Assert.assertTrue(false);
         }
+        Assert.assertFalse(thrown);
     }
 
     public void testGERP_SCORE() {
@@ -377,8 +377,8 @@ public class TestDBNSFP extends TestCase {
             thrown = true;
             System.err.println("Exception during testing: " + ex.getLocalizedMessage());
             ex.printStackTrace();
-            Assert.assertTrue(false);
         }
+        Assert.assertFalse(thrown);
     }
 
     public void testPHYLOP_SCORE() {
@@ -397,8 +397,8 @@ public class TestDBNSFP extends TestCase {
             thrown = true;
             System.err.println("Exception during testing: " + ex.getLocalizedMessage());
             ex.printStackTrace();
-            Assert.assertTrue(false);
         }
+        Assert.assertFalse(thrown);
     }
     public void testSIPHY_SCORE() {
         try {
@@ -416,8 +416,8 @@ public class TestDBNSFP extends TestCase {
             thrown = true;
             System.err.println("Exception during testing: " + ex.getLocalizedMessage());
             ex.printStackTrace();
-            Assert.assertTrue(false);
         }
+        Assert.assertFalse(thrown);
     }
     public void testPOP_FREQUENCY() {
         try {
@@ -435,8 +435,8 @@ public class TestDBNSFP extends TestCase {
             thrown = true;
             System.err.println("Exception during testing: " + ex.getLocalizedMessage());
             ex.printStackTrace();
-            Assert.assertTrue(false);
         }
+        Assert.assertFalse(thrown);
     }
     public void testAFR_FREQUENCY() {
         try {
@@ -454,8 +454,8 @@ public class TestDBNSFP extends TestCase {
             thrown = true;
             System.err.println("Exception during testing: " + ex.getLocalizedMessage());
             ex.printStackTrace();
-            Assert.assertTrue(false);
         }
+        Assert.assertFalse(thrown);
     }
     public void testEUR_FREQUENCY() {
         try {
@@ -473,8 +473,8 @@ public class TestDBNSFP extends TestCase {
             thrown = true;
             System.err.println("Exception during testing: " + ex.getLocalizedMessage());
             ex.printStackTrace();
-            Assert.assertTrue(false);
         }
+        Assert.assertFalse(thrown);
     }
     public void testAMR_FREQUENCY() {
         try {
@@ -492,8 +492,8 @@ public class TestDBNSFP extends TestCase {
             thrown = true;
             System.err.println("Exception during testing: " + ex.getLocalizedMessage());
             ex.printStackTrace();
-            Assert.assertTrue(false);
         }
+        Assert.assertFalse(thrown);
     }
     public void testASN_FREQUENCY() {
         try {
@@ -511,8 +511,8 @@ public class TestDBNSFP extends TestCase {
             thrown = true;
             System.err.println("Exception during testing: " + ex.getLocalizedMessage());
             ex.printStackTrace();
-            Assert.assertTrue(false);
         }
+        Assert.assertFalse(thrown);
     }
     public void testEXOMES_FREQ() {
         try {
@@ -530,8 +530,8 @@ public class TestDBNSFP extends TestCase {
             thrown = true;
             System.err.println("Exception during testing: " + ex.getLocalizedMessage());
             ex.printStackTrace();
-            Assert.assertTrue(false);
         }
+        Assert.assertFalse(thrown);
     }
 
 }

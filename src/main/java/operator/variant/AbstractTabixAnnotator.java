@@ -60,12 +60,18 @@ public abstract class AbstractTabixAnnotator extends Annotator {
 	}
 
 
-
+	/**
+	 *
+	 * if the reference Alt is multiallelic it will throw error.  Databases should be normilized priot to use with the
+	 * AbstractTabixAnnotator class
+	 *
+	 * @param referenceAlt
+	 * @throws OperationFailedException
+	 */
 	public void check_variant(String referenceAlt) throws OperationFailedException {
 		if (referenceAlt.contains(",")) {
 			throw new OperationFailedException(
-					"The database contains multiple ALT alleles on a single line.  It should be normilized" +
-							"prior to use.",
+					"The database contains multiple ALT alleles on a single line.  It should be normalized prior to use.",
 					this);
 		}
 	}
@@ -106,7 +112,6 @@ public abstract class AbstractTabixAnnotator extends Annotator {
 							//Important: Normalize the record so that it will match the 
 							//variants in the variant pool that we want to annotate
 							queryResultVar = VCFParser.normalizeVariant(queryResultVar);
-							//System.out.println("XX" + varToAnnotate.toString());
 
 							//Added this to throw an error if the DB has multiple Alt on a single line
 							check_variant(queryResultVar.getAlt());

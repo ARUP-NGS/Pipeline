@@ -1,13 +1,8 @@
 package operator.variant;
 
 import java.io.IOException;
-//import java.util.logging.Logger;
-
 import operator.OperationFailedException;
-//import operator.annovar.Annotator;
 import org.broad.tribble.readers.TabixReader;
-//import pipeline.Pipeline;
-//import util.flatFilesReader.DBNSFPReader;
 import buffer.variant.VariantRec;
 import util.vcfParser.VCFParser;
 
@@ -183,333 +178,268 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
 			initialized = true;
 	}
 
-
+	/**
+	 * When the variant exists in the dbNSFP database annotation properties are added to the variant
+	 *
+	 * The current annotations added include:
+	 *
+	 * SIFT_SCORE [column 23]
+	 * 	SIFT_score: SIFT score (SIFTori). Scores range from 0 to 1. The smaller the score the more likely the SNP has
+	 * 	damaging effect. Multiple scores separated by ";", corresponding to Ensembl_proteinid.
+	 * 	NOTE: if multiple values exist the LOWEST score is added to the variant
+	 *
+	 * POLYPHEN_SCORE [column 29]
+	 * 	Polyphen2_HDIV_score: Polyphen2 score based on HumDiv, i.e. hdiv_prob. The score ranges from 0 to 1. Multiple
+	 * 	entries separated by ";", corresponding to Uniprot_acc_Polyphen2.
+	 *	NOTE: if multiple values exist the HIGHEST score is added to the variant
+	 *
+	 * POLYPHEN_HVAR_SCORE [column 32]
+	 * 	Polyphen2_HVAR_score: Polyphen2 score based on HumVar, i.e. hvar_prob. The score ranges from 0 to 1. Multiple
+	 * 	entries separated by ";", corresponding to Uniprot_acc_Polyphen2.
+	 * 	NOTE: if multiple values exist the HIGHEST score is added to the variant
+	 *
+	 * LRT_score [column 35]
+	 * 	LRT_score: The original LRT two-sided p-value (LRTori), ranges from 0 to 1.
+	 *
+	 * MT_SCORE [column 39]
+	 * 	MutationTaster_score: MutationTaster p-value (MTori), ranges from 0 to 1.
+	 * 	NOTE: if multiple values exist the HIGHEST score is added to the variant
+	 *
+	 * MA_SCORE [column 46]
+	 * 	MutationAssessor_score: MutationAssessor functional impact combined score (MAori). The score ranges from -5.545
+	 * 	to 5.975 in dbNSFP.
+	 * 	NOTE: if multiple values exist the HIGHEST score is added to the variant
+	 *
+	 * GERP_NR_SCORE [column 62]
+	 * 	GERP++_NR: GERP++ neutral rate
+	 *
+	 * GERP_SCORE [column 63]
+	 * 	GERP++_RS: GERP++ RS score, the larger the score, the more conserved the site.
+	 *
+	 * PHYLOP_SCORE
+	 *  phyloP7way_vertebrate: phyloP (phylogenetic p-values) conservation score based on the multiple alignments of 7
+	 *  vertebrate genomes (including human). The larger the score, the more conserved the site.
+	 *
+	 * SIPHY_SCORE
+	 * 	SiPhy_29way_logOdds: SiPhy score based on 29 mammals genomes. The larger the score, the more conserved the site.
+	 *
+	 * POP_FREQUENCY
+	 * 	1000Gp3_AF: Alternative allele frequency in the whole 1000Gp3 data.
+	 *
+	 * AFR_FREQUENCY
+	 * 	1000Gp3_AFR_AF: Alternative allele frequency in the 1000Gp3 African descendent samples.
+	 *
+	 * EUR_FREQUENCY
+	 * 	1000Gp3_EUR_AF: Alternative allele frequency in the 1000Gp3 European descendent samples.
+	 *
+	 * AMR_FREQUENCY
+	 *	1000Gp3_AMR_AF: Alternative allele frequency in the 1000Gp3 American descendent samples.
+	 *
+	 * ASN_FREQUENCY
+	 * 	1000Gp3_EAS_AF: Alternative allele frequency in the 1000Gp3 East Asian descendent samples.
+	 *
+	 * EXOMES_FREQ
+	 * 	ExAC_AF: Allele frequency in total ExAC samples
+	 *
+	 * 	*THIS VALUE NO LONGER EXISTS  *********************************************
+	 *	*	Double slr = reader.getValue(DBNSFPReader.SLR_TEST); //deprecated     *
+	 *	*	var.addProperty(VariantRec.SLR_TEST, slr);						      *
+	 *	***************************************************************************
+	 *
+	 * @param var the variant record to be annotated
+	 * @param val the string (line) retrieved by tabix
+	 * @return true when annotations are added
+	 */
 	@Override
 	protected boolean addAnnotationsFromString(VariantRec var, String val) {
 		String[] toks = val.split("\t");
-		//System.out.println(toks[23]);
-		//	var.addProperty(VariantRec.SIFT_SCORE, sift);
-		// *23 SIFT_score <----- SIFT
-		/*SIFT_score: SIFT score (SIFTori). Scores range from 0 to 1. The smaller the score the
-		more likely the SNP has damaging effect.
-		Multiple scores separated by ";", corresponding to Ensembl_proteinid.
-		*/
+		int sift_score_col = 23;
+		int polyphen_score_col = 29;
+		int Polyphen2_hvar_score_col = 32;
+		int lrt_score_column = 35;
+		int mt_score_column = 39;
+		int ma_score_column = 46;
+		int gerp_nr_score_column = 62;
+		int gerp_score_column = 63;
+		int phylop_score_column = 65;
+		int siphy_score_column = 70;
+		int pop_frequency_column = 73;
+		int afr_frequency_column = 75;
+		int eur_frequency_column = 77;
+		int amr_frequency_column = 79;
+		int asn_frequency_column = 81;
+		int exomes_freq_column = 91;
+
+
+		//SIFT_SCORE
+
 		try {
-			//if multiple values present keep the most damaging value [SMALLER]
-			if (toks[23].contains(";")) {
-				String [] values = toks[23].split(";");
+			if (toks[sift_score_col].contains(";")) {
+				String [] values = toks[sift_score_col].split(";");
 				double lowest = 2.0;
-				for (int i = 0; i < values.length; i++){
-					//System.out.println(values[i]);
+				for (String i : values) {
 					try {
-						if (Double.parseDouble(values[i]) < lowest){
-							lowest = Double.parseDouble(values[i]);
+						if (Double.parseDouble(i) < lowest) {
+							lowest = Double.parseDouble(i);
 						}
-					} catch (NumberFormatException ex){
-						//System.out.println(ex.toString());
-						//Thrown if the value in the tabix is not parsable "."
-						//System.err.println(ex + ", ada: " + _ada);
+					} catch (NumberFormatException ex) {
+						//Thrown if the value in the tabix is not parsable "." and moves to the next value
 					}
 				}
 				var.addProperty(VariantRec.SIFT_SCORE, lowest);
 			} else {
-				var.addProperty(VariantRec.SIFT_SCORE, Double.parseDouble(toks[23]));
+				var.addProperty(VariantRec.SIFT_SCORE, Double.parseDouble(toks[sift_score_col]));
 			}
-
 		}
-		catch (NumberFormatException ex){
-			//System.out.println(ex.toString());
-			//Thrown if the value in the tabix is not parsable "."
-			//System.err.println(ex + ", ada: " + _ada);
+		catch (NumberFormatException ex){//Thrown if the value in the tabix is not parsable "."
 		}
 
-		//	Double pp = reader.getValue(DBNSFPReader.PP);
-		//	var.addProperty(VariantRec.POLYPHEN_SCORE, pp);
-		//*29 Polyphen2_HDIV_score  <---- PP
-		/*
-		Polyphen2_HDIV_pred: Polyphen2 prediction based on HumDiv, "D" ("porobably damaging",
-                HDIV score in [0.957,1] or rankscore in [0.52844,0.89865]), "P" ("possibly damaging",
-                HDIV score in [0.453,0.956] or rankscore in [0.34282,0.52689]) and "B" ("benign",
-                HDIV score in [0,0.452] or rankscore in [0.02634,0.34268]). Score cutoff for binary
-                classification is 0.5 for HDIV score or 0.3528 for rankscore, i.e. the prediction is
-                "neutral" if the HDIV score is smaller than 0.5 (rankscore is smaller than 0.3528),
-                and "deleterious" if the HDIV score is larger than 0.5 (rankscore is larger than
-                0.3528). Multiple entries are separated by ";".
-                		 */
+		//Polyphen2_HDIV_score
 		try {
-			//if multiple values present keep the most damaging value [SMALLER]
-			if (toks[29].contains(";")) {
-				String[] values = toks[29].split(";");
+			if (toks[polyphen_score_col].contains(";")) {
+				String[] values = toks[polyphen_score_col].split(";");
 				double highest = 0.0;
-				for (int i = 0; i < values.length; i++) {
-					//System.out.println(values[i]);
+				for (String i : values) {
 					try {
-						if (Double.parseDouble(values[i]) > highest) {
-							highest = Double.parseDouble(values[i]);
+						if (Double.parseDouble(i) > highest) {
+							highest = Double.parseDouble(i);
 						}
-					} catch (NumberFormatException ex) {
-						//System.out.println(ex.toString());
-						//Thrown if the value in the tabix is not parsable "."
-						//System.err.println(ex + ", ada: " + _ada);
-					}
+					} catch (NumberFormatException ex) { }
 				}
 				var.addProperty(VariantRec.POLYPHEN_SCORE, highest);
 			} else {
-				var.addProperty(VariantRec.POLYPHEN_SCORE, Double.parseDouble(toks[29]));
+				var.addProperty(VariantRec.POLYPHEN_SCORE, Double.parseDouble(toks[polyphen_score_col]));
 			}
 		}
-		catch (NumberFormatException ex){
-			//Thrown if the value in the tabix is not parsable "."
-			//System.err.println(ex + ", ada: " + _ada);
-		}
+		catch (NumberFormatException ex){}
 
-
-		//	Double ppHvar = reader.getValue(DBNSFPReader.PP_HVAR);
-		//	var.addProperty(VariantRec.POLYPHEN_HVAR_SCORE, ppHvar);
-		//*32 Polyphen2_HVAR_score <---- PP_HVAR
-		/*
-		Polyphen2_HVAR_score: Polyphen2 score based on HumVar, i.e. hvar_prob.
-                The score ranges from 0 to 1.
-                Multiple entries separated by ";", corresponding to Uniprot_acc_Polyphen2.
-		 */
+		//POLYPHEN_HVAR_SCORE
 		try {
-			//if multiple values present keep the most damaging value [LARGER]
-			if (toks[32].contains(";")) {
-				String[] values = toks[32].split(";");
+			if (toks[Polyphen2_hvar_score_col].contains(";")) {
+				String[] values = toks[Polyphen2_hvar_score_col].split(";");
 				double highest = 0.0;
-				for (int i = 0; i < values.length; i++) {
-					//System.out.println(values[i]);
+				for (String i : values) {
 					try {
-						if (Double.parseDouble(values[i]) > highest) {
-							highest = Double.parseDouble(values[i]);
+						if (Double.parseDouble(i) > highest) {
+							highest = Double.parseDouble(i);
 						}
-					} catch (NumberFormatException ex) {
-						//System.out.println(ex.toString());
-						//Thrown if the value in the tabix is not parsable "."
-						//System.err.println(ex + ", ada: " + _ada);
-					}
+					} catch (NumberFormatException ex) { }
 				}
 				var.addProperty(VariantRec.POLYPHEN_HVAR_SCORE, highest);
 			} else {
-				var.addProperty(VariantRec.POLYPHEN_HVAR_SCORE, Double.parseDouble(toks[32]));
+				var.addProperty(VariantRec.POLYPHEN_HVAR_SCORE, Double.parseDouble(toks[Polyphen2_hvar_score_col]));
 			}
 		}
-		catch (NumberFormatException ex){
-			//Thrown if the value in the tabix is not parsable "."
-			//System.err.println(ex + ", ada: " + _ada);
-		}
+		catch (NumberFormatException ex){}
 
-		//	Double lrt = reader.getValue(DBNSFPReader.LRT);
-		//	var.addProperty(VariantRec.LRT_SCORE, lrt);
-		//*35 LRT_score  <---- LRT
-		/*
-		LRT_score: The original LRT two-sided p-value (LRTori), ranges from 0 to 1.
-		 */
+		//LRT SCORE
 		try {
-			var.addProperty(VariantRec.LRT_SCORE, Double.parseDouble(toks[35]));
-		}
-		catch (NumberFormatException ex){
-			//Thrown if the value in the tabix is not parsable "."
-			//System.err.println(ex + ", ada: " + _ada);
-		}
+			var.addProperty(VariantRec.LRT_SCORE, Double.parseDouble(toks[lrt_score_column]));
+		} catch (NumberFormatException ex){}
 
-		//	Double mt = reader.getValue(DBNSFPReader.MT);
-		//	var.addProperty(VariantRec.MT_SCORE, mt);
-		// *39 MutationTaster_score <------ MT
-		/*
-		MutationTaster_score: MutationTaster p-value (MTori), ranges from 0 to 1.
-		Does not say but these are ";" seperated.
-		 */
-		int _column = 39;
+		//MT_SCORE
 		try {
-			if (toks[_column].contains(";")) {
-				String[] values = toks[_column].split(";");
+			if (toks[mt_score_column].contains(";")) {
+				String[] values = toks[mt_score_column].split(";");
 				double highest = 0.0;
-				for (int i = 0; i < values.length; i++) {
-					//System.out.println(values[i]);
+				for (String i : values) {
 					try {
-						if (Double.parseDouble(values[i]) > highest) {
-							highest = Double.parseDouble(values[i]);
+						if (Double.parseDouble(i) > highest) {
+							highest = Double.parseDouble(i);
 						}
-					} catch (NumberFormatException ex) {
-						//System.out.println(ex.toString());
-						//Thrown if the value in the tabix is not parsable "."
-						//System.err.println(ex + ", ada: " + _ada);
-					}
+					} catch (NumberFormatException ex) {}
 				}
 				var.addProperty(VariantRec.MT_SCORE, highest);
 			} else {
-				var.addProperty(VariantRec.MT_SCORE, Double.parseDouble(toks[_column]));
+				var.addProperty(VariantRec.MT_SCORE, Double.parseDouble(toks[mt_score_column]));
 			}
 		}
-		catch (NumberFormatException ex){
-			//Thrown if the value in the tabix is not parsable "."
-			//System.err.println(ex + ", ada: " + _ada);
-		}
+		catch (NumberFormatException ex){}
 
-		//	Double ma = reader.getValue(DBNSFPReader.MA);
-		//	var.addProperty(VariantRec.MA_SCORE, ma);
-		//*46 MutationAssessor_score  <----- MA
-		/*
-		MutationAssessor_score: MutationAssessor functional impact combined score (MAori). The
-                score ranges from -5.545 to 5.975 in dbNSFP.
-		 */
-		_column = 46;
+		//MA_SCORE
 		try {
 			//if multiple values present keep the most damaging value [LARGER]
-			if (toks[_column].contains(";")) {
-				String[] values = toks[_column].split(";");
+			if (toks[ma_score_column].contains(";")) {
+				String[] values = toks[ma_score_column].split(";");
 				double highest = -6.0;
-				for (int i = 0; i < values.length; i++) {
-					//System.out.println(values[i]);
+				for (String i : values) {
 					try {
-						if (Double.parseDouble(values[i]) > highest) {
-							highest = Double.parseDouble(values[i]);
+						if (Double.parseDouble(i) > highest) {
+							highest = Double.parseDouble(i);
 						}
-					} catch (NumberFormatException ex) {
-						//System.out.println(ex.toString());
-						//Thrown if the value in the tabix is not parsable "."
-						//System.err.println(ex + ", ada: " + _ada);
-					}
+					} catch (NumberFormatException ex) {}
 				}
 				var.addProperty(VariantRec.MA_SCORE, highest);
 			} else {
-				var.addProperty(VariantRec.MA_SCORE, Double.parseDouble(toks[_column]));
+				var.addProperty(VariantRec.MA_SCORE, Double.parseDouble(toks[ma_score_column]));
 			}
 		}
-		catch (NumberFormatException ex){
-			//Thrown if the value in the tabix is not parsable "."
-			//System.err.println(ex + ", ada: " + _ada);
-		}
+		catch (NumberFormatException ex){}
 
-
-		//*62 GERP++_NR -----> GERP_NR
-		//	Double gerpNR = reader.getValue(DBNSFPReader.GERP_NR);
-		//	var.addProperty(VariantRec.GERP_NR_SCORE, gerpNR);
-		//  GERP++_NR: GERP++ neutral rate
+		//GERP_NR_SCORE
 		try {
-			var.addProperty(VariantRec.GERP_NR_SCORE, Double.parseDouble(toks[62]));
-		}
-		catch (NumberFormatException ex){
-			//Thrown if the value in the tabix is not parsable "."
-			//System.err.println(ex + ", ada: " + _ada);
-		}
+			var.addProperty(VariantRec.GERP_NR_SCORE, Double.parseDouble(toks[gerp_nr_score_column]));
+		} catch (NumberFormatException ex){}
 
-
-		//	Double gerp = reader.getValue(DBNSFPReader.GERP);
-		//	var.addProperty(VariantRec.GERP_SCORE, gerp);
-		//*63 GERP++_RS -----> GERP
-		// GERP++_RS: GERP++ RS score, the larger the score, the more conserved the site.
+		// GERP_SCORE
 		try {
-			var.addProperty(VariantRec.GERP_SCORE, Double.parseDouble(toks[63]));
-		}
-		catch (NumberFormatException ex){
-			//Thrown if the value in the tabix is not parsable "."
-			//System.err.println(ex + ", ada: " + _ada);
-		}
+			var.addProperty(VariantRec.GERP_SCORE, Double.parseDouble(toks[gerp_score_column]));
+		} catch (NumberFormatException ex){}
 
-		//	Double phylop = reader.getValue(DBNSFPReader.PHYLOP);
-		//	var.addProperty(VariantRec.PHYLOP_SCORE, phylop);
-		//*65 phyloP7way_vertebrate  <----- PHYLOP
+		//PHYLOP_SCORE
 		try {
-			var.addProperty(VariantRec.PHYLOP_SCORE, Double.parseDouble(toks[65]));
-		}
-		catch (NumberFormatException ex){
-			//Thrown if the value in the tabix is not parsable "."
-			//System.err.println(ex + ", ada: " + _ada);
-		}
+			var.addProperty(VariantRec.PHYLOP_SCORE, Double.parseDouble(toks[phylop_score_column]));
+		} catch (NumberFormatException ex){}
 
-		//	Double siphy = reader.getValue(DBNSFPReader.SIPHY);
-		//	var.addProperty(VariantRec.SIPHY_SCORE, siphy);
-		//*70 SiPhy_29way_logOdds  <----- SIPHY
+		//SIPHY_SCORE
 		try {
-			var.addProperty(VariantRec.SIPHY_SCORE, Double.parseDouble(toks[70]));
-		}
-		catch (NumberFormatException ex){
-			//Thrown if the value in the tabix is not parsable "."
-			//System.err.println(ex + ", ada: " + _ada);
-		}
+			var.addProperty(VariantRec.SIPHY_SCORE, Double.parseDouble(toks[siphy_score_column]));
+		} catch (NumberFormatException ex){}
 
-
-		//	Double popFreq = reader.getValue(DBNSFPReader.TKG);
-		//	var.addProperty(VariantRec.POP_FREQUENCY, popFreq);
-		//	*73 1000Gp3_AF   <---- TKG
+		//POP_FREQUENCY
 		try {
-			var.addProperty(VariantRec.POP_FREQUENCY, Double.parseDouble(toks[73]));
-		}
-		catch (NumberFormatException ex){
-			//Thrown if the value in the tabix is not parsable "."
-			//System.err.println(ex + ", ada: " + _ada);
-		}
+			var.addProperty(VariantRec.POP_FREQUENCY, Double.parseDouble(toks[pop_frequency_column]));
+		} catch (NumberFormatException ex){}
 
-		//	Double afrFreq = reader.getValue(DBNSFPReader.TKG_AFR);
-		// var.addProperty(VariantRec.AFR_FREQUENCY, afrFreq);
-		//*75 1000Gp3_AFR_AF  <----TKG_AFR
-
+		//AFR_FREQUENCY
 		try {
-			var.addProperty(VariantRec.AFR_FREQUENCY, Double.parseDouble(toks[75]));
-		}
-		catch (NumberFormatException ex){
-			//Thrown if the value in the tabix is not parsable "."
-			//System.err.println(ex + ", ada: " + _ada);
-		}
+			var.addProperty(VariantRec.AFR_FREQUENCY, Double.parseDouble(toks[afr_frequency_column]));
+		} catch (NumberFormatException ex){}
 
-		//	Double eurFreq = reader.getValue(DBNSFPReader.TKG_EUR);
-		// var.addProperty(VariantRec.EUR_FREQUENCY, eurFreq);
-		//*77 1000Gp3_EUR_AF  <-----TKG_EUR
+		//EUR_FREQUENCY
 		try {
-			var.addProperty(VariantRec.EUR_FREQUENCY, Double.parseDouble(toks[77]));
-		}
-		catch (NumberFormatException ex){
-			//Thrown if the value in the tabix is not parsable "."
-			//System.err.println(ex + ", ada: " + _ada);
-		}
+			var.addProperty(VariantRec.EUR_FREQUENCY, Double.parseDouble(toks[eur_frequency_column]));
+		} catch (NumberFormatException ex){}
 
-
-		//*79 1000Gp3_AMR_AF   <-----TKG_AMR
-		//	Double amrFreq = reader.getValue(DBNSFPReader.TKG_AMR);
-		//		var.addProperty(VariantRec.AMR_FREQUENCY, amrFreq);
+		//AMR_FREQUENCY
 		try {
-			var.addProperty(VariantRec.AMR_FREQUENCY, Double.parseDouble(toks[79]));
-		}
-		catch (NumberFormatException ex){
-			//Thrown if the value in the tabix is not parsable "."
-			//System.err.println(ex + ", ada: " + _ada);
-		}
+			var.addProperty(VariantRec.AMR_FREQUENCY, Double.parseDouble(toks[amr_frequency_column]));
+		} catch (NumberFormatException ex){}
 
-		//	Double asnFreq = reader.getValue(DBNSFPReader.TKG_ASN);
-		// var.addProperty(VariantRec.ASN_FREQUENCY, asnFreq);
-		//*81 1000Gp3_EAS_AF
+		//ASN_FREQUENCY
 		try {
-			var.addProperty(VariantRec.ASN_FREQUENCY, Double.parseDouble(toks[81]));
-		}
-		catch (NumberFormatException ex){
-			//Thrown if the value in the tabix is not parsable "."
-			//System.err.println(ex + ", ada: " + _ada);
-		}
+			var.addProperty(VariantRec.ASN_FREQUENCY, Double.parseDouble(toks[asn_frequency_column]));
+		} catch (NumberFormatException ex){}
 
-		//	Double espFreq = reader.getValue(DBNSFPReader.ESP5400);
-		//var.addProperty(VariantRec.EXOMES_FREQ, espFreq);
-		//*91 ESP6500_EA_AF
+		//EXOMES_FREQ
 		try {
-			var.addProperty(VariantRec.EXOMES_FREQ, Double.parseDouble(toks[91]));
-		}
-		catch (NumberFormatException ex){
-			//Thrown if the value in the tabix is not parsable "."
-			//System.err.println(ex + ", ada: " + _ada);
-		}
+			var.addProperty(VariantRec.EXOMES_FREQ, Double.parseDouble(toks[exomes_freq_column]));
+		} catch (NumberFormatException ex){}
+
 		return true;
 	}
 
 
-	//***************  THIS VALUE NO LONGER EXISTS  ******************************//
-	//	Double slr = reader.getValue(DBNSFPReader.SLR_TEST); //deprecated
-	//	var.addProperty(VariantRec.SLR_TEST, slr);
-	//*******************
-
-
+	/**
+	 * Overrides the abstractTabixAnnotator method because the database is not in standard VCF format.
+	 *
+	 * @param varToAnnotate
+	 * @throws OperationFailedException
+	 */
 	@Override
 	public void annotateVariant(VariantRec varToAnnotate) throws OperationFailedException {
+
+
 		if (! initialized) {
 			throw new OperationFailedException("Failed to initialize", this);
 		}
@@ -520,7 +450,6 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
 
 		String contig = varToAnnotate.getContig();
 		Integer pos = varToAnnotate.getStart();
-		//System.out.println(contig + " " + pos);
 		String queryStr = contig + ":" + (pos) + "-" + (pos);
 
 		try {
@@ -534,10 +463,8 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
 					while(val != null) {
 						String[] toks = val.split("\t"); //length of the array 16
 
-						if (toks.length > 15) {
+						if (toks.length == 112) { //the number of columns in the database
 
-
-							//Convert the result (which is a line of a VCF file) into a variant rec
 							// call the constructer and set variants
 							VariantRec queryResultVar = new VariantRec(toks[0], Integer.parseInt(toks[1]), Integer.parseInt(toks[1]), toks[2], toks[3]);
 							//Important: Normalize the record so that it will match the

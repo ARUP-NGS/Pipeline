@@ -4,14 +4,14 @@ import buffer.variant.VariantRec;
 
 
 /**
- * Uses dbSNP info downloaded from NCBI for annotations The raw data is obtained from
- * ftp://ftp.ncbi.nlm.nih.gov/snp/organisms/human_9606/VCF/common_all.vcf.gz
+ *  Uses dbSNP info downloaded from NCBI for annotations The raw data is obtained from
+ *  ftp://ftp.ncbi.nlm.nih.gov/snp/organisms/human_9606/VCF/common_all.vcf.gz
  *  and is tabix-indexed
  *
- *  This vcf file should be run through VCFtidy inorder to deconvolute variants recorded on
- *  a single line (e.g. ref=A, alt=AT,AAT,ACT) if a variant is encountered with this attribute
- *  an error will be thrown and pipeline will exit.  THe pipeline properties files should point
- *  to the vcftidy'd database.
+ *  Database should be retrieved via this script, which normalizes the database and does some QC
+ *  Scrutil/bash/DatabaseScripts/dbsnp_cron_update
+ *  ftp://ftp.ncbi.nih.gov/snp/organisms/human_9606_b142_GRCh37p13/VCF/00-All.vcf.gz"
+
  *
  *
  * @author brendan
