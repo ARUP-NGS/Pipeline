@@ -327,7 +327,7 @@ public class CoverageCalculator {
 		int advance = 4;
 		
 		//If this is a tiny interval just look at each base, this allows us to look at single sites accurately
-		if (advance > (end-start)) {
+		if (end-start < 40) {
 			advance = 1;
 		}
 		bam.advanceTo(chr, start);

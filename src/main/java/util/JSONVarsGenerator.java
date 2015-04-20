@@ -50,8 +50,6 @@ public class JSONVarsGenerator {
 		
 		AnnotatedVarsJsonConverter converter = new AnnotatedVarsJsonConverter();
 		converter.setExcludeKeys( Arrays.asList(new String[]{
-				VariantRec.EXOMES_63K_AC_HET, 
-				VariantRec.EXOMES_63K_AC_HOM,
 				VariantRec.EXOMES_63K_AFR_HET,
 				VariantRec.EXOMES_63K_AFR_HOM,
 				VariantRec.EXOMES_63K_AMR_HET,
@@ -66,7 +64,7 @@ public class JSONVarsGenerator {
 				VariantRec.EXOMES_63K_OTH_HOM,
 				VariantRec.EXOMES_63K_SAS_HET,
 				VariantRec.EXOMES_63K_SAS_HOM,
-				VariantRec.EXOMES_63K_AC_HET
+				VariantRec.EXOMES_63K_HET_FREQ
 				}));
 		
 		JSONArray jsonVarList = new JSONArray();

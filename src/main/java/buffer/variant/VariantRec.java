@@ -843,14 +843,14 @@ public class VariantRec {
 	public static final String EXOMES_63K_FIN_FREQ = "exomes63K.al.freq.fin";
 	public static final String EXOMES_63K_NFE_FREQ = "exomes63K.al.freq.nfe";
 	public static final String EXOMES_63K_SAS_FREQ = "exomes63K.al.freq.sas";
-	public static final String EXOMES_63K_AC_HET = "exomes63K.al.freq.het";
+	public static final String EXOMES_63K_HET_FREQ = "exomes63K.al.freq.het";
 	public static final String EXOMES_63K_AFR_HET = "exomes63K.al.freq.afr.het";
 	public static final String EXOMES_63K_AMR_HET = "exomes63K.al.freq.amr.het";
 	public static final String EXOMES_63K_EAS_HET = "exomes63K.al.freq.eas.het";
 	public static final String EXOMES_63K_FIN_HET = "exomes63K.al.freq.fin.het";
 	public static final String EXOMES_63K_NFE_HET = "exomes63K.al.freq.nfe.het";
 	public static final String EXOMES_63K_SAS_HET = "exomes63K.al.freq.sas.het";
-	public static final String EXOMES_63K_AC_HOM = "exomes63K.al.freq.hom";
+	public static final String EXOMES_63K_HOM_FREQ = "exomes63K.al.freq.hom";
 	public static final String EXOMES_63K_AFR_HOM = "exomes63K.al.freq.afr.hom";
 	public static final String EXOMES_63K_AMR_HOM = "exomes63K.al.freq.amr.hom";
 	public static final String EXOMES_63K_EAS_HOM = "exomes63K.al.freq.eas.hom";

@@ -3,10 +3,10 @@ package annotation;
 import java.io.File;
 
 import junit.framework.TestCase;
+import operator.variant.ExAC63KExomesAnnotator;
 
 import org.junit.Assert;
 
-import operator.variant.ExAC63KExomesAnnotator;
 import pipeline.Pipeline;
 import buffer.variant.VariantPool;
 import buffer.variant.VariantRec;
@@ -37,7 +37,7 @@ public class TestExAC63KExomesAnnotator extends TestCase {
 			
 			VariantRec var = vars.findRecord("1", 17407, "G" , "A");
 			Assert.assertTrue(var.getProperty(VariantRec.EXOMES_63K_FREQ).equals(0.033));
-			Double val= var.getProperty(VariantRec.EXOMES_63K_AC_HET);
+			Double val= var.getProperty(VariantRec.EXOMES_63K_HET_FREQ);
 			Assert.assertTrue(var.getProperty(VariantRec.EXOMES_63K_AFR_FREQ).equals((double) 30/(double) 1000));
 			Assert.assertTrue(var.getProperty(VariantRec.EXOMES_63K_AMR_FREQ).equals((double) 16/(double) 280));
 			Assert.assertTrue(var.getProperty(VariantRec.EXOMES_63K_EAS_FREQ).equals((double) 29/(double) 412));
@@ -45,7 +45,7 @@ public class TestExAC63KExomesAnnotator extends TestCase {
 			Assert.assertTrue(var.getProperty(VariantRec.EXOMES_63K_NFE_FREQ).equals((double) 269/(double) 2990));
 			Assert.assertTrue(var.getProperty(VariantRec.EXOMES_63K_SAS_FREQ).equals((double) 54/(double) 394));
 			Assert.assertTrue(var.getProperty(VariantRec.EXOMES_63K_OTH_FREQ).equals((double) 4/(double) 56));
-			Assert.assertTrue(var.getProperty(VariantRec.EXOMES_63K_AC_HET).equals((double) 405 /(double) 13316));
+			Assert.assertTrue(var.getProperty(VariantRec.EXOMES_63K_HET_FREQ).equals((double) 405 /(double) 13316));
 			Assert.assertTrue(var.getProperty(VariantRec.EXOMES_63K_AFR_HET).equals((double) 30/(double) 1000));
 			Assert.assertTrue(var.getProperty(VariantRec.EXOMES_63K_AMR_HET).equals((double) 16/(double) 280));
 			Assert.assertTrue(var.getProperty(VariantRec.EXOMES_63K_EAS_HET).equals((double) 29/(double) 412));
@@ -53,14 +53,14 @@ public class TestExAC63KExomesAnnotator extends TestCase {
 			Assert.assertTrue(var.getProperty(VariantRec.EXOMES_63K_NFE_HET).equals((double) 269/(double) 2990));
 			Assert.assertTrue(var.getProperty(VariantRec.EXOMES_63K_SAS_HET).equals((double) 54/(double) 394));
 			Assert.assertTrue(var.getProperty(VariantRec.EXOMES_63K_OTH_HET).equals((double) 4/(double) 56));
-			Assert.assertTrue(var.getProperty(VariantRec.EXOMES_63K_AC_HOM).equals((double) 0/(double) 13316));
-			Assert.assertTrue(var.getProperty(VariantRec.EXOMES_63K_AFR_HOM).equals((double) 0/(double) 1000));
-			Assert.assertTrue(var.getProperty(VariantRec.EXOMES_63K_AMR_HOM).equals((double) 0/(double) 280));
-			Assert.assertTrue(var.getProperty(VariantRec.EXOMES_63K_EAS_HOM).equals((double) 0/(double) 412));
-			Assert.assertTrue(var.getProperty(VariantRec.EXOMES_63K_FIN_HOM).equals((double) 0/(double) 112));
-			Assert.assertTrue(var.getProperty(VariantRec.EXOMES_63K_NFE_HOM).equals((double) 0/(double) 2990));
-			Assert.assertTrue(var.getProperty(VariantRec.EXOMES_63K_SAS_HOM).equals((double) 0/(double) 394));
-			Assert.assertTrue(var.getProperty(VariantRec.EXOMES_63K_OTH_HOM).equals((double) 0/(double) 56));
+			Assert.assertTrue(var.getProperty(VariantRec.EXOMES_63K_HET_FREQ).equals(405.0/13316.0));
+			Assert.assertTrue(var.getProperty(VariantRec.EXOMES_63K_AFR_HOM).equals(0.0));
+			Assert.assertTrue(var.getProperty(VariantRec.EXOMES_63K_AMR_HOM).equals(0.0));
+			Assert.assertTrue(var.getProperty(VariantRec.EXOMES_63K_EAS_HOM).equals(0.0));
+			Assert.assertTrue(var.getProperty(VariantRec.EXOMES_63K_FIN_HOM).equals(0.0));
+			Assert.assertTrue(var.getProperty(VariantRec.EXOMES_63K_NFE_HOM).equals(0.0));
+			Assert.assertTrue(var.getProperty(VariantRec.EXOMES_63K_SAS_HOM).equals(0.0));
+			Assert.assertTrue(var.getProperty(VariantRec.EXOMES_63K_OTH_HOM).equals(0.0));
 				
 		} catch (Exception ex) {
 			System.err.println("Exception during testing: " + ex.getLocalizedMessage());

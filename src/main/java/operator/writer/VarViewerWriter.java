@@ -68,6 +68,8 @@ public class VarViewerWriter extends VariantPoolWriter {
 			 VariantRec.COSMIC_COUNT,
 			 VariantRec.UK10K_ALLELE_FREQ,
 			 VariantRec.EXOMES_63K_FREQ,
+			 VariantRec.EXOMES_63K_HET_FREQ,
+			 VariantRec.EXOMES_63K_HOM_FREQ,
 			 VariantRec.MITOMAP_FREQ,
 			 VariantRec.MITOMAP_ALLELE_ID,
 			 VariantRec.MITOMAP_DIS_CODING,

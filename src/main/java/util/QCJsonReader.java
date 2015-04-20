@@ -23,9 +23,9 @@ import net.sf.samtools.util.DateParser;
 import util.prereviewDataGen.AnalysisTypeConverter;
 import util.reviewDir.ManifestParseException;
 import util.reviewDir.ReviewDirectory;
+import util.text.TextTable;
 import buffer.variant.VariantPool;
 import buffer.variant.VariantRec;
-import util.text.TextTable;
 
 /**
  * A smallish utility to read QC data from qc.json files
@@ -330,8 +330,8 @@ private static void performMonthlyQA(List<String> paths, PrintStream out, Analys
 		try {
 			File manifestFile = new File(path + "/sampleManifest.txt");
 			//System.out.println("manifest file path: "+manifestFile.getAbsolutePath());
-			Map<String, String> manifest = readManifest(manifestFile);
-			Date analysisDate = new Date( Long.parseLong(manifest.get("analysis.start.time")));
+			//Map<String, String> manifest = readManifest(manifestFile);
+			//Date analysisDate = new Date( Long.parseLong(manifest.get("analysis.start.time")));
 			String analysisType = analysisTypeFromManifest(manifestFile).replace(" (v. 1.0)", "");
 			if (converter != null) {
 				analysisType = converter.convert(analysisType);
