@@ -316,7 +316,7 @@ public class VarUtils {
 			reader = parser;
 			//reader = new VCFParser(new File(filename), true);
 		}
-		if (filename.endsWith("csv")) {
+		if (filename.endsWith("csv") || filename.endsWith("csv.bkup")) {
 			reader = new CSVLineReader(new File(filename));
 		}
 		return reader;
