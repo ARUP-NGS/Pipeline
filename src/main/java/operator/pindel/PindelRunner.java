@@ -21,7 +21,6 @@ import util.coverage.CoverageCalculator;
 import buffer.BAMFile;
 import buffer.BEDFile;
 import buffer.FileBuffer;
-import buffer.MultiFileBuffer;
 import buffer.ReferenceFile;
 import buffer.TextBuffer;
 
@@ -38,8 +37,9 @@ public class PindelRunner extends IOOperator {
 	public static final String PINDEL_PATH="pindel.path";
 	public static final String MERGE_THRESHOLD = "merge.threshold";
 	public static final String PREFERRED_NMS = "nm.Definitions";
-	public static final String DEST = "dest";
-	protected File destination = null;
+	public static final String PINDEL_RAW_FILE = "pindel.raw.file";
+	public static final String THREADS = "threads";
+	
 	
 	@Override
 	public boolean requiresReference() {
@@ -105,11 +105,18 @@ public class PindelRunner extends IOOperator {
 		File outputDir = new File(this.getProjectHome() + "/pindelOutput");
 		outputDir.mkdirs(); //Actually create the directory on the filesystem
 
+		int threadsToUse = this.getPipelineOwner().getThreadCount();
+		String threadsAttr = this.getAttribute(THREADS);
+		if (threadsAttr != null && threadsAttr.length()>0) {
+			threadsToUse = Integer.parseInt(threadsAttr);
+		}
+		
+		
 		String command = pathToPindel + 
 				" -f " + pathToReference + 
 				" -i " + pathToConfigFile + 
 				" -o " + outputPrefix +
-				" -T " + Math.min(8, this.getPipelineOwner().getThreadCount()) +
+				" -T " + threadsToUse +
 				" -j " + pathToBedFile +
 				" -L " + this.getProjectHome() + "/pindel.log ";
 		Logger.getLogger(Pipeline.primaryLoggerName).info("Pindel operator is executing command " + command);
@@ -126,133 +133,13 @@ public class PindelRunner extends IOOperator {
 		Map<String, List<PindelResult>> results = resultsObject.getPindelResults();
 		
 //#CHRISK
-		FileBuffer pindelRawResults = getOutputBufferForClass(TextBuffer.class);
-		File[] files = outputDir.listFiles();	
-		String destinationPath = properties.get(DEST);
-		if (destinationPath == null) {
-			throw new OperationFailedException("No destination path specified, use dest=\"path/to/dir/\"", this);
+		
+		//Examine each file in the pindel raw output dir and see if we can associate it with an output buffer
+		//This is so we can move the raw files into the review directory
+		for(File file: outputDir.listFiles()){
+			setPindelResultsFile(file, getAllOutputBuffersForClass(TextBuffer.class));		
 		}
 		
-		String projHome = getProjectHome();
-		
-		if (! destinationPath.startsWith("/") && projHome != null) {
-			destinationPath = projHome + destinationPath;
-		}
-		
-		destination = new File(destinationPath);
-		if (destination.exists()) {
-			if (! destination.isDirectory()) {
-				throw new OperationFailedException("Destination path " + destination.getAbsolutePath() + " is not a directory", this);
-			}
-		}
-		else {
-			destination.mkdir();
-		}
-		
-		if (destination == null)
-			throw new OperationFailedException("Destination directory has not been specified", this);
-		String fileSep = System.getProperty("file.separator");
-		
-		try{
-			Logger.getLogger(Pipeline.primaryLoggerName).info("Moving Pindel Output Files");
-			for(File file:files){
-
-				if(file.getName().endsWith("_D") )
-				{					
-					//file.setFile(destinationFile);
-					String filename1 = file.getName();
-					String newPath1 = destination.getAbsolutePath() + fileSep + filename1;
-					File destinationFile1 = new File(newPath1);
-					file.renameTo(destinationFile1);
-					pindelRawResults.setFile(destinationFile1);
-				}
-				if(file.getName().endsWith("_SI")){
-					String filename2 = file.getName();
-					String newPath2 = destination.getAbsolutePath() + fileSep + filename2;
-					File destinationFile2 = new File(newPath2);
-					file.renameTo(destinationFile2);
-					pindelRawResults.setFile(destinationFile2);
-				}
-				if(file.getName().endsWith("_TD")){
-					String filename3 = file.getName();
-					String newPath3 = destination.getAbsolutePath() + fileSep + filename3;
-					File destinationFile3 = new File(newPath3);
-					file.renameTo(destinationFile3);
-					pindelRawResults.setFile(destinationFile3);
-				}
-				if(file.getName().endsWith("_LI")){
-					String filename4 = file.getName();
-					String newPath4 = destination.getAbsolutePath() + fileSep + filename4;
-					File destinationFile4 = new File(newPath4);
-					file.renameTo(destinationFile4);
-					pindelRawResults.setFile(destinationFile4);
-				}
-				if(file.getName().endsWith("2_D") )
-				{					
-					//file.setFile(destinationFile);
-					String filename5 = file.getName();
-					String newPath5 = destination.getAbsolutePath() + fileSep + filename5;
-					File destinationFile5 = new File(newPath5);
-					file.renameTo(destinationFile5);
-					pindelRawResults.setFile(destinationFile5);
-				}
-				if(file.getName().endsWith("2_SI")){
-					String filename6 = file.getName();
-					String newPath6 = destination.getAbsolutePath() + fileSep + filename6;
-					File destinationFile6 = new File(newPath6);
-					file.renameTo(destinationFile6);
-					pindelRawResults.setFile(destinationFile6);
-				}
-				if(file.getName().endsWith("2_TD")){
-					String filename7 = file.getName();
-					String newPath7 = destination.getAbsolutePath() + fileSep + filename7;
-					File destinationFile7 = new File(newPath7);
-					file.renameTo(destinationFile7);
-					pindelRawResults.setFile(destinationFile7);
-				}
-				if(file.getName().endsWith("2_LI")){
-					String filename8 = file.getName();
-					String newPath8 = destination.getAbsolutePath() + fileSep + filename8;
-					File destinationFile8 = new File(newPath8);
-					file.renameTo(destinationFile8);
-					pindelRawResults.setFile(destinationFile8);
-				}
-				if(file.getName().endsWith("3_D") )
-				{					
-					//file.setFile(destinationFile);
-					String filename9 = file.getName();
-					String newPath9 = destination.getAbsolutePath() + fileSep + filename9;
-					File destinationFile9 = new File(newPath9);
-					file.renameTo(destinationFile9);
-					pindelRawResults.setFile(destinationFile9);
-				}
-				if(file.getName().endsWith("3_SI")){
-					String filename10 = file.getName();
-					String newPath10 = destination.getAbsolutePath() + fileSep + filename10;
-					File destinationFile10 = new File(newPath10);
-					file.renameTo(destinationFile10);
-					pindelRawResults.setFile(destinationFile10);
-				}
-				if(file.getName().endsWith("3_TD")){
-					String filename11 = file.getName();
-					String newPath11 = destination.getAbsolutePath() + fileSep + filename11;
-					File destinationFile11 = new File(newPath11);
-					file.renameTo(destinationFile11);
-					pindelRawResults.setFile(destinationFile11);
-				}
-				if(file.getName().endsWith("3_LI")){
-					String filename12 = file.getName();
-					String newPath12 = destination.getAbsolutePath() + fileSep + filename12;
-					File destinationFile12 = new File(newPath12);
-					file.renameTo(destinationFile12);
-					pindelRawResults.setFile(destinationFile12);
-				}
-				
-			}
-		}
-		catch(Exception e){
-			System.out.println("ERROR: No pindel output files");
-		}
 		
 
 //#\CHRISK		
@@ -300,7 +187,26 @@ public class PindelRunner extends IOOperator {
 	}
 
 
-	
+
+	/**
+	 * Search the list of outputBuffers for one that has a PINDEL_RAW_FILE attribute that
+	 * is equal to the name of the given file. If found, set the file associated with the outputBuffer
+	 * to be the file given
+	 * 
+	 * @param file File to potentially associate with an output buffer
+	 * @param outputBuffers List of outputBuffers to search
+	 */
+	private void setPindelResultsFile(File file, List<FileBuffer> outputBuffers) {
+		for(FileBuffer outputBuffer : outputBuffers) {
+			String attr = outputBuffer.getAttribute(PINDEL_RAW_FILE);
+			if (attr != null && attr.equals(file.getName())) {
+				outputBuffer.setFile(file);
+			}
+		}
+	}
+
+
+
 		private double computeMeanCoverageForRegion(BAMFile bam, String chr, int start, int end) throws IOException {
 			BasicIntervalContainer intervals = new BasicIntervalContainer();
 			intervals.addInterval(chr,  start,  end, null);
