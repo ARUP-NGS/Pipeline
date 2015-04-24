@@ -105,7 +105,7 @@ public abstract class Annotator extends Operator {
 	 */
 	protected static void appendAnnotation(VariantRec var, String key, String value) {
 		String existing = var.getAnnotation(key);
-		if (existing == null) {
+		if (existing == null || existing.length()==0) {
 			var.addAnnotation(key, value);
 		}
 		else {

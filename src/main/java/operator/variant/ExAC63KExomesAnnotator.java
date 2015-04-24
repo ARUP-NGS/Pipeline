@@ -61,14 +61,14 @@ public class ExAC63KExomesAnnotator extends AbstractTabixAnnotator {
 			var.addProperty(VariantRec.EXOMES_63K_FREQ, freq);
 		}
 		
-		//Total number of samples assessed * 2 = total number of alleles assessed 
+		//Total number of chromosomes assessed
 		Double numCalledAlleles = Double.parseDouble(valueForKey(infoToks, "AN"));
 	
-			
-		//Count hom alleles twice (two hom alleles per individual) - same thing as dividing divisor by 2.0 
+		//Total number of samples, apparently, with genotype 1/1, so two alleles for each one
+		
 		safeParseAndSetProperty(var, VariantRec.EXOMES_63K_HOM_FREQ, valueForKey(infoToks, "AC_Hom"), numCalledAlleles/2.0);
 		
-		//Just one allele per het, so no adjustment needed
+		//Total number of samples with genotype 0/1, so one allele for each
 		safeParseAndSetProperty(var, VariantRec.EXOMES_63K_HET_FREQ, valueForKey(infoToks, "AC_Het"), numCalledAlleles);
 
 		
