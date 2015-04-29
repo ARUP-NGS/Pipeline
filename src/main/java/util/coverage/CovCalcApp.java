@@ -109,6 +109,7 @@ public class CovCalcApp {
 		int threads = 8;
 		ThreadPoolExecutor pool = (ThreadPoolExecutor) Executors.newFixedThreadPool(threads);
 		
+		int minMappingQuality = 10;
 		
 		//Read in all BED intervals into a single file
 		IntervalsFile intervals = new BEDFile(new File(args[0]));

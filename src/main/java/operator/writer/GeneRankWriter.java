@@ -2,12 +2,13 @@ package operator.writer;
 
 import gene.Gene;
 
+import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Comparator;
 
 import operator.variant.VariantPoolWriter;
-import buffer.variant.VariantRec;
 import util.vcfParser.VCFParser.GTType;
+import buffer.variant.VariantRec;
 
 public class GeneRankWriter extends VariantPoolWriter {
 
@@ -185,6 +186,13 @@ public class GeneRankWriter extends VariantPoolWriter {
 			
 			return s0 < s1 ? 1 : -1;
 		}
+		
+	}
+
+
+	@Override
+	public void writeFooter(PrintStream outputStream) throws IOException {
+		// TODO Auto-generated method stub
 		
 	}
 }

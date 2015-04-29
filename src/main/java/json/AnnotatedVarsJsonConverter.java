@@ -18,6 +18,8 @@ public class AnnotatedVarsJsonConverter {
 	private List<String> ensureKeys = null;
 	private Set<String> excludeKeys = new HashSet<String>(); //These annotations will not be included
 	
+	private String NO_VALUE = ""; //Characters written when no value is associated with an annotation
+	
 	/**
 	 * When set, all json objects will specify this key, even if not every variant has
 	 * a property or annotation associated with the key
@@ -104,11 +106,19 @@ public class AnnotatedVarsJsonConverter {
 
 		for(String key : ensureKeys) {
 			if (! varObj.has(key)) {
-				varObj.put(key, "");
+				varObj.put(key, NO_VALUE);
 			}
 		}
 		
 		return varObj;
+	}
+
+	public String getNO_VALUE() {
+		return NO_VALUE;
+	}
+
+	public void setNO_VALUE(String val) {
+		NO_VALUE = val;
 	}
 	
 

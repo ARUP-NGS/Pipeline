@@ -2,6 +2,7 @@ package operator.writer;
 
 import gene.Gene;
 
+import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -142,6 +143,11 @@ public class VarViewerWriter extends VariantPoolWriter {
 		
 		
 		outputStream.println(builder.toString());
+	}
+
+	@Override
+	public void writeFooter(PrintStream outputStream) throws IOException {
+		// TODO Auto-generated method stub
 	}
 
 }

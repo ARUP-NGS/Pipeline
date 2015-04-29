@@ -3,6 +3,7 @@ package operator.writer;
 
 import gene.Gene;
 
+import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Comparator;
 import java.util.logging.Logger;
@@ -17,9 +18,9 @@ import org.w3c.dom.NodeList;
 
 import pipeline.Pipeline;
 import pipeline.PipelineObject;
+import util.vcfParser.VCFParser.GTType;
 import buffer.variant.VariantPool;
 import buffer.variant.VariantRec;
-import util.vcfParser.VCFParser.GTType;
 
 public class MedDirTrioWriter extends VariantPoolWriter {
 
@@ -363,6 +364,13 @@ public class MedDirTrioWriter extends VariantPoolWriter {
 			return s0 < s1 ? 1 : -1;
 			
 		}
+		
+	}
+
+
+	@Override
+	public void writeFooter(PrintStream outputStream) throws IOException {
+		// TODO Auto-generated method stub
 		
 	}
 	

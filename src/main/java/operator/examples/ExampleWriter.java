@@ -1,5 +1,6 @@
 package operator.examples;
 
+import java.io.IOException;
 import java.io.PrintStream;
 
 import operator.variant.VariantPoolWriter;
@@ -23,6 +24,11 @@ public class ExampleWriter extends VariantPoolWriter {
 	 */
 	public void writeVariant(VariantRec rec, PrintStream outputStream) {
 		outputStream.println(rec.getContig() + ", " + rec.getStart() + ", " + rec.getProperty("random.property") );
+	}
+
+	@Override
+	public void writeFooter(PrintStream outputStream) throws IOException {
+		//Don't need to do anything here
 	}
 
 }

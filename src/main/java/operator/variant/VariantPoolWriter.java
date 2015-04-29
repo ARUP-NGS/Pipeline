@@ -2,6 +2,7 @@ package operator.variant;
 
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -44,7 +45,7 @@ public abstract class VariantPoolWriter extends Operator {
 	 * Write a suitable header for the output file
 	 * @param outputStream
 	 */
-	public abstract void writeHeader(PrintStream outputStream);
+	public abstract void writeHeader(PrintStream outputStream) throws IOException;
 	
 	/**
 	 * If true, will throw an error if no GeneList provided
@@ -67,7 +68,9 @@ public abstract class VariantPoolWriter extends Operator {
 	 * @param rec
 	 * @param outputStream
 	 */
-	public abstract void writeVariant(VariantRec rec, PrintStream outputStream);
+	public abstract void writeVariant(VariantRec rec, PrintStream outputStream) throws IOException;
+	
+	public abstract void writeFooter(PrintStream outputStream)  throws IOException;
 	
 	/**
 	 * Provide a sorting mechanism for records
@@ -123,10 +126,15 @@ public abstract class VariantPoolWriter extends Operator {
 				}
 			}
 			
+			writeFooter(outStream);
 			logger.info("VariantWriter wrote " + tot + " variants in " + variants.getContigCount() + " contigs to output.");
 			outStream.close();
 		} catch (FileNotFoundException e) {
 			throw new OperationFailedException("Could not write to file : " + outputFile.getFile().getAbsolutePath(), this);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			throw new OperationFailedException("Error writing variant: " +e.getLocalizedMessage(), this);
 		}
 		
 	}
