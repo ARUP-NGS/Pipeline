@@ -896,7 +896,7 @@ Number of Sanger Requests not Confirmed (Average per Sample)
 				Double above20 = fracAbove.getDouble(20);
 				Double above50 = fracAbove.getDouble(50);
 				qcList.add("mean.coverage", mean);
-				qcList.add("frac.above.0", above0);
+				//qcList.add("frac.above.0", above0);
 				qcList.add("frac.above.20", above20);
 				qcList.add("frac.above.50", above50);
 				
@@ -945,13 +945,13 @@ Number of Sanger Requests not Confirmed (Average per Sample)
 
 				}
 				indelCount = (int)(varCount - snpCount);
-//				try {
-//					knownSnps = variants.getDouble("total.known");
-//					qcList.add("known.snps", knownSnps);
-//				}
-//				catch (JSONException e) {
-//
-//				}
+				try {
+					knownSnps = variants.getDouble("total.known");
+					qcList.add("total.known", knownSnps);
+				}
+				catch (JSONException e) {
+
+				}
 				
 				if (snpCount > 0) {
 					novelFrac = 1.0 - knownSnps/snpCount;
@@ -1024,7 +1024,7 @@ Number of Sanger Requests not Confirmed (Average per Sample)
 				
 				if (metric.equals("total.snps")) out.print("Total SNPs");				
 				if (metric.equals("total.vars")) out.print("Total variants");
-				if (metric.equals("known.snps")) out.print("Known SNPs");
+				if (metric.equals("total.known")) out.print("Known SNPs");
 				if (metric.equals("total.tt.ratio")) out.print("Overall Ti/Tv");
 				if (metric.equals("known.tt")) out.print("Known Ti/Tv");
 				if (metric.equals("novel.tt")) out.print("Novel Ti/Tv");
@@ -1047,6 +1047,8 @@ Number of Sanger Requests not Confirmed (Average per Sample)
 				out.print(formattedList);
 				
 				if (metric.equals("total.snps")
+						|| metric.equals("total.vars")
+						|| metric.equals("total.known")
 						|| metric.equals("total.vars")
 						|| metric.equals("known.tt")
 						|| metric.equals("novel.tt")
