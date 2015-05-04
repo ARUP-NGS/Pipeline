@@ -105,6 +105,7 @@ public abstract class VariantPoolWriter extends Operator {
 				List<VariantRec> varList = variants.toList();
 				Collections.sort(varList, recSorter);
 				for(VariantRec var : varList) {
+					System.out.println(var.getContig()+" "+var.getStart()+" "+var.getRef()+" "+var.getAlt());
 					writeVariant(var, outStream);
 					tot++;
 				}
@@ -121,7 +122,6 @@ public abstract class VariantPoolWriter extends Operator {
 					List<VariantRec> vars = variants.getVariantsForContig(contig);
 					for(VariantRec rec : vars) {
 						writeVariant(rec, outStream);
-						tot++;
 					}
 				}
 			}

@@ -3,7 +3,7 @@
 
 
 
-<InputVCF class="buffer.VCFFile" filename="src/test/java/testvcfs/myeloid.vcf" />
+<InputVCF class="buffer.VCFFile" filename="src/test/java/annotation/IonXpress_009_variants.calls_only.reformatted.vcf" />
 
 <VariantPool class="buffer.variant.VariantPool">
 	<InputVCF />
