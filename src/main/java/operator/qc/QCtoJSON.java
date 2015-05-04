@@ -271,6 +271,10 @@ public class QCtoJSON extends Operator {
 		safePutJSON(obj,"known.tt", ttRatios[0]);
 		safePutJSON(obj,"novel.tt", ttRatios[1]);
 		safePutJSON(obj,"total.het.vars", vp.countHeteros());
+		int novel = vp.size()-knowns;
+		
+		//chrisk
+		safePutJSON(obj,"novel.vars", novel);
 
 		return obj.toString();
 	}
@@ -315,9 +319,12 @@ public class QCtoJSON extends Operator {
 		VariantPool novels= new VariantPool();
 		for(String contig : vp.getContigs()) {
 			for(VariantRec var : vp.getVariantsForContig(contig)) {
+				System.out.println("var: "+var.getContig()+" "+var.getStart()+" "+var.getRef()+" "+var.getAlt());
 				Double tgpFreq = var.getProperty(VariantRec.POP_FREQUENCY);
 				Double espFreq = var.getProperty(VariantRec.EXOMES_FREQ);
-				if ( (tgpFreq != null && tgpFreq > 0) || (espFreq != null && espFreq > 0)) {
+				Double mmFreq = var.getProperty(VariantRec.MITOMAP_FREQ);//for MDNA tests
+				
+				if ( (tgpFreq != null && tgpFreq > 0) || (espFreq != null && espFreq > 0) || (mmFreq != null && mmFreq > 0)) {
 					knowns.addRecordNoSort(var);
 				}
 				else {
@@ -344,7 +351,7 @@ public class QCtoJSON extends Operator {
 
 
 	/**
-	 * Compute number of variants previously seen in 1000 Genomes
+	 * Compute number of variants previously seen in 1000 Genomes or MitoMap if mitochondrial genome
 	 * @param vp
 	 * @return
 	 */
@@ -354,7 +361,8 @@ public class QCtoJSON extends Operator {
 			for(VariantRec var : vp.getVariantsForContig(contig)) {
 				Double tgpFreq = var.getProperty(VariantRec.POP_FREQUENCY);
 				Double espFreq = var.getProperty(VariantRec.EXOMES_FREQ);
-				if ( (tgpFreq != null && tgpFreq > 0) || (espFreq != null && espFreq > 0)) {
+				Double mmFreq = var.getProperty(VariantRec.MITOMAP_FREQ);//for MDNA
+				if ( (tgpFreq != null && tgpFreq > 0) || (espFreq != null && espFreq > 0) || (mmFreq != null && mmFreq > 0)) {
 					knowns++;
 				}
 			}

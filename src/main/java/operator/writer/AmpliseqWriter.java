@@ -6,6 +6,8 @@ import java.io.PrintStream;
 
 import operator.variant.MedDirWriter;
 import buffer.variant.VariantRec;
+import java.lang.StringBuilder;
+
 
 /**
  * Variant writer for 
@@ -80,6 +82,7 @@ public class AmpliseqWriter extends MedDirWriter {
 		for(String alt : altAlleles){
 			builder.setLength(0);
 			builder.append( createGeneHyperlink(rec.getAnnotation(VariantRec.GENE_NAME)) );
+			//System.out.println(createGeneHyperlink(rec.getAnnotation(VariantRec.)));
 //			builder.append("," + chrom + "," + pos + "," + refAllele + "," + alt);
 
 			for(int i=1; i<keys.length; i++) {
@@ -89,9 +92,17 @@ public class AmpliseqWriter extends MedDirWriter {
 				}
 				builder.append("\t" + val);
 			}
-			builder.append("\t" + chrom + "\t" + pos + "\t" + refAllele + "\t" + alt + "\t" + rec.getAnnotation(VariantRec.NM_NUMBER));
+			builder.append("\t" + chrom + "\t" + pos + "\t" + refAllele + "\t" + alt + "\t" +rec.getAnnotation(VariantRec.NM_NUMBER));
 			//write string to stream
-			outputStream.println( builder.toString() );
+			
+//#CHRISK This is a temporary fix to a bigger issue. Whenever the gene name is "null", do not write to the xls file. This will allow merge.r script to run
+			if(builder.toString().startsWith("null")){
+				System.out.println("WARNING:  "+builder.toString()+" had \"null\" as its gene name, meaning it was not properly annotated. This variant will not be included in the XLS file.");
+			}
+			else{
+				outputStream.println( builder.toString() );
+				//System.out.println("builder.toString(): "+builder.toString());
+			}
 		}
 	}
 }
