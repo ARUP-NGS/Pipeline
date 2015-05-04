@@ -726,9 +726,9 @@ Number of Sanger Requests not Confirmed (Average per Sample)
 				//qcList.add("no.coverage", 100.0*(1.0-above0));
 				
 				if (analysisType.toLowerCase().contains("genome")) {
-					qcList.add("frac.above.200", 100.0*above200);
+					qcList.add("frac.above.200", above200);
 				} else {
-					qcList.add("frac.above.15", 100.0*above15);
+					qcList.add("frac.above.15", above15);
 				}
 //				
 				
@@ -840,11 +840,11 @@ Number of Sanger Requests not Confirmed (Average per Sample)
 				if (metric.equals("mean.coverage")) out.print("Average Sequencing Depth of Target Regions");
 				if (metric.equals("no.coverage")) out.print("Percent Targeted Bases with No Coverage");
 				if (metric.equals("frac.below.10")) out.print("Percent Targeted Bases with < 10x Coverage");
-				if (metric.equals("frac.above.10")) out.print("% Bases > 10 coverage");
-				if (metric.equals("frac.above.15")) out.print("% Bases > 15 coverage");
-				if (metric.equals("frac.above.200")) out.print("% Bases > 200 coverage");
+				if (metric.equals("frac.above.10")) out.print("Proportion of Bases > 10 coverage");
+				if (metric.equals("frac.above.15")) out.print("Proportion of Bases > 15 coverage");
+				if (metric.equals("frac.above.200")) out.print("Proportion of Bases > 200 coverage");
 				if (metric.equals("bases.above.q30")) out.print("Percent Bases with Base Quality > 30");
-				if (metric.equals("frac.above.0")) out.print("Percent Targeted Bases Covered");
+				if (metric.equals("frac.above.0")) out.print("Proportion Targeted Bases Covered");
 				if (metric.equals("targeted.bases")) out.print("Targeted Bases");
 				//if (metric.equals("percent.dups")) out.print("% PCR duplicates removed");
 				//if (metric.equals("reads.on.target")) out.print("Percent Sequence Reads Mapped to Reference");
@@ -896,11 +896,9 @@ Number of Sanger Requests not Confirmed (Average per Sample)
 				Double above20 = fracAbove.getDouble(20);
 				Double above50 = fracAbove.getDouble(50);
 				qcList.add("mean.coverage", mean);
-				//qcList.add("frac.above.0", above0);
-				qcList.add("frac.above.20", above20);
-				qcList.add("frac.above.50", above50);
-				
-				
+				//qcList.add("frac.above.0", above0/100);
+				qcList.add("frac.above.20", above20/100);
+				qcList.add("frac.above.50", above50/100);
 				
 				JSONObject rawBam = obj.getJSONObject("raw.bam.metrics");
 				Double rawReadCount = rawBam.getDouble("total.reads");
@@ -1083,7 +1081,7 @@ Number of Sanger Requests not Confirmed (Average per Sample)
 	
 	//Nicely format a long list of qc values
 	private static String formatQCListVals(List<Double> vals) {
-		DecimalFormat formatter = new DecimalFormat("0.0##");
+		DecimalFormat formatter = new DecimalFormat("0.0####");
 		if (vals.size() < 3) {
 			return "Not enough data (" + vals.size() + " elements)";
 		}
