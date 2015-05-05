@@ -127,6 +127,11 @@ public class Pipeline {
 		this.pluginLoader = loader;
 	}
 	
+	
+	private PluginLoader getPluginLoader() {
+		return pluginLoader;
+	}
+
 	/**
 	 * Create a new Pipeline object that will attempt to execute the Document provided
 	 * @param doc
@@ -673,11 +678,9 @@ public class Pipeline {
 			threads = Integer.parseInt(threadCountStr);
 		}
 		
-		PluginLoader pluginLoader = null;
+		
 		String pluginPath = argParser.getStringOp("plugins");
-		if (pluginPath != null) {
-			pluginLoader = new PluginLoader(pluginPath);
-		}
+		
 		
 		//Assume all args that end in .xml are input files and execute them in order
 		for(int i=0; i<args.length; i++) {
@@ -690,8 +693,11 @@ public class Pipeline {
 					pipeline.setProperty(Pipeline.PROJECT_HOME, projHome);
 				
 				
-				//Set plugin loader
-				pipeline.setPluginLoader(pluginLoader);
+				//Set plugin path if specified on command line
+				if (pluginPath != null && pluginPath.length()>0) {
+					pipeline.getPluginLoader().addPluginPath(pluginPath);	
+				}
+				
 				
 				//Set preferred thread count
 				if (threads > -1) {
@@ -728,6 +734,8 @@ public class Pipeline {
 		}
 	}
 	
+
+
 
 
 	private List<PipelineListener> listeners = new ArrayList<PipelineListener>();
