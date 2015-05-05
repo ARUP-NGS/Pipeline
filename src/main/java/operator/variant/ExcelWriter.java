@@ -2,6 +2,7 @@ package operator.variant;
 
 import gene.Gene;
 
+import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Comparator;
 
@@ -143,6 +144,13 @@ public class ExcelWriter extends VariantPoolWriter {
 			return s0 > s1 ? -1 : 1;
 			
 		}
+		
+	}
+
+
+	@Override
+	public void writeFooter(PrintStream outputStream) throws IOException {
+		// TODO Auto-generated method stub
 		
 	}
 
