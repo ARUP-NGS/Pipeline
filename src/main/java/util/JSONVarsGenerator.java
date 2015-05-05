@@ -39,7 +39,8 @@ import buffer.variant.VariantRec;
 public class JSONVarsGenerator extends VariantPoolWriter {
 
 	public static final String VARIANT_LIST = "variant.list";
-	protected AnnotatedVarsJsonConverter varConverter = new AnnotatedVarsJsonConverter();
+	public static final AnnotatedVarsJsonConverter DEFAULT_CONVERTER = new AnnotatedVarsJsonConverter(); 
+	protected AnnotatedVarsJsonConverter varConverter = DEFAULT_CONVERTER;
 	protected JSONWriter writer = null;
 	
 	//Keys that will be included in the output, no matter what. If the key
@@ -135,31 +136,31 @@ public class JSONVarsGenerator extends VariantPoolWriter {
 	 * @return
 	 * @throws JSONException 
 	 */
-	public JSONObject convertPoolToObject(VariantPool vars) throws JSONException {
+	public static JSONObject convertPoolToObject(VariantPool vars) throws JSONException {
 		JSONObject jsonResponse = new JSONObject();
 		
-		if(variants==null){
-			variants = new VariantPool();
+		if(vars==null){
+			vars = new VariantPool();
 		}
 		
-		varConverter.setExcludeKeys( DEFAULT_EXCLUDED_KEYS );
+		DEFAULT_CONVERTER.setExcludeKeys( DEFAULT_EXCLUDED_KEYS );
 		
 		JSONArray jsonVarList = new JSONArray();
 		
 		Set<String> keys = new HashSet<String>();
 		
-		for(String contig : variants.getContigs()) {
-			for(VariantRec var : variants.getVariantsForContig(contig)) {
+		for(String contig : vars.getContigs()) {
+			for(VariantRec var : vars.getVariantsForContig(contig)) {
 					keys.addAll(var.getAnnotationKeys());
 					keys.addAll(var.getPropertyKeys());
 			}
 		}
 		
-		varConverter.setKeys(new ArrayList<String>(keys));
+		DEFAULT_CONVERTER.setKeys(new ArrayList<String>(keys));
 		
-		for(String contig : variants.getContigs()) {
-			for(VariantRec var : variants.getVariantsForContig(contig)) {
-				JSONObject varObj = varConverter.toJSON(var);
+		for(String contig : vars.getContigs()) {
+			for(VariantRec var : vars.getVariantsForContig(contig)) {
+				JSONObject varObj = DEFAULT_CONVERTER.toJSON(var);
 				jsonVarList.put( varObj );				
 			}
 		}
