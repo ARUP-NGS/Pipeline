@@ -15,6 +15,9 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import plugin.Plugin;
+import plugin.PluginLoader;
+
 /**
  * This class is responsible for reading an xml DOM document and creating Pipeline objects based
  * on the xml. Element creation is recursively handled by a call to createElement(root of DOM), which happens
@@ -37,6 +40,8 @@ public class ObjectHandler {
 
 	private ClassLoader classLoader = null;
 
+	private PluginLoader pluginLoader = null;
+	
 	public ObjectHandler(Pipeline pipeline, Document doc) {
 		this.pipelineOwner = pipeline;
 		this.doc = doc;
@@ -238,8 +243,28 @@ public class ObjectHandler {
 		//TODO We'd like to be able to search other paths, not just already loaded classes
 		if (classLoader == null)
 			classLoader = ClassLoader.getSystemClassLoader();
-		Class<?> clazz = classLoader.loadClass(classStr);
-		return clazz;
+		try {
+			
+			Class<?> clazz = classLoader.loadClass(classStr);
+			Logger.getLogger(Pipeline.primaryLoggerName).info("Loaded class " + classStr + " from primary classloader");
+			return clazz;
+		} catch (ClassNotFoundException ex) {
+			
+			//We couldn't find the requested class using the classloader provided, so search the pluginloader
+			for(Plugin plugin : pluginLoader.getPlugins()) {
+				
+				for(Class<? extends PipelineObject> clz : plugin.getClassesProvided()) {
+					if (clz.getCanonicalName().equals(classStr)) {
+						Logger.getLogger(Pipeline.primaryLoggerName).info("Found class " + classStr + " from plugin " + plugin.getClass().getCanonicalName());
+						return clz;
+					}
+				}
+			}
+			
+			//No matching class found in any of the plugins, so throw a ClassNotFound
+			throw new ClassNotFoundException("Couldn't find class " + classStr);
+			
+		}
 	}
 
 	public void setClassLoader(ClassLoader loader) {
@@ -255,6 +280,14 @@ public class ObjectHandler {
 	private String getElementClass(Element el) {
 		String val = el.getAttribute(PipelineXMLConstants.CLASS_ATTR);
 		return val;
+	}
+
+	public PluginLoader getPluginLoader() {
+		return pluginLoader;
+	}
+
+	public void setPluginLoader(PluginLoader pluginLoader) {
+		this.pluginLoader = pluginLoader;
 	}
 
 

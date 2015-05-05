@@ -34,6 +34,8 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
+import plugin.PluginLoader;
+import plugin.PluginLoaderException;
 import util.OperatorTimeSummary;
 import util.text.ElapsedTimeFormatter;
 import util.text.LoggingOutputStream;
@@ -58,6 +60,11 @@ public class Pipeline {
 	protected Logger primaryLogger = Logger.getLogger(primaryLoggerName);
 	protected String defaultLogFilename = "pipelinelog";
 	protected String instanceLogPath = null; //Gets set when pipeinstancelog file handler is created
+	
+	//Handles loading of plugins
+	protected PluginLoader pluginLoader = new PluginLoader();
+	
+	//Handles creation of objects from DOM
 	protected ObjectHandler handler = null;
 	
 	private ClassLoader loader = null;
@@ -79,8 +86,7 @@ public class Pipeline {
 	public Pipeline(File inputFile) {
 		this(inputFile, null);
 	}
-	
-		
+			
 	public Pipeline(File inputFile, String propsPath) {
 		this.source = inputFile;
 
@@ -100,14 +106,23 @@ public class Pipeline {
 			e.printStackTrace();
 		}
 		
-		if (propsPath != null)
+		if (propsPath != null) {
 			setPropertiesPath(propsPath);
+		}
 		initializeLogger();
 		loadProperties();	
 	}
 	
 	public Pipeline(Document doc) {
 		this(doc, null);
+	}
+	
+	/**
+	 * Set the PluginLoader, which allows for additional PipelineObjects to be specified 
+	 * @param loader
+	 */
+	public void setPluginLoader(PluginLoader loader) {
+		this.pluginLoader = loader;
 	}
 	
 	/**
@@ -313,8 +328,9 @@ public class Pipeline {
 	 * Attempt to read, parse, and create the objects as specified in the document
 	 * @throws PipelineDocException
 	 * @throws ObjectCreationException
+	 * @throws PluginLoaderException 
 	 */
-	public void initializePipeline() throws PipelineDocException, ObjectCreationException {
+	public void initializePipeline() throws PipelineDocException, ObjectCreationException, PluginLoaderException {
 		
 		//Create the file handler for the main logger... this should happen before anything else. 
 		String projHome = props.getProperty(PROJECT_HOME);
@@ -393,6 +409,12 @@ public class Pipeline {
 		
 				
 		handler = new ObjectHandler(this, xmlDoc);
+		
+		
+		pluginLoader.loadAllPlugins();
+		
+		
+		handler.setPluginLoader(pluginLoader);
 		handler.setClassLoader(loader);
 		
 		primaryLogger.info("Beginning new Pipeline run");
@@ -639,6 +661,12 @@ public class Pipeline {
 			threads = Integer.parseInt(threadCountStr);
 		}
 		
+		PluginLoader pluginLoader = null;
+		String pluginPath = argParser.getStringOp("plugins");
+		if (pluginPath != null) {
+			pluginLoader = new PluginLoader(pluginPath);
+		}
+		
 		//Assume all args that end in .xml are input files and execute them in order
 		for(int i=0; i<args.length; i++) {
 			if (args[i].endsWith(".xml") && (! args[i].equals(propsPath))) {
@@ -648,6 +676,10 @@ public class Pipeline {
 				//Set project home
 				if (projHome != null && projHome.length()>0)
 					pipeline.setProperty(Pipeline.PROJECT_HOME, projHome);
+				
+				
+				//Set plugin loader
+				pipeline.setPluginLoader(pluginLoader);
 				
 				//Set preferred thread count
 				if (threads > -1) {
@@ -676,17 +708,14 @@ public class Pipeline {
 					System.out.println("ERROR: Operation " + e.getSourceOperator().getObjectLabel() + " failed. \n" + e.getMessage());
 					e.printStackTrace(System.out);
 					System.exit(1);
+				} catch (PluginLoaderException e) {
+					System.out.println("ERROR: Loading plugin " + e.getLocalizedMessage());
+					System.exit(1);
 				}
 			}
 		}
 	}
 	
-	
-	
-	
-
-
-
 
 
 	private List<PipelineListener> listeners = new ArrayList<PipelineListener>();

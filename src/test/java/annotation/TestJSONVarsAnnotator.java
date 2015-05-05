@@ -43,7 +43,8 @@ public class TestJSONVarsAnnotator extends TestCase {
 		pool.addRecord(varD);
 		
 		try {
-			JSONObject json = JSONVarsGenerator.createJSONVariants(pool);
+			JSONVarsGenerator jGen = new JSONVarsGenerator();
+			JSONObject json = jGen.convertPoolToObject(pool);
 			
 			Assert.assertTrue(json.has("variant.list"));
 			JSONArray varArr = json.getJSONArray("variant.list");

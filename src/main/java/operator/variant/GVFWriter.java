@@ -1,10 +1,11 @@
 package operator.variant;
 
+import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Date;
 
-import buffer.variant.VariantRec;
 import util.vcfParser.VCFParser.GTType;
+import buffer.variant.VariantRec;
 
 /**
  * Writes a variant pool in GVF format. Right now we make sure this is compatible with the
@@ -100,6 +101,12 @@ public class GVFWriter extends VariantPoolWriter {
 			return "NUCLEOTIDE_DELETION";
 		}
 		return "?";
+	}
+
+	@Override
+	public void writeFooter(PrintStream outputStream) throws IOException {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

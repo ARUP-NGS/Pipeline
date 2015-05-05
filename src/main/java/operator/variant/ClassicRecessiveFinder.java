@@ -4,6 +4,7 @@ import gene.Gene;
 
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -85,10 +86,20 @@ public class ClassicRecessiveFinder extends Operator {
 			}
 		}
 		
-		outputFormatter.writeHeader(outputStream);
+		try {
+			outputFormatter.writeHeader(outputStream);
+		} catch (IOException e) {
+			e.printStackTrace();
+			throw new OperationFailedException(e.getLocalizedMessage(), this);
+		}
 		
 		for(VariantRec hit : hits) {
-			outputFormatter.writeVariant(hit, outputStream);
+			try {
+				outputFormatter.writeVariant(hit, outputStream);
+			} catch (IOException e) {
+				e.printStackTrace();
+				throw new OperationFailedException(e.getLocalizedMessage(), this);
+			}
 		}
 		
 		outputStream.flush();
