@@ -49,14 +49,16 @@ import util.text.QueuedLogHandler;
  */
 public class Pipeline {
 
-	public static final String PIPELINE_VERSION = "1.5";
+	public static final String PIPELINE_VERSION = "1.5-beta";
 	protected File source;
 	protected Document xmlDoc;
 	public static final String PROJECT_HOME="home";
 	public static final String START_TIME="start.time";
 	public static final String END_TIME="end.time";
 	public static final String primaryLoggerName = "pipeline.primary";
-
+	public static final String defaultPropertiesPath = ".pipelineprops.xml";
+	public static final String PLUGIN_PATH = "plugin.path";
+	
 	protected Logger primaryLogger = Logger.getLogger(primaryLoggerName);
 	protected String defaultLogFilename = "pipelinelog";
 	protected String instanceLogPath = null; //Gets set when pipeinstancelog file handler is created
@@ -79,7 +81,7 @@ public class Pipeline {
 	
 	//Stores some basic properties, such as paths to commonly used executables
 	protected Properties props;
-	public static final String defaultPropertiesPath = ".pipelineprops.xml";
+	
 	private String propertiesPath = defaultPropertiesPath;
 	private Date startTime = null;
 	
@@ -278,6 +280,16 @@ public class Pipeline {
 			}
 			primaryLogger.info("Setting PROJECT_HOME to " + pHome);
 			props.setProperty(PROJECT_HOME, pHome);
+		}
+		
+		
+		//Add plugin path(s), if specified
+		String pluginPaths = props.getProperty(PLUGIN_PATH);
+		if (pluginPaths != null) {
+			String[] paths = pluginPaths.split(":");
+			for(String path : paths) {
+				pluginLoader.addPluginPath(path);
+			}
 		}
 	}
 
