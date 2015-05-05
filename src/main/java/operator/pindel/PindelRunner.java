@@ -132,90 +132,15 @@ public class PindelRunner extends IOOperator {
 		
 		Map<String, List<PindelResult>> results = resultsObject.getPindelResults();
 		
-//#CHRISK
-<<<<<<< Updated upstream
-=======
-		//create FileBuffer for all instances????4.15.2015
-		//need to fix template for the myeloids.
-		//
-		FileBuffer pindelRawResults1 = getOutputBufferForClass(TextBuffer.class);
-		FileBuffer pindelRawResults2 = getOutputBufferForClass(TextBuffer.class);
-		FileBuffer pindelRawResults3 = getOutputBufferForClass(TextBuffer.class);
-		FileBuffer pindelRawResults4 = getOutputBufferForClass(TextBuffer.class);
-		FileBuffer pindelRawResults5 = getOutputBufferForClass(TextBuffer.class);
-		FileBuffer pindelRawResults6 = getOutputBufferForClass(TextBuffer.class);
-		FileBuffer pindelRawResults7 = getOutputBufferForClass(TextBuffer.class);
-		FileBuffer pindelRawResults8 = getOutputBufferForClass(TextBuffer.class);
+
 		
-		
-		File[] files = outputDir.listFiles();	
-		String destinationPath = properties.get(DEST);
-		if (destinationPath == null) {
-			throw new OperationFailedException("No destination path specified, use dest=\"path/to/dir/\"", this);
-		}
->>>>>>> Stashed changes
 		
 		//Examine each file in the pindel raw output dir and see if we can associate it with an output buffer
 		//This is so we can move the raw files into the review directory
 		for(File file: outputDir.listFiles()){
 			setPindelResultsFile(file, getAllOutputBuffersForClass(TextBuffer.class));		
 		}
-<<<<<<< Updated upstream
 		
-=======
-		else {
-			destination.mkdir();
-		}
-		
-		if (destination == null)
-			throw new OperationFailedException("Destination directory has not been specified", this);
-		
-		try{
-			Logger.getLogger(Pipeline.primaryLoggerName).info("Moving Pindel Output Files");
-			for(File file:files){
-
-				if(file.getName().endsWith("_D") )
-				{					
-					pindelRawResults1.setFile(file);
-				}
-				if(file.getName().endsWith("_SI")){
-					pindelRawResults2.setFile(file);
-				}
-				if(file.getName().endsWith("_TD")){
-					pindelRawResults3.setFile(file);
-				}
-				if(file.getName().endsWith("_LI")){
-					pindelRawResults4.setFile(file);
-				}
-				if(file.getName().endsWith("2_D") )
-				{					
-					pindelRawResults5.setFile(file);
-				}
-				if(file.getName().endsWith("2_SI")){
-					pindelRawResults6.setFile(file);
-				}
-				if(file.getName().endsWith("2_TD")){
-					pindelRawResults7.setFile(file);
-				}
-				if(file.getName().endsWith("2_LI")){
-					pindelRawResults8.setFile(file);
-				}
-				//maybe just null?
-				if(file.getName().equals("null")){
-					System.out.println("xxxxxxxxxxxxxxxxxxx=\"null\"");
-				}
-				if(file.getName().equals(null)){
-					System.out.println("xxxxxxxxxxxxxxxxxxx=null");
-				}
-			}
-		}
-		catch(Exception e){
-			System.out.println("ERROR: No pindel output files");
-		}
->>>>>>> Stashed changes
-		
-
-//#\CHRISK		
 		
 		//Now add annotations to all those results... 
 		ExonLookupService featureLookup = new ExonLookupService();
