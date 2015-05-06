@@ -42,5 +42,6 @@ public class HiddenMarkovModel {
 	public Observation simulate(DoubleMatrix1D state, int distance) {
 		DoubleMatrix2D powered = algebra.pow(transitionProbs, distance);
 		DoubleMatrix1D result = powered.zMult(state, null);
+		return null;
 	}
 }

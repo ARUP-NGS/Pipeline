@@ -243,7 +243,7 @@ public class GenePool extends Operator {
 		}
 	}
 
-	public void listGenesWithMultipleVars(PrintStream out, int cutoff, VariantPoolWriter writer) {
+	public void listGenesWithMultipleVars(PrintStream out, int cutoff, VariantPoolWriter writer) throws IOException {
 		List<List<VariantRec>> geneList = new ArrayList<List<VariantRec>>();
 		writer.writeHeader(out);
 		

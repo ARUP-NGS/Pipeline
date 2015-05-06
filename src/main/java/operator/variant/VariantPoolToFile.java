@@ -1,24 +1,10 @@
 package operator.variant;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.List;
 
-import operator.OperationFailedException;
-import operator.Operator;
-
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-
-import pipeline.PipelineObject;
-import buffer.CSVFile;
-import buffer.variant.VariantPool;
-import buffer.variant.VariantRec;
 import util.vcfParser.VCFParser.GTType;
+import buffer.variant.VariantRec;
 
 /**
  * Writes a variant pool to a CSV file, in the format expected by most
@@ -81,6 +67,11 @@ public class VariantPoolToFile extends VariantPoolWriter {
 		}
 		
 		outputStream.println();
+	}
+
+	@Override
+	public void writeFooter(PrintStream outputStream) throws IOException {
+		//do nothing, no footer to write
 	}
 
 }
