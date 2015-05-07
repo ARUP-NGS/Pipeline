@@ -241,30 +241,34 @@ public class ObjectHandler {
 	}
 
 	private Class<?> loadClass(String classStr) throws ClassNotFoundException {
-		//TODO We'd like to be able to search other paths, not just already loaded classes
-		if (classLoader == null)
+		if (classLoader == null) {
 			classLoader = ClassLoader.getSystemClassLoader();
+		}
+		
+		
+		//Important, FIRST search the plugins for the class requested, and only look
+		//at system classes if no matches were found in any plugin
+		//We couldn't find the requested class using the classloader provided, so search the pluginloader
+		for(Plugin plugin : pluginLoader.getPlugins()) {	
+			for(Class<? extends PipelineObject> clz : plugin.getClassesProvided()) {
+				if (clz.getCanonicalName().equals(classStr)) {
+					Logger.getLogger(Pipeline.primaryLoggerName).info("Found class " + classStr + " from plugin " + plugin.getClass().getCanonicalName());
+					return clz;
+				}
+			}
+		}
+		
+		
+		//No class found in any of the plugins so see if we can just load the class
+		//from the class loader provided
 		try {
-			
 			Class<?> clazz = classLoader.loadClass(classStr);
 			Logger.getLogger(Pipeline.primaryLoggerName).info("Loaded class " + classStr + " from primary classloader");
 			return clazz;
 		} catch (ClassNotFoundException ex) {
 			
-			//We couldn't find the requested class using the classloader provided, so search the pluginloader
-			for(Plugin plugin : pluginLoader.getPlugins()) {
-				
-				for(Class<? extends PipelineObject> clz : plugin.getClassesProvided()) {
-					if (clz.getCanonicalName().equals(classStr)) {
-						Logger.getLogger(Pipeline.primaryLoggerName).info("Found class " + classStr + " from plugin " + plugin.getClass().getCanonicalName());
-						return clz;
-					}
-				}
-			}
-			
 			//No matching class found in any of the plugins, so throw a ClassNotFound
 			throw new ClassNotFoundException("Couldn't find class " + classStr);
-			
 		}
 	}
 

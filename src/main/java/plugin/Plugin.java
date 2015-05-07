@@ -12,7 +12,7 @@ import pipeline.PipelineObject;
  *
  */
 public interface Plugin {
-
+	
 	public List< Class<? extends PipelineObject> > getClassesProvided();
 	
 }
