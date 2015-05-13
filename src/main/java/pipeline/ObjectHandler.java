@@ -148,7 +148,6 @@ public class ObjectHandler {
 	 */
 	private PipelineObject createElement(Element el) throws ObjectCreationException {
 		Logger logger = Logger.getLogger(Pipeline.primaryLoggerName);
-		System.out.println("Examining element : " + el.getNodeName()); //EG
 		if (verbose) {
 			System.out.println("Examining element : " + el.getNodeName());
 		}

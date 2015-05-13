@@ -167,7 +167,7 @@ public class CoverageCalculator {
 		}
 		
 		for(int i=0; i<cdf.length; i++) {
-			cdf[i] = 100.0 - 100.0*cdf[i]/(double)total;
+			cdf[i] = 1 - cdf[i]/(double)total;
 		}
 		
 		return cdf;
