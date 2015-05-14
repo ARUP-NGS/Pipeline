@@ -110,13 +110,13 @@ public class TestAnnovar extends TestCase {
 				var = vars.findRecord("1", 47280747, "AT", "-");
 				Assert.assertTrue(var != null); 
 				Assert.assertTrue(var.getAnnotation(VariantRec.EXON_FUNCTION).equalsIgnoreCase("frameshift deletion"));
-				String va = var.getAnnotation(VariantRec.PDOT);
-				if (! va.contains("p.295_295del")) {
-					System.out.println("\n\n\n **************** Annotation is : " + va);
-				}
-				Assert.assertTrue(va.contains("p.295_295del"));
-				Assert.assertTrue(var.getAnnotation(VariantRec.CDOT).contains("c.884_885del"));
-				Assert.assertTrue(var.getAnnotation(VariantRec.NM_NUMBER).contains("NM_001099772"));
+			//	Assert.assertTrue(var.getAnnotation(VariantRec.PDOT).contains("p.295_295del"));
+			//	Assert.assertTrue(var.getAnnotation(VariantRec.CDOT).contains("c.884_885del"));
+			//	Assert.assertTrue(var.getAnnotation(VariantRec.NM_NUMBER).contains("NM_001099772"));
+				System.out.println(var.getAnnotation(VariantRec.NM_NUMBER)); //EG
+				Assert.assertTrue(var.getAnnotation(VariantRec.NM_NUMBER).contains("NM_000779")); //switched to alternate transcript, validated by Mutalyzer
+				Assert.assertTrue(var.getAnnotation(VariantRec.CDOT).contains("c.881_882del"));
+				Assert.assertTrue(var.getAnnotation(VariantRec.PDOT).contains("p.294_294del")); //This is a frameshift
 				Assert.assertTrue(var.getAnnotation(VariantRec.GENE_NAME).contains("CYP4B1"));
 				
 				
