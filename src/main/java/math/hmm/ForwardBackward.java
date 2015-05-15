@@ -40,7 +40,7 @@ public class ForwardBackward {
 		
 	}
 	
-	private RealVector computeForwardStep(RealVector prevProbs, int dist, double obsVal) {
+	public RealVector computeForwardStep(RealVector prevProbs, int dist, double obsVal) {
 		
 		RealMatrix tp = hmm.transitionProbs.power(dist);
 		RealVector newState = tp.preMultiply(prevProbs);

@@ -32,10 +32,32 @@ public class HiddenMarkovModel {
 		this.transitionProbs = transitionProbs;
 		this.emissionProbs = emissionProbs;
 		
-		//Compute stationaries
-		EigenDecomposition ev = new EigenDecomposition(transitionProbs, 1.0);
-		this.stationaries = ev.getEigenvector(0);
+		computeStationaries();
 		
+	}
+	
+	private void computeStationaries() {
+		//Compute stationaries state of transition matrix
+		//, there's no telling where the primary (largest-magnitude) eigenvalue will end up
+		//so we have to look for it
+		EigenDecomposition ev = new EigenDecomposition(transitionProbs.transpose());
+		int index = -1;
+		for(int i=0; i<transitionProbs.getRowDimension(); i++) {
+			if (Math.abs( ev.getRealEigenvalue(i)-1.0)<0.000001) {
+				index = i;
+			}
+			
+			if (ev.getRealEigenvalue(i)>1.000001) {
+				throw new IllegalArgumentException("Found an eigenvalue greater than 1.0! (value=" + ev.getRealEigenvalue(i) + " index: " + i);
+			}
+		}
+		if (index == -1) {
+			throw new IllegalArgumentException("No eigenvalue has magnitude 0");
+		}
+		this.stationaries = renormalize(ev.getEigenvector(index));
+		System.err.println("First eigenvalue: " + ev.getRealEigenvalue(index));
+		System.err.println("Transition stationaries: " + this.stationaries.toString());
+				
 	}
 	
 	public int getStateCount() {
@@ -107,12 +129,17 @@ public class HiddenMarkovModel {
 		
 		
 		int newState = randomIndex(result);
+		RealVector newStateVec = new ArrayRealVector( this.getStateCount() );
+		newStateVec.set(0);
+		newStateVec.setEntry(newState, 1.0);
 		
 		AbstractRealDistribution emissionProb = emissionProbs[newState];
 		double observedValue = emissionProb.sample();
 		StateObservation so = new StateObservation();
 		so.observedVal = observedValue;
-		so.state = result;
+		
+		
+		so.state = newStateVec;
 		return so;
 				
 	}
@@ -137,7 +164,7 @@ public class HiddenMarkovModel {
 	public static void main(String[] args) {
 		
 		double[][] tMat = {
-				{0.5, 0.5}, 
+				{0.98, 0.02}, 
 				{0.1, 0.9}
 			};
 		
@@ -155,7 +182,8 @@ public class HiddenMarkovModel {
 		for(int i=0; i<50; i++) {
 			StateObservation so = hmm.simulateSingleUpdate(state, step);
 			pos += step;
-			System.out.println("Pos: " + pos + "\tval:" + so.observedVal + "\t\t" + state);
+			System.out.println("Pos: " + pos + "\t obs:" + so.observedVal + "\t\t" + so.state);
+			state = so.state;
 		}
 		
 	}
