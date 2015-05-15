@@ -127,6 +127,7 @@ public class DepthsForNoCalls extends IOOperator {
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			throw new OperationFailedException("Exiting pipeline.", this); 
 		}
 		
 	}
