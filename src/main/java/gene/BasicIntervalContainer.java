@@ -21,8 +21,8 @@ import util.coverage.HasIntervals;
  */
 public class BasicIntervalContainer implements HasIntervals {
 
-	//A map from contig name to list of intervals
-	protected Map<String, List<Interval>> allIntervals = null;
+	//A map from contig name to list of intervals, need to instantiate since addInterval() isn't always called
+	protected Map<String, List<Interval>> allIntervals = new HashMap<String, List<Interval>>();
 	
 	
 	/**
@@ -101,16 +101,11 @@ public class BasicIntervalContainer implements HasIntervals {
 	 * @param interval
 	 */
 	protected void addInterval(String contig, Interval interval) {
-		if (allIntervals == null) {
-			allIntervals = new HashMap<String, List<Interval>>();
-		}
-		
 		List<Interval> intervals = allIntervals.get(contig);
 		if (intervals == null) {
 			intervals = new ArrayList<Interval>(1024);
 			allIntervals.put(contig, intervals);
 		}
-		
 		intervals.add(interval);
 	}
 	
