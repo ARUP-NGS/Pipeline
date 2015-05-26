@@ -111,17 +111,38 @@ public class HMMSimulation {
 	public static void main(String[] args) {
 		
 		double[][] tMat = {
-				{0.95, 0.05, 0.0}, 
-				{0.025, 0.95, 0.025},
-				{0.0, 0.08, 0.92},
+				{0.90, 0.1, 0.0}, 
+				{0.005, 0.99, 0.005},
+				{0.0, 0.1, 0.90},
 			};
 		
-		AbstractRealDistribution[] emissionProbs = new AbstractRealDistribution[]{
-			new NormalDistribution(1.0, 0.5),
-			new NormalDistribution(4.0, 0.5),
+		
+		SparseEmissionProbModel epModel = new SparseEmissionProbModel(3);
+		AbstractRealDistribution[] ep1 = new AbstractRealDistribution[]{
+			new NormalDistribution(1.0, 1.5),
+			new NormalDistribution(4.0, 1.5),
 			new NormalDistribution(7.0, 1.0)
 		};
-		EmissionProbModel epModel = new ConstantEmissionProbModel(emissionProbs);
+		AbstractRealDistribution[] ep2 = new AbstractRealDistribution[]{
+				new NormalDistribution(1.0, 0.5),
+				new NormalDistribution(4.0, 0.5),
+				new NormalDistribution(7.0, 1.0)
+		};
+		
+		
+		List<Integer> positions = new ArrayList<Integer>();
+		int posi = 0;
+		for(int i=0; i<250; i++) {
+			int dist = (int) Math.round(20.0*Math.random());
+			
+			if (posi < 200) {
+				epModel.addFuncsAtPos(posi, ep1);
+			} else {
+				epModel.addFuncsAtPos(posi, ep2);
+			}
+			positions.add(posi);
+			posi += dist;
+		}
 		
 		
 		HiddenMarkovModel hmm = new HiddenMarkovModel(new BlockRealMatrix(tMat), epModel);
@@ -129,16 +150,13 @@ public class HMMSimulation {
 		
 		RealVector state = hmm.stationaries;
 		int prevPos = 0;
-		int pos = 1;
 		List<StateObservation> actual = new ArrayList<StateObservation>();
 		List<Observation> obs = new ArrayList<Observation>();
-		for(int i=0; i<50; i++) {
-			int step = (int) Math.round(20.0*Math.random());
-			pos = prevPos + step;
+		for(Integer pos : positions) {
 			StateObservation so = simulator.simulateSingleUpdate(state, pos-prevPos, pos);
 			so.pos = pos;
 			actual.add(so);
-			Observation o = new Observation(so.observedVal, so.pos);
+			Observation o = new Observation(so.observedVal, "X", so.pos);
 			obs.add(o);
 			
 			state = new ArrayRealVector(hmm.getStateCount());

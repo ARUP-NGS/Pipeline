@@ -8,8 +8,6 @@ import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
 
 /**
- * TODO: Emission probs need to be observation-dependent
- * TODO: Need to be able to read and write models containing 
  * Could use existing python model-builder in mean time if we dont want to write a model building class now
  * @author brendan
  *
@@ -53,7 +51,7 @@ public class HiddenMarkovModel {
 			}
 		}
 		if (index == -1) {
-			throw new IllegalArgumentException("No eigenvalue has magnitude 0");
+			throw new IllegalArgumentException("No eigenvalue has magnitude 1");
 		}
 		this.stationaries = Utils.renormalize(ev.getEigenvector(index));
 		System.err.println("First eigenvalue: " + ev.getRealEigenvalue(index));

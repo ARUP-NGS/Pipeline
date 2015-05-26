@@ -59,9 +59,10 @@ public class CoverageCalculator {
 		List<IntervalCovSummary> covs = new ArrayList<IntervalCovSummary>(1024);
 		for(String chr : intervals.getContigs()) {
 			for(Interval interval : intervals.getIntervalsForContig(chr)) {
-				int[] depths = new int[2048];
-				CoverageCalculator.calculateDepthHistogram(window, chr, interval.begin, interval.end, depths);
-				IntervalCovSummary intervalCov = new IntervalCovSummary(chr, interval, getMean(depths));
+				int[] depths = new int[32768];
+				CovResult result = CoverageCalculator.calculateDepthHistogram(window, chr, interval.begin, interval.end, depths);
+				double mean = (double)result.covSum / (double)result.sitesAssessed;
+				IntervalCovSummary intervalCov = new IntervalCovSummary(chr, interval, mean);
 				covs.add(intervalCov);
 			}
 		}
@@ -74,15 +75,15 @@ public class CoverageCalculator {
 	 * Using multiple threads, compute the number of bases in the target intervals that are covered by X
 	 * reads, and return that information as a histogram. The i-th element of the histogram is the number of
 	 * positions covered by exactly i reads. For instance, if array[22]=100, then 100 positions have a 
-	 * depth of 22.   Right now the max histogram length is 22, meaning we don't keep track of depths
-	 * greater than 15000. 
+	 * depth of 22.   Right now the max histogram length is 32768, meaning we don't keep track of depths
+	 * greater than 32768. 
 	 * @return
 	 * @throws InterruptedException
 	 */
 	public int[] computeOverallCoverage() throws InterruptedException {
 		int maxSubIntervalSize = 10000;
 		ThreadPoolExecutor pool = (ThreadPoolExecutor) Executors.newFixedThreadPool( threads );
-		int[] overallDepths = new int[15000];
+		int[] overallDepths = new int[32768];
 		
 		for(String chr : intervals.getContigs()) {
 			List<Interval> subIntervals = new ArrayList<Interval>();
@@ -207,7 +208,7 @@ public class CoverageCalculator {
 	 * @author brendan
 	 *
 	 */
-	class IntervalCovSummary implements Comparable<IntervalCovSummary> {
+	public class IntervalCovSummary implements Comparable<IntervalCovSummary> {
 		String chr;
 		Interval interval;
 		double meanDepth;
@@ -222,6 +223,25 @@ public class CoverageCalculator {
 			return chr + ": " + interval.begin + "-" + interval.end + "\t:\t" + meanDepth;
 		}
 
+		public int intervalSize() {
+			return interval.end - interval.begin;
+		}
+		
+		public String getChr() {
+			return chr;
+		}
+		
+		public Interval getInterval() {
+			return interval;
+		}
+		/**
+		 * Returns exact mean depth (not computed from histogram)
+		 * @return
+		 */
+		public double getMeanDepth() {
+			return meanDepth;
+		}
+		
 		@Override
 		/**
 		 * Compare interval coverage summaries based on interval position
@@ -258,6 +278,8 @@ public class CoverageCalculator {
 		private List<Interval> subIntervals;
 		private boolean done = false;
 		private Exception error = null;
+		private int sitesAssessed = 0;
+		private long covSum = 0L;
 		
 		public CovCalculator(File inputBam, String chr, List<Interval> subIntervals, int[] depths) {
 			this.inputBam = inputBam;
@@ -272,7 +294,9 @@ public class CoverageCalculator {
 				BamWindow window = new BamWindow(inputBam);
 
 				for(Interval interval : subIntervals) {
-					CoverageCalculator.calculateDepthHistogram(window, chr, interval.begin, interval.end, depths);
+					CovResult result = CoverageCalculator.calculateDepthHistogram(window, chr, interval.begin, interval.end, depths);
+					this.sitesAssessed = result.sitesAssessed;
+					this.covSum = result.covSum;
 				}
 				window.close();
 				done = true;
@@ -297,6 +321,14 @@ public class CoverageCalculator {
 		
 		public int[] getDepths() {
 			return depths;
+		}
+		
+		public int getSitesAssessed() {
+			return sitesAssessed;
+		}
+		
+		public long getCovSum() {
+			return covSum;
 		}
 	}
 	
@@ -323,8 +355,9 @@ public class CoverageCalculator {
 	 * @param end
 	 * @param depths
 	 */
-	public static void calculateDepthHistogram(BamWindow bam, String chr, int start, int end, int[] depths) {
+	public static CovResult calculateDepthHistogram(BamWindow bam, String chr, int start, int end, int[] depths) {
 		int advance = 4;
+		CovResult result = new CovResult();
 		
 		//If this is a tiny interval just look at each base, this allows us to look at single sites accurately
 		if (end-start < 40) {
@@ -334,16 +367,31 @@ public class CoverageCalculator {
 		
 		//Skip all processing if there are no more reads in this contig
 		if (! bam.hasMoreReadsInCurrentContig()) {
-			depths[0] += (end-start); //all zeros 
-			return;
+			depths[0] += (end-start); //all zeros
+			result.sitesAssessed = end-start;
+			result.covSum = 0L;
+			return result;
 		}
 		
+		long covSum = 0L; //Tracks sum of all coverage, used for calculating mean coverage exactly
+		int sitesAssessed = 0; //Tracks total number of sites examined, used for calculating exact mean
 		boolean cont = true;
 		while(cont && bam.getCurrentPosition() < end) {
 			int depth = bam.size();
+			sitesAssessed += advance;
+			covSum += advance * depth;
 			depth = Math.min(depth, depths.length-1);
 			depths[depth]+=advance; //We assume this base and the next 'advance' bases all have the same coverage
 			cont = bam.advanceBy(advance);
 		}
+		
+		result.sitesAssessed = sitesAssessed;
+		result.covSum = covSum;
+		return result;
+	}
+	
+	static class CovResult {
+		int sitesAssessed = 0;
+		long covSum = 0;
 	}
 }
