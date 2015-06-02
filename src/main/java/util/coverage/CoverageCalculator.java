@@ -29,7 +29,7 @@ public class CoverageCalculator {
 	
 	protected File inputBam = null;
 	protected HasIntervals intervals;
-	private int threads = Runtime.getRuntime().availableProcessors();
+	private int threads = Math.max(1, Runtime.getRuntime().availableProcessors()/2);
 	
 	/**
 	 * Creates a new CoverageCalculator object that will examine the given BAM file over
