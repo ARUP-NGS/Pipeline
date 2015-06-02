@@ -1221,8 +1221,8 @@ Number of Sanger Requests not Confirmed (Average per Sample)
 			
 			out.println("VCF Variants:");
 			out.println("\tTotal variants\tSNPs\tIndels\tHets");
-			out.println(dirA.getSampleName() +"\t" + vcfVarsA.size() + '\t' + vcfVarsA.countSNPs() + "\t" + (vcfVarsA.countInsertions()+vcfVarsA.countDeletions()) + "\t" + ("" + 100.0*vcfVarsA.countHeteros()/vcfVarsA.size()).substring(0, 5));
-			out.println(dirB.getSampleName() +"\t" + vcfVarsB.size() + '\t' + vcfVarsB.countSNPs() + "\t" + (vcfVarsB.countInsertions()+vcfVarsA.countDeletions()) + "\t" + ("" + 100.0*vcfVarsA.countHeteros()/vcfVarsB.size()).substring(0, 5));
+			out.println(dirA.getSampleName() +"\t" + vcfVarsA.size() + '\t' + vcfVarsA.countSNPs() + "\t" + (vcfVarsA.countInsertions()+vcfVarsA.countDeletions()) + "\t" + ("" + 100.0*vcfVarsA.countHeteros()/vcfVarsA.size()));
+			out.println(dirB.getSampleName() +"\t" + vcfVarsB.size() + '\t' + vcfVarsB.countSNPs() + "\t" + (vcfVarsB.countInsertions()+vcfVarsA.countDeletions()) + "\t" + ("" + 100.0*vcfVarsA.countHeteros()/vcfVarsB.size()));
 			
 			if (vcfVarsA.size() != vcfVarsB.size()) {
 				out.println("****************************************");

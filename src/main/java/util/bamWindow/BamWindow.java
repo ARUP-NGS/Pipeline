@@ -188,8 +188,10 @@ public class BamWindow {
 				&& nextRecord.getAlignmentStart() <= pos
 				&& nextRecord.getReferenceName().equals(currentContig)) {
 			expand();
-			if (count %128 == 0)
+			if (count %128 == 0) {
 				shrinkTrailingEdge();
+				count++;
+			}
 		}
 		
 		shrinkTrailingEdge();
@@ -278,7 +280,7 @@ public class BamWindow {
 			return;
 		
 		//System.out.println("Pushing record starting at : " + nextRecord.getAlignmentStart());
-		records.push(new MappedRead(nextRecord));
+		records.add(new MappedRead(nextRecord));
 		
 		//Find next suitable record
 		nextRecord = recordIt.hasNext() 
@@ -298,27 +300,29 @@ public class BamWindow {
 	/**
 	 * Remove from queue those reads whose right edge is less than the current pos
 	 */
-	private void shrinkTrailingEdge() {		
+	private void shrinkTrailingEdge() {
+		if (records.isEmpty()) {
+			return;
+		}
+		
 		Iterator<MappedRead> it = records.iterator();
-		try {
-			MappedRead read = it.next();
-			while(it.hasNext()) {
-				if (read.getRecord().getAlignmentEnd() < currentPos) {
-					it.remove();
-				}
-				
-				read = it.next();
-			}
-			
+		
+		MappedRead read = it.next();
+		while(it.hasNext()) {
 			if (read.getRecord().getAlignmentEnd() < currentPos) {
 				it.remove();
 			}
+
+			read = it.next();
+			if (read.getRecord().getAlignmentEnd() > (currentPos+20)) {
+				break;
+			}
 		}
-		catch(NoSuchElementException ex) {
-			//Expected behavior
+
+		if (read.getRecord().getAlignmentEnd() < currentPos) {
+			it.remove();
 		}
-		
 
 	}
-	
+
 }

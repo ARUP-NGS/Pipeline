@@ -3,45 +3,79 @@ package math.hmm;
 import java.util.Collections;
 import java.util.List;
 
-import math.ContinuousDistribution;
-import cern.colt.matrix.DoubleMatrix1D;
-import cern.colt.matrix.DoubleMatrix2D;
-import cern.colt.matrix.impl.DenseDoubleMatrix2D;
-import cern.colt.matrix.linalg.Algebra;
+import org.apache.commons.math3.linear.EigenDecomposition;
+import org.apache.commons.math3.linear.RealMatrix;
+import org.apache.commons.math3.linear.RealVector;
 
-
+/**
+ * Could use existing python model-builder in mean time if we dont want to write a model building class now
+ * @author brendan
+ *
+ */
 public class HiddenMarkovModel {
 
-	Algebra algebra = new Algebra();
-	DoubleMatrix2D transitionProbs;
-	ContinuousDistribution[] emissionProbs;
+	RealMatrix transitionProbs;
+	EmissionProbModel emissionProbs;
 	List<Observation> observations;
+	RealVector stationaries;
 	
-	public HiddenMarkovModel(double[][] transitionProbs, ContinuousDistribution[] emissionProbs) {
-		if (transitionProbs.length==0) {
+	public HiddenMarkovModel(RealMatrix transitionProbs, EmissionProbModel emissionProbs) {
+		if (transitionProbs.getColumnDimension()==0) {
 			throw new IllegalArgumentException("Transition matrix cannot be empty");
 		}
-		if (transitionProbs.length != transitionProbs[0].length) {
+		if (!transitionProbs.isSquare()) {
 			throw new IllegalArgumentException("Transition matrix must be square");
 		}
-		if (transitionProbs.length != emissionProbs.length) {
+		if (transitionProbs.getColumnDimension() != emissionProbs.getDimension()) {
 			throw new IllegalArgumentException("Number of states and emission probability functions must be equal");
 		}
-		this.transitionProbs = new DenseDoubleMatrix2D(transitionProbs);
+		this.transitionProbs = transitionProbs;
 		this.emissionProbs = emissionProbs;
+		
+		computeStationaries();
+	}
+	
+	private void computeStationaries() {
+		//Compute stationaries state of transition matrix
+		//, there's no telling where the primary (largest-magnitude) eigenvalue will end up
+		//so we have to look for it
+		EigenDecomposition ev = new EigenDecomposition(transitionProbs.transpose());
+		int index = -1;
+		for(int i=0; i<transitionProbs.getRowDimension(); i++) {
+			if (Math.abs( ev.getRealEigenvalue(i)-1.0)<0.000001) {
+				index = i;
+			}
+			
+			if (ev.getRealEigenvalue(i)>1.000001) {
+				throw new IllegalArgumentException("Found an eigenvalue greater than 1.0! (value=" + ev.getRealEigenvalue(i) + " index: " + i);
+			}
+		}
+		if (index == -1) {
+			throw new IllegalArgumentException("No eigenvalue has magnitude 1");
+		}
+		this.stationaries = Utils.renormalize(ev.getEigenvector(index));
+				
 	}
 	
 	public int getStateCount() {
-		return transitionProbs.rows();
+		return transitionProbs.getRowDimension();
 	}
 	
 	public void setObservations(List<Observation> obs) {
 		this.observations = Collections.unmodifiableList(obs);
 	}
 	
-	public Observation simulate(DoubleMatrix1D state, int distance) {
-		DoubleMatrix2D powered = algebra.pow(transitionProbs, distance);
-		DoubleMatrix1D result = powered.zMult(state, null);
-		return null;
+	public RealMatrix getPoweredTransitionMat(int p) {
+		return this.transitionProbs.power(p);
 	}
+	
+	/**
+	 * Get stationary state of transition matrix
+	 * @return
+	 */
+	public RealVector getStationaries() {
+		return this.stationaries;
+	}
+	
+	
 }
