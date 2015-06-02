@@ -117,7 +117,7 @@ public class CovCalcApp {
 	public static void main(String[] args) throws IOException, InterruptedException {
 		
 		if (args.length==0 || args[0].startsWith("-h")) {
-			System.out.println("Coverage Calculator utility, v0.02");
+			System.out.println("Coverage Calculator utility, v0.03");
 			System.out.println("\n Usage: java -jar [bed file] [bam file] [more bam files...]");
 			System.out.println("\n Emits mean depth of coverage for all intervals in BED file to output.");
 			return;

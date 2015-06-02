@@ -6,6 +6,7 @@ import java.io.PrintStream;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -53,21 +54,33 @@ public class CoverageCalculator {
 		}
 	}
 	
-	
+	/**
+	 * Compute the mean coverage separately for each interval and return them all in a big list
+	 * @return
+	 * @throws InterruptedException
+	 */
 	public List<IntervalCovSummary> computeCoverageByInterval() throws InterruptedException {
-		BamWindow window = new BamWindow(inputBam);
+		
 		List<IntervalCovSummary> covs = new ArrayList<IntervalCovSummary>(1024);
+		List<CovCalculator> jobs = new ArrayList<CovCalculator>();
+		ThreadPoolExecutor pool = (ThreadPoolExecutor) Executors.newFixedThreadPool( threads );
+
 		for(String chr : intervals.getContigs()) {
-			for(Interval interval : intervals.getIntervalsForContig(chr)) {
-				int[] depths = new int[32768];
-				CovResult result = CoverageCalculator.calculateDepthHistogram(window, chr, interval.begin, interval.end, depths);
-				double mean = (double)result.covSum / (double)result.sitesAssessed;
-				IntervalCovSummary intervalCov = new IntervalCovSummary(chr, interval, mean);
-				covs.add(intervalCov);
-			}
+			CovCalculator covJob = new CovCalculator(inputBam, chr, intervals.getIntervalsForContig(chr), new int[32768]);
+			pool.submit(covJob);
+			jobs.add(covJob);
 		}
 		
-		window.close();
+		//Wait until all threads complete
+		pool.shutdown();
+		pool.awaitTermination(10, TimeUnit.DAYS);
+		
+		for(CovCalculator job : jobs) {
+			covs.addAll(job.getIntervalResults());
+		}
+		
+		Collections.sort(covs);
+		
 		return covs;
 	}
 	
@@ -276,6 +289,9 @@ public class CoverageCalculator {
 		private File inputBam;
 		private String chr;
 		private List<Interval> subIntervals;
+		private List<IntervalCovSummary> intervalResults = null;
+		
+
 		private boolean done = false;
 		private Exception error = null;
 		private int sitesAssessed = 0;
@@ -290,20 +306,24 @@ public class CoverageCalculator {
 		
 		@Override
 		public void run() {
+			intervalResults = new ArrayList<IntervalCovSummary>();
 			try {
 				BamWindow window = new BamWindow(inputBam);
-
+				
 				for(Interval interval : subIntervals) {
 					CovResult result = CoverageCalculator.calculateDepthHistogram(window, chr, interval.begin, interval.end, depths);
-					this.sitesAssessed = result.sitesAssessed;
-					this.covSum = result.covSum;
+					double mean = (double)result.covSum / (double)result.sitesAssessed;
+					IntervalCovSummary intervalCov = new IntervalCovSummary(chr, interval, mean);
+					intervalResults.add(intervalCov);
 				}
+				
 				window.close();
 				done = true;
 			}
 			catch (Exception ex) {
 				this.error = ex;
-				Logger.getLogger(Pipeline.primaryLoggerName).severe("Exception in coverage calculation task: " + ex.getLocalizedMessage());
+				ex.printStackTrace();
+				Logger.getLogger(Pipeline.primaryLoggerName).severe("Exception in coverage calculation task: " + ex);
 			}
 		}
 		
@@ -313,6 +333,10 @@ public class CoverageCalculator {
 		
 		public boolean isError() {
 			return error != null;
+		}
+		
+		public List<IntervalCovSummary> getIntervalResults() {
+			return intervalResults;
 		}
 		
 		public Exception getException() {
