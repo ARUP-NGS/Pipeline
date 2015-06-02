@@ -5,7 +5,6 @@ import java.util.List;
 import math.hmm.Utils;
 
 import org.apache.commons.math3.distribution.GammaDistribution;
-import org.apache.commons.math3.stat.descriptive.moment.StandardDeviation;
 
 /**
  * Given an input list of observed values, this creates a gamma function that fits 
@@ -21,31 +20,24 @@ public class GammaFitter {
 	 * individual observatins drawn from the distribution - they're not densities or frequencies
 	 * @param vals
 	 * @return
+	 * @throws GammaFitException 
 	 */
-	public GammaDistribution fitData(List<Double> vals) {
-		return Utils.newGammaWithMeanAndStdev( mean(vals) , stdev(vals));
-	}
-	
-	public static double mean(List<Double> vals){
-		double sum = 0;
-		for(Double v : vals) {
-			sum += v;
+	public GammaDistribution fitData(List<Double> vals) throws GammaFitException {
+		if (vals.size()<5) {
+			throw new GammaFitException("Too few values for fitting (need at least 5, found " + vals.size() + ")");
 		}
-		return sum / (double) vals.size();
-	}
-	
-	public static double stdev(List<Double> vals){
-		StandardDeviation std = new StandardDeviation();
-		return std.evaluate(toDoubleArray(vals));
-	}
-	
-	public static double[] toDoubleArray(List<Double> vals) {
-		//Apparently there's really not a better way to do this
-		double[] arr = new double[vals.size()];
-		for(int i=0; i<vals.size(); i++) {
-			arr[i] = vals.get(i).doubleValue();
+		double mean = Utils.mean(vals);
+		if (mean < 1E-6) {
+			throw new GammaFitException("Mean is really tiny for this interval (" + mean + "), we probably can't fit a gamma to it.");
 		}
-		return arr;
+		return Utils.newGammaWithMeanAndStdev( mean , Utils.stdev(vals));
+	}
+	
+	public class GammaFitException extends Exception {
+		
+		public GammaFitException(String msg) {
+			super(msg);
+		}
 	}
 	
 }

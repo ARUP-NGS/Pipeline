@@ -105,9 +105,7 @@ public class ForwardBackward {
 		RealVector result = new ArrayRealVector(hmm.getStateCount());
 		double sum = 0.0;
 		
-		if (o.position == 189839089) {
-			System.err.println("dang");
-		}
+		
 		int failures = 0;
 		for(int i=0; i<newState.getDimension(); i++) {
 			double oval = o.value;

@@ -35,6 +35,10 @@ public class ReviewDirectory {
 		return new File(sourceDir + "/" + manifest.getProperty("bam.file"));
 	}
 	
+	public File getBEDFile() {
+		return manifest.getBED();
+	}
+	
 	public String getAnalysisType() {
 		return manifest.getAnalysisType();
 	}

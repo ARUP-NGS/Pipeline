@@ -1,8 +1,11 @@
 package math.hmm;
 
+import java.util.List;
+
 import org.apache.commons.math3.distribution.AbstractRealDistribution;
 import org.apache.commons.math3.distribution.GammaDistribution;
 import org.apache.commons.math3.linear.RealVector;
+import org.apache.commons.math3.stat.descriptive.moment.StandardDeviation;
 
 public class Utils {
 
@@ -42,4 +45,25 @@ public class Utils {
 		}
 	}
 	
+	public static double mean(List<Double> vals){
+		double sum = 0;
+		for(Double v : vals) {
+			sum += v;
+		}
+		return sum / (double) vals.size();
+	}
+	
+	public static double stdev(List<Double> vals){
+		StandardDeviation std = new StandardDeviation();
+		return std.evaluate(toDoubleArray(vals));
+	}
+	
+	public static double[] toDoubleArray(List<Double> vals) {
+		//Apparently there's really not a better way to do this
+		double[] arr = new double[vals.size()];
+		for(int i=0; i<vals.size(); i++) {
+			arr[i] = vals.get(i).doubleValue();
+		}
+		return arr;
+	}
 }

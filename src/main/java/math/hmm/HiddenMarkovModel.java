@@ -54,8 +54,6 @@ public class HiddenMarkovModel {
 			throw new IllegalArgumentException("No eigenvalue has magnitude 1");
 		}
 		this.stationaries = Utils.renormalize(ev.getEigenvector(index));
-		System.err.println("First eigenvalue: " + ev.getRealEigenvalue(index));
-		System.err.println("Transition stationaries: " + this.stationaries.toString());
 				
 	}
 	
