@@ -18,15 +18,20 @@ import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
 
 /**
- * Provides 
+ * Provides a utility for importing a VariantPool into a MongoDB database. Each variantRec in the pool
+ * is converted to a Mongo document and then added to the collection with 'collectionName'. 
+ * For each VariantPool uploaded, we also update a document in a metadata collection that tracks a sampleID
+ * upload status, error state, etc.   
+ *   
  * @author brendan
  *
  */
 public class VariantImporter {
 
-	private static final String ERROR = "error: ";
-	private static final String SUCCESS = "success";
-	private static final String UPLOADING = "uploading";
+	private static final String ERROR = "error_message";
+	private static final String COMPLETE = "complete";
+	private static final String PERM_LOCK = "perm_lock";
+	private static final String PERM_ERROR = "perm_error";
 	private static final String DATE = "date";
 	private static final String PERCENT_COMPLETE = "percent_complete";
 	private static final String USER = "user";
@@ -34,6 +39,7 @@ public class VariantImporter {
 	private static final String STATUS = "status";
 	private static final String NUM_VARIANTS = "num_variants";
 	private static final String IMPORT_DATE = "import_date";
+
 	private MongoClient client;
 	private MongoDatabase database;
 	private String collectionName;
@@ -66,11 +72,12 @@ public class VariantImporter {
 		metadata.append(NUM_VARIANTS, vars.size());
 		metadata.append(PERCENT_COMPLETE, 0.0);
 		metadata.append(STATUS, (new Document())
-									.append(TYPE, UPLOADING)
+									.append(TYPE, PERM_LOCK)
 									.append(USER, userID)
 									.append(DATE, new Date()));
 		
 		metadata.append("sample_id", sampleID);
+		metadataCollection.insertOne(metadata);
 		
 		Object metadataDocID = metadata.get("_id");
 		
@@ -91,10 +98,14 @@ public class VariantImporter {
 					docs.add( toDocument(var, sampleID) );
 					if (docs.size()>maxChunkSize) {
 						collection.insertMany(docs);
-						varsAdded = docs.size();
+						varsAdded += docs.size();
 						metadataCollection.updateOne( Filters.eq("_id", metadataDocID), new Document("$set", new Document(PERCENT_COMPLETE, 100.0*varsAdded/totVars)));
 
 						docs = new ArrayList<Document>(1024);
+						
+						if (varsAdded > 25000) {
+							throw new IllegalArgumentException("Cannot import data on Monday");
+						}
 					}
 
 				}
@@ -102,18 +113,21 @@ public class VariantImporter {
 		
 			//Don't forget the last few
 			collection.insertMany(docs);
-			varsAdded = docs.size();
+			varsAdded += docs.size();
 			metadataCollection.updateOne( Filters.eq("_id", metadataDocID), new Document("$set", new Document(PERCENT_COMPLETE, 100.0*varsAdded/totVars)));
 		
+			//TODO: Double check to make sure the correct number of entries are in the db!!
+			
 			//Finalize metadata doc, set status to 'done'
 			metadataCollection.updateOne( Filters.eq("_id", metadataDocID), new Document("$set", new Document(STATUS + "." + DATE, new Date())));
-			metadataCollection.updateOne( Filters.eq("_id", metadataDocID), new Document("$set", new Document(STATUS + "." + TYPE, SUCCESS)));
+			metadataCollection.updateOne( Filters.eq("_id", metadataDocID), new Document("$set", new Document(STATUS + "." + TYPE, COMPLETE)));
 			
 		} catch(Exception ex) {
 			//Set metadata doc status of 'error'
 
 			metadataCollection.updateOne( Filters.eq("_id", metadataDocID), new Document("$set", new Document(STATUS + "." + DATE, new Date())));
-			metadataCollection.updateOne( Filters.eq("_id", metadataDocID), new Document("$set", new Document(STATUS + "." + TYPE, ERROR + ex.getLocalizedMessage())));
+			metadataCollection.updateOne( Filters.eq("_id", metadataDocID), new Document("$set", new Document(STATUS + "." + TYPE, PERM_ERROR)));
+			metadataCollection.updateOne( Filters.eq("_id", metadataDocID), new Document("$set", new Document(STATUS + "." + ERROR, ex.getLocalizedMessage())));
 			throw ex;
 		}
 		
