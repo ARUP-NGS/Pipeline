@@ -18,6 +18,14 @@ import buffer.variant.VariantPool;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
 
+/**
+ * Uses a VariantImporter to upload all variants in the variant pool to a mongo database. 
+ * Requires a url, databasename, collection name, and metadata collection name as Pipeline properties.
+ * 
+ * ...and when we use authentication, this will also require username / password 
+ * @author brendan
+ *
+ */
 public class VariantDBUploader extends Operator {
 
 	public static final String SAMPLEID = "sampleID";
@@ -38,10 +46,12 @@ public class VariantDBUploader extends Operator {
 			JSONException, IOException {
 		
 		Logger.getLogger(Pipeline.primaryLoggerName).info("Importing " + variants.size() + " variants into Mongo db.");
+		
 		try {
+			
 			importer.importPool(variants, System.getProperty("user.name"), sampleID);
+			
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			Logger.getLogger(Pipeline.primaryLoggerName).severe("Could not upload variants to variant db: " + e.getLocalizedMessage());
 			throw new OperationFailedException(e.getLocalizedMessage(), this);
