@@ -22,6 +22,9 @@ public class ForwardBackward {
 	final HiddenMarkovModel hmm; //Transition and emission probs
 	final List<Observation> obs; //Observation and position info
 	
+	//Cap observations values (normalized read counts) to the given number to avoid numerical issues
+	private Double maxObservationVal = 10.0;
+	
 	private List<RealVector> smoothed; //Final results, combines forward and backward probs
 	
 	
@@ -79,7 +82,6 @@ public class ForwardBackward {
 		for(Observation o : this.obs) {
 			int dist = o.position - prevPos;
 			
-			
 			try {
 				state = computeForwardStep(state, dist, o, forwardSums);
 				assertValidVector(state);
@@ -107,13 +109,16 @@ public class ForwardBackward {
 		
 		
 		int failures = 0;
+		AbstractRealDistribution[] emissionDists = hmm.emissionProbs.getEmissionProbsForIndex(o.position);
+
 		for(int i=0; i<newState.getDimension(); i++) {
+			
 			double oval = o.value;
 			if (oval==0.0) {
 				oval = TINY_POSITIVE;
 			}
-			AbstractRealDistribution emissionDist = hmm.emissionProbs.getEmissionProbsForIndex(o.position)[i];
-			double density = emissionDist.density(oval);
+			oval = Math.min(maxObservationVal, oval);
+			double density = emissionDists[i].density(oval);
 			if (Double.isNaN(density) || density<TINY_POSITIVE) {
 				density = TINY_POSITIVE;
 				failures++;
@@ -192,14 +197,16 @@ public class ForwardBackward {
 		//and a distance, but what we want is the probability of being in state i AND observing obsVal
 		int failures = 0;
 		RealVector result = new ArrayRealVector(hmm.getStateCount());
+		AbstractRealDistribution[] emissionDists = hmm.emissionProbs.getEmissionProbsForIndex(o.position);
+		
 		for(int i=0; i<newState.getDimension(); i++) {
 			double oval = o.value;
 			if (oval==0.0) {
 				oval = TINY_POSITIVE;
 			}
 			
-			AbstractRealDistribution emissionDist = hmm.emissionProbs.getEmissionProbsForIndex(o.position)[i];
-			double density = emissionDist.density(oval);
+			oval = Math.min(maxObservationVal, oval);
+			double density = emissionDists[i].density(oval);
 			if (Double.isNaN(density) || density<TINY_POSITIVE) {
 				density = TINY_POSITIVE;
 				failures++;
@@ -238,5 +245,13 @@ public class ForwardBackward {
 	
 	public RealVector getStateProbsForObs(Observation o) {
 		return getStateProbsAtPos( obs.indexOf(o) );
+	}
+
+	public Double getMaxObservationVal() {
+		return maxObservationVal;
+	}
+
+	public void setMaxObservationVal(Double maxObservationVal) {
+		this.maxObservationVal = maxObservationVal;
 	}
 }

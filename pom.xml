@@ -165,7 +165,13 @@
 	<artifactId>picard</artifactId>
 	<version>1.86.0</version>
    </dependency>
-                                   
+    
+   <dependency>
+        <groupId>org.mongodb</groupId>
+        <artifactId>mongo-java-driver</artifactId>
+        <version>3.0.2</version>
+    </dependency>
+                               
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>

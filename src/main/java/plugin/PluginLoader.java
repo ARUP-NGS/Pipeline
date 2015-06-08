@@ -137,7 +137,7 @@ public class PluginLoader {
 		} catch (FileNotFoundException e) {
 			//Don't care about these too much
 		}  catch (Exception e) {
-			throw new PluginLoaderException("Error encountered during component loading : " + e.getMessage());
+			throw new PluginLoaderException("Error encountered during component loading of " + file + " : " + e.getMessage());
 		}
 		
 	}
