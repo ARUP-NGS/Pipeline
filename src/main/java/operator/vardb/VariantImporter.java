@@ -28,6 +28,7 @@ import com.mongodb.client.model.Filters;
  */
 public class VariantImporter {
 
+	private static final String SAMPLE_ID = "sample_id";
 	private static final String ERROR = "error_message";
 	private static final String COMPLETE = "complete";
 	private static final String PERM_LOCK = "perm_lock";
@@ -66,6 +67,13 @@ public class VariantImporter {
 		
 		MongoCollection<Document> metadataCollection = database.getCollection(metadataCollectionName);
 		
+		//First things first - is there already an entry with the given sampleID in the metadata?
+		Document existingDoc = metadataCollection.find( Filters.eq(SAMPLE_ID, sampleID)).first();
+		if (existingDoc != null) {
+			throw new IllegalArgumentException("A sample with id " + sampleID + " already exists (doc id: " + existingDoc.get("_id") + ")");
+		}
+		
+		
 		//Create metadata doc, set status to 'uploading'
 		Document metadata = new Document();
 		metadata.append(IMPORT_DATE, new Date());
@@ -76,15 +84,17 @@ public class VariantImporter {
 									.append(USER, userID)
 									.append(DATE, new Date()));
 		
-		metadata.append("sample_id", sampleID);
+		metadata.append(SAMPLE_ID, sampleID);
 		metadataCollection.insertOne(metadata);
 		
 		Object metadataDocID = metadata.get("_id");
 		
 		try {
 			
+			//These are used to calculate percent completion
 			double totVars = vars.size();
 			double varsAdded = 0;
+			
 			//Iterate over all variants grouping them into lists of at most 'chunksize' items, then using
 			//uploading those chunks one at a time
 			MongoCollection<Document> collection = database.getCollection(collectionName);
@@ -102,10 +112,7 @@ public class VariantImporter {
 						metadataCollection.updateOne( Filters.eq("_id", metadataDocID), new Document("$set", new Document(PERCENT_COMPLETE, 100.0*varsAdded/totVars)));
 
 						docs = new ArrayList<Document>(1024);
-						
-						if (varsAdded > 25000) {
-							throw new IllegalArgumentException("Cannot import data on Monday");
-						}
+					
 					}
 
 				}
@@ -117,6 +124,10 @@ public class VariantImporter {
 			metadataCollection.updateOne( Filters.eq("_id", metadataDocID), new Document("$set", new Document(PERCENT_COMPLETE, 100.0*varsAdded/totVars)));
 		
 			//TODO: Double check to make sure the correct number of entries are in the db!!
+			long count = collection.count(Filters.eq(SAMPLE_ID, sampleID));
+			if (count != (long)vars.size()) {
+				throw new IllegalStateException("Number of variants in database (" + count + ") does not equal variant pool size (" + vars.size() + ")!");
+			}
 			
 			//Finalize metadata doc, set status to 'done'
 			metadataCollection.updateOne( Filters.eq("_id", metadataDocID), new Document("$set", new Document(STATUS + "." + DATE, new Date())));
@@ -147,7 +158,7 @@ public class VariantImporter {
 		doc.append("pos", var.getStart());
 		doc.append("ref", var.getRef());
 		doc.append("alt", var.getAlt());
-		doc.append("sample_id", sampleID);
+		doc.append(SAMPLE_ID, sampleID);
 		
 		for(String key : var.getAnnotationKeys()) {
 			String normalizedKey = normalize(key);
