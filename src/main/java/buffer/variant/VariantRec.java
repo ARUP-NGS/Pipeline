@@ -872,6 +872,9 @@ public class VariantRec {
 	//added for ScSNV
 	public static final String scSNV_ada = "scSNV.ada_score";
 	public static final String scSNV_rf = "scSNV.rf_score";
+	public static final String ARUP_HET_COUNT = "arup.het.count";
+	public static final String ARUP_HOM_COUNT = "arup.hom.count";
+	public static final String ARUP_SAMPLE_COUNT = "arup.sample.count";
 	
 }
 

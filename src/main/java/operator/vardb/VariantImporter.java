@@ -28,7 +28,7 @@ import com.mongodb.client.model.Filters;
  */
 public class VariantImporter {
 
-	private static final String SAMPLE_ID = "sample_id";
+	private static final String SET_ID = "set_id";
 	private static final String ERROR = "error_message";
 	private static final String COMPLETE = "complete";
 	private static final String PERM_LOCK = "perm_lock";
@@ -63,14 +63,14 @@ public class VariantImporter {
 	 * @param vars
 	 * @throws Exception 
 	 */
-	public void importPool(VariantPool vars, String userID, String sampleID) throws Exception {
+	public void importPool(VariantPool vars, String userID, String setID) throws Exception {
 		
 		MongoCollection<Document> metadataCollection = database.getCollection(metadataCollectionName);
 		
 		//First things first - is there already an entry with the given sampleID in the metadata?
-		Document existingDoc = metadataCollection.find( Filters.eq(SAMPLE_ID, sampleID)).first();
+		Document existingDoc = metadataCollection.find( Filters.eq(SET_ID, setID)).first();
 		if (existingDoc != null) {
-			throw new IllegalArgumentException("A sample with id " + sampleID + " already exists (doc id: " + existingDoc.get("_id") + ")");
+			throw new IllegalArgumentException("A set with id " + setID + " already exists (doc id: " + existingDoc.get("_id") + ")");
 		}
 		
 		
@@ -84,7 +84,7 @@ public class VariantImporter {
 									.append(USER, userID)
 									.append(DATE, new Date()));
 		
-		metadata.append(SAMPLE_ID, sampleID);
+		metadata.append(SET_ID, setID);
 		metadataCollection.insertOne(metadata);
 		
 		Object metadataDocID = metadata.get("_id");
@@ -105,7 +105,7 @@ public class VariantImporter {
 			for(String contig : vars.getContigs()) {
 				for(VariantRec var : vars.getVariantsForContig(contig)) {
 
-					docs.add( toDocument(var, sampleID) );
+					docs.add( toDocument(var, setID) );
 					if (docs.size()>maxChunkSize) {
 						collection.insertMany(docs);
 						varsAdded += docs.size();
@@ -124,7 +124,7 @@ public class VariantImporter {
 			metadataCollection.updateOne( Filters.eq("_id", metadataDocID), new Document("$set", new Document(PERCENT_COMPLETE, 100.0*varsAdded/totVars)));
 		
 			//TODO: Double check to make sure the correct number of entries are in the db!!
-			long count = collection.count(Filters.eq(SAMPLE_ID, sampleID));
+			long count = collection.count(Filters.eq(SET_ID, setID));
 			if (count != (long)vars.size()) {
 				throw new IllegalStateException("Number of variants in database (" + count + ") does not equal variant pool size (" + vars.size() + ")!");
 			}
@@ -151,14 +151,14 @@ public class VariantImporter {
 	 * @param var
 	 * @return
 	 */
-	private static Document toDocument(VariantRec var, String sampleID) {
+	private static Document toDocument(VariantRec var, String setID) {
 		Document doc = new Document();
 		
 		doc.append("chr", var.getContig());
 		doc.append("pos", var.getStart());
 		doc.append("ref", var.getRef());
 		doc.append("alt", var.getAlt());
-		doc.append(SAMPLE_ID, sampleID);
+		doc.append(SET_ID, setID);
 		
 		for(String key : var.getAnnotationKeys()) {
 			String normalizedKey = normalize(key);
