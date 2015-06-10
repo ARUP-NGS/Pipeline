@@ -8,6 +8,7 @@ import java.io.IOException;
  * @author brendan
  *
  */
+
 public class DBNSFPReader {
 
 	public static final String defaultPath = System.getProperty("user.home") + "/resources/dbNSFP2.0b4";
@@ -159,24 +160,24 @@ public class DBNSFPReader {
 	 public static final int GENE = 7;
 	 public static final int STRAND = 12;
 	 public static final int UNIPROT_ACC = 8;
-	 public static final int SLR_TEST = 14;
+	public static final int SLR_TEST = 14;//***
 	 public static final int CODON_POS = 15;
 	 public static final int AAPOS = 20;
-	 public static final int SIFT = 21;
-	 public static final int GERP_NR = 32; //GERP 'neutral rate'
-	 public static final int GERP = 33; 
-	 public static final int LRT = 26;
-	 public static final int PP = 22;
-	 public static final int PP_HVAR = 24;
-	 public static final int MT = 28;
-	 public static final int MA = 30; // Mutation assessor score!
+	 	public static final int SIFT = 21;
+	 	public static final int GERP_NR = 32; //GERP 'neutral rate'
+	 	public static final int GERP = 33;
+	 	public static final int LRT = 26;
+	 	public static final int PP = 22;
+		public static final int PP_HVAR = 24;
+	 	public static final int MT = 28;
+	 	public static final int MA = 30; // Mutation assessor score!
  	 
-	 public static final int PHYLOP = 34;
-	 public static final int SIPHY = 36;
-	 public static final int TKG = 40;
-	 public static final int TKG_AFR = 42;
-	 public static final int TKG_EUR = 44;
-	 public static final int TKG_AMR = 46;
+	 	public static final int PHYLOP = 34;
+	 	public static final int SIPHY = 36;
+	 	public static final int TKG = 40;
+	 	public static final int TKG_AFR = 42;
+	 	public static final int TKG_EUR = 44;
+	 	public static final int TKG_AMR = 46;
 	 public static final int TKG_ASN = 48;
 	 public static final int ESP5400 = 50;
 	/*

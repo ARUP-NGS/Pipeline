@@ -141,7 +141,7 @@ import util.vcfParser.VCFParser;
  *
  * this cat'd file is tabix index using the following commands
  * bgzip -c dbNSFP3.0b1c_2015_04_13.tab > dbNSFP3.0b1c_2015_04_13.tab.gz
- * tabix -s 1 -b 2 -e 2 dbscSNV_cat_1-22XY.tab
+ * tabix -s 1 -b 2 -e 2 dbNSFP3.0b1c_2015_04_13.tab.gz
  *
  * the MD5 for the files are:
  * 	dbNSFP3.0b1c_2015_04_13.tab.gz
