@@ -5,7 +5,7 @@ package math;
  * @author brendan
  *
  */
-public class UnitDistribution implements ContinuousDistribution {
+public class UnitDistribution  {
 
 	private double[] densities;
 	
@@ -30,7 +30,7 @@ public class UnitDistribution implements ContinuousDistribution {
 		}
 	}
 	
-	@Override
+
 	public double getPDF(double x) {
 		if (x<0 || x>1.0) 	
 			throw new IllegalArgumentException("value not in 0..1, got:" + x);

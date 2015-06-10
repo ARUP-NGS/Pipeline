@@ -42,20 +42,18 @@ public class MitoMapFreqDB {
 	
 	public String[] getInfoForPosition(String contig, int pos, String alt) throws IOException {
 		String queryStr = contig + ":" + pos + "-" + (pos);
-		
 		try {
 			TabixReader.Iterator iter = reader.query(queryStr);
-
+System.out.println("iter: "+iter);
 			if(iter != null) {
-					String str = iter.next();
+				String str = iter.next();
 					while(str != null) {
 						String[] toks = str.split("\t");
 						Integer qPos = Integer.parseInt(toks[1]);
 						String ALT = toks[3];
 						
 						if (qPos == pos && ALT.equals(alt)) {
-							//Found one..
-							
+							//Found one..							
 							String overallAF = toks[5]; 
 							String Allele = toks[4];
 							
@@ -63,7 +61,7 @@ public class MitoMapFreqDB {
 	
 						}
 						if (qPos > pos) {
-							break;
+							//# break;
 						}
 						str = iter.next();
 					}

@@ -31,7 +31,6 @@ public class MitoTRNAAnnotator extends Annotator {
 			}
 		}
 		
-		
 		if (var.getContig().equals("M") || var.getContig().equals("MT")) {
 			Object[] hits;
 			if (var.isIndel()) {
@@ -43,8 +42,15 @@ public class MitoTRNAAnnotator extends Annotator {
 			
 			for(int i=0; i<hits.length; i++) {
 				MitoAnnoInfo info = (MitoAnnoInfo)hits[i];
-				appendAnnotation(var, VariantRec.GENE_NAME, info.featureName + " (" + info.featureType + ")" );
-				appendAnnotation(var, VariantRec.VARIANT_TYPE, "tRNA change");
+				appendAnnotation(var, VariantRec.GENE_NAME, info.featureName);
+				
+				//Overwrite 'intergenic_region' if it exists
+				String vType = var.getAnnotation(VariantRec.VARIANT_TYPE);
+				if (vType == null || vType.length()==0 || vType.equals("intergenic_region")) {
+					var.addAnnotation(VariantRec.VARIANT_TYPE, info.featureType);
+				} else {
+					appendAnnotation(var, VariantRec.VARIANT_TYPE, info.featureType);
+				}
 			}
 		}
 	}

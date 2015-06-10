@@ -18,7 +18,7 @@ public class PrereviewDataGenerator {
 	public static void main(String[] args) {
 		
 		List<String> paths = new ArrayList<String>();
-		for(int i=1; i<args.length; i++) {
+		for(int i=0; i<args.length; i++) {
 			File file = new File(args[i]);
 			if (file.exists() && file.isDirectory() && file.canRead()) {
 				paths.add(args[i]);

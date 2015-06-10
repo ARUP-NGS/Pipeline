@@ -1,6 +1,8 @@
 package util.varFreqDB;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -212,19 +214,47 @@ public class ComputeVarFreqs {
 		
 	}
 	
+	public static String[] readSamplesFromFile(String filename) throws IOException {
+		BufferedReader reader = new BufferedReader(new FileReader(filename));
+		String line = reader.readLine();
+		List<String> samples = new ArrayList<String>();
+		while(line != null) {
+			String dir = line.trim();
+			if (dir.length()>0) {
+				samples.add(dir);
+			}
+			line = reader.readLine();
+		}
+		
+		reader.close();
+		return samples.toArray(new String[]{});
+	}
+	
 	public static void main(String[] args) {
 		ComputeVarFreqs cFreqs = new ComputeVarFreqs();
 		
+		//By default, just use the argument list as the list of sample review dirs
+		//But if first arg is -f, then assume second arg is the name of a file to read review dirs from
+		String[] samples = args;
+		if (args[0].equals("-f")) {
+			try {
+				samples = readSamplesFromFile(args[1]);
+			} catch (IOException e) {
+				e.printStackTrace();
+				return;
+			}
+		}
+		
 		int added = 0;
-		for(int i=0; i<args.length; i++) {
+		for(int i=0; i<samples.length; i++) {
 			
 			try {
-				boolean ok = cFreqs.addSample( SampleManifest.create(args[i]));
+				boolean ok = cFreqs.addSample( SampleManifest.create(samples[i]));
 				if (ok) {
 					added++;
 				}
 			} catch (ManifestParseException e) {
-				System.err.println("Warning: Skipping file : " + args[i]  + " : " + e.getLocalizedMessage());
+				System.err.println("Warning: Skipping file : " + samples[i]  + " : " + e.getLocalizedMessage());
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				System.err.println("Error in file : " + args[i]  + " : " + e.getLocalizedMessage() + " skipping it.");

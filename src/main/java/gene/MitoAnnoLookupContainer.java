@@ -36,7 +36,7 @@ public class MitoAnnoLookupContainer extends BasicIntervalContainer {
 				String firstTok = line.substring(0,15).trim();
 				
 				//Just get tRNAs, that's all they want for now. 
-				if (firstTok.equals("tRNA")) {
+				if (firstTok.equals("tRNA") || firstTok.equals("rRNA")) {
 					MitoAnnoInfo annoInfo = parseInfo(reader, line);
 					addInterval("MT", annoInfo.start, annoInfo.end, annoInfo);						
 				}

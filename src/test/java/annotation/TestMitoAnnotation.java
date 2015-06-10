@@ -36,15 +36,15 @@ public class TestMitoAnnotation extends TestCase {
 			Assert.assertTrue(objs.length==0);
 			
 			objs = lookup.getIntervalObjectsForRange("MT", 3200, 3300);
-			Assert.assertTrue(objs.length==1);
-			info = (MitoAnnoInfo)objs[0];
+			Assert.assertTrue(objs.length==2);
+			info = (MitoAnnoInfo)objs[1];
 			Assert.assertTrue(info.featureType.equals("tRNA"));
 			Assert.assertTrue(info.featureName.equals("TRNL1"));
 			
 			
 			objs = lookup.getIntervalObjectsForRange("MT", 3200, 3235);
-			Assert.assertTrue(objs.length==1);
-			info = (MitoAnnoInfo)objs[0];
+			Assert.assertTrue(objs.length==2);
+			info = (MitoAnnoInfo)objs[1];
 			Assert.assertTrue(info.featureType.equals("tRNA"));
 			Assert.assertTrue(info.featureName.equals("TRNL1"));
 			
@@ -60,7 +60,7 @@ public class TestMitoAnnotation extends TestCase {
 			
 			
 			objs = lookup.getIntervalObjectsForRange("MT", 3200, 3225);
-			Assert.assertTrue(objs.length==0);
+			Assert.assertTrue(objs.length==1);
 			
 		} catch (IOException e) {
 			e.printStackTrace();

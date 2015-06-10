@@ -24,6 +24,24 @@ public class ExAC63KExomesAnnotator extends AbstractTabixAnnotator {
 		return searchForAttribute(EXAC_63K_PATH);
 	}
 	
+	private boolean safeParseAndSetProperty(VariantRec var, String propertyKey, String valToParse, Double divisor) {
+		if (valToParse==null) {
+			return false;
+		}
+		
+		try {
+			Double freq = Double.parseDouble(valToParse)/divisor;
+			if(!freq.equals(Double.NaN)) {
+				var.addProperty(propertyKey, freq);
+			}
+		} catch (NumberFormatException nfe) {
+			//Don't worry about it, just don't set the property
+			return false;
+		}
+		
+		return true;
+	}
+	
 	/**
 	 * Parses several frequency-based annotations from the given string and 
 	 * converts them to annotations (properties, actually) on the variant
@@ -43,196 +61,74 @@ public class ExAC63KExomesAnnotator extends AbstractTabixAnnotator {
 			var.addProperty(VariantRec.EXOMES_63K_FREQ, freq);
 		}
 		
-		Double NumCalledAlleles = Double.parseDouble(valueForKey(infoToks, "AN"));
+		//Total number of chromosomes assessed
+		Double numCalledAlleles = Double.parseDouble(valueForKey(infoToks, "AN"));
 	
-		String homCountStr = valueForKey(infoToks, "AC_Hom");
-		if(homCountStr != null) {
-				Double freq = Double.parseDouble(homCountStr)/NumCalledAlleles;
-				if(!freq.equals(Double.NaN))
-					var.addProperty(VariantRec.EXOMES_63K_AC_HOM, freq);
-		}
+		//Total number of samples, apparently, with genotype 1/1, so two alleles for each one
+		
+		safeParseAndSetProperty(var, VariantRec.EXOMES_63K_HOM_FREQ, valueForKey(infoToks, "AC_Hom"), numCalledAlleles/2.0);
+		
+		//Total number of samples with genotype 0/1, so one allele for each
+		safeParseAndSetProperty(var, VariantRec.EXOMES_63K_HET_FREQ, valueForKey(infoToks, "AC_Het"), numCalledAlleles);
 
-		String hetCountStr = valueForKey(infoToks, "AC_Het");
-		if(hetCountStr != null) {
-				Double freq = Double.parseDouble(hetCountStr)/NumCalledAlleles;
-				if(!freq.equals(Double.NaN))
-					var.addProperty(VariantRec.EXOMES_63K_AC_HET, freq);
-		}
-
-		//African
 		
-		Double NumCalledAFR = Double.parseDouble(valueForKey(infoToks, "AN_AFR"));
 		
-		String afrCountStr = valueForKey(infoToks, "AC_AFR");
-		if (afrCountStr != null) {
-			Double freq = Double.parseDouble(afrCountStr)/NumCalledAFR;
-			if(!freq.equals(Double.NaN))
-				var.addProperty(VariantRec.EXOMES_63K_AFR_FREQ, freq);
-		}
-		
-		String afrHomStr = valueForKey(infoToks, "Hom_AFR");
-		if (afrHomStr != null) {
-			Double freq = Double.parseDouble(afrHomStr)/NumCalledAFR;
-			if(!freq.equals(Double.NaN))
-				var.addProperty(VariantRec.EXOMES_63K_AFR_HOM, freq);
-		}
-		
-		String afrHetStr = valueForKey(infoToks, "Het_AFR");
-		if (afrHetStr != null) {
-			Double freq = Double.parseDouble(afrHetStr)/NumCalledAFR;
-			if(!freq.equals(Double.NaN))
-				var.addProperty(VariantRec.EXOMES_63K_AFR_HET, freq);
-		}		
+		Double numCalledAFR = Double.parseDouble(valueForKey(infoToks, "AN_AFR"));
+		safeParseAndSetProperty(var, VariantRec.EXOMES_63K_AFR_FREQ, valueForKey(infoToks, "AC_AFR"), numCalledAFR);
+		safeParseAndSetProperty(var, VariantRec.EXOMES_63K_AFR_HOM, valueForKey(infoToks, "Hom_AFR"), numCalledAFR);
+		safeParseAndSetProperty(var, VariantRec.EXOMES_63K_AFR_HET, valueForKey(infoToks, "Het_AFR"), numCalledAFR);
+				
 		
 		//American
 		
-		Double NumCalledAMR = Double.parseDouble(valueForKey(infoToks, "AN_AMR"));
+		Double numCalledAMR = Double.parseDouble(valueForKey(infoToks, "AN_AMR"));
+		safeParseAndSetProperty(var, VariantRec.EXOMES_63K_AMR_FREQ, valueForKey(infoToks, "AC_AMR"), numCalledAMR);
+		safeParseAndSetProperty(var, VariantRec.EXOMES_63K_AMR_HOM, valueForKey(infoToks, "Hom_AMR"), numCalledAMR);
+		safeParseAndSetProperty(var, VariantRec.EXOMES_63K_AMR_HET, valueForKey(infoToks, "Het_AMR"), numCalledAMR);
 		
-		String amrCountStr = valueForKey(infoToks, "AC_AMR");
-		if (amrCountStr != null) {
-			Double freq = Double.parseDouble(amrCountStr)/NumCalledAMR;
-			if(!freq.equals(Double.NaN))
-				var.addProperty(VariantRec.EXOMES_63K_AMR_FREQ, freq);
-		}
 		
-		String amrHomStr = valueForKey(infoToks, "Hom_AMR");
-		if (amrHomStr != null) {
-			Double freq = Double.parseDouble(amrHomStr)/NumCalledAMR;
-			if(!freq.equals(Double.NaN))
-				var.addProperty(VariantRec.EXOMES_63K_AMR_HOM, freq);
-		}
-		
-		String amrHetStr = valueForKey(infoToks, "Het_AMR");
-		if (amrHetStr != null) {
-			Double freq = Double.parseDouble(amrHetStr)/NumCalledAMR;
-			if(!freq.equals(Double.NaN))
-				var.addProperty(VariantRec.EXOMES_63K_AMR_HET, freq);
-		}
 		
 		//East Asian
 		
-		Double NumCalledEAS = Double.parseDouble(valueForKey(infoToks, "AN_EAS"));
+		Double numCalledEAS = Double.parseDouble(valueForKey(infoToks, "AN_EAS"));
+		safeParseAndSetProperty(var, VariantRec.EXOMES_63K_EAS_FREQ, valueForKey(infoToks, "AC_EAS"), numCalledEAS);
+		safeParseAndSetProperty(var, VariantRec.EXOMES_63K_EAS_HOM, valueForKey(infoToks, "Hom_EAS"), numCalledEAS);
+		safeParseAndSetProperty(var, VariantRec.EXOMES_63K_EAS_HET, valueForKey(infoToks, "Het_EAS"), numCalledEAS);
 		
-		String easCountStr = valueForKey(infoToks, "AC_EAS");
-		if (easCountStr != null) {
-			Double freq = Double.parseDouble(easCountStr)/NumCalledEAS;
-			if(!freq.equals(Double.NaN))
-				var.addProperty(VariantRec.EXOMES_63K_EAS_FREQ, freq);
-		}
 		
-		String easHomStr = valueForKey(infoToks, "Hom_EAS");
-		if (easHomStr != null) {
-			Double freq = Double.parseDouble(easHomStr)/NumCalledEAS;
-			if(!freq.equals(Double.NaN))
-				var.addProperty(VariantRec.EXOMES_63K_EAS_HOM, freq);
-		}
-		
-		String easHetStr = valueForKey(infoToks, "Het_EAS");
-		if (easHetStr != null) {
-			Double freq = Double.parseDouble(easHetStr)/NumCalledEAS;
-			if(!freq.equals(Double.NaN))
-				var.addProperty(VariantRec.EXOMES_63K_EAS_HET, freq);
-		}
 		
 		//Finnish
 		
-		Double NumCalledFIN = Double.parseDouble(valueForKey(infoToks, "AN_FIN"));
+		Double numCalledFIN = Double.parseDouble(valueForKey(infoToks, "AN_FIN"));
+		safeParseAndSetProperty(var, VariantRec.EXOMES_63K_FIN_FREQ, valueForKey(infoToks, "AC_FIN"), numCalledFIN);
+		safeParseAndSetProperty(var, VariantRec.EXOMES_63K_FIN_HOM, valueForKey(infoToks, "Hom_FIN"), numCalledFIN);
+		safeParseAndSetProperty(var, VariantRec.EXOMES_63K_FIN_HET, valueForKey(infoToks, "Het_FIN"), numCalledFIN);
 		
-		String finCountStr = valueForKey(infoToks, "AC_FIN");
-		if (finCountStr != null) {
-			Double freq = Double.parseDouble(finCountStr)/NumCalledFIN;
-			if(!freq.equals(Double.NaN))
-				var.addProperty(VariantRec.EXOMES_63K_FIN_FREQ, freq);
-		}
-		
-		String finHomStr = valueForKey(infoToks, "Hom_FIN");
-		if (finHomStr != null) {
-			Double freq = Double.parseDouble(finHomStr)/NumCalledFIN;
-			if(!freq.equals(Double.NaN))
-				var.addProperty(VariantRec.EXOMES_63K_FIN_HOM, freq);
-		}
-		
-		String finHetStr = valueForKey(infoToks, "Het_FIN");
-		if (finHetStr != null) {
-			Double freq = Double.parseDouble(finHetStr)/NumCalledFIN;
-			if(!freq.equals(Double.NaN))
-				var.addProperty(VariantRec.EXOMES_63K_FIN_HET, freq);
-		}
 		
 		//Non-Finnish Europeans
 		
-		Double NumCalledNFE = Double.parseDouble(valueForKey(infoToks, "AN_NFE"));
+		Double numCalledNFE = Double.parseDouble(valueForKey(infoToks, "AN_NFE"));
+		safeParseAndSetProperty(var, VariantRec.EXOMES_63K_NFE_FREQ, valueForKey(infoToks, "AC_NFE"), numCalledNFE);
+		safeParseAndSetProperty(var, VariantRec.EXOMES_63K_NFE_HOM, valueForKey(infoToks, "Hom_NFE"), numCalledNFE);
+		safeParseAndSetProperty(var, VariantRec.EXOMES_63K_NFE_HET, valueForKey(infoToks, "Het_NFE"), numCalledNFE);
 		
-		String nfeCountStr = valueForKey(infoToks, "AC_NFE");
-		if (nfeCountStr != null) {
-			Double freq = Double.parseDouble(nfeCountStr)/NumCalledNFE;
-			if(!freq.equals(Double.NaN))
-				var.addProperty(VariantRec.EXOMES_63K_NFE_FREQ, freq);
-		}
 		
-		String nfeHomStr = valueForKey(infoToks, "Hom_NFE");
-		if (nfeHomStr != null) {
-			Double freq = Double.parseDouble(nfeHomStr)/NumCalledNFE;
-			if(!freq.equals(Double.NaN))
-				var.addProperty(VariantRec.EXOMES_63K_NFE_HOM, freq);
-		}
-		
-		String nfeHetStr = valueForKey(infoToks, "Het_NFE");
-		if (nfeHetStr != null) {
-			Double freq = Double.parseDouble(nfeHetStr)/NumCalledNFE;
-			if(!freq.equals(Double.NaN))
-				var.addProperty(VariantRec.EXOMES_63K_NFE_HET, freq);
-		}
-	
 		//Other populations
 		
-		Double NumCalledOTH = Double.parseDouble(valueForKey(infoToks, "AN_OTH"));
+		Double numCalledOTH = Double.parseDouble(valueForKey(infoToks, "AN_OTH"));
+		safeParseAndSetProperty(var, VariantRec.EXOMES_63K_OTH_FREQ, valueForKey(infoToks, "AC_OTH"), numCalledOTH);
+		safeParseAndSetProperty(var, VariantRec.EXOMES_63K_OTH_HOM, valueForKey(infoToks, "Hom_OTH"), numCalledOTH);
+		safeParseAndSetProperty(var, VariantRec.EXOMES_63K_OTH_HET, valueForKey(infoToks, "Het_OTH"), numCalledOTH);
 		
-		String othCountStr = valueForKey(infoToks, "AC_OTH");
-		if (othCountStr != null) {
-			Double freq = Double.parseDouble(othCountStr)/NumCalledOTH;
-			var.addProperty(VariantRec.EXOMES_63K_OTH_FREQ, freq);
-		}
-		
-		String othHomStr = valueForKey(infoToks, "Hom_OTH");
-		if (othHomStr != null) {
-			Double freq = Double.parseDouble(othHomStr)/NumCalledOTH;
-			if(!freq.equals(Double.NaN))
-				var.addProperty(VariantRec.EXOMES_63K_OTH_HOM, freq);
-		}
-		
-		String othHetStr = valueForKey(infoToks, "Het_OTH");
-		if (othHetStr != null) {
-			Double freq = Double.parseDouble(othHetStr)/NumCalledOTH;
-			if(!freq.equals(Double.NaN))
-				var.addProperty(VariantRec.EXOMES_63K_OTH_HET, freq);
-		}
 		
 		//South Asian
+		Double numCalledSAS = Double.parseDouble(valueForKey(infoToks, "AN_SAS"));
+		safeParseAndSetProperty(var, VariantRec.EXOMES_63K_SAS_FREQ, valueForKey(infoToks, "AC_SAS"), numCalledSAS);
+		safeParseAndSetProperty(var, VariantRec.EXOMES_63K_SAS_HOM, valueForKey(infoToks, "Hom_SAS"), numCalledSAS);
+		safeParseAndSetProperty(var, VariantRec.EXOMES_63K_SAS_HET, valueForKey(infoToks, "Het_SAS"), numCalledSAS);
 		
-		Double NumCalledSAS = Double.parseDouble(valueForKey(infoToks, "AN_SAS"));
 		
-		String sasCountStr = valueForKey(infoToks, "AC_SAS");
-		if (sasCountStr != null) {
-			Double freq = Double.parseDouble(sasCountStr)/NumCalledSAS;
-			if(!freq.equals(Double.NaN))
-				var.addProperty(VariantRec.EXOMES_63K_SAS_FREQ, freq);
-		}
-		
-		String sasHomStr = valueForKey(infoToks, "Hom_SAS");
-		if (sasHomStr != null) {
-			Double freq = Double.parseDouble(sasHomStr)/NumCalledSAS;
-			if(!freq.equals(Double.NaN))
-				var.addProperty(VariantRec.EXOMES_63K_SAS_HOM, freq);
-		}
-		
-		String sasHetStr = valueForKey(infoToks, "Het_SAS");
-		if (sasHetStr != null) {
-			Double freq = Double.parseDouble(sasHetStr)/NumCalledSAS;
-			if(!freq.equals(Double.NaN))
-				var.addProperty(VariantRec.EXOMES_63K_SAS_HET, freq);
-		}	
-		
+		//Compute 'overall' het / hom frequency
 		
 		return true;
 	}

@@ -23,9 +23,9 @@ import net.sf.samtools.util.DateParser;
 import util.prereviewDataGen.AnalysisTypeConverter;
 import util.reviewDir.ManifestParseException;
 import util.reviewDir.ReviewDirectory;
+import util.text.TextTable;
 import buffer.variant.VariantPool;
 import buffer.variant.VariantRec;
-import util.text.TextTable;
 
 /**
  * A smallish utility to read QC data from qc.json files
@@ -301,7 +301,7 @@ public class QCJsonReader {
 //#CHRISK	
 private static void performMonthlyQA(List<String> paths, PrintStream out, AnalysisTypeConverter converter){
 		/*
-		 * TODO:4.6.2015-???
+		 * Monthly averages:
 		 * %Raw bases greater than Q20 --check
 		 * %Targeted bases with coverage >10 --###double check this one!!!
 		 * %Reads on target	--check
@@ -312,16 +312,16 @@ private static void performMonthlyQA(List<String> paths, PrintStream out, Analys
 		 * Ti/Tv ratio --check
 		 * 
 		 * This is only for tests Myeloid, Exomes, Aortos, and Periodic Fevers.
-		 * 
-		 * PLAN: go through the qc.json file and get as much information out of it as possible!!!
-		 * 
 		 */
+	
 		TextTable data = new TextTable(new String[]{"Bases>Q20,%ReadsOnTarget,%Targeted bases cov >10,%novel variants,Ti/Tv Ratio,het vars,Vars per target megabase,PCR dups rem"});
 		String[] qaData = new String[8];
 		List<String[]> periodicTests = new ArrayList<String[]>();
 		List<String[]> aortTests = new ArrayList<String[]>();
 		List<String[]> exomeTests = new ArrayList<String[]>();
 		List<String[]> myeloidTests = new ArrayList<String[]>();
+		
+		System.out.println("Calculating monthy QA metrics......");
 	
 	for(String path : paths){
 			File file = new File(path);
@@ -330,19 +330,18 @@ private static void performMonthlyQA(List<String> paths, PrintStream out, Analys
 		try {
 			File manifestFile = new File(path + "/sampleManifest.txt");
 			//System.out.println("manifest file path: "+manifestFile.getAbsolutePath());
-			Map<String, String> manifest = readManifest(manifestFile);
-			Date analysisDate = new Date( Long.parseLong(manifest.get("analysis.start.time")));
+			//Map<String, String> manifest = readManifest(manifestFile);
+
+			//Date analysisDate = new Date( Long.parseLong(manifest.get("analysis.start.time")));
+
 			String analysisType = analysisTypeFromManifest(manifestFile).replace(" (v. 1.0)", "");
 			if (converter != null) {
 				analysisType = converter.convert(analysisType);
 			}
-			if (!(analysisType.toLowerCase().contains("aort") || analysisType.toLowerCase().startsWith("mye") || analysisType.toLowerCase().contains("periodic") || analysisType.toLowerCase().contains("exome"))) {
+			if (!(analysisType.toLowerCase().contains("aort") || analysisType.toLowerCase().startsWith(" mye") || analysisType.toLowerCase().contains("periodic") || analysisType.toLowerCase().contains("exome"))) {
 					continue;
 			}
-		//Right now, I am only looking at one sample. This will need to be fixed to take more cases!!
-		//I'm thinking of using a python script to execute this one sample at a time, printing out a table, and then getting metrics from there
-		//Make an array that holds all of the sample arrays? then do the math from there?
-			//try {
+
 				obj = toJSONObj(path);
 				JSONObject rawbamMetrics = obj.getJSONObject("raw.bam.metrics");
 				Double preDupRem = rawbamMetrics.getDouble("total.reads");
@@ -388,8 +387,6 @@ private static void performMonthlyQA(List<String> paths, PrintStream out, Analys
 				continue;
 			}
 			
-			//System.out.println("periodic Array List: ");
-			//set up "keys" for each test? Throw above into individual if conditions so that it knows which array to put the below values into.
 			if ((analysisType.toLowerCase().contains("aort"))) {
 				System.out.println("analysis type: "+analysisType);
 				aortTests.add(qaData);
@@ -726,9 +723,9 @@ Number of Sanger Requests not Confirmed (Average per Sample)
 				//qcList.add("no.coverage", 100.0*(1.0-above0));
 				
 				if (analysisType.toLowerCase().contains("genome")) {
-					qcList.add("frac.above.200", 100.0*above200);
+					qcList.add("frac.above.200", above200);
 				} else {
-					qcList.add("frac.above.15", 100.0*above15);
+					qcList.add("frac.above.15", above15);
 				}
 //				
 				
@@ -840,11 +837,11 @@ Number of Sanger Requests not Confirmed (Average per Sample)
 				if (metric.equals("mean.coverage")) out.print("Average Sequencing Depth of Target Regions");
 				if (metric.equals("no.coverage")) out.print("Percent Targeted Bases with No Coverage");
 				if (metric.equals("frac.below.10")) out.print("Percent Targeted Bases with < 10x Coverage");
-				if (metric.equals("frac.above.10")) out.print("% Bases > 10 coverage");
-				if (metric.equals("frac.above.15")) out.print("% Bases > 15 coverage");
-				if (metric.equals("frac.above.200")) out.print("% Bases > 200 coverage");
+				if (metric.equals("frac.above.10")) out.print("Proportion of Bases > 10 coverage");
+				if (metric.equals("frac.above.15")) out.print("Proportion of Bases > 15 coverage");
+				if (metric.equals("frac.above.200")) out.print("Proportion of Bases > 200 coverage");
 				if (metric.equals("bases.above.q30")) out.print("Percent Bases with Base Quality > 30");
-				if (metric.equals("frac.above.0")) out.print("Percent Targeted Bases Covered");
+				if (metric.equals("frac.above.0")) out.print("Proportion Targeted Bases Covered");
 				if (metric.equals("targeted.bases")) out.print("Targeted Bases");
 				//if (metric.equals("percent.dups")) out.print("% PCR duplicates removed");
 				//if (metric.equals("reads.on.target")) out.print("Percent Sequence Reads Mapped to Reference");
@@ -896,11 +893,9 @@ Number of Sanger Requests not Confirmed (Average per Sample)
 				Double above20 = fracAbove.getDouble(20);
 				Double above50 = fracAbove.getDouble(50);
 				qcList.add("mean.coverage", mean);
-				qcList.add("frac.above.0", above0);
-				qcList.add("frac.above.20", above20);
-				qcList.add("frac.above.50", above50);
-				
-				
+				//qcList.add("frac.above.0", above0/100);
+				qcList.add("frac.above.20", above20/100);
+				qcList.add("frac.above.50", above50/100);
 				
 				JSONObject rawBam = obj.getJSONObject("raw.bam.metrics");
 				Double rawReadCount = rawBam.getDouble("total.reads");
@@ -922,6 +917,8 @@ Number of Sanger Requests not Confirmed (Average per Sample)
 				Double varCount = Double.NaN;
 				Double tstv = Double.NaN;
 				Double knownSnps = Double.NaN;
+				Double totalIns = Double.NaN;//chrisk
+				Double totalDels = Double.NaN;//chrisk
 				Double novelFrac = Double.NaN;
 				JSONObject variants = null;
 				try {
@@ -945,6 +942,14 @@ Number of Sanger Requests not Confirmed (Average per Sample)
 
 				}
 				indelCount = (int)(varCount - snpCount);
+				try {
+					knownSnps = variants.getDouble("total.known");
+					qcList.add("total.known", knownSnps);
+				}
+				catch (JSONException e) {
+
+				}
+
 //				try {
 //					knownSnps = variants.getDouble("total.known");
 //					qcList.add("known.snps", knownSnps);
@@ -952,7 +957,21 @@ Number of Sanger Requests not Confirmed (Average per Sample)
 //				catch (JSONException e) {
 //
 //				}
-				
+		try {
+			totalIns = variants.getDouble("total.insertions");
+			qcList.add("total.insertions", totalIns);
+		}
+		catch (JSONException e) {
+
+		}
+		try {
+			totalDels = variants.getDouble("total.deletions");
+			qcList.add("total.deletions", totalIns);
+		}
+		catch (JSONException e) {
+
+		}
+
 				if (snpCount > 0) {
 					novelFrac = 1.0 - knownSnps/snpCount;
 				}
@@ -1024,7 +1043,10 @@ Number of Sanger Requests not Confirmed (Average per Sample)
 				
 				if (metric.equals("total.snps")) out.print("Total SNPs");				
 				if (metric.equals("total.vars")) out.print("Total variants");
-				if (metric.equals("known.snps")) out.print("Known SNPs");
+				if (metric.equals("total.known")) out.print("Known SNPs");
+				if (metric.equals("novel.vars")) out.print("Novel variants");
+				if (metric.equals("total.insertions")) out.print("Total insertions");
+				if (metric.equals("total.deletions")) out.print("Total deletions");
 				if (metric.equals("total.tt.ratio")) out.print("Overall Ti/Tv");
 				if (metric.equals("known.tt")) out.print("Known Ti/Tv");
 				if (metric.equals("novel.tt")) out.print("Novel Ti/Tv");
@@ -1047,6 +1069,8 @@ Number of Sanger Requests not Confirmed (Average per Sample)
 				out.print(formattedList);
 				
 				if (metric.equals("total.snps")
+						|| metric.equals("total.vars")
+						|| metric.equals("total.known")
 						|| metric.equals("total.vars")
 						|| metric.equals("known.tt")
 						|| metric.equals("novel.tt")
@@ -1074,6 +1098,15 @@ Number of Sanger Requests not Confirmed (Average per Sample)
 				if (metric.startsWith("frac.above")) {
 					out.print("Coverage\tNULL");
 				}
+				if (metric.startsWith("novel.vars")){
+					out.print("Variant metrics\tvariant.metrics");
+				}
+				if (metric.startsWith("total.insertions")){
+					out.print("Variant metrics\tvariant.metrics");
+				}
+				if (metric.startsWith("total.deletions")){	
+					out.print("Variant metrics\tvariant.metrics");
+				}
 				out.println();
 			}
 		}
@@ -1081,7 +1114,7 @@ Number of Sanger Requests not Confirmed (Average per Sample)
 	
 	//Nicely format a long list of qc values
 	private static String formatQCListVals(List<Double> vals) {
-		DecimalFormat formatter = new DecimalFormat("0.0##");
+		DecimalFormat formatter = new DecimalFormat("0.0####");
 		if (vals.size() < 3) {
 			return "Not enough data (" + vals.size() + " elements)";
 		}
@@ -1188,8 +1221,8 @@ Number of Sanger Requests not Confirmed (Average per Sample)
 			
 			out.println("VCF Variants:");
 			out.println("\tTotal variants\tSNPs\tIndels\tHets");
-			out.println(dirA.getSampleName() +"\t" + vcfVarsA.size() + '\t' + vcfVarsA.countSNPs() + "\t" + (vcfVarsA.countInsertions()+vcfVarsA.countDeletions()) + "\t" + ("" + 100.0*vcfVarsA.countHeteros()/vcfVarsA.size()).substring(0, 5));
-			out.println(dirB.getSampleName() +"\t" + vcfVarsB.size() + '\t' + vcfVarsB.countSNPs() + "\t" + (vcfVarsB.countInsertions()+vcfVarsA.countDeletions()) + "\t" + ("" + 100.0*vcfVarsA.countHeteros()/vcfVarsB.size()).substring(0, 5));
+			out.println(dirA.getSampleName() +"\t" + vcfVarsA.size() + '\t' + vcfVarsA.countSNPs() + "\t" + (vcfVarsA.countInsertions()+vcfVarsA.countDeletions()) + "\t" + ("" + 100.0*vcfVarsA.countHeteros()/vcfVarsA.size()));
+			out.println(dirB.getSampleName() +"\t" + vcfVarsB.size() + '\t' + vcfVarsB.countSNPs() + "\t" + (vcfVarsB.countInsertions()+vcfVarsA.countDeletions()) + "\t" + ("" + 100.0*vcfVarsA.countHeteros()/vcfVarsB.size()));
 			
 			if (vcfVarsA.size() != vcfVarsB.size()) {
 				out.println("****************************************");
@@ -1207,7 +1240,7 @@ Number of Sanger Requests not Confirmed (Average per Sample)
 				out.println("******************\n WARNING: VCF variant count (" + vcfVarsB.size() + ") not equal to CSV variant count  (" + csvVarsB.size() + ") in sample " + sampleBId);
 			}
 			
-			
+			compareForKey(csvVarsA, csvVarsB, VariantRec.MITOMAP_FREQ, out);
 			compareForKey(csvVarsA, csvVarsB, VariantRec.POP_FREQUENCY, out);
 			compareForKey(csvVarsA, csvVarsB, VariantRec.EXOMES_FREQ, out);
 			compareForKey(csvVarsA, csvVarsB, VariantRec.GENE_NAME, out);

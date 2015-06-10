@@ -1,3 +1,5 @@
+This is from the new branch!
+
 Pipeline is a tool to chain together and execute various modular operations described by an .xml file. Elements in the input file are converted into Java objects, and objects can refer to other objects created in the same file. While in principle Pipeline can be used to chain together operations of any sort, it is currently designed to link together frequently-performed bioinformatics tasks, such as aligning sequence data to a reference and calling variants. 
 
 Compiling & Installing
@@ -18,13 +20,16 @@ Basic usage
 -----------
 
 Typical pipeline usage involves invoking pipeline and giving a single input file as an argument. For instance:
+
     java -jar pipeline.jar my-input-file.xml
     
 This will use the current working directory as the 'home' directory, to which all files will be written (with a few operator-specific exceptions, such as review directory creation). To specify an alternative home directory, use:
+
     java -jar pipeline.jar -home path/to/some/dir  my-input-file.xml
     
-Many pipeline operators require some configuration - for instance, the path to a resource file or executable. These are stored in a 'properties' file. By default, Pipeline will look for the properties file in $HOME/.pipelineprops.xml, but you can specify any alternative by using the -props options, like this:
-  java -jar pipeline -props pipeline_properties.xml my-input-file.xml
+Many pipeline operators require some configuration - for instance, the path to a resource file or executable. These are stored in a 'properties' file. By default, Pipeline will look for the properties file in `$HOME/.pipelineprops.xml`, but you can specify any alternative by using the -props options, like this:
+
+    java -jar pipeline -props pipeline_properties.xml my-input-file.xml
   
     
 

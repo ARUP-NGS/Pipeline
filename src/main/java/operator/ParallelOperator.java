@@ -3,13 +3,10 @@ package operator;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
-
-import javax.swing.SwingWorker;
 
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -62,6 +59,14 @@ public class ParallelOperator extends Operator {
 		} //Wait until all tasks have completed
 
 		
+		//Examine all wrapped operators, see if any threw an exception, if so, throw it from here
+		for(OpWrapper op : wraps) {
+			if (op.ex != null) {
+				Logger.getLogger(Pipeline.primaryLoggerName).warning("Detected failed operator in ParallelOp: " + op.op.getObjectLabel() + " threw exception " + op.ex.getLocalizedMessage());
+				throw new OperationFailedException("Operator " + op.op.getObjectLabel() + " failed: " + op.ex.getLocalizedMessage(), op.op);
+			}
+		}
+		
 		now = new Date();
 		long endMillis = System.currentTimeMillis();
 		long elapsedMillis = endMillis - beginMillis;
@@ -100,21 +105,28 @@ public class ParallelOperator extends Operator {
 	 * @author brendan
 	 *
 	 */
-	class OpWrapper extends SwingWorker {
+	class OpWrapper implements Runnable {
 		
 		private Operator op;
+		Exception ex = null; //If an exception is thrown
 		
 		public OpWrapper(Operator op) {
 			this.op = op;
 		}
 		
 		@Override
-		protected Object doInBackground() throws Exception {
+		public void run() {
 			
-			op.performOperation();
+			try {
+				op.performOperation();
+			} catch (OperationFailedException e) {
+				this.ex = e;
+			} catch (Exception e2) {
+				this.ex = e2;
+			}
 			completedOperators++;
 			op.getPipelineOwner().fireMessage("Operator " + op.getObjectLabel() + " has completed (" + completedOperators + " of " + operators.size() + ")");
-			return op;
+			
 		}
 		
 	}

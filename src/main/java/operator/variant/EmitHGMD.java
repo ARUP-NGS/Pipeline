@@ -1,9 +1,10 @@
 package operator.variant;
 
+import java.io.IOException;
 import java.io.PrintStream;
 
-import buffer.variant.VariantRec;
 import util.vcfParser.VCFParser.GTType;
+import buffer.variant.VariantRec;
 
 public class EmitHGMD extends VariantPoolWriter {
 
@@ -33,6 +34,12 @@ public class EmitHGMD extends VariantPoolWriter {
 			
 			out.println(geneName + "\t" + pDot + "\t" + cDot + "\t" + hetStr + "\t" + depth + "\t" + quality + "\t" + hgmdHit);
 		}
+	}
+
+	@Override
+	public void writeFooter(PrintStream outputStream) throws IOException {
+		// TODO Auto-generated method stub
+		
 	}
 
 	

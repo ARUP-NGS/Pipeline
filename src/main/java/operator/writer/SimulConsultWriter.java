@@ -1,10 +1,11 @@
 package operator.writer;
 
+import java.io.IOException;
 import java.io.PrintStream;
 
 import operator.variant.VariantPoolWriter;
-import buffer.variant.VariantRec;
 import util.vcfParser.VCFParser.GTType;
+import buffer.variant.VariantRec;
 
 public class SimulConsultWriter extends VariantPoolWriter {
 
@@ -59,6 +60,12 @@ public class SimulConsultWriter extends VariantPoolWriter {
 		outputStream.print("\t"); //42 totDepthM
 		outputStream.print("\t"); //43 totDepthM
 		outputStream.println();
+	}
+
+	@Override
+	public void writeFooter(PrintStream outputStream) throws IOException {
+		// TODO Auto-generated method stub
+		
 	}
 
 }
