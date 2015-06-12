@@ -872,6 +872,13 @@ public class VariantRec {
 	//added for ScSNV
 	public static final String scSNV_ada = "scSNV.ada_score";
 	public static final String scSNV_rf = "scSNV.rf_score";
+	//added for clinvar
+	public static final String CLNSIG = "clinvar.clnsig"; 			//(clinical significance)
+	public static final String CLNDBN = "clinvar.clndbn"; 			//(disease name)
+	public static final String CLNDSDBID = "clinvar.clndsdbid"; 	//(database id)
+	public static final String CLNREVSTAT = "clinvar.clnrevstat"; 	//(review status )
+	public static final String CLNDSDB = "clinvar.clndsdb"; 		//(clinical database)
+
 	
 }
 

@@ -103,7 +103,7 @@ public abstract class AbstractTabixAnnotator extends Annotator {
 			if(iter != null) {
 				try {
 					String val = iter.next();
-
+					System.out.println(val);
 					while(val != null) {
 						String[] toks = val.split("\t");
 						if (toks.length > 6) {
@@ -114,7 +114,7 @@ public abstract class AbstractTabixAnnotator extends Annotator {
 							queryResultVar = VCFParser.normalizeVariant(queryResultVar);
 
 							//Added this to throw an error if the DB has multiple Alt on a single line
-							check_variant(queryResultVar.getAlt());
+							//check_variant(queryResultVar.getAlt());
 
 							//variant we want to annotate
 							for (int i = 0; i < varToAnnotate.getAllAlts().length; i++) {

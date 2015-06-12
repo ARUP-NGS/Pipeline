@@ -473,7 +473,7 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
 
 							//Make sure the (normalized) variant we get from the tabix query matches the
 							//variant we want to annotate
-							check_variant(queryResultVar.getAlt());
+							//check_variant(queryResultVar.getAlt());
 							//Make sure the (normalized) variant we get from the tabix query matches the
 							//variant we want to annotate
 							for (int i = 0; i < varToAnnotate.getAllAlts().length; i++) {
