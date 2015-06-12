@@ -11,6 +11,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import util.Interval;
 import util.coverage.CoverageCalculator.IntervalCovSummary;
 import util.reviewDir.ManifestParseException;
 import util.reviewDir.ReviewDirectory;
@@ -90,6 +91,9 @@ public class CovCalcApp {
 		
 	}
 
+	private static int DEFAULT_THREADS = 8;
+	private static String DEFAULT_FORMAT = "interval";
+
 	/**
 	 * If arg ends with .bam, return arg. Else, assume arg is the name of a review directory,
 	 * and file the path of the bam inside of it, and return that
@@ -115,22 +119,61 @@ public class CovCalcApp {
 	}
 	
 	public static void main(String[] args) throws IOException, InterruptedException {
+		int threads;
+		threads = DEFAULT_THREADS;
+		String format = DEFAULT_FORMAT;
 		
 		if (args.length==0 || args[0].startsWith("-h")) {
-			System.out.println("Coverage Calculator utility, v0.03");
-			System.out.println("\n Usage: java -jar [bed file] [bam file] [more bam files...]");
-			System.out.println("\n Emits mean depth of coverage for all intervals in BED file to output.");
+			System.err.println("Coverage Calculator utility, v0.03");
+			System.err.println("\n Usage: java -jar [bed file] [bam file] [more bam files...] [-t/--threads numThreads] [-f/--format outputFormat].");
+			System.err.println("If -t/--threads flag is used, it overrides the default number of threads " + DEFAULT_THREADS + ".");
+			System.err.println("Setting -f/--format to 'bed', overrides the default format used (interval).");
+			System.err.println("\n Emits mean depth of coverage for all intervals in BED file to output.");
 			return;
 		}
-		
 		boolean normalizeDepths = false;
-		for(String arg : args) {
-			if (arg.startsWith("-norm") || arg.startsWith("--norm")) {
+		for(int i = 0; i < args.length; i++) {
+			if (args[i].startsWith("-norm") || args[i].startsWith("--norm")) {
 				normalizeDepths = true;
 			}
+			if(args[i].startsWith("--threads") || args[i].equals("-t")){
+				i++;
+				try {
+					threads = Integer.parseInt(args[i]);
+					System.err.println("Number of threads set to " + threads + ", overriding default value of " + DEFAULT_THREADS + ".");
+				}
+				catch(NumberFormatException e){
+				System.err.println("Could not correctly parse number of threads from --threads argument " + args[i] + ". Switching back to default value of " + threads + ".");
+				}
+			}
+			if(args[i].startsWith("--format") || args[i].equals("-f")){
+				i++;
+				if(args[i].startsWith("bed"))
+					format = "bed";
+				else if(args[i].startsWith("int")){
+					format = "interval";
+				}
+				else {
+					try {
+						throw new IllegalArgumentException("Format tag value invalid: " + args[i] + ". Valid arguments: bed, interval");
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+			}
 		}
+		/*
+		for(int i = 0; i < args.length; i++){
+			try {
+				threads = Integer.parseInt(args[i]);
+			}
+			catch(NumberFormatException e){
+				//
+			}
+		}
+		*/
 		
-		int threads = 8;
 		ThreadPoolExecutor pool = (ThreadPoolExecutor) Executors.newFixedThreadPool(threads);
 		
 		
@@ -144,7 +187,15 @@ public class CovCalcApp {
 		//Create a CovRunner for each inputBAM and add it to the thread pool, they will
 		//run automatically
 		for(int i=1; i<args.length; i++) {
-			if (args[i].startsWith("-")) {
+			if(args[i].equals("-t") || args[i].startsWith("--threads")){
+				i++;
+				continue;  // Step over two - both the flag and the value.
+			}
+			else if (args[i].startsWith("--format")){
+				i++;
+				continue;
+			}
+			else if (args[i].startsWith("-")) {
 				continue;
 			}
 			
@@ -176,9 +227,13 @@ public class CovCalcApp {
 		
 		DecimalFormat formatter = new DecimalFormat("##0.0##");
 		
-		
 		for(int i=0; i<intervals.getIntervalCount(); i++) {
-			System.out.print(runners.get(0).getResults().get(i).chr + ":" + runners.get(0).getResults().get(i).interval + "\t");
+			if(format.equals("bed")){
+				IntervalCovSummary tmpIntervalCovSummary = runners.get(0).getResults().get(i);
+				System.out.print(tmpIntervalCovSummary.chr + "\t" + tmpIntervalCovSummary.interval.begin + "\t" + tmpIntervalCovSummary.interval.end + "\t");
+			}
+			else
+				System.out.print(runners.get(0).getResults().get(i).chr + ":" + runners.get(0).getResults().get(i).interval + "\t");
 			for(CovRunner cr : worked) {
 				if (normalizeDepths) {
 					System.out.print(formatter.format(cr.getResults().get(i).meanDepth/cr.grandMeanDepth) + "\t");
@@ -194,7 +249,7 @@ public class CovCalcApp {
 		Date end= new Date();
 		long elapsed = end.getTime() - start.getTime() ;
 		int elapsedSeconds = (int)(elapsed / 1000);
-		System.out.println("\n Elapsed time: " + elapsedSeconds + " seconds" );
+		System.err.println("\n Elapsed time: " + elapsedSeconds + " seconds" );
 
 		
 	}
