@@ -103,7 +103,6 @@ public abstract class AbstractTabixAnnotator extends Annotator {
 			if(iter != null) {
 				try {
 					String val = iter.next();
-					System.out.println(val);
 					while(val != null) {
 						String[] toks = val.split("\t");
 						if (toks.length > 6) {

@@ -48,7 +48,6 @@ public class ClinVarAnnotator extends AbstractTabixAnnotator {
     @Override
     protected boolean addAnnotationsFromString(VariantRec var, String val) {
         String[] toks = val.split("\t")[7].split(";");
-
         if (val.split("\t")[7].contains("=")) {
             var.addAnnotation(VariantRec.CLNSIG, toks[0].split("=")[1]);
             var.addAnnotation(VariantRec.CLNDBN, toks[1].split("=")[1]);
