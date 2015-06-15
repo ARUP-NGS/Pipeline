@@ -11,6 +11,9 @@ import json.JSONObject;
 
 public class HttpUtils {
 	
+	static final int CONNECT_TIMEOUT = 600; //Time to wait until done reading response, in seconds
+	static final int READ_TIMEOUT = 1200; //Time to wait until done reading response, in seconds
+	
 	public static String HttpPostJSON(String url, JSONObject js) throws IOException{
 		String content = js.toString();
 		URL add = new URL(url);
@@ -19,6 +22,8 @@ public class HttpUtils {
 		conn.setUseCaches(false);
 		conn.setDoInput(true);
 		conn.setDoOutput(true);
+		conn.setConnectTimeout(CONNECT_TIMEOUT);
+		conn.setReadTimeout(READ_TIMEOUT);
 		conn.setRequestProperty("Content-Length", "" + content.length());
 		conn.setRequestProperty("Content-Type", "application/json");
 		

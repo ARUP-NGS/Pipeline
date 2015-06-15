@@ -29,6 +29,7 @@ import com.mongodb.MongoClientURI;
 public class VariantDBUploader extends Operator {
 
 	public static final String SAMPLEID = "sampleID";
+	public static final String GROUPID = "groupID";
 	public static final String SERVER_ADDRS="mongo.server.addrs";
 	public static final String MONGO_VARDB_NAME="mongo.vardb.name";
 	public static final String MONGO_VAR_COLLECTION_NAME="mongo.var.collection.name";
@@ -40,6 +41,7 @@ public class VariantDBUploader extends Operator {
 	private MongoClient mongoClient = null; 
 	private VariantImporter importer = null;
 	private String sampleID = null;
+	private String groupID = null;
 	
 	@Override
 	public void performOperation() throws OperationFailedException,
@@ -49,7 +51,7 @@ public class VariantDBUploader extends Operator {
 		
 		try {
 			
-			importer.importPool(variants, System.getProperty("user.name"), sampleID);
+			importer.importPool(variants, System.getProperty("user.name"), sampleID, groupID);
 			
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -85,7 +87,11 @@ public class VariantDBUploader extends Operator {
 		if (sampleID == null) {
 			throw new IllegalArgumentException("Must specify a sample id using attribute " + SAMPLEID);
 		}
-				
+		groupID = this.getAttribute(GROUPID);
+		if (groupID == null) {
+			throw new IllegalArgumentException("Must specify a group id using attribute " + GROUPID);
+		}
+		
 		//Initialize MongoDB connection
 		//Grab server address / port list
 		//We expect a comma-separated list of ipaddress:port names, like 12.43.123.4321:27017,11.22.33.44:8888 

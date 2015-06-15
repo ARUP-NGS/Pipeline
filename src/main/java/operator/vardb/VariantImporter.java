@@ -29,6 +29,7 @@ import com.mongodb.client.model.Filters;
 public class VariantImporter {
 
 	private static final String SET_ID = "set_id";
+	private static final String GROUP_ID = "group_id";
 	private static final String ERROR = "error_message";
 	private static final String COMPLETE = "complete";
 	private static final String PERM_LOCK = "perm_lock";
@@ -63,7 +64,7 @@ public class VariantImporter {
 	 * @param vars
 	 * @throws Exception 
 	 */
-	public void importPool(VariantPool vars, String userID, String setID) throws Exception {
+	public void importPool(VariantPool vars, String userID, String setID, String groupID) throws Exception {
 		
 		MongoCollection<Document> metadataCollection = database.getCollection(metadataCollectionName);
 		
@@ -85,6 +86,7 @@ public class VariantImporter {
 									.append(DATE, new Date()));
 		
 		metadata.append(SET_ID, setID);
+		metadata.append(GROUP_ID, groupID);
 		metadataCollection.insertOne(metadata);
 		
 		Object metadataDocID = metadata.get("_id");
