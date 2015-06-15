@@ -120,13 +120,13 @@ public class HMMSimulation {
 		SparseEmissionProbModel epModel = new SparseEmissionProbModel(3);
 		AbstractRealDistribution[] ep1 = new AbstractRealDistribution[]{
 			new NormalDistribution(1.0, 1.5),
-			new NormalDistribution(4.0, 1.5),
-			new NormalDistribution(7.0, 1.0)
+			new NormalDistribution(2.0, 1.5),
+			new NormalDistribution(2.5, 1.0)
 		};
 		AbstractRealDistribution[] ep2 = new AbstractRealDistribution[]{
-				new NormalDistribution(1.0, 0.5),
-				new NormalDistribution(4.0, 0.5),
-				new NormalDistribution(7.0, 1.0)
+				new NormalDistribution(2.0, 0.5),
+				new NormalDistribution(3.0, 0.5),
+				new NormalDistribution(4.0, 1.0)
 		};
 		
 		

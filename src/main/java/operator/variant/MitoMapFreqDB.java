@@ -44,7 +44,6 @@ public class MitoMapFreqDB {
 		String queryStr = contig + ":" + pos + "-" + (pos);
 		try {
 			TabixReader.Iterator iter = reader.query(queryStr);
-System.out.println("iter: "+iter);
 			if(iter != null) {
 				String str = iter.next();
 					while(str != null) {

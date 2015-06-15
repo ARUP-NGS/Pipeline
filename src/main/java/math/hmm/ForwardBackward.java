@@ -21,10 +21,10 @@ public class ForwardBackward {
 	final Double TINY_POSITIVE = 1E-200; //Really small non-zero value
 	final HiddenMarkovModel hmm; //Transition and emission probs
 	final List<Observation> obs; //Observation and position info
+	private double maxObsVal = Double.MAX_VALUE;
 	
 	//Cap observations values (normalized read counts) to the given number to avoid numerical issues
 	private Double maxObservationVal = 10.0;
-	
 	private List<RealVector> smoothed; //Final results, combines forward and backward probs
 	
 	
@@ -123,6 +123,7 @@ public class ForwardBackward {
 				density = TINY_POSITIVE;
 				failures++;
 			}
+			oval = Math.min(oval, getMaxObsVal());
 			
 			double newVal = newState.getEntry(i)*density;
 			
@@ -183,6 +184,13 @@ public class ForwardBackward {
 		return backwards;
 	}
 
+	public double getMaxObsVal() {
+		return maxObsVal;
+	}
+
+	public void setMaxObsVal(double maxObsVal) {
+		this.maxObsVal = maxObsVal;
+	}
 	
 	private RealVector computeBackwardStep(RealVector state, int dist, Observation o) {
 		assertValidVector(state);
@@ -204,6 +212,7 @@ public class ForwardBackward {
 			if (oval==0.0) {
 				oval = TINY_POSITIVE;
 			}
+			oval = Math.min(oval, getMaxObsVal());
 			
 			oval = Math.min(maxObservationVal, oval);
 			double density = emissionDists[i].density(oval);
