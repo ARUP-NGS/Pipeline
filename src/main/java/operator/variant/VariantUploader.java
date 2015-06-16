@@ -82,7 +82,7 @@ public class VariantUploader extends Operator {
 			}
 			
 			json.put("variant.list", list);
-			System.out.println("\n\n" + json + "\n\n");
+			//System.out.println("\n\n" + json + "\n\n");
 			String result = HttpUtils.HttpPostJSON(uploadURL, json);
   					
 			

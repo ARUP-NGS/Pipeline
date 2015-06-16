@@ -19,6 +19,8 @@ public class HttpUtils {
 		conn.setUseCaches(false);
 		conn.setDoInput(true);
 		conn.setDoOutput(true);
+		conn.setConnectTimeout(12000);
+		conn.setReadTimeout(12000);
 		conn.setRequestProperty("Content-Length", "" + content.length());
 		conn.setRequestProperty("Content-Type", "application/json");
 		
