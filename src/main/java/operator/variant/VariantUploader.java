@@ -28,6 +28,7 @@ public class VariantUploader extends Operator {
 	public static final String SAMPLEID = "sampleID";
 	public static final String ACCN = "accession";
 	public static final String RESULTDTA = "resultableDTA";
+	public static final String GZIP = "gzip";
 	protected VariantPool variants = null;
 	
 	protected String uploadURL = null;
@@ -82,8 +83,15 @@ public class VariantUploader extends Operator {
 			}
 			
 			json.put("variant.list", list);
-			System.out.println("\n\n" + json + "\n\n");
-			String result = HttpUtils.HttpPostJSON(uploadURL, json);
+			//System.out.println("\n\n" + json + "\n\n");
+			
+			
+			boolean gzip = false;
+			String gZipStr = getAttribute(GZIP);
+			if (gZipStr != null) {
+				gzip = Boolean.parseBoolean( gZipStr );
+			}
+			String result = HttpUtils.HttpPostJSON(uploadURL, json, gzip);
   					
 			
 			logger.info("Uploading " + vars.size() + " variants to " + uploadURL);
@@ -159,3 +167,4 @@ public class VariantUploader extends Operator {
 	}
 
 }
+
