@@ -95,7 +95,7 @@ public class SnpEffGeneAnnotate extends Annotator {
 
 
 		//Next, run snpeff using the input file we just made
-		String command = javaHome + " -Xmx36g -jar " + snpEffDir + "/snpEff.jar -c " + snpEffDir + "/snpEff.config " + snpEffGenome + " -hgvs -nostats -ud " + updownStreamLength + " -spliceSiteSize " + spliceSiteSize + " " + input.getAbsolutePath();
+		String command = javaHome + " -Xmx16g -jar " + snpEffDir + "/snpEff.jar -c " + snpEffDir + "/snpEff.config " + snpEffGenome + " -hgvs -nostats -ud " + updownStreamLength + " -spliceSiteSize " + spliceSiteSize + " " + input.getAbsolutePath();
 		Logger.getLogger(Pipeline.primaryLoggerName).info("Executing command: " + command);
 		try {
 			
