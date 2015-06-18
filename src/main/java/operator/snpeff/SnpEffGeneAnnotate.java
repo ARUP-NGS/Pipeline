@@ -36,7 +36,10 @@ public class SnpEffGeneAnnotate extends Annotator {
 	public static final String PERFORM_MITO_SUB = "perform.mito.sub";	
 	public static final String UPDOWNSTREAM_LENGTH = "updownstream.length";
 	public static final String SPLICESITE_SIZE = "spliceSite.size";
-	
+	public static final String ALT_JAVA_HOME = "alt.java.home";
+
+	protected String javaHome = null;
+	protected String altJavaHome = null;
 	protected String snpEffDir = null;
 	protected String snpEffGenome = null;
 	protected int updownStreamLength = 1000;
@@ -92,7 +95,7 @@ public class SnpEffGeneAnnotate extends Annotator {
 
 
 		//Next, run snpeff using the input file we just made
-		String command = "java -Xmx36g -jar " + snpEffDir + "/snpEff.jar -c " + snpEffDir + "/snpEff.config " + snpEffGenome + " -hgvs -nostats -ud " + updownStreamLength + " -spliceSiteSize " + spliceSiteSize + " " + input.getAbsolutePath(); 
+		String command = javaHome + " -Xmx36g -jar " + snpEffDir + "/snpEff.jar -c " + snpEffDir + "/snpEff.config " + snpEffGenome + " -hgvs -nostats -ud " + updownStreamLength + " -spliceSiteSize " + spliceSiteSize + " " + input.getAbsolutePath();
 		Logger.getLogger(Pipeline.primaryLoggerName).info("Executing command: " + command);
 		try {
 			
@@ -449,8 +452,17 @@ public class SnpEffGeneAnnotate extends Annotator {
 	public void initialize(NodeList children) {
 		super.initialize(children);
 		
-		snpEffDir = this.getPipelineProperty(SNPEFF_DIR);
+		altJavaHome = this.getAttribute(ALT_JAVA_HOME);
 		
+		if (altJavaHome == null) {
+			javaHome = "java";
+		}
+		else {
+			javaHome = altJavaHome;
+		}
+			
+		snpEffDir = this.getPipelineProperty(SNPEFF_DIR);
+
 		if (snpEffDir == null) {
 			snpEffDir = this.getAttribute(SNPEFF_DIR);
 			if (snpEffDir == null) {
