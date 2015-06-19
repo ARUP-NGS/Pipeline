@@ -302,9 +302,7 @@ public class BamWindow {
 	private void expand() {
 		if (nextRecord == null)
 			return;
-		if(nextRecord.getMappingQuality() < minMQ)
-			return;
-		//System.out.println("Pushing record starting at : " + nextRecord.getAlignmentStart());
+
 		records.add(new MappedRead(nextRecord));
 		
 		//Find next suitable record
@@ -314,8 +312,11 @@ public class BamWindow {
 		
 		
 		//Automagically skip unmapped reads and reads with unmapped mates
-		while(nextRecord != null && (nextRecord.getMappingQuality()==0)) {
-			nextRecord = recordIt.hasNext() 
+		while(nextRecord != null && (nextRecord.getMappingQuality() < minMQ)) {
+			if(nextRecord.getMappingQuality() < minMQ){
+				System.err.println("Record failed for MQ" + nextRecord.getMappingQuality() + " < minMQ: " + minMQ);
+			}
+			nextRecord = recordIt.hasNext()
 					? recordIt.next()
 					: null;
 		}
