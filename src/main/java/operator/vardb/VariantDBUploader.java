@@ -31,7 +31,7 @@ public class VariantDBUploader extends Operator {
 	public static final String SAMPLEID = "sampleID";
 	public static final String GROUPID = "groupID";
 	public static final String SERVER_ADDRS="mongo.server.addrs";
-	public static final String MONGO_VARDB_NAME="mongo.vardb.name";
+	public static final String MONGO_VARDB_NAME ="mongo.vardb.name";
 	public static final String MONGO_VAR_COLLECTION_NAME="mongo.var.collection.name";
 	public static final String MONGO_METADATA_COLLECTION_NAME = "mongo.metadata.collection.name";
 	
@@ -42,12 +42,15 @@ public class VariantDBUploader extends Operator {
 	private VariantImporter importer = null;
 	private String sampleID = null;
 	private String groupID = null;
+	private String collectionName;
+	private String metadataCollectionName;
+	private String databaseName;
 	
 	@Override
 	public void performOperation() throws OperationFailedException,
 			JSONException, IOException {
 		
-		Logger.getLogger(Pipeline.primaryLoggerName).info("Importing " + variants.size() + " variants into Mongo db.");
+		Logger.getLogger(Pipeline.primaryLoggerName).info("Importing " + variants.size() + " variants into Mongo db: " + mongoClient.getAddress().toString() + ", db: " + databaseName + " coll: " + collectionName);
 		
 		try {
 			
@@ -100,17 +103,17 @@ public class VariantDBUploader extends Operator {
 			throw new IllegalArgumentException("The server address for MongoDB must be supplied as a pipeline property.");
 		}
 		
-		String databaseName = this.getPipelineProperty(MONGO_VARDB_NAME);
+		databaseName = this.getPipelineProperty(MONGO_VARDB_NAME);
 		if (databaseName==null) {
 			throw new IllegalArgumentException("The name of the variant database must be supplied as a pipeline property.");
 		}
 		
-		String collectionName = this.getPipelineProperty(MONGO_VAR_COLLECTION_NAME);
+		collectionName = this.getPipelineProperty(MONGO_VAR_COLLECTION_NAME);
 		if (collectionName==null) {
 			throw new IllegalArgumentException("The name of the variant collection must be supplied as a pipeline property.");
 		}
 		
-		String metadataCollectionName = this.getPipelineProperty(MONGO_METADATA_COLLECTION_NAME);
+		metadataCollectionName = this.getPipelineProperty(MONGO_METADATA_COLLECTION_NAME);
 		if (metadataCollectionName==null) {
 			throw new IllegalArgumentException("The name of the variant metadata collection must be supplied as a pipeline property.");
 		}
