@@ -42,22 +42,8 @@ public class BamWindow {
 	private int minMQ = 0;
 
 	public BamWindow(File bamFile, int minMQ) {
-		this.bamFile = bamFile;
+		this(bamFile);
 		this.minMQ = minMQ;
-		
-		SAMFileReader.setDefaultValidationStringency(ValidationStringency.SILENT);
-		samReader = new SAMFileReader(bamFile);
-		samReader.setValidationStringency(ValidationStringency.SILENT);
-		SAMFileHeader header = samReader.getFileHeader();
-		sequenceDict = header.getSequenceDictionary();
-		contigMap = new HashMap<String, Integer>();
-		for(SAMSequenceRecord seqRec : sequenceDict.getSequences()) {
-			contigMap.put(seqRec.getSequenceName(), seqRec.getSequenceLength());
-		}
-		
-		
-		recordIt = samReader.iterator();
-		nextRecord = recordIt.next();
 	}
 	
 	public BamWindow(File bamFile) {
@@ -119,9 +105,9 @@ public class BamWindow {
 		if(rec.read.getReadUnmappedFlag() ||
 		   rec.read.getReadPairedFlag() && rec.read.getMateUnmappedFlag() ||
 		   rec.read.getReferenceIndex() != rec.read.getMateReferenceIndex()){
-			return false;
+			return true;
 		}
-		return true;
+		return false;
 	}
 	
 	/**
