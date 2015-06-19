@@ -313,9 +313,6 @@ public class BamWindow {
 		
 		//Automagically skip unmapped reads and reads with unmapped mates
 		while(nextRecord != null && (nextRecord.getMappingQuality() < minMQ)) {
-			if(nextRecord.getMappingQuality() < minMQ){
-				System.err.println("Record failed for MQ" + nextRecord.getMappingQuality() + " < minMQ: " + minMQ);
-			}
 			nextRecord = recordIt.hasNext()
 					? recordIt.next()
 					: null;
