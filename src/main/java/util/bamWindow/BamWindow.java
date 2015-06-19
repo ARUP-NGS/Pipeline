@@ -39,6 +39,12 @@ public class BamWindow {
 	final LinkedList<MappedRead> records = new LinkedList<MappedRead>();
 	private Map<String, Integer> contigMap = null;
 	private SAMSequenceDictionary sequenceDict = null;
+	private int minMQ = 0;
+
+	public BamWindow(File bamFile, int minMQ) {
+		this(bamFile);
+		this.minMQ = minMQ;
+	}
 	
 	public BamWindow(File bamFile) {
 		this.bamFile = bamFile;
@@ -80,10 +86,28 @@ public class BamWindow {
 	 */
 	public double meanInsertSize() {
 		double sum = 0;
+		double excludedReads = 0;
 		for(MappedRead rec : records) {
+			if(excludeReadInsertSize(rec)){
+				excludedReads++;
+				continue;
+			}
 			sum += Math.abs(rec.getRecord().getInferredInsertSize());
 		}
-		return sum / (double)records.size();
+		return sum / ((double)records.size() - excludedReads);
+	}
+
+	private boolean excludeReadInsertSize(MappedRead rec){
+		// Don't include read's insert size when calculating mean insert
+		// size if a mate is unmapped or mapped to a different contig.
+		// In these cases, a value of 0 is returned, but it is not representative
+		// of the actual insert size.
+		if(rec.read.getReadUnmappedFlag() ||
+		   rec.read.getReadPairedFlag() && rec.read.getMateUnmappedFlag() ||
+		   rec.read.getReferenceIndex() != rec.read.getMateReferenceIndex()){
+			return true;
+		}
+		return false;
 	}
 	
 	/**
@@ -278,8 +302,7 @@ public class BamWindow {
 	private void expand() {
 		if (nextRecord == null)
 			return;
-		
-		//System.out.println("Pushing record starting at : " + nextRecord.getAlignmentStart());
+
 		records.add(new MappedRead(nextRecord));
 		
 		//Find next suitable record
@@ -289,8 +312,11 @@ public class BamWindow {
 		
 		
 		//Automagically skip unmapped reads and reads with unmapped mates
-		while(nextRecord != null && (nextRecord.getMappingQuality()==0)) {
-			nextRecord = recordIt.hasNext() 
+		while(nextRecord != null && (nextRecord.getMappingQuality() < minMQ)) {
+			if(nextRecord.getMappingQuality() < minMQ){
+				System.err.println("Record failed for MQ" + nextRecord.getMappingQuality() + " < minMQ: " + minMQ);
+			}
+			nextRecord = recordIt.hasNext()
 					? recordIt.next()
 					: null;
 		}

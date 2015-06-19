@@ -24,6 +24,7 @@ import buffer.IntervalsFile;
  *
  */
 public class CovCalcApp {
+	private static int minMQ = 0;
 	
 	static class CovRunner implements Runnable {
 		
@@ -52,7 +53,7 @@ public class CovCalcApp {
 			CoverageCalculator covCalc;
 			try {
 				System.err.println("Beginning execution for "+ inputBam.getName());
-				covCalc = new CoverageCalculator(inputBam, intervals);
+				covCalc = new CoverageCalculator(inputBam, intervals, minMQ);
 				sampleResults = covCalc.computeCoverageByInterval();
 				
 				double totalExtent = 0;
@@ -125,8 +126,9 @@ public class CovCalcApp {
 		
 		if (args.length==0 || args[0].startsWith("-h")) {
 			System.err.println("Coverage Calculator utility, v0.03");
-			System.err.println("\n Usage: java -jar [bed file] [bam file] [more bam files...] [-t/--threads numThreads] [-f/--format outputFormat].");
+			System.err.println("\n Usage: java -jar [bed file] [bam file] [more bam files...] [-t/--threads numThreads] [-f/--format outputFormat] [-m/--minMQ minimumMappingQuality].");
 			System.err.println("If -t/--threads flag is used, it overrides the default number of threads " + DEFAULT_THREADS + ".");
+			System.err.println("-m/--minMQ sets a minimum mapping quality for read inclusion in coverage calculations.");
 			System.err.println("Setting -f/--format to 'bed', overrides the default format used (interval).");
 			System.err.println("\n Emits mean depth of coverage for all intervals in BED file to output.");
 			return;
@@ -162,6 +164,10 @@ public class CovCalcApp {
 					}
 				}
 			}
+			if(args[i].startsWith("--minMQ") || args[i].equals("-m")){
+				i++;
+				minMQ = Integer.parseInt(args[i]);
+			}
 		}
 		/*
 		for(int i = 0; i < args.length; i++){
@@ -191,7 +197,11 @@ public class CovCalcApp {
 				i++;
 				continue;  // Step over two - both the flag and the value.
 			}
-			else if (args[i].startsWith("--format")){
+			else if (args[i].startsWith("--format") || args[i].equals("-f")){
+				i++;
+				continue;
+			}
+			else if (args[i].startsWith("--minMQ") || args[i].equals("-m")){
 				i++;
 				continue;
 			}
