@@ -39,6 +39,26 @@ public class BamWindow {
 	final LinkedList<MappedRead> records = new LinkedList<MappedRead>();
 	private Map<String, Integer> contigMap = null;
 	private SAMSequenceDictionary sequenceDict = null;
+	private int minMQ = 0;
+
+	public BamWindow(File bamFile, int minMQ) {
+		this.bamFile = bamFile;
+		this.minMQ = minMQ;
+		
+		SAMFileReader.setDefaultValidationStringency(ValidationStringency.SILENT);
+		samReader = new SAMFileReader(bamFile);
+		samReader.setValidationStringency(ValidationStringency.SILENT);
+		SAMFileHeader header = samReader.getFileHeader();
+		sequenceDict = header.getSequenceDictionary();
+		contigMap = new HashMap<String, Integer>();
+		for(SAMSequenceRecord seqRec : sequenceDict.getSequences()) {
+			contigMap.put(seqRec.getSequenceName(), seqRec.getSequenceLength());
+		}
+		
+		
+		recordIt = samReader.iterator();
+		nextRecord = recordIt.next();
+	}
 	
 	public BamWindow(File bamFile) {
 		this.bamFile = bamFile;
@@ -80,10 +100,28 @@ public class BamWindow {
 	 */
 	public double meanInsertSize() {
 		double sum = 0;
+		double excludedReads = 0;
 		for(MappedRead rec : records) {
+			if(excludeReadInsertSize(rec)){
+				excludedReads++;
+				continue;
+			}
 			sum += Math.abs(rec.getRecord().getInferredInsertSize());
 		}
-		return sum / (double)records.size();
+		return sum / ((double)records.size() - excludedReads);
+	}
+
+	private boolean excludeReadInsertSize(MappedRead rec){
+		// Don't include read's insert size when calculating mean insert
+		// size if a mate is unmapped or mapped to a different contig.
+		// In these cases, a value of 0 is returned, but it is not representative
+		// of the actual insert size.
+		if(rec.read.getReadUnmappedFlag() ||
+		   rec.read.getReadPairedFlag() && rec.read.getMateUnmappedFlag() ||
+		   rec.read.getReferenceIndex() != rec.read.getMateReferenceIndex()){
+			return false;
+		}
+		return true;
 	}
 	
 	/**
@@ -278,7 +316,8 @@ public class BamWindow {
 	private void expand() {
 		if (nextRecord == null)
 			return;
-		
+		if(nextRecord.getMappingQuality() < minMQ)
+			return;
 		//System.out.println("Pushing record starting at : " + nextRecord.getAlignmentStart());
 		records.add(new MappedRead(nextRecord));
 		
