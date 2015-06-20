@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.lang.Math;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -132,6 +133,28 @@ public class TestFastDOC {
 			Assert.fail();
 		}
 
+	}
+
+	/*
+	 * Test the minMQ parameter for this coverage tool.
+	 */
+	@Test
+	public void TestMinMQ() throws IOException, InterruptedException{
+		File bamFile = new File("src/test/java/testbams/Tiny.MTOR.bam") ;
+		IntervalsFile intervals = new BEDFile(new File("src/test/java/testBEDs/TinyMTOR.bed"));
+		List<Interval> intervalList = new ArrayList<Interval>();
+		CoverageCalculator calc0 = new CoverageCalculator(bamFile, intervals, 0);
+		CoverageCalculator calc61 = new CoverageCalculator(bamFile, intervals, 61);
+		CoverageCalculator calc60 = new CoverageCalculator(bamFile, intervals, 60);
+		int[] depths0 = calc0.computeOverallCoverage();
+		int[] depths61 = calc61.computeOverallCoverage();
+		int[] depths60 = calc60.computeOverallCoverage();
+		// Tests that the original value matches.
+		Assert.assertTrue(Math.round(depths0[0]) == 977);
+		// Test that no reads in this set are above 60 MQ. (BWA)
+		Assert.assertTrue(Math.round(depths61[0]) == 0);
+		// Test that the result is roughly what samtools view -L with minMQ looks like.
+		Assert.assertTrue(Math.round(depths60[0]) == 970);
 	}
 	
 	public static int[] computeCovForRegion(File bamFile, String contig, int start, int end) throws IOException, InterruptedException {

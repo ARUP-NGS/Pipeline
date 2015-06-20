@@ -1,18 +1,26 @@
 package operator.gatk;
 
+import org.apache.log4j.Logger;
+import org.w3c.dom.NodeList;
+
 import operator.CommandOperator;
+import pipeline.Pipeline;
 import pipeline.PipelineXMLConstants;
 import buffer.BAMFile;
 import buffer.CSVFile;
 import buffer.ReferenceFile;
 
 public class IndelRealign extends CommandOperator {
+     Logger logger = Logger.getLogger(Pipeline.primaryLoggerName);
 
 	public final String defaultMemOptions = " -Xms2048m -Xmx8g";
 	public static final String PATH = "path";
 	public static final String JVM_ARGS="jvmargs";
 	protected String defaultGATKPath = "~/GenomeAnalysisTK/GenomeAnalysisTK.jar";
 	protected String gatkPath = defaultGATKPath;
+	private String dbsnpPath = null;
+	public final String DBSNP_PATH = "dbsnp.path";
+	private boolean useDbsnp = true;
 	
 	@Override
 	public boolean requiresReference() {
@@ -55,7 +63,26 @@ public class IndelRealign extends CommandOperator {
 				+ " -rf BadCigar "
 				+ " -T IndelRealigner -targetIntervals " 
 				+ intervalsFile + " -o " + realignedBam;
+		if(useDbsnp) {
+			command += " -known " + dbsnpPath;
+		}
 		return command;
+	}
+
+	@Override
+	public void initialize(NodeList children){
+		super.initialize(children);
+        dbsnpPath = this.getAttribute(DBSNP_PATH);
+        if (dbsnpPath == null) {
+            dbsnpPath = this.getPipelineProperty(DBSNP_PATH);
+        }
+        if (dbsnpPath == null) {
+        	useDbsnp = false;
+        	logger.info("Note: GATK IndelRealigner is being run without dbsnp known indels.");
+        }
+        else {
+        	logger.info("Note: GATK IndelRealigner is being run with dbsnp known indels. Path to dbsnp vcf: " + dbsnpPath + ".");
+        }
 	}
 
 }
