@@ -39,7 +39,7 @@ public class UK10KAnnotator extends AbstractTabixAnnotator {
      */
 
     @Override
-    protected boolean addAnnotationsFromString(VariantRec var, String val) {
+    protected boolean addAnnotationsFromString(VariantRec var, String val, int altIndex) {
         String[] toks = val.split("\t");
         String[] formatToks = toks[7].split(";");
         String overallFreqStr = valueForKey(formatToks, "AF=");

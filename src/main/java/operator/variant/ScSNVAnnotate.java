@@ -94,7 +94,7 @@ public class ScSNVAnnotate extends AbstractTabixAnnotator{
 	
 
 	@Override 
-	protected boolean addAnnotationsFromString(VariantRec var, String val) {
+	protected boolean addAnnotationsFromString(VariantRec var, String val, int altIndex) {
 		String[] toks = val.split("\t");
 		String _ada = toks[14];
 		String _rf = toks[15];
