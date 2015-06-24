@@ -127,7 +127,6 @@ public class TestAnnovar extends TestCase {
 				Assert.assertFalse(true);
 			}
 			
-			
 			try {
 				Pipeline ppl = new Pipeline(inputFile3, propertiesFile.getAbsolutePath());
 				ppl.setProperty("annovar.path", annovarDir.getAbsolutePath() + "/");

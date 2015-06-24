@@ -238,7 +238,7 @@ public class CoverageCalculator {
 	public class IntervalCovSummary implements Comparable<IntervalCovSummary> {
 		String chr;
 		Interval interval;
-		double meanDepth;
+		public double meanDepth;
 		
 		public IntervalCovSummary(String chr, Interval interval, double meanDepth) {
 			this.chr = chr;
