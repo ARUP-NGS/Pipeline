@@ -1,13 +1,19 @@
 package util.reviewDir;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.zip.GZIPInputStream;
 
+import json.JSONException;
+import json.JSONObject;
+import json.JSONTokener;
 import buffer.VCFFile;
 import buffer.variant.CSVLineReader;
+import buffer.variant.JSONtoVariantPool;
 import buffer.variant.VariantLineReader;
 import buffer.variant.VariantPool;
-
 /**
  * Encapsulates a ReviewDIrectory and provides easy access to variants, manifest, etc.
  * @author brendan
@@ -48,10 +54,29 @@ public class ReviewDirectory {
 		return new VariantPool(vcf);
 	}
 	
+	public VariantPool getVariantsFromJSON() throws IOException, JSONException {
+		return  JSONtoVariantPool.toVariantPool(manifest.getJSONVars().getAbsolutePath());
+	}
+	
 	public VariantPool getVariantsFromCSV() throws IOException {
 		File csv =  manifest.getAnnotatedVars();
 		VariantLineReader csvReader = new CSVLineReader(csv);
 		return new VariantPool(csvReader);
 	}
 	
+	/**
+	 * Open the given file and read it's gzipped contents into a json object
+	 * @param gzFile File pointed to gzip-compressed json data
+	 * @return JSONObject read from the data
+	 * @throws IOException
+	 * @throws JSONException
+	 */
+	private JSONObject readGzippedJSON(File gzFile) throws IOException, JSONException {
+		InputStream istream = new GZIPInputStream(new FileInputStream(gzFile));
+		JSONTokener jk = new JSONTokener(istream);
+		
+		JSONObject jobj = new JSONObject(jk);
+		istream.close();
+		return jobj;
+	}
 }

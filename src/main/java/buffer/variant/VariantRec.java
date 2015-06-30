@@ -875,6 +875,11 @@ public class VariantRec {
 	public static final String ARUP_HET_COUNT = "arup.het.count";
 	public static final String ARUP_HOM_COUNT = "arup.hom.count";
 	public static final String ARUP_SAMPLE_COUNT = "arup.sample.count";
+	public static final String CLNSIG = "clnsig";
+	public static final String CLNDBN = "clndbn";
+	public static final String CLNDSDBID = "clndsdbid";
+	public static final String CLNDSDB = "clndsdb";
+	public static final String CLNREVSTAT = "clnrevstat";
 	
 }
 

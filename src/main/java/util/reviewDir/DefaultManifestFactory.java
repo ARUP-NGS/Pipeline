@@ -96,6 +96,11 @@ public class DefaultManifestFactory implements ManifestReader {
 		}
 		
 		
+		File jsonVars = fileBySuffix(vcfDir.listFiles(), "json.gz");
+		if (jsonVars != null) {
+			files.put(SampleManifest.JSON_VARS, jsonVars);
+		}
+	
 			
 		return files;
 	}

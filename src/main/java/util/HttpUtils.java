@@ -37,10 +37,8 @@ public class HttpUtils {
 		if (gzip) {
 			conn.setRequestProperty("Content-Encoding", "gzip");
 			byteContent = gZipString(content);
-			System.err.println("GZipping input, length in bytes: " + byteContent.length);
 		} else {
 			byteContent = content.getBytes(); 	
-			System.err.println("NOT GZipping input, length in bytes: " + byteContent.length);
 		}
 
 		conn.setRequestProperty("Content-Length", "" + byteContent.length);
