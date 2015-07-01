@@ -1,12 +1,6 @@
 package operator.variant;
 
-import alnGenerator.Variant;
 import buffer.variant.VariantRec;
-import operator.OperationFailedException;
-import org.broad.tribble.readers.TabixReader;
-import util.vcfParser.VCFParser;
-
-import java.io.IOException;
 
 
 /**
@@ -46,7 +40,7 @@ public class ClinVarAnnotator extends AbstractTabixAnnotator {
     }
 
     @Override
-    protected boolean addAnnotationsFromString(VariantRec var, String val) {
+    protected boolean addAnnotationsFromString(VariantRec var, String val, int altIndex) {
         String[] toks = val.split("\t")[7].split(";");
         if (val.split("\t")[7].contains("=")) {
             var.addAnnotation(VariantRec.CLNSIG, toks[0].split("=")[1]);

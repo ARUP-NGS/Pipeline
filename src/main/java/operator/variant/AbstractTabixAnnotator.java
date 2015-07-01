@@ -1,26 +1,25 @@
 package operator.variant;
 
 import java.io.IOException;
+import java.util.logging.Logger;
 
 import operator.OperationFailedException;
 import operator.annovar.Annotator;
 
 import org.broad.tribble.readers.TabixReader;
 
+import pipeline.Pipeline;
 import util.vcfParser.VCFParser;
 import buffer.variant.VariantRec;
 /**
  * This is (well, should be) the base class for all annotators that read a Tabix-ed
  * vcf file to get their annotation info. This handles several important functions such 
-<<<<<<< HEAD
  * as creation of the TabixReader andnormalization of variants that are read in from the tabix.
  *
  *      support mulitple ALT alleles.
-=======
  * as creation of the TabixReader and normalization of variants that are read in from the tabix.
  * 
  * @author brendan
->>>>>>> 2387ba85768882a6511d253ab687864e4b38466b
  *
  */
 public abstract class AbstractTabixAnnotator extends Annotator {
@@ -51,11 +50,6 @@ public abstract class AbstractTabixAnnotator extends Annotator {
 
 	protected abstract boolean addAnnotationsFromString(VariantRec variantToAnnotate, String vcfLine, int altIndex);
 
-	protected boolean addAnnotationsFromString(VariantRec variantToAnnotate, String vcfLine) {
-		return addAnnotationsFromString(variantToAnnotate, vcfLine, 0);
-	}
-
-
 	protected void initializeReader(String filePath) {
 		try {
 			reader = new TabixReader(filePath);
@@ -83,14 +77,42 @@ public abstract class AbstractTabixAnnotator extends Annotator {
 	 * @param referenceAlt
 	 * @throws OperationFailedException
 	 */
-	public void check_variant(String referenceAlt) throws OperationFailedException {
+	public void checkVariant(String referenceAlt) throws OperationFailedException {
 		if (referenceAlt.contains(",")) {
-			throw new OperationFailedException(
-					"The database contains multiple ALT alleles on a single line.  It should be normalized prior to use.",
-					this);
+			throw new OperationFailedException("The database contains multiple ALT alleles on a single line.  It should be normalized prior to use.", this);
 		}
 	}
 
+	/**
+	 * Parses variants from the given VCF line (appropriately handling multiple alts) and compare each variant tot he
+	 * 'varToAnnotate'. If a perfect match (including both chr, pos, ref, and alt) 
+	 * @param varToAnnotate
+	 * @param vcfLine
+	 * @return
+	 */
+	protected int findMatchingVariant(VariantRec varToAnnotate, String vcfLine) {
+		String[] toks = vcfLine.split("\t");
+		String[] alts = toks[4].split(",");
+		for(int i=0; i<alts.length; i++) {
+			VariantRec queryResultVar = new VariantRec(toks[0], Integer.parseInt(toks[1]), Integer.parseInt(toks[1])+toks[3].length(), toks[3], alts[i]);
+			queryResultVar = VCFParser.normalizeVariant(queryResultVar);
+
+			if (queryResultVar.getContig().equals(varToAnnotate.getContig())
+					&& queryResultVar.getStart() == varToAnnotate.getStart()
+					&& queryResultVar.getRef().equals(varToAnnotate.getRef())
+					&& queryResultVar.getAlt().equals(varToAnnotate.getAllAlts()[i])) { //change to loop through all alts
+
+				//Everything looks good, so go ahead and annotate		
+				boolean ok = addAnnotationsFromString(varToAnnotate, vcfLine, i);
+				if (ok) {
+					return i;
+				}
+			} //if perfect variant match
+
+		}//Loop over alts	
+		return -1;
+	}
+	
 	/**
 	 * This actually annotates the variant - it performs new tabix query, then converts the
 	 * result to a normalized VariantRec, then sees if the normalized VariantRec matches the
@@ -113,58 +135,39 @@ public abstract class AbstractTabixAnnotator extends Annotator {
 
 		String queryStr = contig + ":" + (pos-10) + "-" + (pos+10);
 
+		//Perform the lookup
+		
+		TabixReader.Iterator iter = null;
+		
 		try {
-			//Perform the lookup
-			TabixReader.Iterator iter = reader.query(queryStr);
-			boolean breakFoundMatch = false;
-			if(iter != null) {
-				try {
-					String val = iter.next();
-					while(val != null) {
-						String[] toks = val.split("\t");
-						if (toks.length > 6) {
-							//Convert the result (which is a line of a VCF file) into a variant rec
-							VariantRec queryResultVar = new VariantRec(toks[0], Integer.parseInt(toks[1]), Integer.parseInt(toks[1])+toks[3].length(), toks[3], toks[4]);
-							//Important: Normalize the record so that it will match the 
-							//variants in the variant pool that we want to annotate
-							queryResultVar = VCFParser.normalizeVariant(queryResultVar);
+			iter = reader.query(queryStr);
+		} catch (RuntimeException ex) {
+			Logger.getLogger(Pipeline.primaryLoggerName).warning("Exception during tabix reading for query: " + queryStr + " : " + ex.getLocalizedMessage());
+		}
 
-							//Added this to throw an error if the DB has multiple Alt on a single line
-							//check_variant(queryResultVar.getAlt());
+		if(iter != null) {
+			try {
+				String val = iter.next();
+				while(val != null) {
+					String[] toks = val.split("\t");
+					if (toks.length > 6) {
 
-							//variant we want to annotate
-							for (int i = 0; i < varToAnnotate.getAllAlts().length; i++) {
-								if (queryResultVar.getContig().equals(varToAnnotate.getContig())
-										&& queryResultVar.getStart() == varToAnnotate.getStart()
-										&& queryResultVar.getRef().equals(varToAnnotate.getRef())
-										&& queryResultVar.getAlt().equals(varToAnnotate.getAllAlts()[i])) { //change to loop through all alts
-									//Everything looks good, so go ahead and annotate
-									boolean ok = addAnnotationsFromString(varToAnnotate, val);
-									if (ok)
-										break;
-								}
-
-							}
+						int altIndex = findMatchingVariant(varToAnnotate, val);
+						
+						if (altIndex >= 0) {
+							break; //break out of searching over tabix results
 						}
-						if (breakFoundMatch) {
-							break;
-							}
 						else {
-							val = iter.next();
+							val = iter.next(); 
 						}
-					}
-				} catch (IOException e) {
-					throw new OperationFailedException("Error reading data file: " + e.getMessage(), this);
-				}
+					}//If there are enough  tokens in this VCF line 
+
+				}//If iter returned non-null value
+			} catch (IOException ex) {
+				Logger.getLogger(Pipeline.primaryLoggerName).warning("Tabix iterator exception: " + ex.getLocalizedMessage());
 			}
 		}
-
-		catch (RuntimeException rex) {
-			//Bad contigs will cause an array out-of-bounds exception to be thrown by
-			//the tabix reader. There's not much we can do about this since the methods
-			//are private... right now we just ignore it and skip this variant
-		}
-
 	}
+	
 
 }

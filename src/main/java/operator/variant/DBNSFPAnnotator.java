@@ -1,10 +1,13 @@
 package operator.variant;
 
 import java.io.IOException;
+
 import operator.OperationFailedException;
+
 import org.broad.tribble.readers.TabixReader;
-import buffer.variant.VariantRec;
+
 import util.vcfParser.VCFParser;
+import buffer.variant.VariantRec;
 
 /**
  * Uses a tabix-index file.
@@ -251,7 +254,7 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
 	 * @return true when annotations are added
 	 */
 	@Override
-	protected boolean addAnnotationsFromString(VariantRec var, String val) {
+	protected boolean addAnnotationsFromString(VariantRec var, String val, int altIndex) {
 		String[] toks = val.split("\t");
 		int sift_score_col = 23;
 		int polyphen_score_col = 29;
@@ -482,7 +485,7 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
 										&& queryResultVar.getRef().equals(varToAnnotate.getRef())
 										&& queryResultVar.getAlt().equals(varToAnnotate.getAllAlts()[i])) {
 									//Everything looks good, so go ahead and annotate
-									boolean ok = addAnnotationsFromString(varToAnnotate, val);
+									boolean ok = addAnnotationsFromString(varToAnnotate, val, i);
 
 									if (ok)
 										break;

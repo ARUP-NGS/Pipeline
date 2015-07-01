@@ -33,7 +33,7 @@ public class DBSNPAnnotator extends AbstractTabixAnnotator {
     protected String getPathToTabixedFile() {return searchForAttribute(DBSNP_PATH);}
 
     @Override
-    protected boolean addAnnotationsFromString(VariantRec var, String str) {
+    protected boolean addAnnotationsFromString(VariantRec var, String str, int altIndex) {
         String[] toks = str.split("\t");
         String rsNum = toks[2];
         var.addAnnotation(VariantRec.RSNUM, rsNum);

@@ -1,13 +1,16 @@
 package annotation;
 
 
-import junit.framework.TestCase;
 import java.io.File;
-import org.junit.Assert;
+
+import junit.framework.TestCase;
 import operator.variant.DBSNPAnnotator;
+
+import org.junit.Assert;
+
 import pipeline.Pipeline;
-import buffer.variant.VariantRec;
 import util.vcfParser.VCFParser;
+import buffer.variant.VariantRec;
 
 /**
  * Created by Keith simmon on 4/24/15.
@@ -141,21 +144,22 @@ public class TestDBSNP extends TestCase {
         }
     }
 
-    public void testMultiAllelicVariant() {
-        try {
-            //1	17114420	rs202217127	G	A
-
-            VariantRec  var1 = new VariantRec("4", 10105588, 10105588, "T", "G,C,A");
-            annotator.annotateVariant(var1);
-            Assert.assertTrue(var1.getAnnotation(VariantRec.RSNUM).equals("rs373722200"));
-
-        } catch (Exception ex) {
-            thrown = true;
-            System.err.println("Exception during testing: " + ex.getLocalizedMessage());
-            ex.printStackTrace();
-            Assert.assertTrue(false);
-        }
-    }
+//Commented out for now - we should never see an multiallelic variant as input
+//    public void testMultiAllelicVariant() {
+//        try {
+//            //1	17114420	rs202217127	G	A
+//
+//            VariantRec  var1 = new VariantRec("4", 10105588, 10105588, "T", "G,C,A");
+//            annotator.annotateVariant(var1);
+//            Assert.assertTrue(var1.getAnnotation(VariantRec.RSNUM).equals("rs373722200"));
+//
+//        } catch (Exception ex) {
+//            thrown = true;
+//            System.err.println("Exception during testing: " + ex.getLocalizedMessage());
+//            ex.printStackTrace();
+//            Assert.assertTrue(false);
+//        }
+//    }
 
     public void testVariantNotInDBsnp() {
         try {
