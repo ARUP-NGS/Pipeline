@@ -30,7 +30,7 @@ import buffer.ReferenceFile;
 public class BWAMEMAlign extends IOOperator {
 	
 	public static final String JVM_ARGS="jvmargs";
-	public static final String BWA_PATH = "bwa.path";
+	public static final String BWA_PATH = "bwa.mem.path";
 	public static final String SAMTOOLS_PATH = "samtools.path";
 	public static final String SAMTOOLS_MT_PATH = "samtools-mt.path";
 	String sample = "unknown";
