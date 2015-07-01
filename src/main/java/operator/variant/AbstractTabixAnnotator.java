@@ -9,13 +9,18 @@ import org.broad.tribble.readers.TabixReader;
 
 import util.vcfParser.VCFParser;
 import buffer.variant.VariantRec;
-import java.util.Arrays;
 /**
  * This is (well, should be) the base class for all annotators that read a Tabix-ed
  * vcf file to get their annotation info. This handles several important functions such 
+<<<<<<< HEAD
  * as creation of the TabixReader andnormalization of variants that are read in from the tabix.
  *
  *      support mulitple ALT alleles.
+=======
+ * as creation of the TabixReader and normalization of variants that are read in from the tabix.
+ * 
+ * @author brendan
+>>>>>>> 2387ba85768882a6511d253ab687864e4b38466b
  *
  */
 public abstract class AbstractTabixAnnotator extends Annotator {
@@ -37,9 +42,19 @@ public abstract class AbstractTabixAnnotator extends Annotator {
 	 * (like allele frequency, dbSNP ids, etc. etc) and turn that into an annotation or property 
 	 * for the VariantToAnnotate
 	 * @param
+	 * Subclasses should implement logic to handle the current altIndex given, as this changes from annotator to
+	 * annotator. For now most annotators ignore the altIndex.
+	 * @param var
 	 * @param vcfLine
+	 * @param altIndex
 	 */
-	protected abstract boolean addAnnotationsFromString(VariantRec variantToAnnotate, String vcfLine);
+
+	protected abstract boolean addAnnotationsFromString(VariantRec variantToAnnotate, String vcfLine, int altIndex);
+
+	protected boolean addAnnotationsFromString(VariantRec variantToAnnotate, String vcfLine) {
+		return addAnnotationsFromString(variantToAnnotate, vcfLine, 0);
+	}
+
 
 	protected void initializeReader(String filePath) {
 		try {
@@ -83,6 +98,7 @@ public abstract class AbstractTabixAnnotator extends Annotator {
 	 */
 	@Override
 	public void annotateVariant(VariantRec varToAnnotate) throws OperationFailedException {
+
 		if (! initialized) {
 			throw new OperationFailedException("Failed to initialize", this);
 		}
@@ -94,12 +110,13 @@ public abstract class AbstractTabixAnnotator extends Annotator {
 		String contig = varToAnnotate.getContig();
 		Integer pos = varToAnnotate.getStart();
 
+
 		String queryStr = contig + ":" + (pos-10) + "-" + (pos+10);
 
 		try {
 			//Perform the lookup
 			TabixReader.Iterator iter = reader.query(queryStr);
-
+			boolean breakFoundMatch = false;
 			if(iter != null) {
 				try {
 					String val = iter.next();
@@ -129,7 +146,12 @@ public abstract class AbstractTabixAnnotator extends Annotator {
 
 							}
 						}
-						val = iter.next();
+						if (breakFoundMatch) {
+							break;
+							}
+						else {
+							val = iter.next();
+						}
 					}
 				} catch (IOException e) {
 					throw new OperationFailedException("Error reading data file: " + e.getMessage(), this);
@@ -142,8 +164,7 @@ public abstract class AbstractTabixAnnotator extends Annotator {
 			//the tabix reader. There's not much we can do about this since the methods
 			//are private... right now we just ignore it and skip this variant
 		}
+
 	}
-
-
 
 }

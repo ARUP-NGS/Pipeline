@@ -30,6 +30,7 @@ public class CoverageCalculator {
 	protected File inputBam = null;
 	protected HasIntervals intervals;
 	private int threads = Math.max(1, Runtime.getRuntime().availableProcessors()/2);
+	private int minMQ = 0;
 	
 	/**
 	 * Creates a new CoverageCalculator object that will examine the given BAM file over
@@ -41,6 +42,19 @@ public class CoverageCalculator {
 	public CoverageCalculator(File inputBam, HasIntervals intervals) throws IOException {
 		this.inputBam = inputBam;
 		this.intervals = intervals;
+	}
+	
+	/**
+	 * Creates a new CoverageCalculator object that will examine the given BAM file over
+	 * the given set of intervals, requiring a minimum Mapping Quality.
+	 * @param inputBam
+	 * @param intervals
+	 * @throws IOException
+	 */
+	public CoverageCalculator(File inputBam, HasIntervals intervals, int minMQ) throws IOException {
+		this.inputBam = inputBam;
+		this.intervals = intervals;
+		this.minMQ = minMQ;
 	}
 
 	/**
@@ -224,7 +238,7 @@ public class CoverageCalculator {
 	public class IntervalCovSummary implements Comparable<IntervalCovSummary> {
 		String chr;
 		Interval interval;
-		double meanDepth;
+		public double meanDepth;
 		
 		public IntervalCovSummary(String chr, Interval interval, double meanDepth) {
 			this.chr = chr;
@@ -308,7 +322,7 @@ public class CoverageCalculator {
 		public void run() {
 			intervalResults = new ArrayList<IntervalCovSummary>();
 			try {
-				BamWindow window = new BamWindow(inputBam);
+				BamWindow window = new BamWindow(inputBam, minMQ);
 				
 				for(Interval interval : subIntervals) {
 					CovResult result = CoverageCalculator.calculateDepthHistogram(window, chr, interval.begin, interval.end, depths);

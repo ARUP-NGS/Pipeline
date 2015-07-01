@@ -14,20 +14,20 @@ import buffer.variant.VariantRec;
 public class ESP6500Annotator extends AbstractTabixAnnotator {
 
 	public static final String ESP_PATH = "esp.path";
-	
-	
+
+
 	@Override
 	protected String getPathToTabixedFile() {
 		return searchForAttribute(ESP_PATH);
 	}
-	
-	protected boolean addAnnotationsFromString(VariantRec var, String val) {
+
+	protected boolean addAnnotationsFromString(VariantRec var, String val, int altIndex) {
 		String[] toks = val.split("\t");
 		String[] infoToks = toks[7].split(";");
-		
+
 		Double totOverall = 0.0;
 		Double homOverall = 0.0;
-		
+
 		for(int i=0; i<infoToks.length; i++) {
 			String tok = infoToks[i];
 			if (tok.startsWith("MAF=")) {
@@ -45,53 +45,55 @@ public class ESP6500Annotator extends AbstractTabixAnnotator {
 					//Don't worry about it, no annotation though
 				}
 			}
-			if (tok.startsWith("EA_GTC=")) {
-				tok = tok.replace("EA_GTC=", "");
-				String[] vals = tok.split(",");
-				try {
-					Double homRef = Double.parseDouble(vals[vals.length-1]);
-					Double het = Double.parseDouble(vals[1]);
-					Double homAlt = Double.parseDouble(vals[0]);
-					double tot = homRef + het + homAlt;
-					var.addProperty(VariantRec.EXOMES_EA_HOMREF, homRef / tot);
-					var.addProperty(VariantRec.EXOMES_EA_HET, het/tot);
-					var.addProperty(VariantRec.EXOMES_EA_HOMALT, homAlt/ tot);
-					totOverall += tot;
-					homOverall += homAlt;
+			if (altIndex == 0) { // Only annotate these if we are on the first alt or there is only one alt as the following code only works in those cases.
+				if (tok.startsWith("EA_GTC=")) {
+					tok = tok.replace("EA_GTC=", "");
+					String[] vals = tok.split(",");
+					try {
+						Double homRef = Double.parseDouble(vals[vals.length-1]);
+						Double het = Double.parseDouble(vals[1]);
+						Double homAlt = Double.parseDouble(vals[0]);
+						double tot = homRef + het + homAlt;
+						var.addProperty(VariantRec.EXOMES_EA_HOMREF, homRef / tot);
+						var.addProperty(VariantRec.EXOMES_EA_HET, het/tot);
+						var.addProperty(VariantRec.EXOMES_EA_HOMALT, homAlt/ tot);
+						totOverall += tot;
+						homOverall += homAlt;
+					}
+					catch(NumberFormatException ex) {
+						//Don't worry about it, no annotation though
+					}
 				}
-				catch(NumberFormatException ex) {
-					//Don't worry about it, no annotation though
-				}
-			}
-			
-			if (tok.startsWith("AA_GTC=")) {
-				tok = tok.replace("AA_GTC=", "");
-				String[] vals = tok.split(",");
-				try {
-					Double homRef = Double.parseDouble(vals[vals.length-1]);
-					Double het = Double.parseDouble(vals[1]);
-					Double homAlt = Double.parseDouble(vals[0]);
-					double tot = homRef + het + homAlt;
-					var.addProperty(VariantRec.EXOMES_AA_HOMREF, homRef / tot);
-					var.addProperty(VariantRec.EXOMES_AA_HET, het/tot);
-					var.addProperty(VariantRec.EXOMES_AA_HOMALT, homAlt/ tot);
-					totOverall += tot;
-					homOverall += homAlt;
-				}
-				catch(NumberFormatException ex) {
-					//Don't worry about it, no annotation though
+
+				if (tok.startsWith("AA_GTC=")) {
+					tok = tok.replace("AA_GTC=", "");
+					String[] vals = tok.split(",");
+					try {
+						Double homRef = Double.parseDouble(vals[vals.length-1]);
+						Double het = Double.parseDouble(vals[1]);
+						Double homAlt = Double.parseDouble(vals[0]);
+						double tot = homRef + het + homAlt;
+						var.addProperty(VariantRec.EXOMES_AA_HOMREF, homRef / tot);
+						var.addProperty(VariantRec.EXOMES_AA_HET, het/tot);
+						var.addProperty(VariantRec.EXOMES_AA_HOMALT, homAlt/ tot);
+						totOverall += tot;
+						homOverall += homAlt;
+					}
+					catch(NumberFormatException ex) {
+						//Don't worry about it, no annotation though
+					}
 				}
 			}
 		}
-		
+
 		if (totOverall > 0) {
 			var.addProperty(VariantRec.EXOMES_HOM_FREQ, homOverall / totOverall);
 		} else {
 			var.addProperty(VariantRec.EXOMES_HOM_FREQ, 0.0);	
 		}
-		
+
 		return true;
 	}
 
-	
+
 }
