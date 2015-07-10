@@ -145,7 +145,7 @@ public class FreeBayes extends IOOperator {
 			extraAttr = this.getPipelineProperty(EXTRA_OPTIONS);
 		}
 		
-		if(EXTRA_OPTIONS != null) {
+		if(extraAttr != null) {
 			this.extraOptions = extraAttr;
 		}
 

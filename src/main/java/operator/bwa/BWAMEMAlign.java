@@ -33,6 +33,8 @@ public class BWAMEMAlign extends IOOperator {
 	public static final String BWA_PATH = "bwa.mem.path";
 	public static final String SAMTOOLS_PATH = "samtools.path";
 	public static final String SAMTOOLS_MT_PATH = "samtools-mt.path";
+	public static final String EXTRA_OPTIONS="bwa.options";
+	protected String extraOptions = "";
 	String sample = "unknown";
 	String samtoolsPath = null;
 	//String samtoolsMTPath = null;
@@ -81,6 +83,7 @@ public class BWAMEMAlign extends IOOperator {
 				+ inputBuffers.get(0).getAbsolutePath() + " "
 				+ inputBuffers.get(1).getAbsolutePath() + " "
 				+ " -t " + threads
+				+ " " + extraOptions
 				+ " -R \"@RG\\tID:unknown\\tSM:" + sample + "\\tPL:ILLUMINA\" "
 				+ " 2> .bwa.mem.stderr.txt "
 				+ " | " + samtoolsPath + " view -S -u -h - | " + samtoolsPath + " sort - " + outputBAMBuffer.getAbsolutePath().replace(".bam", "") + " 2> .smterr.txt ";
@@ -158,6 +161,14 @@ public class BWAMEMAlign extends IOOperator {
 		}
 		this.samtoolsPath = samtoolsAttr;
 		
+		String extraAttr = this.getAttribute(EXTRA_OPTIONS);
+		if(extraAttr == null) {
+			extraAttr = this.getPipelineProperty(EXTRA_OPTIONS);
+		}
+		
+		if(extraAttr != null) {
+			this.extraOptions = extraAttr;
+		}
 		
 //		String samtoolsMTAttr = this.getAttribute(SAMTOOLS_MT_PATH);
 //		if (samtoolsMTAttr == null) {
