@@ -100,7 +100,7 @@ public abstract class AbstractTabixAnnotator extends Annotator {
 			if (queryResultVar.getContig().equals(varToAnnotate.getContig())
 					&& queryResultVar.getStart() == varToAnnotate.getStart()
 					&& queryResultVar.getRef().equals(varToAnnotate.getRef())
-					&& queryResultVar.getAlt().equals(varToAnnotate.getAllAlts()[i])) { //change to loop through all alts
+					&& queryResultVar.getAlt().equals(varToAnnotate.getAlt())) { //change to loop through all alts
 
 				//Everything looks good, so go ahead and annotate		
 				boolean ok = addAnnotationsFromString(varToAnnotate, vcfLine, i);
