@@ -879,6 +879,9 @@ public class VariantRec {
 	public static final String CLNDSDBID = "clinvar.clndsdbid"; 	//(database id)
 	public static final String CLNREVSTAT = "clinvar.clnrevstat"; 	//(review status )
 	public static final String CLNDSDB = "clinvar.clndsdb"; 		//(clinical database)
+	public static final String ARUP_HET_COUNT = "arup.het.count";
+	public static final String ARUP_HOM_COUNT = "arup.hom.count";
+	public static final String ARUP_SAMPLE_COUNT = "arup.sample.count";
 
 	
 }
