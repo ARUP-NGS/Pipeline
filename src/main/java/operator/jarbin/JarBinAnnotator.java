@@ -1,4 +1,4 @@
-package operator.variant;
+package operator.jarbin;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -23,7 +23,7 @@ import buffer.VCFFile;
 import buffer.variant.VariantPool;
 import buffer.variant.VariantRec;
 
-public class VarBinAnnotator extends Annotator {
+public class JarBinAnnotator extends Annotator {
 
 	public static final String VARBIN_PATH = "varbin.path";
 	BAMFile bamFile = null;
@@ -173,7 +173,7 @@ public class VarBinAnnotator extends Annotator {
 	}
 
 	public static void main(String[] args) throws IOException {
-		VarBinAnnotator vb = new VarBinAnnotator();
+		JarBinAnnotator vb = new JarBinAnnotator();
 		
 		vb.annotateVarsFromTable(new File("varbin.final.table"));
 	}
