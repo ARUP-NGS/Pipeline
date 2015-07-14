@@ -31,6 +31,7 @@ public class CoverageCalculator {
 	protected HasIntervals intervals;
 	private int threads = Math.max(1, Runtime.getRuntime().availableProcessors()/2);
 	private int minMQ = 0;
+	private final boolean countTemplates;
 	
 	/**
 	 * Creates a new CoverageCalculator object that will examine the given BAM file over
@@ -39,9 +40,10 @@ public class CoverageCalculator {
 	 * @param intervals
 	 * @throws IOException
 	 */
-	public CoverageCalculator(File inputBam, HasIntervals intervals) throws IOException {
+	public CoverageCalculator(File inputBam, HasIntervals intervals, boolean countTemplates) throws IOException {
 		this.inputBam = inputBam;
 		this.intervals = intervals;
+		this.countTemplates = countTemplates;
 	}
 	
 	/**
@@ -51,10 +53,11 @@ public class CoverageCalculator {
 	 * @param intervals
 	 * @throws IOException
 	 */
-	public CoverageCalculator(File inputBam, HasIntervals intervals, int minMQ) throws IOException {
+	public CoverageCalculator(File inputBam, HasIntervals intervals, int minMQ, boolean countTemplates) throws IOException {
 		this.inputBam = inputBam;
 		this.intervals = intervals;
 		this.minMQ = minMQ;
+		this.countTemplates = countTemplates;
 	}
 
 	/**
@@ -80,7 +83,7 @@ public class CoverageCalculator {
 		ThreadPoolExecutor pool = (ThreadPoolExecutor) Executors.newFixedThreadPool( threads );
 
 		for(String chr : intervals.getContigs()) {
-			CovCalculator covJob = new CovCalculator(inputBam, chr, intervals.getIntervalsForContig(chr), new int[32768]);
+			CovCalculator covJob = new CovCalculator(inputBam, chr, intervals.getIntervalsForContig(chr), new int[32768], countTemplates);
 			pool.submit(covJob);
 			jobs.add(covJob);
 		}
@@ -118,7 +121,7 @@ public class CoverageCalculator {
 				subIntervals.add(interval);
 				
 				if (subIntervals.size() > maxSubIntervalSize) {
-					CovCalculator covJob = new CovCalculator(inputBam, chr, subIntervals, overallDepths);
+					CovCalculator covJob = new CovCalculator(inputBam, chr, subIntervals, overallDepths, countTemplates);
 					pool.submit(covJob);
 					subIntervals = new ArrayList<Interval>();
 				}
@@ -126,7 +129,7 @@ public class CoverageCalculator {
 			
 			//There may still be a few remaining 
 			if (subIntervals.size() > 0) {
-				CovCalculator covJob = new CovCalculator(inputBam, chr, subIntervals, overallDepths);
+				CovCalculator covJob = new CovCalculator(inputBam, chr, subIntervals, overallDepths, countTemplates);
 				pool.submit(covJob);
 				subIntervals = new ArrayList<Interval>();
 			}
@@ -304,18 +307,19 @@ public class CoverageCalculator {
 		private String chr;
 		private List<Interval> subIntervals;
 		private List<IntervalCovSummary> intervalResults = null;
-		
+		private boolean countTemplates;
 
 		private boolean done = false;
 		private Exception error = null;
 		private int sitesAssessed = 0;
 		private long covSum = 0L;
 		
-		public CovCalculator(File inputBam, String chr, List<Interval> subIntervals, int[] depths) {
+		public CovCalculator(File inputBam, String chr, List<Interval> subIntervals, int[] depths, boolean countTemplates) {
 			this.inputBam = inputBam;
 			this.chr = chr;
 			this.subIntervals = subIntervals;
 			this.depths = depths;
+			this.countTemplates = countTemplates;
 		}
 		
 		@Override
@@ -325,7 +329,7 @@ public class CoverageCalculator {
 				BamWindow window = new BamWindow(inputBam, minMQ);
 				
 				for(Interval interval : subIntervals) {
-					CovResult result = CoverageCalculator.calculateDepthHistogram(window, chr, interval.begin, interval.end, depths);
+					CovResult result = CoverageCalculator.calculateDepthHistogram(window, chr, interval.begin, interval.end, depths, countTemplates);
 					double mean = (double)result.covSum / (double)result.sitesAssessed;
 					IntervalCovSummary intervalCov = new IntervalCovSummary(chr, interval, mean);
 					intervalResults.add(intervalCov);
@@ -381,6 +385,9 @@ public class CoverageCalculator {
 		}
 	}
 
+	public static CovResult calculateTemplateDepthHistogram(BamWindow bam, String chr, int start, int end, int[] depths) {
+		return calculateDepthHistogram(bam, chr, start, end, depths, true);
+	}
 	/**
 	 * Actually perform the depth computation. This examines each position in the interval and sees how many reads
 	 * map to it, and for each position increments the depths array at index (depth) by one. For instance, if
@@ -392,8 +399,9 @@ public class CoverageCalculator {
 	 * @param start
 	 * @param end
 	 * @param depths
+	 * @param countTemplates If true, count inferred number of templates at position, instead of number of reads
 	 */
-	public static CovResult calculateDepthHistogram(BamWindow bam, String chr, int start, int end, int[] depths) {
+	public static CovResult calculateDepthHistogram(BamWindow bam, String chr, int start, int end, int[] depths, boolean countTemplates) {
 		int advance = 4;
 		CovResult result = new CovResult();
 		
@@ -415,7 +423,12 @@ public class CoverageCalculator {
 		int sitesAssessed = 0; //Tracks total number of sites examined, used for calculating exact mean
 		boolean cont = true;
 		while(cont && bam.getCurrentPosition() < end) {
-			int depth = bam.size();
+			int depth = -1;
+			if (countTemplates) {
+				depth = bam.templateCount();
+			} else {
+				depth = bam.size();
+			}
 			sitesAssessed += advance;
 			covSum += advance * depth;
 			depth = Math.min(depth, depths.length-1);
@@ -433,3 +446,4 @@ public class CoverageCalculator {
 		long covSum = 0;
 	}
 }
+

@@ -36,7 +36,10 @@ public class BamWindow {
 	
 	private String currentContig = null;
 	private int currentPos = -1; //In reference coordinates
-	final LinkedList<MappedRead> records = new LinkedList<MappedRead>();
+	
+	final LinkedList<MappedRead> records = new LinkedList<MappedRead>(); //List of records mapping to currentPos
+	final LinkedList<MappedTemplate> templates = new LinkedList<MappedTemplate>(); //List of 'templates' overlapping current pos
+	
 	private Map<String, Integer> contigMap = null;
 	private SAMSequenceDictionary sequenceDict = null;
 	private int minMQ = 0;
@@ -79,6 +82,28 @@ public class BamWindow {
 		//number of records on current position
 		return records.size();
 	}
+	
+	/**
+	 * Return an approximate number of templates (the things that get sequenced to produce reads) 
+	 * that map to this location. It's not always possible to do this accurately since sometimes reads
+	 * are mapped incorrectly, but we can probably do it OK most of the time when both reads in a pair
+	 * are mapped unambiguously.  
+	 * 
+	 * @return Approx number of templates overlapping the current position
+	 */
+	public int templateCount() {
+		emitTemplates();
+		return templates.size();
+		
+	}
+	
+	public void emitTemplates() {
+		System.out.println("Position : " + currentPos + " ... "  + templates.size() + " overlapping templates:");
+		for(MappedTemplate tmpl : templates) {
+			System.out.println("\t" + tmpl.toString() + ", aln start: " + tmpl.firstRead.getRecord().getAlignmentStart() + " - " + tmpl.firstRead.getRecord().getAlignmentEnd());
+		}
+	}
+	
 	
 	/**
 	 * Return the mean inferred insertion size of all records in this window
@@ -296,6 +321,25 @@ public class BamWindow {
 		return records.getLast();
 	}
 	
+	private static MappedTemplate inferTemplateFromRead(SAMRecord read) {
+		int tStart = read.getAlignmentStart();
+		int tEnd = read.getAlignmentEnd();
+		if (read.getProperPairFlag()
+				&& (! read.getMateUnmappedFlag()) 
+				&& (read.getReferenceIndex() == read.getMateReferenceIndex())) {
+			tEnd = read.getMateAlignmentStart() + read.getReadLength();
+		}
+		
+		int templateStart = Math.min(tStart, tEnd);
+		int templateEnd = Math.max(tStart, tEnd);
+		
+		if (templateStart == read.getAlignmentStart()) {
+			return new MappedTemplate(templateStart, templateEnd, new MappedRead(read));
+		}
+		
+		return null;
+	}
+
 	/**
 	 * Push new records onto the queue. Unmapped reads and reads with unmapped mates are skipped.
 	 */
@@ -305,13 +349,20 @@ public class BamWindow {
 
 		records.add(new MappedRead(nextRecord));
 		
+		//Add the MappedTemplate
+		MappedTemplate templ=  inferTemplateFromRead(nextRecord);
+		
+		
+		if (templ != null) {
+			templates.add(templ);
+		}
+		
 		//Find next suitable record
 		nextRecord = recordIt.hasNext() 
 				? recordIt.next()
 				: null;
 		
-		
-		//Automagically skip unmapped reads and reads with unmapped mates
+		//Automagically skip reads with mapping quality less than minMQ
 		while(nextRecord != null && (nextRecord.getMappingQuality() < minMQ)) {
 			nextRecord = recordIt.hasNext()
 					? recordIt.next()
@@ -341,10 +392,25 @@ public class BamWindow {
 				break;
 			}
 		}
-
 		if (read.getRecord().getAlignmentEnd() < currentPos) {
 			it.remove();
 		}
+		
+		
+		//Ditto for templates
+		Iterator<MappedTemplate> mit = templates.iterator();
+		MappedTemplate templ = mit.next();
+		while(mit.hasNext()) {
+			if (templ.end < currentPos) {
+				mit.remove();
+			}
+
+			templ = mit.next();
+		}
+		if (templ.end < currentPos) {
+			mit.remove();
+		}
+		
 
 	}
 
