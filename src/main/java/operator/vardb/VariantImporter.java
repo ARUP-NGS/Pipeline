@@ -160,6 +160,46 @@ public class VariantImporter {
 		doc.append("pos", var.getStart());
 		doc.append("ref", var.getRef());
 		doc.append("alt", var.getAlt());
+		
+		//A few special cases....
+		
+		//Zygosity string
+		//TODO: Separate hom ref / hom alt appropriately
+		String zygStr = null;
+		int alleleCount = -1;
+		if (var.getZygosity() != null) {
+			switch (var.getZygosity()) {
+			case HET:  
+				zygStr = "het";
+				alleleCount = 1;
+				break;
+			case HOM: 
+				zygStr = "hom"; 
+				alleleCount = 2;
+				break;
+			case HEMI:
+				zygStr = "hemi"; 
+				alleleCount = 1;
+				break;
+			case UNKNOWN: 
+				zygStr = "?"; 
+				break;
+			}
+		}
+		if (zygStr != null) {
+			doc.append("zygosity", zygStr);
+		}
+		
+		//Allele count
+		if (alleleCount>-1) {
+			doc.append("allele_count", alleleCount);
+		}
+		
+		//Allele frequency
+		double varFreq = var.getProperty(VariantRec.VAR_DEPTH) / var.getProperty(VariantRec.DEPTH);
+		doc.append("allele_frequency", varFreq);
+		
+		
 		doc.append(SET_ID, setID);
 		
 		for(String key : var.getAnnotationKeys()) {
