@@ -101,7 +101,7 @@ public class TestScSNV extends TestCase {
 			
 			//Test first line
 			// scores  2.93008933363103E-5     0.0
-			VariantRec var7 = new VariantRec("1",  1139623,  1139623, "T", "A"); 
+			VariantRec var7 = new VariantRec("1",  1139623,  1139623, "T", "A");
 			annotator.annotateVariant(var7);
 			Assert.assertTrue(var7.getProperty(VariantRec.scSNV_ada).equals(2.93008933363103E-5)); 
 			Assert.assertTrue(var7.getProperty(VariantRec.scSNV_rf).equals(0.0)); 

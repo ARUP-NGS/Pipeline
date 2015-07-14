@@ -78,7 +78,11 @@ public class VarViewerWriter extends VariantPoolWriter {
 			 //added by for the scSNCannotator
 			 //VariantRec.scSNV_gene,
 			 VariantRec.scSNV_ada,
-			 VariantRec.scSNV_rf
+			 VariantRec.scSNV_rf,
+			 VariantRec.CLNSIG,
+			 VariantRec.CLNDSDBID,
+			 VariantRec.CLNDSDB,
+			 VariantRec.CLNDBN,
 			 }));
 	
 	public final static List<String> geneKeys = new ArrayList<String>( Arrays.asList(new String[]{

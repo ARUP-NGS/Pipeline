@@ -25,10 +25,10 @@ public class DBNSFPGeneRanker extends AbstractGeneRelevanceRanker {
 	@Override
 	public void annotateGene(Gene g) throws OperationFailedException {
 		if (geneDB == null) {
-			String pathToDBNSFP = this.getPipelineProperty(DBNSFPAnnotator.DBNSFP_PATH);
-			Logger.getLogger(Pipeline.primaryLoggerName).info("dbNSFP-gene reader using directory : " + pathToDBNSFP);
+			String pathToDBNSFPGene = this.getPipelineProperty(DBNSFPGeneAnnotator.DBNSFPGENE_PATH);
+			Logger.getLogger(Pipeline.primaryLoggerName).info("dbNSFP-gene reader using directory : " + pathToDBNSFPGene);
 			try {
-				geneDB = DBNSFPGene.getDB(new File(pathToDBNSFP + "/dbNSFP2.0b4_gene"));
+				geneDB = DBNSFPGene.getDB(new File(pathToDBNSFPGene + "/dbNSFP2.0b4_gene"));
 			} catch (IOException e) {
 				throw new OperationFailedException("Could not initialize dbNSFP gene file", this);
 			}

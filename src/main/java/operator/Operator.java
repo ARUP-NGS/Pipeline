@@ -272,30 +272,30 @@ public abstract class Operator extends PipelineObject {
 		}
 		
 		
-			//First, load default NMs from the Pipeline properties, if it exists
-			String defaultPreferredNMs = this.getPipelineProperty("default.preferred.nms");
-			if (defaultPreferredNMs != null && useDefaultNMs) {
-				Logger.getLogger(Pipeline.primaryLoggerName).info("Loading default preferred nms from " + defaultPreferredNMs);
-				File dpnms = new File(defaultPreferredNMs);
-				if (dpnms.exists()) {
-					preferredNMs = readNMFile(dpnms);
-				}
-			
-
-			//Now load the specific nms for this operator
-			if (nmsFilePath != null) {
-				File specificNMFile = new File(nmsFilePath);
-				Logger.getLogger(Pipeline.primaryLoggerName).info("Loading specific preferred nms from " + nmsFilePath);
-				Map<String, String> specificNMs = readNMFile(specificNMFile);
-
-				for(String key : specificNMs.keySet()) {
-					preferredNMs.put(key, specificNMs.get(key));
-				}
+		//First, load default NMs from the Pipeline properties, if it exists
+		String defaultPreferredNMs = this.getPipelineProperty("default.preferred.nms");
+		if (defaultPreferredNMs != null && useDefaultNMs) {
+			Logger.getLogger(Pipeline.primaryLoggerName).info("Loading default preferred nms from " + defaultPreferredNMs);
+			File dpnms = new File(defaultPreferredNMs);
+			if (dpnms.exists()) {
+				preferredNMs = readNMFile(dpnms);
 			}
+		
 
-			
-			Logger.getLogger(Pipeline.primaryLoggerName).info("Loaded " + preferredNMs.size() + " preferred transcripts");
+		//Now load the specific nms for this operator
+		if (nmsFilePath != null) {
+			File specificNMFile = new File(nmsFilePath);
+			Logger.getLogger(Pipeline.primaryLoggerName).info("Loading specific preferred nms from " + nmsFilePath);
+			Map<String, String> specificNMs = readNMFile(specificNMFile);
+
+			for(String key : specificNMs.keySet()) {
+				preferredNMs.put(key, specificNMs.get(key));
 			}
+		}
+
+		
+		Logger.getLogger(Pipeline.primaryLoggerName).info("Loaded " + preferredNMs.size() + " preferred transcripts");
+		}
 		return preferredNMs;		
 	}
 

@@ -872,14 +872,14 @@ public class VariantRec {
 	//added for ScSNV
 	public static final String scSNV_ada = "scSNV.ada_score";
 	public static final String scSNV_rf = "scSNV.rf_score";
-	public static final String ARUP_HET_COUNT = "arup.het.count";
-	public static final String ARUP_HOM_COUNT = "arup.hom.count";
-	public static final String ARUP_SAMPLE_COUNT = "arup.sample.count";
-	public static final String CLNSIG = "clnsig";
-	public static final String CLNDBN = "clndbn";
-	public static final String CLNDSDBID = "clndsdbid";
-	public static final String CLNDSDB = "clndsdb";
-	public static final String CLNREVSTAT = "clnrevstat";
+
+	//added for clinvar
+	public static final String CLNSIG = "clinvar.clnsig"; 			//(clinical significance)
+	public static final String CLNDBN = "clinvar.clndbn"; 			//(disease name)
+	public static final String CLNDSDBID = "clinvar.clndsdbid"; 	//(database id)
+	public static final String CLNREVSTAT = "clinvar.clnrevstat"; 	//(review status )
+	public static final String CLNDSDB = "clinvar.clndsdb"; 		//(clinical database)
+
 	
 }
 

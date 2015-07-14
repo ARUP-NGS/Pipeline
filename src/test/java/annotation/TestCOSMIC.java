@@ -2,9 +2,11 @@ package annotation;
 
 import java.io.File;
 
-import junit.framework.Assert;
 import junit.framework.TestCase;
 import operator.variant.COSMICAnnotatorTabix;
+
+import org.junit.Assert;
+
 import pipeline.Pipeline;
 import buffer.variant.VariantPool;
 import buffer.variant.VariantRec;

@@ -92,6 +92,7 @@ public class VariantUploader extends Operator {
 				gzip = Boolean.parseBoolean( gZipStr );
 			}
 			String result = HttpUtils.HttpPostJSON(uploadURL, json, gzip);
+
   					
 			
 			logger.info("Uploading " + vars.size() + " variants to " + uploadURL);

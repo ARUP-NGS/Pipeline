@@ -6,8 +6,11 @@ import java.io.PrintStream;
 
 import operator.variant.MedDirWriter;
 import buffer.variant.VariantRec;
+
 import java.lang.StringBuilder;
 
+import util.vcfParser.VCFParser.GTType;
+import buffer.variant.VariantRec;
 
 /**
  * Variant writer for 
@@ -26,7 +29,8 @@ public class AmpliseqWriter extends MedDirWriter {
 		VariantRec.POP_FREQUENCY,
 		VariantRec.EXOMES_FREQ,
 		VariantRec.RSNUM, 
-		VariantRec.HGMD_HIT};
+		VariantRec.HGMD_HIT
+		};
 
 	public AmpliseqWriter() {
 		//If you want variants to come in in a certain order you can set a Comparator to define
@@ -48,7 +52,7 @@ public class AmpliseqWriter extends MedDirWriter {
 		for(int i=1; i<keys.length; i++) {
 			builder.append("\t" + keys[i]);
 		}
-		builder.append("\tchrom\tpos\tref\talt\tnm.number");
+		builder.append("\tchrom\tpos\tref\talt\tzygosity\tnm.number");
 		outputStream.println(builder.toString());
 	}
 	
@@ -92,7 +96,15 @@ public class AmpliseqWriter extends MedDirWriter {
 				}
 				builder.append("\t" + val);
 			}
-			builder.append("\t" + chrom + "\t" + pos + "\t" + refAllele + "\t" + alt + "\t" +rec.getAnnotation(VariantRec.NM_NUMBER));
+			String het = "het";
+			if (rec.getZygosity() == GTType.HOM) {
+				het = "hom";
+			} else if (rec.getZygosity() == GTType.HEMI) {
+				het = "hemi";
+			} else if (rec.getZygosity() == GTType.UNKNOWN){
+				het = "unknown";
+			}
+			builder.append("\t" + chrom + "\t" + pos + "\t" + refAllele + "\t" + alt + "\t" + het + "\t" +rec.getAnnotation(VariantRec.NM_NUMBER));
 			//write string to stream
 			
 //#CHRISK This is a temporary fix to a bigger issue. Whenever the gene name is "null", do not write to the xls file. This will allow merge.r script to run

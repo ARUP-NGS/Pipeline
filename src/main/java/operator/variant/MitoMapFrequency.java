@@ -13,7 +13,7 @@ public class MitoMapFrequency extends AbstractTabixAnnotator {
 	}
 
 	@Override
-	public boolean addAnnotationsFromString(VariantRec var, String val) {
+	public boolean addAnnotationsFromString(VariantRec var, String val, int altIndex) {
 		String[] toks = val.split("\t");
 		String info = toks[6];
 		Double freq = Double.parseDouble(info);

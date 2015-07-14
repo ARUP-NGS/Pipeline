@@ -49,7 +49,7 @@ import util.text.QueuedLogHandler;
  */
 public class Pipeline {
 
-	public static final String PIPELINE_VERSION = "1.5-beta";
+	public static final String PIPELINE_VERSION = "1.6";
 	protected File source;
 	protected Document xmlDoc;
 	public static final String PROJECT_HOME="home";
