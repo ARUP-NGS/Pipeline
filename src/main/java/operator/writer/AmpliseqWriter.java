@@ -67,7 +67,6 @@ public class AmpliseqWriter extends MedDirWriter {
 		String refAllele = rec.getRef();
 		String chrom = rec.getContig();
 		Integer pos = rec.getStart();
-		Integer end = rec.getEnd();
 		String val;
 
 		String[] altAlleles = rec.getAllAlts();

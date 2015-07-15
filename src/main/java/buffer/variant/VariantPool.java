@@ -1230,8 +1230,8 @@ public class VariantPool extends Operator  {
 		if (inputVariants instanceof CSVFile) {
 			try {
 				String ionTorrentFile = this.getAttribute(IONTORRENTFILE);
-				if ( ionTorrentFile != null ) {
-					System.out.println("IonTorrent file flagged");
+				if (ionTorrentFile != null && ionTorrentFile.toLowerCase().equals("true")) {
+					logger.info("IonTorrent file flagged");
 					this.varLineReader = new IonTorrentCallsOnlyTableParser( ((CSVFile)inputVariants).getFile() );
 					importFromVariantReader();
 				}

@@ -1,4 +1,4 @@
-package operator.variant;
+package operator.varbin;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;

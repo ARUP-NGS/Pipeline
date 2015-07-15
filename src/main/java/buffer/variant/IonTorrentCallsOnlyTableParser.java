@@ -15,7 +15,8 @@ import java.util.List;
 import util.vcfParser.VCFParser;
 import util.vcfParser.VCFParser.GTType;
 
-/** This class will read in the Torrent table allele calls only file and put them into a variant pool for annotating.
+/** This class will read in the Torrent table allele calls only file and put them into a variant pool for annotating. The input CSV structure is slgihtly different than that required by
+ * CSVLineReaders which necessitated a new class.
  * @author kevin
  *
  */
@@ -98,7 +99,7 @@ public class IonTorrentCallsOnlyTableParser extends CSVLineReader {
 	private String getIonTorrentGenotypeString(String ref, String alt, String genotype) {
 		genotype = genotype.toLowerCase();
 		String geno = "";
-		if (genotype.contains("het") ) {
+		/*if (genotype.contains("het") ) {
 
 			geno = ref + "/" + alt;
 		}
@@ -109,7 +110,8 @@ public class IonTorrentCallsOnlyTableParser extends CSVLineReader {
 		else {
 			geno = "./.";
 		}
-		return geno;
+		return geno;*/
+		return "./."; //For now just return missing genotype. Not sure what homozygous means (which allele is homozygous). We have the zygosity which is the only thing used.
 	}
 
 	private GTType getIonTorrentGTType(String genotype) {
