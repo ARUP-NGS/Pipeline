@@ -92,11 +92,13 @@ public class BamWindow {
 	 * @return Approx number of templates overlapping the current position
 	 */
 	public int templateCount() {
-		emitTemplates();
 		return templates.size();
 		
 	}
 	
+	/**
+	 * Emit some debugging info to stdout
+	 */
 	public void emitTemplates() {
 		System.out.println("Position : " + currentPos + " ... "  + templates.size() + " overlapping templates:");
 		for(MappedTemplate tmpl : templates) {
@@ -375,42 +377,40 @@ public class BamWindow {
 	 * Remove from queue those reads whose right edge is less than the current pos
 	 */
 	private void shrinkTrailingEdge() {
-		if (records.isEmpty()) {
-			return;
-		}
-		
-		Iterator<MappedRead> it = records.iterator();
-		
-		MappedRead read = it.next();
-		while(it.hasNext()) {
+		if (!records.isEmpty()) {
+			Iterator<MappedRead> it = records.iterator();
+			MappedRead read = it.next();
+			while(it.hasNext()) {
+				if (read.getRecord().getAlignmentEnd() < currentPos) {
+					it.remove();
+				}
+
+				read = it.next();
+				if (read.getRecord().getAlignmentEnd() > (currentPos+20)) {
+					break;
+				}
+			}
 			if (read.getRecord().getAlignmentEnd() < currentPos) {
 				it.remove();
 			}
-
-			read = it.next();
-			if (read.getRecord().getAlignmentEnd() > (currentPos+20)) {
-				break;
-			}
 		}
-		if (read.getRecord().getAlignmentEnd() < currentPos) {
-			it.remove();
-		}
-		
 		
 		//Ditto for templates
-		Iterator<MappedTemplate> mit = templates.iterator();
-		MappedTemplate templ = mit.next();
-		while(mit.hasNext()) {
+		if (!templates.isEmpty()) {
+			Iterator<MappedTemplate> mit = templates.iterator();
+
+			MappedTemplate templ = mit.next();
+			while(mit.hasNext()) {
+				if (templ.end < currentPos) {
+					mit.remove();
+				}
+
+				templ = mit.next();
+			}
 			if (templ.end < currentPos) {
 				mit.remove();
 			}
-
-			templ = mit.next();
 		}
-		if (templ.end < currentPos) {
-			mit.remove();
-		}
-		
 
 	}
 
