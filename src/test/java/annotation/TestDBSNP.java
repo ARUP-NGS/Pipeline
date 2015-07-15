@@ -243,6 +243,7 @@ public class TestDBSNP extends TestCase {
             var1 = VCFParser.normalizeVariant(var1);
             annotator.annotateVariant(var1);
             System.out.println(var1.toString());
+            Assert.assertNotNull((var1.getAnnotation(VariantRec.RSNUM)));
             Assert.assertTrue(var1.getAnnotation(VariantRec.RSNUM).equals("rs35662505"));
         } catch (Exception ex) {
             thrown = true;
