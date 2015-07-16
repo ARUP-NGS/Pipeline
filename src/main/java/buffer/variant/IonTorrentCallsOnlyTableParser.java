@@ -22,24 +22,18 @@ import util.vcfParser.VCFParser.GTType;
  */
 public class IonTorrentCallsOnlyTableParser extends CSVLineReader {
 
-	public static final String DEPTH = "genotype";
-	public static final String VCF_POS = "vcf.position";
-	public static final String VCF_REF = "vcf.ref";
-	public static final String VCF_ALT = "vcf.variant";
-
 	private boolean headerHasBeenRead = false;
 
 	public static double round(double value, int places) {
-	    if (places < 0) throw new IllegalArgumentException();
+		if (places < 0) throw new IllegalArgumentException();
 
-	    BigDecimal bd = new BigDecimal(value);
-	    bd = bd.setScale(places, RoundingMode.HALF_UP);
-	    return bd.doubleValue();
+		BigDecimal bd = new BigDecimal(value);
+		bd = bd.setScale(places, RoundingMode.HALF_UP);
+		return bd.doubleValue();
 	}
-	
+
 	protected void readHeader() throws IOException {
 		// Ion torrent specific header reading...
-		System.out.println("reading ion torrent header===========================");
 		if (sourceFile == null) {
 			String sourceFilePath = this.getAttribute("filename");
 			if (sourceFilePath == null) {
@@ -96,36 +90,15 @@ public class IonTorrentCallsOnlyTableParser extends CSVLineReader {
 	public IonTorrentCallsOnlyTableParser() {
 	}
 
-	private String getIonTorrentGenotypeString(String ref, String alt, String genotype) {
-		genotype = genotype.toLowerCase();
-		String geno = "";
-		/*if (genotype.contains("het") ) {
-
-			geno = ref + "/" + alt;
-		}
-		else if (genotype.contains("hom") ) {
-
-			geno = alt + "/" + alt;
-		}
-		else {
-			geno = "./.";
-		}
-		return geno;*/
-		return "./."; //For now just return missing genotype. Not sure what homozygous means (which allele is homozygous). We have the zygosity which is the only thing used.
-	}
-
 	private GTType getIonTorrentGTType(String genotype) {
 		genotype = genotype.toLowerCase();
 		if (genotype.contains("het") ) {
 			return GTType.HET;
-		}
-		else if (genotype.contains("hom") ) {
+		} else if (genotype.contains("hom") ) {
 			return GTType.HOM;
-		}
-		else if (genotype.contains("hemi") ) {
+		} else if (genotype.contains("hemi") ) {
 			return GTType.HEMI;
-		}
-		else {
+		} else {
 			return GTType.UNKNOWN;
 		}
 	}
@@ -158,23 +131,19 @@ public class IonTorrentCallsOnlyTableParser extends CSVLineReader {
 			String ref = toks[2];
 			String alt = toks[3];
 			String call = toks[4];
-			String derivedGenotype = getIonTorrentGenotypeString(ref, alt, call);
 			GTType zygosity = getIonTorrentGTType(call);
 
 			Double qual = Double.parseDouble(toks[7]);
 
-
-			//boolean isHet = false;
-			//new VariantRec()
-			rec = new VariantRec(contig, start, start+ref.length(), ref, alt, qual, derivedGenotype, zygosity);
+			rec = new VariantRec(contig, start, start+ref.length(), ref, alt, qual, zygosity);
 			rec = VCFParser.normalizeVariant(rec);
 
-			//"pop.freq","exomes6500.frequency","rsnum","hgmd.hit","chrom","pos","ref","alt","zygosity","nm.number")
+			// These are the only annotations/properties from the torrent table that we keep.
 			rec.addProperty(VariantRec.VAR_FREQ, round(Double.parseDouble(toks[6]), 2) );
 			rec.addProperty(VariantRec.DEPTH, Double.parseDouble(toks[18]));
 			rec.addProperty(VariantRec.VAR_DEPTH, Double.parseDouble(toks[24]));
-			rec.addAnnotation(VariantRec.COSMIC_ID, toks[11]);
 
+			rec.addAnnotation(VariantRec.COSMIC_ID, toks[11]);
 
 			if (sourceFile != null)
 				rec.addAnnotation(VariantRec.SOURCE, sourceFile.getName());
