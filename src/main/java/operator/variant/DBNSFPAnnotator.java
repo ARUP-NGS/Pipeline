@@ -400,34 +400,34 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
 		} catch (NumberFormatException ex){}
 
 		//POP_FREQUENCY
-		try {
-			var.addProperty(VariantRec.POP_FREQUENCY, Double.parseDouble(toks[pop_frequency_column]));
-		} catch (NumberFormatException ex){}
-
-		//AFR_FREQUENCY
-		try {
-			var.addProperty(VariantRec.AFR_FREQUENCY, Double.parseDouble(toks[afr_frequency_column]));
-		} catch (NumberFormatException ex){}
-
-		//EUR_FREQUENCY
-		try {
-			var.addProperty(VariantRec.EUR_FREQUENCY, Double.parseDouble(toks[eur_frequency_column]));
-		} catch (NumberFormatException ex){}
-
-		//AMR_FREQUENCY
-		try {
-			var.addProperty(VariantRec.AMR_FREQUENCY, Double.parseDouble(toks[amr_frequency_column]));
-		} catch (NumberFormatException ex){}
-
-		//ASN_FREQUENCY
-		try {
-			var.addProperty(VariantRec.ASN_FREQUENCY, Double.parseDouble(toks[asn_frequency_column]));
-		} catch (NumberFormatException ex){}
-
-		//EXOMES_FREQ
-		try {
-			var.addProperty(VariantRec.EXOMES_FREQ, Double.parseDouble(toks[exomes_freq_column]));
-		} catch (NumberFormatException ex){}
+//		try {
+//			var.addProperty(VariantRec.POP_FREQUENCY, Double.parseDouble(toks[pop_frequency_column]));
+//		} catch (NumberFormatException ex){}
+//
+//		//AFR_FREQUENCY
+//		try {
+//			var.addProperty(VariantRec.AFR_FREQUENCY, Double.parseDouble(toks[afr_frequency_column]));
+//		} catch (NumberFormatException ex){}
+//
+//		//EUR_FREQUENCY
+//		try {
+//			var.addProperty(VariantRec.EUR_FREQUENCY, Double.parseDouble(toks[eur_frequency_column]));
+//		} catch (NumberFormatException ex){}
+//
+//		//AMR_FREQUENCY
+//		try {
+//			var.addProperty(VariantRec.AMR_FREQUENCY, Double.parseDouble(toks[amr_frequency_column]));
+//		} catch (NumberFormatException ex){}
+//
+//		//ASN_FREQUENCY
+//		try {
+//			var.addProperty(VariantRec.ASN_FREQUENCY, Double.parseDouble(toks[asn_frequency_column]));
+//		} catch (NumberFormatException ex){}
+//
+//		//EXOMES_FREQ
+//		try {
+//			var.addProperty(VariantRec.EXOMES_FREQ, Double.parseDouble(toks[exomes_freq_column]));
+//		} catch (NumberFormatException ex){}
 
 		return true;
 	}
