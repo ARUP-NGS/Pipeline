@@ -1,14 +1,15 @@
 package annotation;
 
-import junit.framework.TestCase;
-
 import java.io.File;
 
+import junit.framework.TestCase;
 import operator.variant.DBNSFPAnnotator;
+
 import org.junit.Assert;
+
 import pipeline.Pipeline;
-import buffer.variant.VariantRec;
 import util.vcfParser.VCFParser;
+import buffer.variant.VariantRec;
 
 
 /**
@@ -419,119 +420,119 @@ public class TestDBNSFP extends TestCase {
         }
         Assert.assertFalse(thrown);
     }
-    public void testPOP_FREQUENCY() {
-        try {
-            //
-            VariantRec var1 = new VariantRec("8", 123140824, 123140824, "C", "T");
-            var1 = VCFParser.normalizeVariant(var1);
-            annotator.annotateVariant(var1);
-            Assert.assertEquals(5.990415335463259E-4, var1.getProperty(VariantRec.POP_FREQUENCY), 0);
-
-            VariantRec varNull = new VariantRec("X", 154262983, 154262983, "T", "A");
-            varNull = VCFParser.normalizeVariant(varNull);
-            annotator.annotateVariant(varNull);
-            Assert.assertNull(varNull.getProperty(VariantRec.POP_FREQUENCY));
-        } catch (Exception ex) {
-            thrown = true;
-            System.err.println("Exception during testing: " + ex.getLocalizedMessage());
-            ex.printStackTrace();
-        }
-        Assert.assertFalse(thrown);
-    }
-    public void testAFR_FREQUENCY() {
-        try {
-            //1533:7.564296520423601E-4
-            VariantRec var1 = new VariantRec("2", 189063248, 189063248, "C", "T");
-            var1 = VCFParser.normalizeVariant(var1);
-            annotator.annotateVariant(var1);
-            Assert.assertEquals(7.564296520423601E-4, var1.getProperty(VariantRec.AFR_FREQUENCY), 0);
-
-            VariantRec varNull = new VariantRec("X", 154262983, 154262983, "T", "A");
-            varNull = VCFParser.normalizeVariant(varNull);
-            annotator.annotateVariant(varNull);
-            Assert.assertNull(varNull.getProperty(VariantRec.AFR_FREQUENCY));
-        } catch (Exception ex) {
-            thrown = true;
-            System.err.println("Exception during testing: " + ex.getLocalizedMessage());
-            ex.printStackTrace();
-        }
-        Assert.assertFalse(thrown);
-    }
-    public void testEUR_FREQUENCY() {
-        try {
-            //7743:9.940357852882703E-4
-            VariantRec var1 = new VariantRec("16", 90009323, 90009323, "C", "T");
-            var1 = VCFParser.normalizeVariant(var1);
-            annotator.annotateVariant(var1);
-            Assert.assertEquals(9.940357852882703E-4, var1.getProperty(VariantRec.EUR_FREQUENCY), 0);
-
-            VariantRec varNull = new VariantRec("X", 154262983, 154262983, "T", "A");
-            varNull = VCFParser.normalizeVariant(varNull);
-            annotator.annotateVariant(varNull);
-            Assert.assertNull(varNull.getProperty(VariantRec.EUR_FREQUENCY));
-        } catch (Exception ex) {
-            thrown = true;
-            System.err.println("Exception during testing: " + ex.getLocalizedMessage());
-            ex.printStackTrace();
-        }
-        Assert.assertFalse(thrown);
-    }
-    public void testAMR_FREQUENCY() {
-        try {
-            //4192:0.001440922190201729
-            VariantRec var1 = new VariantRec("8", 17371180, 17371180, "G", "C");
-            var1 = VCFParser.normalizeVariant(var1);
-            annotator.annotateVariant(var1);
-            Assert.assertEquals(0.001440922190201729, var1.getProperty(VariantRec.AMR_FREQUENCY), 0);
-
-            VariantRec varNull = new VariantRec("X", 154262983, 154262983, "T", "A");
-            varNull = VCFParser.normalizeVariant(varNull);
-            annotator.annotateVariant(varNull);
-            Assert.assertNull(varNull.getProperty(VariantRec.AMR_FREQUENCY));
-        } catch (Exception ex) {
-            thrown = true;
-            System.err.println("Exception during testing: " + ex.getLocalizedMessage());
-            ex.printStackTrace();
-        }
-        Assert.assertFalse(thrown);
-    }
-    public void testASN_FREQUENCY() {
-        try {
-            //4596:0.006944444444444444
-            VariantRec var1 = new VariantRec("9", 27060618, 27060618, "C", "T");
-            var1 = VCFParser.normalizeVariant(var1);
-            annotator.annotateVariant(var1);
-            Assert.assertEquals(0.006944444444444444, var1.getProperty(VariantRec.ASN_FREQUENCY), 0);
-
-            VariantRec varNull = new VariantRec("X", 154262983, 154262983, "T", "A");
-            varNull = VCFParser.normalizeVariant(varNull);
-            annotator.annotateVariant(varNull);
-            Assert.assertNull(varNull.getProperty(VariantRec.ASN_FREQUENCY));
-        } catch (Exception ex) {
-            thrown = true;
-            System.err.println("Exception during testing: " + ex.getLocalizedMessage());
-            ex.printStackTrace();
-        }
-        Assert.assertFalse(thrown);
-    }
-    public void testEXOMES_FREQ() {
-        try {
-            //9967:1.4863258026159333E-4
-            VariantRec var1 = new VariantRec("X", 154467131, 154467131, "G", "A");
-            var1 = VCFParser.normalizeVariant(var1);
-            annotator.annotateVariant(var1);
-            Assert.assertEquals(1.4863258026159333E-4, var1.getProperty(VariantRec.EXOMES_FREQ), 0);
-
-            VariantRec varNull = new VariantRec("X", 154262983, 154262983, "T", "A");
-            varNull = VCFParser.normalizeVariant(varNull);
-            annotator.annotateVariant(varNull);
-            Assert.assertNull(varNull.getProperty(VariantRec.EXOMES_FREQ));
-        } catch (Exception ex) {
-            thrown = true;
-            System.err.println("Exception during testing: " + ex.getLocalizedMessage());
-            ex.printStackTrace();
-        }
-        Assert.assertFalse(thrown);
-    }
+//    public void testPOP_FREQUENCY() {
+//        try {
+//            //
+//            VariantRec var1 = new VariantRec("8", 123140824, 123140824, "C", "T");
+//            var1 = VCFParser.normalizeVariant(var1);
+//            annotator.annotateVariant(var1);
+//            Assert.assertEquals(5.990415335463259E-4, var1.getProperty(VariantRec.POP_FREQUENCY), 0);
+//
+//            VariantRec varNull = new VariantRec("X", 154262983, 154262983, "T", "A");
+//            varNull = VCFParser.normalizeVariant(varNull);
+//            annotator.annotateVariant(varNull);
+//            Assert.assertNull(varNull.getProperty(VariantRec.POP_FREQUENCY));
+//        } catch (Exception ex) {
+//            thrown = true;
+//            System.err.println("Exception during testing: " + ex.getLocalizedMessage());
+//            ex.printStackTrace();
+//        }
+//        Assert.assertFalse(thrown);
+//    }
+//    public void testAFR_FREQUENCY() {
+//        try {
+//            //1533:7.564296520423601E-4
+//            VariantRec var1 = new VariantRec("2", 189063248, 189063248, "C", "T");
+//            var1 = VCFParser.normalizeVariant(var1);
+//            annotator.annotateVariant(var1);
+//            Assert.assertEquals(7.564296520423601E-4, var1.getProperty(VariantRec.AFR_FREQUENCY), 0);
+//
+//            VariantRec varNull = new VariantRec("X", 154262983, 154262983, "T", "A");
+//            varNull = VCFParser.normalizeVariant(varNull);
+//            annotator.annotateVariant(varNull);
+//            Assert.assertNull(varNull.getProperty(VariantRec.AFR_FREQUENCY));
+//        } catch (Exception ex) {
+//            thrown = true;
+//            System.err.println("Exception during testing: " + ex.getLocalizedMessage());
+//            ex.printStackTrace();
+//        }
+//        Assert.assertFalse(thrown);
+//    }
+//    public void testEUR_FREQUENCY() {
+//        try {
+//            //7743:9.940357852882703E-4
+//            VariantRec var1 = new VariantRec("16", 90009323, 90009323, "C", "T");
+//            var1 = VCFParser.normalizeVariant(var1);
+//            annotator.annotateVariant(var1);
+//            Assert.assertEquals(9.940357852882703E-4, var1.getProperty(VariantRec.EUR_FREQUENCY), 0);
+//
+//            VariantRec varNull = new VariantRec("X", 154262983, 154262983, "T", "A");
+//            varNull = VCFParser.normalizeVariant(varNull);
+//            annotator.annotateVariant(varNull);
+//            Assert.assertNull(varNull.getProperty(VariantRec.EUR_FREQUENCY));
+//        } catch (Exception ex) {
+//            thrown = true;
+//            System.err.println("Exception during testing: " + ex.getLocalizedMessage());
+//            ex.printStackTrace();
+//        }
+//        Assert.assertFalse(thrown);
+//    }
+//    public void testAMR_FREQUENCY() {
+//        try {
+//            //4192:0.001440922190201729
+//            VariantRec var1 = new VariantRec("8", 17371180, 17371180, "G", "C");
+//            var1 = VCFParser.normalizeVariant(var1);
+//            annotator.annotateVariant(var1);
+//            Assert.assertEquals(0.001440922190201729, var1.getProperty(VariantRec.AMR_FREQUENCY), 0);
+//
+//            VariantRec varNull = new VariantRec("X", 154262983, 154262983, "T", "A");
+//            varNull = VCFParser.normalizeVariant(varNull);
+//            annotator.annotateVariant(varNull);
+//            Assert.assertNull(varNull.getProperty(VariantRec.AMR_FREQUENCY));
+//        } catch (Exception ex) {
+//            thrown = true;
+//            System.err.println("Exception during testing: " + ex.getLocalizedMessage());
+//            ex.printStackTrace();
+//        }
+//        Assert.assertFalse(thrown);
+//    }
+//    public void testASN_FREQUENCY() {
+//        try {
+//            //4596:0.006944444444444444
+//            VariantRec var1 = new VariantRec("9", 27060618, 27060618, "C", "T");
+//            var1 = VCFParser.normalizeVariant(var1);
+//            annotator.annotateVariant(var1);
+//            Assert.assertEquals(0.006944444444444444, var1.getProperty(VariantRec.ASN_FREQUENCY), 0);
+//
+//            VariantRec varNull = new VariantRec("X", 154262983, 154262983, "T", "A");
+//            varNull = VCFParser.normalizeVariant(varNull);
+//            annotator.annotateVariant(varNull);
+//            Assert.assertNull(varNull.getProperty(VariantRec.ASN_FREQUENCY));
+//        } catch (Exception ex) {
+//            thrown = true;
+//            System.err.println("Exception during testing: " + ex.getLocalizedMessage());
+//            ex.printStackTrace();
+//        }
+//        Assert.assertFalse(thrown);
+//    }
+//    public void testEXOMES_FREQ() {
+//        try {
+//            //9967:1.4863258026159333E-4
+//            VariantRec var1 = new VariantRec("X", 154467131, 154467131, "G", "A");
+//            var1 = VCFParser.normalizeVariant(var1);
+//            annotator.annotateVariant(var1);
+//            Assert.assertEquals(1.4863258026159333E-4, var1.getProperty(VariantRec.EXOMES_FREQ), 0);
+//
+//            VariantRec varNull = new VariantRec("X", 154262983, 154262983, "T", "A");
+//            varNull = VCFParser.normalizeVariant(varNull);
+//            annotator.annotateVariant(varNull);
+//            Assert.assertNull(varNull.getProperty(VariantRec.EXOMES_FREQ));
+//        } catch (Exception ex) {
+//            thrown = true;
+//            System.err.println("Exception during testing: " + ex.getLocalizedMessage());
+//            ex.printStackTrace();
+//        }
+//        Assert.assertFalse(thrown);
+//    }
 
 }
