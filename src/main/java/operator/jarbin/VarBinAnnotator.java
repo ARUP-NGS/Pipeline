@@ -8,22 +8,23 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.logging.Logger;
 
+import operator.OperationFailedException;
+import operator.annovar.Annotator;
+
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import pipeline.Pipeline;
+import pipeline.PipelineObject;
+import util.VCFLineParser;
 import buffer.BAMFile;
 import buffer.VCFFile;
 import buffer.variant.VariantPool;
 import buffer.variant.VariantRec;
-import operator.OperationFailedException;
-import operator.annovar.Annotator;
-import pipeline.Pipeline;
-import pipeline.PipelineObject;
-import util.VCFLineParser;
 
 
-public class JarBinAnnotator extends Annotator {
+public class VarBinAnnotator extends Annotator {
 
 	public static final String VARBIN_PATH = "varbin.path";
 	BAMFile bamFile = null;
