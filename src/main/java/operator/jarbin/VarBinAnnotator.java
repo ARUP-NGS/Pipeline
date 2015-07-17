@@ -1,4 +1,4 @@
-package operator.varbin;
+package operator.jarbin;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -8,20 +8,20 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.logging.Logger;
 
-import operator.OperationFailedException;
-import operator.annovar.Annotator;
-
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import pipeline.Pipeline;
-import pipeline.PipelineObject;
-import util.VCFLineParser;
 import buffer.BAMFile;
 import buffer.VCFFile;
 import buffer.variant.VariantPool;
 import buffer.variant.VariantRec;
+import operator.OperationFailedException;
+import operator.annovar.Annotator;
+import pipeline.Pipeline;
+import pipeline.PipelineObject;
+import util.VCFLineParser;
+
 
 public class VarBinAnnotator extends Annotator {
 
@@ -29,14 +29,14 @@ public class VarBinAnnotator extends Annotator {
 	BAMFile bamFile = null;
 	VCFFile vcfFile = null;
 	String varbinScriptPath = null;
-	
+
 	private File varbinFinalTable = null; //Gets set after varbin execution in prepare()
-	
+
 	protected void prepare() throws OperationFailedException {
 		if (varbinScriptPath == null) {
 			throw new OperationFailedException("Varbin path not specified", this);
 		}
-		
+
 		//We need a VCF to input, but we only want the variants present in the variantpool
 		String destVars = "varbin.input." + ("" + System.currentTimeMillis()).substring(6) + ".vcf"; 
 		try {
@@ -45,12 +45,12 @@ public class VarBinAnnotator extends Annotator {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+
 		String command = "bash " + varbinScriptPath + " -v " + destVars + " -b " + bamFile.getAbsolutePath() + " -a " + "varbin" + " -p varbin";
-		
+
 		//We execute varbin from here and block until it completes...
 		executeCommand(command);
-		
+
 		//Now read in table and annotate variants
 
 		File finalTable = new File("varbin.final.table");
@@ -61,7 +61,7 @@ public class VarBinAnnotator extends Annotator {
 			e.printStackTrace();
 		}
 	}
-	
+
 	private void annotateVarsFromTable(File tableFile) throws IOException {
 		BufferedReader reader = new BufferedReader(new FileReader(tableFile));
 		String line = reader.readLine();
@@ -71,7 +71,7 @@ public class VarBinAnnotator extends Annotator {
 				line = reader.readLine();
 				continue;
 			}
-			
+
 			String[] toks = line.split("\t");
 			if (toks.length < 4) {
 				line = reader.readLine();
@@ -90,17 +90,17 @@ public class VarBinAnnotator extends Annotator {
 				else {
 					Logger.getLogger(Pipeline.primaryLoggerName).warning("Could not find variant to associate with varbin annotation at position " + contig + ":" + pos);
 				}
-			//	System.out.println("Adding bin #" + bin + " to variant : " + var.toSimpleString());
+				//	System.out.println("Adding bin #" + bin + " to variant : " + var.toSimpleString());
 			}
 			catch (NumberFormatException nfe) {
-				
+
 			}
 			line = reader.readLine();
 		}
-		
+
 		reader.close();
 	}
-	
+
 	/**
 	 * Create a new VCF file that contains all variants in the sourceVCF that are present in the vars variant pool
 	 * @param sourceVCF
@@ -111,34 +111,34 @@ public class VarBinAnnotator extends Annotator {
 	private static void makeFilteredVCF(VCFFile sourceVCF, VariantPool vars, String outputFilename) throws IOException {
 		BufferedWriter writer = new BufferedWriter(new FileWriter(outputFilename));
 		VCFLineParser reader = new VCFLineParser(sourceVCF);
-		
+
 		//Emit header of source VCF
 		writer.write(reader.getHeader());
-		
+
 		do {
 			VariantRec var = reader.toVariantRec();
 			if (vars.contains(var.getContig(), var.getStart())) {
 				writer.write(reader.getCurrentLine() + "\n");
 			}
 		} while(reader.advanceLine());
-		
-		
+
+
 		writer.close();
 	}
-	
-	
-	
+
+
+
 	@Override
 	public void annotateVariant(VariantRec var) throws OperationFailedException {
 		//OK, we actually don't do anything in here.... all annotations take place in 'prepare'
 	}
-	
-	
-	
+
+
+
 	@Override
 	public void initialize(NodeList children) {
 		super.initialize(children);
-		
+
 		//BAM file is a required arg
 		for(int i=0; i<children.getLength(); i++) {
 			Node child = children.item(i);
@@ -148,14 +148,14 @@ public class VarBinAnnotator extends Annotator {
 				if (obj instanceof BAMFile) {
 					bamFile = (BAMFile)obj;
 				}
-				
+
 				if (obj instanceof VCFFile) {
 					vcfFile = (VCFFile)obj;
 				}
 
 			}
 		}
-		
+
 		//Check to see if the required attributes have been specified
 		varbinScriptPath = this.getAttribute(VARBIN_PATH);
 		if (varbinScriptPath == null) {
@@ -164,7 +164,7 @@ public class VarBinAnnotator extends Annotator {
 				throw new IllegalArgumentException("No path to varbin script specified");
 			}
 		}
-		
+
 		//Test to see if varbin script is really there
 		File varbinFile = new File(varbinScriptPath);
 		if (! varbinFile.exists()) {
@@ -174,7 +174,7 @@ public class VarBinAnnotator extends Annotator {
 
 	public static void main(String[] args) throws IOException {
 		VarBinAnnotator vb = new VarBinAnnotator();
-		
+
 		vb.annotateVarsFromTable(new File("varbin.final.table"));
 	}
 }
