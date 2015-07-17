@@ -886,6 +886,8 @@ public class VariantRec {
 	public static final String ARUP_SAMPLE_COUNT = "arup.sample.count";
 
 
-	
+	//added for IonTorrentParser
+	public static final String VAR_FREQ = "Var.Freq";
+
 }
 
