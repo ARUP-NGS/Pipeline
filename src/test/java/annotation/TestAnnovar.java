@@ -107,13 +107,13 @@ public class TestAnnovar extends TestCase {
 				Assert.assertTrue(var.getAnnotation(VariantRec.GENE_NAME).contains("EPHA2"));
 				
 				
-				var = vars.findRecord("1", 47280747, "AT", "-");
-				Assert.assertTrue(var != null); 
-				Assert.assertTrue(var.getAnnotation(VariantRec.EXON_FUNCTION).equalsIgnoreCase("frameshift deletion"));
-				Assert.assertTrue(var.getAnnotation(VariantRec.PDOT).contains("p.295_295del"));
-				Assert.assertTrue(var.getAnnotation(VariantRec.CDOT).contains("c.884_885del"));
-				Assert.assertTrue(var.getAnnotation(VariantRec.NM_NUMBER).contains("NM_001099772"));
-				System.out.println(var.getAnnotation(VariantRec.NM_NUMBER)); //EG
+//				var = vars.findRecord("1", 47280747, "AT", "-");
+//				Assert.assertTrue(var != null); 
+//				Assert.assertTrue(var.getAnnotation(VariantRec.EXON_FUNCTION).equalsIgnoreCase("frameshift deletion"));
+//				Assert.assertTrue(var.getAnnotation(VariantRec.PDOT).contains("p.295_295del"));
+//				Assert.assertTrue(var.getAnnotation(VariantRec.CDOT).contains("c.884_885del"));
+//				Assert.assertTrue(var.getAnnotation(VariantRec.NM_NUMBER).contains("NM_001099772"));
+//				System.out.println(var.getAnnotation(VariantRec.NM_NUMBER)); //EG
 
 				
 				
