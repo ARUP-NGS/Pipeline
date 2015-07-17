@@ -881,6 +881,8 @@ public class VariantRec {
 	public static final String CLNDSDB = "clinvar.clndsdb"; 		//(clinical database)
 	
 
-	
+	//added for IonTorrentParser
+	public static final String VAR_FREQ = "Var.Freq";
+
 }
 
