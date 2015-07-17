@@ -115,6 +115,20 @@ public class TestFastDOC {
 			Assert.fail();
 		}
 
+		
+		try {
+			int[] depths = computeCovForRegion(testBam.getFile(), "12", 52308915, 52308916);
+			Assert.assertEquals(0, depths[0]);
+			Assert.assertEquals(1, depths[16]);
+		} catch (IOException e) {
+			e.printStackTrace();
+			Assert.fail();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+			Assert.fail();
+		}
+
+		
 		try {
 			int[] depths = computeCovForRegion(testBam.getFile(), "12", 52306000, 52307600);
 			

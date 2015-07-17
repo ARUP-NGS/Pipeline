@@ -16,6 +16,7 @@ public class SampleManifest {
 	public static final String MANIFEST_FILENAME = "sampleManifest.txt";
 	public static final String SAMPLE_NAME = "sample.name";
 	public static final String ANNOTATED_VARS = "annotated.vars";
+	public static final String JSON_VARS = "json.vars";
 	public static final String ANALYSIS_TYPE = "analysis.type";
 	public static final String VCF = "VCF";
 	public static final String BAM = "BAM";
@@ -84,6 +85,10 @@ public class SampleManifest {
 	
 	public File getQCJSON() {
 		return files.get(QC_JSON);
+	}
+	
+	public File getJSONVars() {
+		return files.get(JSON_VARS);
 	}
 	
 	public File getAnnotatedVars() {

@@ -53,9 +53,6 @@ public class BWAMEMAlign extends IOOperator {
 			throw new OperationFailedException("No output BAM file found", this);
 		}
 		
-		if (inputBuffers.size() != 2) {
-			throw new OperationFailedException("Exactly two fastq files must be provided to this aligner, found " + inputBuffers.size(), this);
-		}
 		
 		String sampleAttr = getAttribute("sample");
 		if (sampleAttr != null)
@@ -63,8 +60,7 @@ public class BWAMEMAlign extends IOOperator {
 		
 		int threads = this.getPipelineOwner().getThreadCount();
 		
-		Logger.getLogger(Pipeline.primaryLoggerName).info("BWA-MEM is aligning " + inputBuffers.get(0).getFilename() + " and " + inputBuffers.get(1).getFilename() + " with " + threads + " threads");
-		
+			
 		
 		String jvmARGStr = properties.get(JVM_ARGS);
 		if (jvmARGStr == null || jvmARGStr.length()==0) {
@@ -77,11 +73,18 @@ public class BWAMEMAlign extends IOOperator {
 		if (!jvmARGStr.contains("java.io.tmpdir"))
 				jvmARGStr =jvmARGStr + " -Djava.io.tmpdir=" + System.getProperty("java.io.tmpdir");
 		
+		String secondFastq = "";
+		if (inputBuffers.size()>1) {
+			secondFastq = inputBuffers.get(1).getAbsolutePath();
+		}
+		
+		Logger.getLogger(Pipeline.primaryLoggerName).info("BWA-MEM is aligning " + inputBuffers.get(0).getFilename() + " " + secondFastq + " with " + threads + " threads");
+		
 		String command = bwaPath 
 				+ " mem "
 				+ refBuf.getAbsolutePath() + " "
 				+ inputBuffers.get(0).getAbsolutePath() + " "
-				+ inputBuffers.get(1).getAbsolutePath() + " "
+				+ secondFastq + " "
 				+ " -t " + threads
 				+ " " + extraOptions
 				+ " -R \"@RG\\tID:unknown\\tSM:" + sample + "\\tPL:ILLUMINA\" "
