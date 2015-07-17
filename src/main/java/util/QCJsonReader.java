@@ -893,9 +893,9 @@ Number of Sanger Requests not Confirmed (Average per Sample)
 				Double above20 = fracAbove.getDouble(20);
 				Double above50 = fracAbove.getDouble(50);
 				qcList.add("mean.coverage", mean);
-				//qcList.add("frac.above.0", above0/100);
-				qcList.add("frac.above.20", above20/100);
-				qcList.add("frac.above.50", above50/100);
+				//qcList.add("frac.above.0", above0);
+				qcList.add("frac.above.20", above20);
+				qcList.add("frac.above.50", above50);
 				
 				JSONObject rawBam = obj.getJSONObject("raw.bam.metrics");
 				Double rawReadCount = rawBam.getDouble("total.reads");
