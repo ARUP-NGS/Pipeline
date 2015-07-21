@@ -71,6 +71,7 @@ public class VarViewerWriter extends VariantPoolWriter {
 			 VariantRec.EXOMES_63K_FREQ,
 			 VariantRec.EXOMES_63K_HET_FREQ,
 			 VariantRec.EXOMES_63K_HOM_FREQ,
+			 VariantRec.EXOMES_63K_HOM_COUNT,
 			 VariantRec.MITOMAP_FREQ,
 			 VariantRec.MITOMAP_ALLELE_ID,
 			 VariantRec.MITOMAP_DIS_CODING,
@@ -78,7 +79,11 @@ public class VarViewerWriter extends VariantPoolWriter {
 			 //added by for the scSNCannotator
 			 //VariantRec.scSNV_gene,
 			 VariantRec.scSNV_ada,
-			 VariantRec.scSNV_rf
+			 VariantRec.scSNV_rf,
+			 VariantRec.CLNSIG,
+			 VariantRec.CLNDSDBID,
+			 VariantRec.CLNDSDB,
+			 VariantRec.CLNDBN,
 			 }));
 	
 	public final static List<String> geneKeys = new ArrayList<String>( Arrays.asList(new String[]{

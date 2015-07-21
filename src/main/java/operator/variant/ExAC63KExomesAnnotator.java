@@ -50,7 +50,7 @@ public class ExAC63KExomesAnnotator extends AbstractTabixAnnotator {
 	 * @throws OperationFailedException
 	 */
 	@Override
-	protected boolean addAnnotationsFromString(VariantRec var, String str) {
+	protected boolean addAnnotationsFromString(VariantRec var, String str, int altIndex) {
 		String[] toks = str.split("\t");
 				
 		//The 7th column is the info column, which looks a little like AF=0.23;AF_AMR=0.123;AF_EUR=0.456...
@@ -67,6 +67,7 @@ public class ExAC63KExomesAnnotator extends AbstractTabixAnnotator {
 		//Total number of samples, apparently, with genotype 1/1, so two alleles for each one
 		
 		safeParseAndSetProperty(var, VariantRec.EXOMES_63K_HOM_FREQ, valueForKey(infoToks, "AC_Hom"), numCalledAlleles/2.0);
+		safeParseAndSetProperty(var, VariantRec.EXOMES_63K_HOM_COUNT, valueForKey(infoToks, "AC_Hom"), 1.0);
 		
 		//Total number of samples with genotype 0/1, so one allele for each
 		safeParseAndSetProperty(var, VariantRec.EXOMES_63K_HET_FREQ, valueForKey(infoToks, "AC_Het"), numCalledAlleles);

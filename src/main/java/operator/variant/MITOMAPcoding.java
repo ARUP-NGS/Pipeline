@@ -24,7 +24,7 @@ public class MITOMAPcoding extends AbstractTabixAnnotator {
 	}
 
 	@Override
-	public boolean addAnnotationsFromString(VariantRec var, String val) {
+	public boolean addAnnotationsFromString(VariantRec var, String val, int altIndex) {
 		String[] toks = val.split("\t");
 			String info = toks[7];
 			String[] infoTok= info.split(";");

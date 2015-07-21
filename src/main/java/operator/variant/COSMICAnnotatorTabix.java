@@ -1,6 +1,7 @@
 package operator.variant;
 
 import java.io.IOException;
+
 import operator.OperationFailedException;
 import buffer.variant.VariantRec;
 
@@ -29,7 +30,7 @@ public class COSMICAnnotatorTabix extends AbstractTabixAnnotator {
 	 */
 
 	@Override
-	protected boolean addAnnotationsFromString(VariantRec var, String val) {
+	protected boolean addAnnotationsFromString(VariantRec var, String val, int altIndex) {
 		String[] toks = val.split("\t");
 		String[] infoTok=toks[7].split(";");
 		String IDTok = toks[2];

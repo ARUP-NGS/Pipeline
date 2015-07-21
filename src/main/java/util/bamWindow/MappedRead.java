@@ -81,6 +81,7 @@ public class MappedRead {
 		return refToReadMap[dif];
 
 	}
+	
 
 	public byte getBaseAtReferencePos(int refPos) {
 		if (!initialized)

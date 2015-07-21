@@ -42,7 +42,7 @@ public class ARUPDB {
 	}
 
 	
-	public String[] getInfoForPostion(String contig, int pos) throws IOException {
+	public QueryResult getInfoForPostion(String contig, int pos) throws IOException {
 		String queryStr = contig + ":" + pos + "-" + (pos);
 		
 		try {
@@ -66,13 +66,19 @@ public class ARUPDB {
 							double overallHets = Double.parseDouble(hetsFoundStr);
 							double overallHoms = Double.parseDouble(homsFoundStr);
 							double overallAF = (overallHets + 2.0*overallHoms)/(double)(2.0*totalSamples); 
-							String overallStr = "" + overallAF;
+							
 							
 							//Create fancier details string here...
 							String details = "Samples: " + (int)totalSamples + " Hets: " + (int)overallHets + " Homs: " + (int)overallHoms;
 							
-							return new String[]{overallStr, details};
-	
+							QueryResult result = new QueryResult();
+							result.overallFreq = overallAF;
+							result.totHets = overallHets;
+							result.totHets = overallHoms;
+							result.totSamples = totalSamples;
+							result.details = details;
+							return result;
+							
 						}
 						if (qPos > pos) {
 							break;
@@ -90,6 +96,14 @@ public class ARUPDB {
 		
 		
 		return null;
+	}
+	
+	class QueryResult {
+		public Double overallFreq;
+		public Double totSamples;
+		public Double totHets;
+		public Double totHoms;
+		public String details;
 	}
 	
 	

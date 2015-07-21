@@ -10,6 +10,7 @@ import org.junit.Test;
 
 import util.Interval;
 import util.coverage.CoverageCalculator;
+import util.coverage.CoverageCalculator.IntervalCovSummary;
 import buffer.BAMFile;
 import buffer.BEDFile;
 import buffer.IntervalsFile;
@@ -187,6 +188,20 @@ public class TestFastDOC {
 			Assert.fail();
 		}
 
+		
+		try {
+			int[] depths = computeCovForRegion(testBam.getFile(), "12", 52308915, 52308916, false);
+			Assert.assertEquals(0, depths[0]);
+			Assert.assertEquals(1, depths[16]);
+		} catch (IOException e) {
+			e.printStackTrace();
+			Assert.fail();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+			Assert.fail();
+		}
+
+		
 		try {
 			int[] depths = computeCovForRegion(testBam.getFile(), "12", 52306000, 52307600,  false);
 			
@@ -215,19 +230,46 @@ public class TestFastDOC {
 	public void TestMinMQ() throws IOException, InterruptedException{
 		File bamFile = new File("src/test/java/testbams/Tiny.MTOR.bam") ;
 		IntervalsFile intervals = new BEDFile(new File("src/test/java/testBEDs/TinyMTOR.bed"));
+
 		List<Interval> intervalList = new ArrayList<Interval>();
 		CoverageCalculator calc0 = new CoverageCalculator(bamFile, intervals, 0, false);
 		CoverageCalculator calc61 = new CoverageCalculator(bamFile, intervals, 61, false);
 		CoverageCalculator calc60 = new CoverageCalculator(bamFile, intervals, 60, false);
-		int[] depths0 = calc0.computeOverallCoverage();
-		int[] depths61 = calc61.computeOverallCoverage();
-		int[] depths60 = calc60.computeOverallCoverage();
+
+		List<IntervalCovSummary> depths0 = calc0.computeCoverageByInterval();
+		List<IntervalCovSummary> depths61 = calc61.computeCoverageByInterval();
+		List<IntervalCovSummary> depths60 = calc60.computeCoverageByInterval();
+		
+		double totalExtent = 0;
+		double totalDepth = 0;
+		for(IntervalCovSummary cov : depths0) {
+			totalExtent += (double)cov.intervalSize();
+			totalDepth += cov.meanDepth*cov.intervalSize();
+		}
+		double grandMeanDepth0 = totalDepth / totalExtent;
+		
+		totalExtent = 0;
+		totalDepth = 0;
+		for(IntervalCovSummary cov : depths61) {
+			totalExtent += (double)cov.intervalSize();
+			totalDepth += cov.meanDepth*cov.intervalSize();
+		}
+		double grandMeanDepth61 = totalDepth / totalExtent;
+		
+		totalExtent = 0;
+		totalDepth = 0;
+		for(IntervalCovSummary cov : depths60) {
+			totalExtent += (double)cov.intervalSize();
+			totalDepth += cov.meanDepth*cov.intervalSize();
+		}
+		double grandMeanDepth60 = totalDepth / totalExtent;
+		
 		// Tests that the original value matches.
-		Assert.assertTrue(Math.round(depths0[0]) == 977);
+		Assert.assertTrue(Math.round(grandMeanDepth0) == 977);
 		// Test that no reads in this set are above 60 MQ. (BWA)
-		Assert.assertTrue(Math.round(depths61[0]) == 0);
+		Assert.assertTrue(Math.round(grandMeanDepth61) == 0);
 		// Test that the result is roughly what samtools view -L with minMQ looks like.
-		Assert.assertTrue(Math.round(depths60[0]) == 970);
+		Assert.assertTrue(Math.round(grandMeanDepth60) == 970);
 	}
 	
 	public static int[] computeCovForRegion(File bamFile, String contig, int start, int end, boolean countTemplates) throws IOException, InterruptedException {

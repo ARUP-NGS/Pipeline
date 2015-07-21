@@ -6,6 +6,7 @@ import java.util.logging.Logger;
 
 import operator.OperationFailedException;
 import operator.annovar.Annotator;
+import operator.variant.ARUPDB.QueryResult;
 import pipeline.Pipeline;
 import buffer.variant.VariantRec;
 
@@ -37,16 +38,21 @@ public class ARUPDBAnnotate extends Annotator {
 			}
 		}
 		
-		String[] dbInfo;
 		try {
-			dbInfo = arupDB.getInfoForPostion(var.getContig(), var.getStart());
+			QueryResult dbInfo = arupDB.getInfoForPostion(var.getContig(), var.getStart());
 			if (dbInfo != null) {
-				var.addProperty(VariantRec.ARUP_OVERALL_FREQ, Double.parseDouble(dbInfo[0]));
-				var.addAnnotation(VariantRec.ARUP_FREQ_DETAILS, dbInfo[1]);
+				var.addProperty(VariantRec.ARUP_OVERALL_FREQ, dbInfo.overallFreq);
+				var.addProperty(VariantRec.ARUP_HET_COUNT, dbInfo.totHets);
+				var.addProperty(VariantRec.ARUP_HOM_COUNT, dbInfo.totHoms);
+				var.addProperty(VariantRec.ARUP_SAMPLE_COUNT, dbInfo.totSamples);
+				var.addAnnotation(VariantRec.ARUP_FREQ_DETAILS, dbInfo.details);
 				
 			}
 			else {
 				var.addProperty(VariantRec.ARUP_OVERALL_FREQ, 0.0);
+				var.addProperty(VariantRec.ARUP_HET_COUNT, 0.0);
+				var.addProperty(VariantRec.ARUP_HOM_COUNT, 0.0);
+				var.addProperty(VariantRec.ARUP_SAMPLE_COUNT, 0.0);
 				var.addAnnotation(VariantRec.ARUP_FREQ_DETAILS, "Total samples: 0");
 			}
 			
@@ -60,3 +66,4 @@ public class ARUPDBAnnotate extends Annotator {
 
 	
 }
+

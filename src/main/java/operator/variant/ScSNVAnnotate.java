@@ -1,11 +1,6 @@
 package operator.variant;
 
 
-import java.io.IOException;
-
-import org.broad.tribble.readers.TabixReader;
-
-import operator.OperationFailedException;
 import util.vcfParser.VCFParser;
 import buffer.variant.VariantRec;
 
@@ -69,32 +64,17 @@ import buffer.variant.VariantRec;
  *
  */
 
-public class ScSNVAnnotate extends AbstractTabixAnnotator{
-	
-	private boolean initialized = false;
-	private TabixReader reader = null;
-	
+public class ScSNVAnnotate extends AbstractTabixAnnotator {
 	
 	public static final String dbScSNV_PATH = "dbScSNV.path"; 
+	
 	@Override
 	protected String getPathToTabixedFile() {
 		return searchForAttribute(dbScSNV_PATH);
 	}
-	
-	protected void initializeReader(String filePath) {
-		
-		try {
-			reader = new TabixReader(filePath);
-		} catch (IOException e) {
-			throw new IllegalArgumentException("Error opening data at path " + filePath + " error : " + e.getMessage());
-		}
-		initialized = true;
-	}
-
-	
 
 	@Override 
-	protected boolean addAnnotationsFromString(VariantRec var, String val) {
+	protected boolean addAnnotationsFromString(VariantRec var, String val, int altIndex) {
 		String[] toks = val.split("\t");
 		String _ada = toks[14];
 		String _rf = toks[15];
@@ -116,70 +96,33 @@ public class ScSNVAnnotate extends AbstractTabixAnnotator{
 		return true;
 	}
 	
-	
-	
-	@Override
-	public void annotateVariant(VariantRec varToAnnotate) throws OperationFailedException {
-		if (! initialized) {
-			throw new OperationFailedException("Failed to initialize", this);
-		}
-		
-		if (reader == null) {
-			throw new OperationFailedException("Tabix reader not initialized", this);
-		}
+	/**
+	 * Parses variants from the given VCF line (appropriately handling multiple alts) and compare each variant tot he
+	 * 'varToAnnotate'. If a perfect match (including both chr, pos, ref, and alt) 
+	 * @param varToAnnotate
+	 * @param vcfLine
+	 * @return
+	 */
+	protected int findMatchingVariant(VariantRec varToAnnotate, String vcfLine) {
+		String[] toks = vcfLine.split("\t");
+		String[] alts = toks[3].split(",");
+		for(int i=0; i<alts.length; i++) {
+			VariantRec queryResultVar = new VariantRec(toks[0], Integer.parseInt(toks[1]), Integer.parseInt(toks[1])+toks[1].length(), toks[2], alts[i]);
+			queryResultVar = VCFParser.normalizeVariant(queryResultVar);
 
-		String contig = varToAnnotate.getContig();
-		Integer pos = varToAnnotate.getStart();
-		//System.out.println(contig + " " + pos);
-		String queryStr = contig + ":" + (pos) + "-" + (pos); 
-		
-		try {
-			//Perform the lookup
-			TabixReader.Iterator iter = reader.query(queryStr);
+			if (queryResultVar.getContig().equals(varToAnnotate.getContig())
+					&& queryResultVar.getStart() == varToAnnotate.getStart()
+					&& queryResultVar.getRef().equals(varToAnnotate.getRef())
+					&& queryResultVar.getAlt().equals(varToAnnotate.getAllAlts()[i])) { //change to loop through all alts
 
-			if(iter != null) {
-				try {
-					String val = iter.next();
-					
-					while(val != null) {
-						String[] toks = val.split("\t"); //length of the array 16
-				
-						if (toks.length > 15) {
-
-							
-							//Convert the result (which is a line of a VCF file) into a variant rec
-							// call the constructer and set variants
-							VariantRec queryResultVar = new VariantRec(toks[0], Integer.parseInt(toks[1]), Integer.parseInt(toks[1]), toks[2], toks[3]);
-							//Important: Normalize the record so that it will match the 
-							//variants in the variant pool that we want to annotate
-							queryResultVar = VCFParser.normalizeVariant(queryResultVar);
-							
-							//Make sure the (normalized) variant we get from the tabix query matches the
-							//variant we want to annotate
-							
-							if (queryResultVar.getContig().equals(varToAnnotate.getContig())
-									&& queryResultVar.getStart() == varToAnnotate.getStart()
-									&& queryResultVar.getRef().equals(varToAnnotate.getRef())
-									&& queryResultVar.getAlt().equals(varToAnnotate.getAlt())) {
-								//Everything looks good, so go ahead and annotate
-								boolean ok = addAnnotationsFromString(varToAnnotate, val);
-								
-								if (ok)
-									break;
-							}
-						}
-						val = iter.next();
-					}
-				} catch (IOException e) {
-					throw new OperationFailedException("Error reading data file: " + e.getMessage(), this);
+				//Everything looks good, so go ahead and annotate		
+				boolean ok = addAnnotationsFromString(varToAnnotate, vcfLine, i);
+				if (ok) {
+					return i;
 				}
-			}
-		}
-		catch (RuntimeException rex) {
-			//Bad contigs will cause an array out-of-bounds exception to be thrown by
-			//the tabix reader. There's not much we can do about this since the methods
-			//are private... right now we just ignore it and skip this variant
-		}
-	
+			} //if perfect variant match
+
+		}//Loop over alts	
+		return -1;
 	}
 }

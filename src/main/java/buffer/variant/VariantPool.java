@@ -45,7 +45,8 @@ public class VariantPool extends Operator  {
 	public static final String ALL_GENES = "all.genes"; //If specified as attribute, include all genes one variant per gene
 	public static final String STRIPINITIALMATCHINGBASEPARAM = "strip.initial.matching.bases"; //if specified as attribute, otherwise default to true (i.e. will strip)
 	public static final String STRIPTRAILINGMATCHINGBASEPARAM = "strip.trailing.matching.bases"; //if specified as attribute, otherwise default to true (i.e. will strip)
-	
+	public static final String IONTORRENTFILE = "ion.torrent"; //if True, it will create a different csv line reader. /default to false
+
 	protected Map<String, List<VariantRec>>  vars = new HashMap<String, List<VariantRec>>();
 	private VariantRec qRec = new VariantRec("?", 0, 0, "x", "x", 0.0, "./.", GTType.UNKNOWN);
 	private boolean operationPerformed = false; //Set to true when performOperation called, avoids loading variants multiple times
@@ -1228,8 +1229,16 @@ public class VariantPool extends Operator  {
 		
 		if (inputVariants instanceof CSVFile) {
 			try {
-				this.varLineReader = new CSVLineReader( ((CSVFile)inputVariants).getFile() );
-				importFromVariantReader();
+				String ionTorrentFile = this.getAttribute(IONTORRENTFILE);
+				if (ionTorrentFile != null && Boolean.parseBoolean(ionTorrentFile) ) {
+					logger.info("IonTorrent file flagged");
+					this.varLineReader = new IonTorrentCallsOnlyTableParser( ((CSVFile)inputVariants).getFile() );
+					importFromVariantReader();
+				}
+				else {
+					this.varLineReader = new CSVLineReader( ((CSVFile)inputVariants).getFile() );
+					importFromVariantReader();
+				}
 			} catch (IOException e) {
 				e.printStackTrace();
 				throw new OperationFailedException("IO error reading file: " + inputVariants.getAbsolutePath(), this);

@@ -860,6 +860,7 @@ public class VariantRec {
 	public static final String EXOMES_63K_OTH_FREQ = "exomes63K.al.freq.oth";
 	public static final String EXOMES_63K_OTH_HET = "exomes63K.al.freq.oth.het";
 	public static final String EXOMES_63K_OTH_HOM = "exomes63K.al.freq.oth.hom";
+	public static final String EXOMES_63K_HOM_COUNT = "exomes63K.al.count.hom";;
 	public static final String MITOMAP_FREQ = "mitomap.db.freq";
 	public static final String MITOMAP_ALLELE_ID = "mitomap.allele.id";
 	public static final String MITOMAP_DIS_CODING = "mitomap.coding.disease";
@@ -872,6 +873,21 @@ public class VariantRec {
 	//added for ScSNV
 	public static final String scSNV_ada = "scSNV.ada_score";
 	public static final String scSNV_rf = "scSNV.rf_score";
-	
+
+	//added for clinvar
+	public static final String CLNSIG = "clinvar.clnsig"; 			//(clinical significance)
+	public static final String CLNDBN = "clinvar.clndbn"; 			//(disease name)
+	public static final String CLNDSDBID = "clinvar.clndsdbid"; 	//(database id)
+	public static final String CLNREVSTAT = "clinvar.clnrevstat"; 	//(review status )
+	public static final String CLNDSDB = "clinvar.clndsdb"; 		//(clinical database)
+
+	public static final String ARUP_HET_COUNT = "arup.het.count";
+	public static final String ARUP_HOM_COUNT = "arup.hom.count";
+	public static final String ARUP_SAMPLE_COUNT = "arup.sample.count";
+
+
+	//added for IonTorrentParser
+	public static final String VAR_FREQ = "Var.Freq";
+
 }
 

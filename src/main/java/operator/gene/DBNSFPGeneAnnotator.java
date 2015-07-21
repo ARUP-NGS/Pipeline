@@ -25,14 +25,16 @@ public class DBNSFPGeneAnnotator extends AbstractGeneAnnotator {
 
 	DBNSFPGene db;
 	
+	public static final String DBNSFPGENE_PATH = "dbnsfp.gene.path";
+	
 	@Override
 	public void annotateGene(Gene g) throws OperationFailedException {
 		// TODO Auto-generated method stub
 		if (db == null) {
 			
-			String pathToDBNSFP = this.getPipelineProperty(DBNSFPAnnotator.DBNSFP_PATH);
-			Logger.getLogger(Pipeline.primaryLoggerName).info("dbNSFP-gene reader using directory : " + pathToDBNSFP);
-			File dbFile = new File(pathToDBNSFP + "/dbNSFP2.0b4_gene");
+			String pathToDBNSFPGene = this.getPipelineProperty(DBNSFPGENE_PATH);
+			Logger.getLogger(Pipeline.primaryLoggerName).info("dbNSFP-gene reader using directory : " + pathToDBNSFPGene);
+			File dbFile = new File(pathToDBNSFPGene + "/dbNSFP2.0b4_gene");
 			Logger.getLogger(Pipeline.primaryLoggerName).info("dbNSFP-gene looking to use file: " + dbFile.getAbsolutePath());
 			try {
 				db = DBNSFPGene.getDB(dbFile);
@@ -55,12 +57,12 @@ public class DBNSFPGeneAnnotator extends AbstractGeneAnnotator {
 	@Override
 	public void initialize(NodeList children) {
 		super.initialize(children);
-		String pathToDBNSFP = this.getPipelineProperty(DBNSFPAnnotator.DBNSFP_PATH);
-		if (pathToDBNSFP == null) {
+		String pathToDBNSFPGene = this.getPipelineProperty(DBNSFPGENE_PATH);
+		if (pathToDBNSFPGene == null) {
 			throw new IllegalArgumentException("No path to dbNSFP specified, cannot use dbNSFP gene annotator");
 		}
-		Logger.getLogger(Pipeline.primaryLoggerName).info("dbNSFP-gene reader using directory : " + pathToDBNSFP);
-		File dbFile = new File(pathToDBNSFP + "/dbNSFP2.0b4_gene");
+		Logger.getLogger(Pipeline.primaryLoggerName).info("dbNSFP-gene reader using directory : " + pathToDBNSFPGene);
+		File dbFile = new File(pathToDBNSFPGene + "/dbNSFP2.0b4_gene");
 		if (! dbFile.exists()) {
 			throw new IllegalArgumentException("DBNSFP file " + dbFile.getAbsolutePath() + " does not exist");
 		}
