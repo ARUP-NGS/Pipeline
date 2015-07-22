@@ -9,6 +9,9 @@ import java.io.File;
  */
 public class BEDGraphFile extends BEDFile {
 
+	public BEDGraphFile() {
+		super();
+	}
 
 	public BEDGraphFile(File file) {
 		super(file);
