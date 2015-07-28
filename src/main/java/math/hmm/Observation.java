@@ -22,4 +22,5 @@ public class Observation implements Comparable<Observation> {
 	public int compareTo(Observation a) {
 		return Integer.compare(this.position, a.position);
 	}
+	
 }

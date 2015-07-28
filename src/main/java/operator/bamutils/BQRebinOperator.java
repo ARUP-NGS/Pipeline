@@ -1,5 +1,7 @@
 package operator.bamutils;
 
+import java.util.logging.Logger;
+
 import net.sf.samtools.SAMFileReader;
 import net.sf.samtools.SAMFileReader.ValidationStringency;
 import net.sf.samtools.SAMFileWriter;
@@ -8,7 +10,6 @@ import net.sf.samtools.SAMRecord;
 import operator.IOOperator;
 import operator.OperationFailedException;
 
-import org.apache.log4j.Logger;
 import org.w3c.dom.NodeList;
 
 import pipeline.Pipeline;

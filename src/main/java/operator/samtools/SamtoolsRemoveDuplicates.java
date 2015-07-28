@@ -1,9 +1,8 @@
 package operator.samtools;
 
+import java.util.logging.Logger;
+
 import operator.PipedCommandOp;
-
-import org.apache.log4j.Logger;
-
 import pipeline.Pipeline;
 import pipeline.PipelineXMLConstants;
 
