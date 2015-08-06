@@ -24,14 +24,14 @@ public class ImporterApp {
 	
 	
 	public static void main(String[] args) throws JSONException {
-		String host = "10.90.225.19:27017";
+		String host = "ngsvarms01.aruplab.net:27017";
 		String varDBName = "test";
-		String varCollectionName = "vars_from_ngsweb";
-		String metadataCollectionName = "metadata_from_ngsweb";
+		String varCollectionName = "pedfilter_test_annot";
+		String metadataCollectionName = "pedfilter_test_meta";
 		
 
 		if (args.length==0) {
-			System.err.println("Please enter the sampel id, group id, and the path to the review directory to upload");
+			System.err.println("Please enter the sample id, group id, and the path to the review directory to upload");
 			return;
 		}
 		
