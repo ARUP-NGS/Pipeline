@@ -178,12 +178,14 @@
       <version>4.11</version>
       <scope>test</scope>
     </dependency>
-  </dependencies>
-
     <dependency>
       <groupId>com.beust</groupId>
       <artifactId>jcommander</artifactId>
       <version>1.48</version>
     </dependency>
+
+
+  </dependencies>
+
 
 </project>
