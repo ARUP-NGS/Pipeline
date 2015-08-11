@@ -324,16 +324,23 @@ public class BamWindow {
 	}
 	
 	private static MappedTemplate inferTemplateFromRead(SAMRecord read) {
-		int tStart = read.getAlignmentStart();
-		int tEnd = read.getAlignmentEnd();
-		if (read.getProperPairFlag()
-				&& (! read.getMateUnmappedFlag()) 
-				&& (read.getReferenceIndex() == read.getMateReferenceIndex())) {
-			tEnd = read.getMateAlignmentStart() + read.getReadLength();
+		
+		int readStart = read.getAlignmentStart();
+		int readEnd = read.getAlignmentEnd();
+		
+		int mateStart = read.getMateAlignmentStart();
+		int mateEnd = read.getMateAlignmentStart() + read.getReadLength();
+		
+		
+		if (!read.getProperPairFlag()
+				|| (read.getMateUnmappedFlag()) 
+				|| (read.getReferenceIndex() != read.getMateReferenceIndex())) {
+			mateStart = readStart;
+			mateEnd = readEnd;
 		}
 		
-		int templateStart = Math.min(tStart, tEnd);
-		int templateEnd = Math.max(tStart, tEnd);
+		int templateStart = Math.min(readStart, mateStart);
+		int templateEnd = Math.max(readEnd, mateEnd);
 		
 		if (templateStart == read.getAlignmentStart()) {
 			return new MappedTemplate(templateStart, templateEnd, new MappedRead(read));

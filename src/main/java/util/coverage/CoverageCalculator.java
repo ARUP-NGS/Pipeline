@@ -326,6 +326,7 @@ public class CoverageCalculator {
 		public void run() {
 			intervalResults = new ArrayList<IntervalCovSummary>();
 			try {
+				System.err.println("Beginning job for " + subIntervals.size() + " intervals..");
 				BamWindow window = new BamWindow(inputBam, minMQ);
 				
 				for(Interval interval : subIntervals) {
@@ -412,12 +413,13 @@ public class CoverageCalculator {
 		bam.advanceTo(chr, start);
 		
 		//Skip all processing if there are no more reads in this contig
-		if (! bam.hasMoreReadsInCurrentContig()) {
-			depths[0] += (end-start); //all zeros
-			result.sitesAssessed = end-start;
-			result.covSum = 0L;
-			return result;
-		}
+		//This is a little buggy - there may still be reads in the window even if hasMoreReadsInCurrentContig() is false
+//		if (! bam.hasMoreReadsInCurrentContig()) {
+//			depths[0] += (end-start); //all zeros
+//			result.sitesAssessed = end-start;
+//			result.covSum = 0L;
+//			return result;
+//		}
 		
 		long covSum = 0L; //Tracks sum of all coverage, used for calculating mean coverage exactly
 		int sitesAssessed = 0; //Tracks total number of sites examined, used for calculating exact mean
@@ -429,6 +431,7 @@ public class CoverageCalculator {
 			} else {
 				depth = bam.size();
 			}
+			System.err.println("Depth at pos " + bam.getCurrentPosition() + " : " + depth);
 			sitesAssessed += advance;
 			covSum += advance * depth;
 			depth = Math.min(depth, depths.length-1);
@@ -436,6 +439,13 @@ public class CoverageCalculator {
 			cont = bam.advanceBy(advance);
 		}
 		
+		//We may have stopped iterating over the bam because there are no more reads to be read. In this
+		//case there may still be a lot of zero-depth positions to fill, so account for them here
+		if (bam.getCurrentPosition() < end) {
+			int remainingPoses = (end - bam.getCurrentPosition())/advance;
+			depths[0] += remainingPoses;
+			sitesAssessed += (end-bam.getCurrentPosition());
+		}
 		result.sitesAssessed = sitesAssessed;
 		result.covSum = covSum;
 		return result;
