@@ -412,40 +412,26 @@ public class CoverageCalculator {
 		}
 		bam.advanceTo(chr, start);
 		
-		//Skip all processing if there are no more reads in this contig
-		//This is a little buggy - there may still be reads in the window even if hasMoreReadsInCurrentContig() is false
-//		if (! bam.hasMoreReadsInCurrentContig()) {
-//			depths[0] += (end-start); //all zeros
-//			result.sitesAssessed = end-start;
-//			result.covSum = 0L;
-//			return result;
-//		}
-		
 		long covSum = 0L; //Tracks sum of all coverage, used for calculating mean coverage exactly
 		int sitesAssessed = 0; //Tracks total number of sites examined, used for calculating exact mean
-		boolean cont = true;
-		while(cont && bam.getCurrentPosition() < end) {
+		int pos = start;
+		while(pos < end) {
 			int depth = -1;
 			if (countTemplates) {
 				depth = bam.templateCount();
 			} else {
 				depth = bam.size();
 			}
-			System.err.println("Depth at pos " + bam.getCurrentPosition() + " : " + depth);
+			System.err.println("Depth at pos " + pos + " : " + depth);
 			sitesAssessed += advance;
 			covSum += advance * depth;
 			depth = Math.min(depth, depths.length-1);
 			depths[depth]+=advance; //We assume this base and the next 'advance' bases all have the same coverage
-			cont = bam.advanceBy(advance);
+			bam.advanceBy(advance);
+			pos += advance;
 		}
 		
-		//We may have stopped iterating over the bam because there are no more reads to be read. In this
-		//case there may still be a lot of zero-depth positions to fill, so account for them here
-		if (bam.getCurrentPosition() < end) {
-			int remainingPoses = (end - bam.getCurrentPosition())/advance;
-			depths[0] += remainingPoses;
-			sitesAssessed += (end-bam.getCurrentPosition());
-		}
+
 		result.sitesAssessed = sitesAssessed;
 		result.covSum = covSum;
 		return result;

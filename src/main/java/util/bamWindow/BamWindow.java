@@ -153,10 +153,11 @@ public class BamWindow {
 	/**
 	 * Advance the current position by the given number of bases
 	 * @param bases
+	 * @returns false if the window is empty and there are no more bases to read
 	 */
 	public boolean advanceBy(int bases) {
 		int newTarget = currentPos + bases;
-		if (! hasMoreReadsInCurrentContig()) {
+		if (! hasMoreReadsInCurrentContig() && records.isEmpty()) {
 			if (DEBUG)
 				System.out.println("No more reads in contig : " + currentContig);
 			return false;
@@ -183,6 +184,10 @@ public class BamWindow {
 	 */
 	public boolean hasMoreReadsInCurrentContig() {
 		return nextRecord != null && nextRecord.getReferenceName().equals(currentContig);
+	}
+	
+	public boolean hasReadsOverlapping(int pos) {
+		return (!records.isEmpty()) && (pos >= records.getFirst().readAlignmentStart && pos<records.getLast().read.getAlignmentEnd());
 	}
 	
 	/**
@@ -288,7 +293,13 @@ public class BamWindow {
 		nextRecord = recordIt.hasNext() 
 				? recordIt.next()
 				: null;
-		
+		//Skip records with mapping quality < minMQ
+		while(nextRecord != null && (nextRecord.getMappingQuality() < minMQ)) {
+			nextRecord = recordIt.hasNext()
+							? recordIt.next()
+							: null;
+		}
+				
 		if (nextRecord != null)
 			currentContig = contig;
 		else {
