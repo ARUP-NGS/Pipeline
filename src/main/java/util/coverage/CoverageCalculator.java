@@ -83,7 +83,7 @@ public class CoverageCalculator {
 		ThreadPoolExecutor pool = (ThreadPoolExecutor) Executors.newFixedThreadPool( threads );
 
 		for(String chr : intervals.getContigs()) {
-			CovCalculator covJob = new CovCalculator(inputBam, chr, intervals.getIntervalsForContig(chr), new int[32768], countTemplates);
+			CovCalculator covJob = new CovCalculator(inputBam, chr, intervals.getIntervalsForContig(chr), new int[32768], countTemplates, getMinMQ());
 			pool.submit(covJob);
 			jobs.add(covJob);
 		}
@@ -121,7 +121,7 @@ public class CoverageCalculator {
 				subIntervals.add(interval);
 				
 				if (subIntervals.size() > maxSubIntervalSize) {
-					CovCalculator covJob = new CovCalculator(inputBam, chr, subIntervals, overallDepths, countTemplates);
+					CovCalculator covJob = new CovCalculator(inputBam, chr, subIntervals, overallDepths, countTemplates, getMinMQ());
 					pool.submit(covJob);
 					subIntervals = new ArrayList<Interval>();
 				}
@@ -129,7 +129,7 @@ public class CoverageCalculator {
 			
 			//There may still be a few remaining 
 			if (subIntervals.size() > 0) {
-				CovCalculator covJob = new CovCalculator(inputBam, chr, subIntervals, overallDepths, countTemplates);
+				CovCalculator covJob = new CovCalculator(inputBam, chr, subIntervals, overallDepths, countTemplates, getMinMQ());
 				pool.submit(covJob);
 				subIntervals = new ArrayList<Interval>();
 			}
@@ -143,7 +143,14 @@ public class CoverageCalculator {
 		return overallDepths;
 	}
 	
-	
+
+	public int getMinMQ() {
+		return minMQ;
+	}
+
+	public void setMinMQ(int minMQ) {
+		this.minMQ = minMQ;
+	}
 	
 	/**
 	 * Compute the mean from the depth distribution
@@ -293,6 +300,8 @@ public class CoverageCalculator {
 		}
 	}
 	
+
+	
 	/**
 	 * This class encapsulates a single job or task of computing coverage. It implements Runnable, so it
 	 * can be executed by a thread in a thread pool. When that happens, it just calls the 'calculateDepthHistogram'
@@ -308,18 +317,20 @@ public class CoverageCalculator {
 		private List<Interval> subIntervals;
 		private List<IntervalCovSummary> intervalResults = null;
 		private boolean countTemplates;
+		final int minMapQ;
 
 		private boolean done = false;
 		private Exception error = null;
 		private int sitesAssessed = 0;
 		private long covSum = 0L;
 		
-		public CovCalculator(File inputBam, String chr, List<Interval> subIntervals, int[] depths, boolean countTemplates) {
+		public CovCalculator(File inputBam, String chr, List<Interval> subIntervals, int[] depths, boolean countTemplates, int minMapQ) {
 			this.inputBam = inputBam;
 			this.chr = chr;
 			this.subIntervals = subIntervals;
 			this.depths = depths;
 			this.countTemplates = countTemplates;
+			this.minMapQ = minMapQ;
 		}
 		
 		@Override
@@ -422,7 +433,7 @@ public class CoverageCalculator {
 			} else {
 				depth = bam.size();
 			}
-			System.err.println("Depth at pos " + pos + " : " + depth);
+			
 			sitesAssessed += advance;
 			covSum += advance * depth;
 			depth = Math.min(depth, depths.length-1);
@@ -441,5 +452,7 @@ public class CoverageCalculator {
 		int sitesAssessed = 0;
 		long covSum = 0;
 	}
+
+
 }
 
