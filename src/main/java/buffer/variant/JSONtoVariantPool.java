@@ -5,14 +5,12 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
 
 import json.JSONArray;
 import json.JSONException;
 import json.JSONObject;
-
-import org.apache.log4j.Logger;
-
 import pipeline.Pipeline;
 import util.vcfParser.VCFParser.GTType;
 
@@ -111,7 +109,7 @@ public class JSONtoVariantPool {
 				varObj.addAnnotation(key, (String) value);
 			}
 			else {
-				Logger.getLogger(Pipeline.primaryLoggerName).warn("Could not parse VariantRec from json, unrecognized value type: " + value.getClass());
+				Logger.getLogger(Pipeline.primaryLoggerName).warning("Could not parse VariantRec from json, unrecognized value type: " + value.getClass());
 			}
 		}
 		
