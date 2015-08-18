@@ -6,6 +6,11 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import util.reviewDir.ManifestParseException;
 import util.reviewDir.SampleManifest;
@@ -76,7 +81,9 @@ public class ComputeVarFreqs {
 	}
 	
 	
-	private static void incrementProperty(VariantRec var, String key) {
+	 
+	
+	private static synchronized void incrementProperty(VariantRec var, String key) {
 		Double current = var.getProperty(key);
 		if (current == null) {
 			current = 0.0;
@@ -85,7 +92,7 @@ public class ComputeVarFreqs {
 		var.addProperty(key, current);
 	}
 	
-	public void emitTabulated() throws IOException {
+	public void emitTabulated(int threadCount) throws IOException {
 		
 		//Step 1 : Read all variants into gigantic variant pool (without duplicates)
 		System.err.println("Tabulating variants, this may take a moment....");
@@ -93,13 +100,38 @@ public class ComputeVarFreqs {
 		List<String> analysisTypes = new ArrayList<String>();
 		VariantPool everything = new VariantPool();
 		
-		
+		Queue<SampleInfo> finishedTasks = new ConcurrentLinkedQueue<SampleInfo>();
+		final ThreadPoolExecutor threadPool = (ThreadPoolExecutor) Executors.newFixedThreadPool( threadCount );
 		for(SampleInfo sampInfo : sampleList) {
-			if (! analysisTypes.contains(sampInfo.analysisType)) {
-				analysisTypes.add(sampInfo.analysisType);
+			PoolReader readerTask = new PoolReader(sampInfo, finishedTasks);
+			threadPool.submit(readerTask);
+		}
+		
+		System.err.println("Before... completed tasks: " + threadPool.getCompletedTaskCount() + " Finished tasks size: " + finishedTasks.size());
+
+	
+		
+		threadPool.shutdown();
+		while(threadPool.getCompletedTaskCount() < sampleList.size() || (!finishedTasks.isEmpty())) {
+			SampleInfo sampInfo = finishedTasks.poll();
+			if (sampInfo == null) {
+				try {
+					Thread.sleep(500);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				continue;
 			}
 			
+			System.err.println("Completed tasks: " + threadPool.getCompletedTaskCount() + " Finished tasks size: " + finishedTasks.size());
+			
 			try {
+				if (! analysisTypes.contains(sampInfo.analysisType)) {
+					analysisTypes.add(sampInfo.analysisType);
+				}
+				
+				System.err.println("Adding variants for " + sampInfo.source.getName());
 				everything.addAll(sampInfo.getPool(), false); //Do not allow duplicates
 			}
 			catch (Exception ex) {
@@ -109,8 +141,27 @@ public class ComputeVarFreqs {
 				}
 			}
 			sampInfo.disposePool();
+			
+			if (finishedTasks.isEmpty() && threadPool.getActiveCount()>0) {
+				try {
+					System.err.println("Queue is empty, but still some active tasks, sleeping for a bit...");
+					Thread.currentThread().sleep(200);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
 		}
 		
+		System.err.println("Completed tasks: " + threadPool.getCompletedTaskCount() + " Finished tasks size: " + finishedTasks.size());
+		System.err.println("All done adding  variants...");
+		
+		try {
+			threadPool.awaitTermination(10, TimeUnit.DAYS);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
 		for(SampleInfo err : errors) {
 			sampleList.remove(err);
@@ -123,41 +174,26 @@ public class ComputeVarFreqs {
 		//Step 2: Iterate across all samples, then across all variants, see how many
 		// samples targeted each variant 
 		
+		final ThreadPoolExecutor threadPool2 = (ThreadPoolExecutor) Executors.newFixedThreadPool( threadCount );
+
 		
 		for(SampleInfo info : sampleList) {
 			info.bed.buildIntervalsMap();
-			String typeKey = info.analysisType;
 			
-			for(String contig: everything.getContigs()) {
-				for(VariantRec var : everything.getVariantsForContig(contig)) {
-					
-					//Is this variant targeted for this sample?
-					boolean targeted = info.bed.contains(var.getContig(), var.getStart(), false);
-					
-					if (targeted) {
-						incrementProperty(var, typeKey+SAMPLES);
-						incrementProperty(var, SAMPLES);
-						
-						VariantRec queryVar = info.getPool().findRecordNoWarn(contig, var.getStart());
-
-						if (queryVar != null) {
-							if (queryVar.getZygosity() == GTType.HET) {
-								incrementProperty(var, typeKey+HETS);
-								incrementProperty(var, HETS);
-							}
-							else {
-								incrementProperty(var, typeKey+HOMS);
-								incrementProperty(var, HOMS);
-							}
-						}
-					}
-					
-					
-				}
-			}
+			threadPool2.submit(new VariantAdder(info, everything));
 			
-			info.disposePool();
+							
 		}
+		
+		threadPool2.shutdown();
+		try {
+			threadPool2.awaitTermination(10, TimeUnit.DAYS);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		System.err.println("Done adding all variants, now just emitting output...");
 		
 		//Now emit everything
 		System.out.print("#chr\tpos\tref\talt\test.type\tsample.count\thets\thoms");
@@ -198,8 +234,10 @@ public class ComputeVarFreqs {
 							homs = 0.0;
 						}
 					
-						System.out.print(contig + "\t" + var.getStart() + "\t" + var.getRef() + "\t" + var.getAlt() + "\t" + type);
-						System.out.println("\t" + ("" + (int)Math.round(totSamplesType)) + "\t" + ("" + (int)Math.round(hets)) + "\t" + ("" + (int)Math.round(homs)));
+						if (totSamplesType>0) {
+							System.out.print(contig + "\t" + var.getStart() + "\t" + var.getRef() + "\t" + var.getAlt() + "\t" + type);
+							System.out.println("\t" + ("" + (int)Math.round(totSamplesType)) + "\t" + ("" + (int)Math.round(hets)) + "\t" + ("" + (int)Math.round(homs)));
+						}
 					}
 					
 					if (! compTotSamples.equals(totSamples)) {
@@ -257,15 +295,18 @@ public class ComputeVarFreqs {
 				System.err.println("Warning: Skipping file : " + samples[i]  + " : " + e.getLocalizedMessage());
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
-				System.err.println("Error in file : " + args[i]  + " : " + e.getLocalizedMessage() + " skipping it.");
+				System.err.println("Error in file : " + samples[i]  + " : " + e.getLocalizedMessage() + " skipping it.");
 				e.printStackTrace();
 			}	
 		}
 		
 
 		System.err.println("Found " + added + " valid samples");
+		
+		int threads = 8;
+		
 		try {
-			cFreqs.emitTabulated();
+			cFreqs.emitTabulated(threads);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -297,6 +338,94 @@ public class ComputeVarFreqs {
 		
 	}
 	
+	class VariantAdder implements Runnable {
+		final SampleInfo info;
+		final VariantPool everything;
+		
+		public VariantAdder(SampleInfo info, VariantPool everything) {
+			this.info = info;
+			this.everything = everything;
+		}
+		
+		@Override
+		public void run() {
+			String typeKey = info.analysisType;
+			VariantPool pool;
+			System.err.println("Running " + info.source.getName());
+			try {
+				pool = info.getPool();
+			} catch (IOException e) {
+				System.err.println("Could not load pool");
+				return;
+				
+			}
+			for(String contig: everything.getContigs()) {
+				for(VariantRec var : everything.getVariantsForContig(contig)) {
+
+					//Is this variant targeted for this sample?
+					boolean targeted = info.bed.contains(var.getContig(), var.getStart(), false);
+
+					if (targeted) {
+						incrementProperty(var, typeKey+SAMPLES);
+						incrementProperty(var, SAMPLES);
+
+						VariantRec queryVar = pool.findRecord(contig, var.getStart(), var.getRef(), var.getAlt());
+
+						if (queryVar != null) {
+							if (queryVar.getZygosity() == GTType.HET) {
+								incrementProperty(var, typeKey+HETS);
+								incrementProperty(var, HETS);
+							}
+							else {
+								incrementProperty(var, typeKey+HOMS);
+								incrementProperty(var, HOMS);
+							}
+						}
+					}
+
+
+				}
+			}
+			System.err.println(info.source.getName() + " is done");
+		}
+	
 	}
+	
+	class PoolReader implements Runnable {
+
+		final SampleInfo info;
+		final Queue<SampleInfo> finishedQueue;
+		Exception ex = null;
+		
+		public PoolReader(SampleInfo info, Queue<SampleInfo> queue) {
+			this.info = info;
+			this.finishedQueue = queue;
+		}
+		
+		@Override
+		public void run() {
+			System.err.println("Reading pool for " + info.source.getName());
+			try {
+				info.getPool();
+				finishedQueue.add(info);		
+				System.err.println("Done reading pool for " + info.source.getName());
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				System.err.println("Yikes, errored out reading " + info.source.getName() + " Error: " + e.getLocalizedMessage());
+				e.printStackTrace();
+				this.ex = e;
+			} //Spawns a potentially pretty long job
+				
+		}
+		
+		public Exception getException() {
+			return ex;
+		}
+		
+	}
+	
+	}
+
+
 	
 

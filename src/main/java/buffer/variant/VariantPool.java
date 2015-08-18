@@ -221,7 +221,7 @@ public class VariantPool extends Operator  {
 		contig = contig.replace("chr", "");
 		List<VariantRec> varList = vars.get(contig);
 		if (varList == null) {
-			Logger.getLogger(Pipeline.primaryLoggerName).warning("AnnovarResults could not find contig: " + contig);
+			//Logger.getLogger(Pipeline.primaryLoggerName).warning("rResults could not find contig: " + contig);
 			return null;
 		}
 		
