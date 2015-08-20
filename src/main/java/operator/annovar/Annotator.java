@@ -142,8 +142,6 @@ public abstract class Annotator extends Operator {
 				if (obj instanceof VariantPool) {
 					variants = (VariantPool) obj;
 				} else if (obj instanceof ArupBEDFile) {
-					System.out
-							.println("\n\n\n********************YES ArupBEDFile Available*********************\n\n\n");
 					arupBedFile = (ArupBEDFile) obj;
 					try {
 						arupBedFile.buildIntervalsMap(true);
@@ -151,8 +149,6 @@ public abstract class Annotator extends Operator {
 						e.printStackTrace();
 					}
 				} else if (obj instanceof BEDFile) {
-					System.out
-							.println("\n\n\n********************YES BEDFile Available*********************\n\n\n");
 					bedFile = (BEDFile) obj;
 					try {
 						bedFile.buildIntervalsMap(true);

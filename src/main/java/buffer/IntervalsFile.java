@@ -409,8 +409,10 @@ public abstract class IntervalsFile extends FileBuffer implements HasIntervals {
 				nearest = nearestCalc(cInts, qIntervalBegin, qIntervalEnd, indexBegin, indexEnd);
 				return nearest;
 			} else { // make nearest list from all of the intersected intervals (from left to right)
-				for (int i=0; i <= 1; i++) {
-					nearest.add(i);
+				for (int i=0; i < intersects.length; i++) {
+					if (!nearest.contains(intersects[i])) {
+						nearest.add(intersects[i]);
+					}
 				}
 				return nearest; 
 			}
@@ -436,45 +438,37 @@ public abstract class IntervalsFile extends FileBuffer implements HasIntervals {
 			//endIntersects = true!;
 			throw new IllegalArgumentException("No intersections allowed for this method");
 		}
-		if (keyIndexEnd < 0) {
-			//query end before first interval
+		if (keyIndexBegin < 0 || keyIndexEnd < 0) {
+			//query before first interval (assumes no intersect)
 			//just set nearest to first interval
 			nearest.add(0);
 			return nearest;
 		}
-		if (keyIndexBegin > (cInts.size() - 1)) {
-			//query begin after last interval
+		if (keyIndexBegin >= (cInts.size() - 1) || keyIndexEnd >= (cInts.size() - 1)) {
+			//query begin after last interval (assumes no intersect)
 			//just set nearest to last interval
 			nearest.add(cInts.size() - 1);
 			return nearest;
 		}
 
-		//fix any array list out of bounds for variants before or after all intervals
-		if (keyIndexBegin < 0) {
-			//query begin before first interval
-			//just set index to 0
-			keyIndexBegin = 0;
-		}
-		if (keyIndexEnd < 0) {
-			//query end before first interval
-			//just set index to 0
-			keyIndexEnd = 0;
-		}
-		if (keyIndexEnd > (cInts.size() - 2)) {
-			//query end after second to last interval
-			//just set index to last interval -1
-			keyIndexEnd = cInts.size() - 2;
+		beginDistance = qIntervalBegin.begin - cInts.get(keyIndexBegin).end;
+		if (beginDistance < 0) {
+			//query must intersect an interval
+			throw new IllegalArgumentException("No intersections allowed for this method");
 		}
 
-		beginDistance = Math.abs(qIntervalBegin.begin - cInts.get(keyIndexBegin).end);
 		endDistance = Math.abs(cInts.get(keyIndexEnd + 1).begin - qIntervalEnd.end);
+		if (endDistance < 0) {
+			//query must intersect an interval
+			throw new IllegalArgumentException("No intersections allowed for this method");
+		}
 
 		if (beginDistance <= endDistance) {
 			nearest.add(keyIndexBegin);
-			nearest.add(keyIndexEnd);
+			nearest.add(keyIndexEnd + 1);
 			return nearest;
 		} else {
-			nearest.add(keyIndexEnd);
+			nearest.add(keyIndexEnd + 1);
 			nearest.add(keyIndexBegin);
 			return nearest;
 		}

@@ -777,16 +777,31 @@ public class VariantRec {
 	public static final String LRT_SCORE = "lrt.score";
 	public static final String SIPHY_SCORE = "siphy.score";
 	public static final String SVM_EFFECT = "svm.effect.prediction";
-	public static final String VARIANT_TYPE = "variant.type";
 	public static final String EXON_FUNCTION = "exon.function";
-	public static final String EXON_NUMBER = "exon.number";
-	public static final String NM_NUMBER = "nm.number";
-	public static final String GENE_NAME = "gene";
 	public static final String FS_SCORE = "strand.bias.score";
 	public static final String LOGFS_SCORE = "log.fs";
 	public static final String DEPTH = "depth";
+
+	//snpEff .2 and .3 annotations only apply to arupBedFile usage with multiple transcripts in a bed line (column 4, "|" separated)
 	public static final String CDOT = "cdot";
 	public static final String PDOT = "pdot";
+	public static final String EXON_NUMBER = "exon.number";
+	public static final String NM_NUMBER = "nm.number";
+	public static final String GENE_NAME = "gene";
+	public static final String VARIANT_TYPE = "variant.type";
+	public static final String CDOT2 = "cdot.2";
+	public static final String PDOT2 = "pdot.2";
+	public static final String EXON_NUMBER2 = "exon.number.2";
+	public static final String NM_NUMBER2 = "nm.number.2";
+	public static final String GENE_NAME2 = "gene.2";
+	public static final String VARIANT_TYPE2 = "variant.type.2";
+	public static final String CDOT3 = "cdot.3";
+	public static final String PDOT3 = "pdot.3";
+	public static final String EXON_NUMBER3 = "exon.number.3";
+	public static final String NM_NUMBER3 = "nm.number.3";
+	public static final String GENE_NAME3 = "gene.3";
+	public static final String VARIANT_TYPE3 = "variant.type.3";
+
 	public static final String zygosityB = "zygB"; //When performing intersections, zygosity of variant in other pool
 	public static final String altB = "altB"; //Alternate allele in other pool when performing intersections
 	public static final String RSNUM = "rsnum"; // rs# from dbSNP
