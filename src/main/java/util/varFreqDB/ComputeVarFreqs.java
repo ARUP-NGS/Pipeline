@@ -7,18 +7,18 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import util.reviewDir.ManifestParseException;
 import util.reviewDir.SampleManifest;
 import util.vcfParser.VCFParser;
-import util.vcfParser.VCFParser.GTType;
 import buffer.BEDFile;
 import buffer.variant.VariantPool;
 import buffer.variant.VariantRec;
+import buffer.variant.VariantStore;
 
 public class ComputeVarFreqs {
 
@@ -83,14 +83,6 @@ public class ComputeVarFreqs {
 	
 	 
 	
-	private static synchronized void incrementProperty(VariantRec var, String key) {
-		Double current = var.getProperty(key);
-		if (current == null) {
-			current = 0.0;
-		}
-		current++;
-		var.addProperty(key, current);
-	}
 	
 	public void emitTabulated(int threadCount) throws IOException {
 		
@@ -98,12 +90,13 @@ public class ComputeVarFreqs {
 		System.err.println("Tabulating variants, this may take a moment....");
 		List<SampleInfo> errors = new ArrayList<SampleInfo>();
 		List<String> analysisTypes = new ArrayList<String>();
-		VariantPool everything = new VariantPool();
+		VariantStore everything = new VariantPool();
 		
-		Queue<SampleInfo> finishedTasks = new ConcurrentLinkedQueue<SampleInfo>();
+		Queue<SampleInfo> finishedTasks = new LinkedBlockingQueue<SampleInfo>(100);
+		
 		final ThreadPoolExecutor threadPool = (ThreadPoolExecutor) Executors.newFixedThreadPool( threadCount );
 		for(SampleInfo sampInfo : sampleList) {
-			PoolReader readerTask = new PoolReader(sampInfo, finishedTasks);
+			VariantStoreReader readerTask = new VariantStoreReader(sampInfo, finishedTasks);
 			threadPool.submit(readerTask);
 		}
 		
@@ -140,20 +133,20 @@ public class ComputeVarFreqs {
 					System.err.println("Error reading variants in " + sampInfo.source.getAbsolutePath() + ": " + ex.getLocalizedMessage() + ", skipping it.");
 				}
 			}
-			sampInfo.disposePool();
 			
 			if (finishedTasks.isEmpty() && threadPool.getActiveCount()>0) {
 				try {
 					System.err.println("Queue is empty, but still some active tasks, sleeping for a bit...");
-					Thread.currentThread().sleep(200);
+					Thread.sleep(200);
 				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
+
 		}
 		
-		System.err.println("Completed tasks: " + threadPool.getCompletedTaskCount() + " Finished tasks size: " + finishedTasks.size());
+		System.err.println("Completed tasks: " + threadPool.getCompletedTaskCount() + " queue size: " + finishedTasks.size());
 		System.err.println("All done adding  variants...");
 		
 		try {
@@ -180,7 +173,7 @@ public class ComputeVarFreqs {
 		for(SampleInfo info : sampleList) {
 			info.bed.buildIntervalsMap();
 			
-			threadPool2.submit(new VariantAdder(info, everything));
+			threadPool2.submit(new VarCountCalculator(info, everything));
 			
 							
 		}
@@ -195,9 +188,6 @@ public class ComputeVarFreqs {
 		
 		System.err.println("Done adding all variants, now just emitting output...");
 		
-		//Now emit everything
-		System.out.print("#chr\tpos\tref\talt\test.type\tsample.count\thets\thoms");
-		System.out.println();
 		
 		for(String contig: everything.getContigs()) {
 			for(VariantRec var : everything.getVariantsForContig(contig)) {
@@ -318,13 +308,13 @@ public class ComputeVarFreqs {
 		File source = null;
 		String analysisType = null;
 		BEDFile bed = null; 
-		private VariantPool pool = null;
+		private VariantStore pool = null;
 		
 		public SampleInfo(File source) throws IOException {
 			this.source = source;	
 		}
 		
-		public VariantPool getPool() throws IOException {
+		public VariantStore getPool() throws IOException {
 			if (pool == null) {
 				VCFParser vcfParser = new VCFParser(source);
 				pool = new VariantPool(vcfParser);
@@ -338,93 +328,7 @@ public class ComputeVarFreqs {
 		
 	}
 	
-	class VariantAdder implements Runnable {
-		final SampleInfo info;
-		final VariantPool everything;
-		
-		public VariantAdder(SampleInfo info, VariantPool everything) {
-			this.info = info;
-			this.everything = everything;
-		}
-		
-		@Override
-		public void run() {
-			String typeKey = info.analysisType;
-			VariantPool pool;
-			System.err.println("Running " + info.source.getName());
-			try {
-				pool = info.getPool();
-			} catch (IOException e) {
-				System.err.println("Could not load pool");
-				return;
-				
-			}
-			for(String contig: everything.getContigs()) {
-				for(VariantRec var : everything.getVariantsForContig(contig)) {
-
-					//Is this variant targeted for this sample?
-					boolean targeted = info.bed.contains(var.getContig(), var.getStart(), false);
-
-					if (targeted) {
-						incrementProperty(var, typeKey+SAMPLES);
-						incrementProperty(var, SAMPLES);
-
-						VariantRec queryVar = pool.findRecord(contig, var.getStart(), var.getRef(), var.getAlt());
-
-						if (queryVar != null) {
-							if (queryVar.getZygosity() == GTType.HET) {
-								incrementProperty(var, typeKey+HETS);
-								incrementProperty(var, HETS);
-							}
-							else {
-								incrementProperty(var, typeKey+HOMS);
-								incrementProperty(var, HOMS);
-							}
-						}
-					}
-
-
-				}
-			}
-			System.err.println(info.source.getName() + " is done");
-		}
-	
-	}
-	
-	class PoolReader implements Runnable {
-
-		final SampleInfo info;
-		final Queue<SampleInfo> finishedQueue;
-		Exception ex = null;
-		
-		public PoolReader(SampleInfo info, Queue<SampleInfo> queue) {
-			this.info = info;
-			this.finishedQueue = queue;
-		}
-		
-		@Override
-		public void run() {
-			System.err.println("Reading pool for " + info.source.getName());
-			try {
-				info.getPool();
-				finishedQueue.add(info);		
-				System.err.println("Done reading pool for " + info.source.getName());
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				System.err.println("Yikes, errored out reading " + info.source.getName() + " Error: " + e.getLocalizedMessage());
-				e.printStackTrace();
-				this.ex = e;
-			} //Spawns a potentially pretty long job
-				
-		}
-		
-		public Exception getException() {
-			return ex;
-		}
-		
-	}
-	
-	}
+}
 
 
 	

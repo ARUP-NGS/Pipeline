@@ -657,9 +657,12 @@ public class VCFParser implements VariantLineReader {
 	 * @author elainegee
 	 * @return
 	 */
-	private static Double convertStr2Double(String AnnoOutStr){
+	private static Double convertStr2Double(String str){
+		if (str == null || str.length()==0 || str.equals("-")) {
+			return -1.0;
+		}
 		try {
-			Double outDouble = Double.parseDouble(AnnoOutStr);
+			Double outDouble = Double.parseDouble(str);
 			return outDouble;
 		} catch (NumberFormatException nfe) {
 			return -1.0; //-1.0 indicates no data found

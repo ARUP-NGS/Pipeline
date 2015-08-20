@@ -183,6 +183,10 @@ public abstract class IntervalsFile extends FileBuffer implements HasIntervals {
 		return intervals;
 	}
 	
+	public boolean containsContig(String contig) {
+		return intervals.get(contig) != null;
+	}
+	
 	public boolean contains(String contig, int pos) {
 		return contains(contig, pos, true);
 	}
