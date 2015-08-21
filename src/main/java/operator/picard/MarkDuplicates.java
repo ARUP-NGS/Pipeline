@@ -1,13 +1,12 @@
 package operator.picard;
 
-import operator.CommandOperator;
-import operator.OperationFailedException;
-
 import org.w3c.dom.NodeList;
 
-import pipeline.PipelineXMLConstants;
 import buffer.BAMFile;
 import buffer.FileBuffer;
+import operator.CommandOperator;
+import operator.OperationFailedException;
+import pipeline.PipelineXMLConstants;
 
 /*
 * This goes through a SAM file and marks duplicates (default) or removes them, making a processed SAM file, without harming the original.
@@ -34,7 +33,7 @@ public class MarkDuplicates extends CommandOperator {
 			picardDir = picardDir.substring(0, picardDir.length()-1);
 		}
 				
-		String command = "java -jar -Xmx16G " + picardDir + "/MarkDuplicates.jar REMOVE_DUPLICATES=" + rmDup 
+		String command = "java -Xmx16g -jar " + picardDir + "/picard.jar MarkDuplicates REMOVE_DUPLICATES=" + rmDup 
 				+ " I=" + inputBAM.getAbsolutePath() 
 				+ " METRICS_FILE=" + (inputBAM.getAbsolutePath()).substring(0, (inputBAM.getAbsolutePath()).lastIndexOf('.'))
 				+ ".dupLog O="+ outputBAM.getAbsolutePath() + " ASSUME_SORTED=true VALIDATION_STRINGENCY=LENIENT";
