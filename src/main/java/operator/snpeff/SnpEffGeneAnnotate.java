@@ -176,7 +176,6 @@ public class SnpEffGeneAnnotate extends Annotator {
 		SnpEffInfo topHit = infoList.get(0);
 		int topRank = calculateRank(topHit.changeType);
 		for(SnpEffInfo info : infoList) {
-			
 			int infoRank= calculateRank(info.changeType);
 			
 			//First check to see if it's in the nmMap. If so, it gets a really high rank
@@ -192,6 +191,20 @@ public class SnpEffGeneAnnotate extends Annotator {
 			if (infoRank > topRank) {
 				topHit = info;
 				topRank = infoRank;
+			} else if (infoRank == topRank) { //We have a tie breaker and need to make sure the gene in the specificied preferred list wins.
+				try {
+					String specificNMFile = this.getAttribute(NM_DEFS);
+					if (specificNMFile!=null) {
+						if (this.getSpecificPreferredNMs(this.getAttribute(NM_DEFS)).containsKey(info.gene)) {
+							topHit = info;
+							topRank = infoRank;
+						}
+					}
+
+				} catch (IOException e) {
+					e.printStackTrace();
+					throw new IllegalArgumentException("Could not read NMs file:  " + this.getAttribute(NM_DEFS));
+				}
 			}
 		}
 
@@ -498,7 +511,6 @@ public class SnpEffGeneAnnotate extends Annotator {
 			e.printStackTrace();
 			throw new IllegalArgumentException("Could not read NMs file:  " +nmDefs);
 		}
-		
 	}
 	
 	
