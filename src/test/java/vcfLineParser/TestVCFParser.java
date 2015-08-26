@@ -7,11 +7,11 @@ import java.util.Set;
 import org.junit.Assert;
 import org.junit.Test;
 
+import buffer.variant.VariantRec;
 import util.vcfParser.VCFParser;
 import util.vcfParser.VCFParser.EntryType;
-import util.vcfParser.VCFParser.HeaderEntry;
 import util.vcfParser.VCFParser.GTType;
-import buffer.variant.VariantRec;
+import util.vcfParser.VCFParser.HeaderEntry;
 
 public class TestVCFParser {
 
