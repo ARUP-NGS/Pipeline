@@ -593,7 +593,7 @@ public class VCFParser implements VariantLineReader {
 			if (index < 0) {
 				existing.put(tok, tok);
 			} else {
-				existing.put(tok, tok.substring(index+1, tok.length()));
+				existing.put(tok.substring(0, index), tok.substring(index+1, tok.length()));
 			}	
 		}
 		return existing;
@@ -837,14 +837,14 @@ public class VCFParser implements VariantLineReader {
 	 * @return
 	 */
 	public Double getStrandBiasScore(){
-		String AnnoStr = null;
+		String annoStr = null;
 		if (creator.contains("Torrent")){
-			AnnoStr = "STB";
+			annoStr = "STB";
 		} else {
-			AnnoStr = "FS";
+			annoStr = "FS";
 		}
 		//Get FS from sampleMetrics dictionary
-		String sbStr = getSampleMetricsStr(AnnoStr);
+		String sbStr = getSampleMetricsStr(annoStr);
 		Double sb = convertStr2Double(sbStr);
 		return sb;	
 	}
