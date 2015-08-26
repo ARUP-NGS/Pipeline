@@ -17,23 +17,22 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.logging.Logger;
 
-import ncbi.GeneInfoDB;
-import operator.OperationFailedException;
-import operator.Operator;
-
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import pipeline.Pipeline;
-import pipeline.PipelineObject;
-import util.vcfParser.VCFParser;
-import util.vcfParser.VCFParser.GTType;
 import buffer.BEDFile;
 import buffer.CSVFile;
 import buffer.FileBuffer;
 import buffer.ReferenceFile;
 import buffer.VCFFile;
+import ncbi.GeneInfoDB;
+import operator.OperationFailedException;
+import operator.Operator;
+import pipeline.Pipeline;
+import pipeline.PipelineObject;
+import util.vcfParser.VCFParser;
+import util.vcfParser.VCFParser.GTType;
 
 /**
  * Base class for things that maintain a collection of VariantRecs
@@ -57,10 +56,10 @@ public class VariantPool extends Operator implements VariantStore {
 	
 	/**
 	 * Build a new variant pool from the given list of variants
-	 * @param varList
+	 * @param collection
 	 */
-	public VariantPool(List<VariantRec> varList) {
-		for(VariantRec v : varList) {
+	public VariantPool(Collection<VariantRec> collection) {
+		for(VariantRec v : collection) {
 			List<VariantRec> contig = vars.get(v.getContig());
 			if (contig == null) {
 				contig = new ArrayList<VariantRec>(2048);
@@ -429,6 +428,7 @@ public class VariantPool extends Operator implements VariantStore {
 		return fullVars;
 	}
 	
+
 	/**
 	 * Add all variants from source to this pool
 	 * @param source Variants to add to this pool

@@ -12,13 +12,13 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import util.reviewDir.ManifestParseException;
-import util.reviewDir.SampleManifest;
-import util.vcfParser.VCFParser;
 import buffer.BEDFile;
 import buffer.variant.VariantPool;
 import buffer.variant.VariantRec;
 import buffer.variant.VariantStore;
+import util.reviewDir.ManifestParseException;
+import util.reviewDir.SampleManifest;
+import util.vcfParser.VCFParser;
 
 public class ComputeVarFreqs {
 
@@ -27,7 +27,11 @@ public class ComputeVarFreqs {
 	public static final String HETS = "hets";
 	public static final String HOMS = "homs";
 	
+	public static final String[] CONTIGS = new String[]{"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "X", "M", "MT"};
+	//public static final String[] CONTIGS = new String[]{"10", "12"};
+	
 	List<SampleInfo> sampleList = new ArrayList<SampleInfo>();
+	
 	
 	public boolean addSample(SampleManifest info) throws IOException {
 		System.err.println("Adding sample : " + info.getSampleName() + " :" + info.getAnalysisType());
@@ -81,7 +85,151 @@ public class ComputeVarFreqs {
 	}
 	
 	
-	 
+	public void emitTabulatedByContig(int threadCount, String contig) throws IOException {
+		System.err.println("Tabulating variants, this may take a moment....");
+		List<SampleInfo> errors = new ArrayList<SampleInfo>();
+		List<String> analysisTypes = new ArrayList<String>();
+		VariantStore everything = new VariantPool();
+		
+		Queue<SampleInfo> finishedTasks = new LinkedBlockingQueue<SampleInfo>(20);
+		
+		final ThreadPoolExecutor threadPool = (ThreadPoolExecutor) Executors.newFixedThreadPool( threadCount );
+		for(SampleInfo sampInfo : sampleList) {
+			VariantStoreReader readerTask = new VariantStoreReader(sampInfo, finishedTasks);
+			threadPool.submit(readerTask);
+		}
+		
+		System.err.println("Before... completed tasks: " + threadPool.getCompletedTaskCount() + " Finished tasks size: " + finishedTasks.size());
+
+		threadPool.shutdown();
+		while(threadPool.getCompletedTaskCount() < sampleList.size() || (!finishedTasks.isEmpty())) {
+			SampleInfo sampInfo = finishedTasks.poll();
+			if (sampInfo == null) {
+				try {
+					Thread.sleep(500);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				continue;
+			}
+			
+			System.err.println("Completed tasks: " + threadPool.getCompletedTaskCount() + " Finished tasks size: " + finishedTasks.size());
+			
+			try {
+				if (! analysisTypes.contains(sampInfo.analysisType)) {
+					analysisTypes.add(sampInfo.analysisType);
+				}
+					
+				System.err.println("Chr : " + contig + " adding variants for " + sampInfo.source.getName() + " pool size: " + everything.size());
+				VariantPool vp = new VariantPool(sampInfo.getPool().getVariantsForContig(contig));
+				everything.addAll(vp, false); //Do not allow duplicates
+				sampInfo.disposePool();
+			}
+			catch (Exception ex) {
+				errors.add(sampInfo);
+				if (sampInfo.source != null) {
+					System.err.println("Error reading variants in " + sampInfo.source.getAbsolutePath() + ": " + ex.getLocalizedMessage() + ", skipping it.");
+				}
+			}
+			
+			if (finishedTasks.isEmpty() && threadPool.getActiveCount()>0) {
+				try {
+					System.err.println("Queue is empty, but still some active tasks, sleeping for a bit...");
+					Thread.sleep(200);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+
+		}
+		
+		System.err.println("Completed tasks: " + threadPool.getCompletedTaskCount() + " queue size: " + finishedTasks.size());
+		System.err.println("All done adding  variants...");
+		
+		try {
+			threadPool.awaitTermination(10, TimeUnit.DAYS);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		for(SampleInfo err : errors) {
+			sampleList.remove(err);
+		}
+		
+		System.err.println("Found " + everything.size() + " variants in " + sampleList.size() + " samples.");
+		System.err.println(errors.size() + " of which had errors and could not be read.");
+		
+		
+		//Step 2: Iterate across all samples, then across all variants, see how many
+		// samples targeted each variant 
+		
+		final ThreadPoolExecutor threadPool2 = (ThreadPoolExecutor) Executors.newFixedThreadPool( threadCount );
+
+		
+		for(SampleInfo info : sampleList) {
+			info.bed.buildIntervalsMap();
+			threadPool2.submit(new VarCountCalculator(info, everything));							
+		}
+		
+		threadPool2.shutdown();
+		try {
+			threadPool2.awaitTermination(10, TimeUnit.DAYS);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		System.err.println("Done adding all variants, now just emitting output...");
+
+
+		for(VariantRec var : everything.getVariantsForContig(contig)) {
+			Double totSamples = var.getProperty(SAMPLES);
+			Double compTotSamples = 0.0; 
+			if (totSamples != null && totSamples > 0) {
+				Double hets = var.getProperty(HETS);
+				Double homs = var.getProperty(HOMS);
+				if (hets == null) {
+					hets = 0.0;
+				}
+				if (homs == null) {
+					homs = 0.0;
+				}
+
+				System.out.println(contig + "\t" + var.getStart() + "\t" + var.getRef() + "\t" + var.getAlt() + "\t" + (int)Math.round(totSamples) + "\t" + (int)Math.round(hets) + "\t" + (int)Math.round(homs));
+				
+				for(String type : analysisTypes) {
+					Double totSamplesType = var.getProperty(type+SAMPLES);
+					if (totSamplesType == null) {
+						totSamplesType = 0.0;
+					}
+					compTotSamples += totSamplesType;
+					hets = var.getProperty(type+HETS);
+					homs = var.getProperty(type+HOMS);
+					if (hets == null) {
+						hets = 0.0;
+					}
+					if (homs == null) {
+						homs = 0.0;
+					}
+
+					if (totSamplesType>0) {
+						System.out.print(contig + "\t" + var.getStart() + "\t" + var.getRef() + "\t" + var.getAlt() + "\t" + type);
+						System.out.println("\t" + ("" + (int)Math.round(totSamplesType)) + "\t" + ("" + (int)Math.round(hets)) + "\t" + ("" + (int)Math.round(homs)));
+					}
+				}
+			
+			if (! compTotSamples.equals(totSamples)) {
+				throw new IllegalStateException("Sanity check failed: sum of samples did not match total! tot=" + totSamples + " comp: " + compTotSamples);
+			}
+			}
+
+		}
+		
+		
+	}
 	
 	
 	public void emitTabulated(int threadCount) throws IOException {
@@ -89,7 +237,7 @@ public class ComputeVarFreqs {
 		//Step 1 : Read all variants into gigantic variant pool (without duplicates)
 		System.err.println("Tabulating variants, this may take a moment....");
 		List<SampleInfo> errors = new ArrayList<SampleInfo>();
-		List<String> analysisTypes = new ArrayList<String>();
+		//List<String> analysisTypes = new ArrayList<String>();
 		VariantStore everything = new VariantPool();
 		
 		Queue<SampleInfo> finishedTasks = new LinkedBlockingQueue<SampleInfo>(100);
@@ -120,11 +268,11 @@ public class ComputeVarFreqs {
 			System.err.println("Completed tasks: " + threadPool.getCompletedTaskCount() + " Finished tasks size: " + finishedTasks.size());
 			
 			try {
-				if (! analysisTypes.contains(sampInfo.analysisType)) {
-					analysisTypes.add(sampInfo.analysisType);
-				}
+//				if (! analysisTypes.contains(sampInfo.analysisType)) {
+//					analysisTypes.add(sampInfo.analysisType);
+//				}
 				
-				System.err.println("Adding variants for " + sampInfo.source.getName());
+				System.err.println("Adding variants for " + sampInfo.source.getName() + " pool size: " + everything.size());
 				everything.addAll(sampInfo.getPool(), false); //Do not allow duplicates
 			}
 			catch (Exception ex) {
@@ -206,33 +354,35 @@ public class ComputeVarFreqs {
 					}
 					
 
-					System.out.print(contig + "\t" + var.getStart() + "\t" + var.getRef() + "\t" + var.getAlt() + "\toverall");
-					System.out.println("\t" + ("" + (int)Math.round(totSamples)) + "\t" + ("" + (int)Math.round(hets)) + "\t" + ("" + (int)Math.round(homs)));
+					System.out.println(contig + "\t" + var.getStart() + "\t" + var.getRef() + "\t" + var.getAlt() + "\t" + (int)Math.round(totSamples) + "\t" + (int)Math.round(hets) + "\t" + (int)Math.round(homs));
+
+//					System.out.print(contig + "\t" + var.getStart() + "\t" + var.getRef() + "\t" + var.getAlt() + "\toverall");
+//					System.out.println("\t" + ("" + (int)Math.round(totSamples)) + "\t" + ("" + (int)Math.round(hets)) + "\t" + ("" + (int)Math.round(homs)));
 					
-					for(String type : analysisTypes) {
-						Double totSamplesType = var.getProperty(type+SAMPLES);
-						if (totSamplesType == null) {
-							totSamplesType = 0.0;
-						}
-						compTotSamples += totSamplesType;
-						hets = var.getProperty(type+HETS);
-						homs = var.getProperty(type+HOMS);
-						if (hets == null) {
-							hets = 0.0;
-						}
-						if (homs == null) {
-							homs = 0.0;
-						}
+//					for(String type : analysisTypes) {
+//						Double totSamplesType = var.getProperty(type+SAMPLES);
+//						if (totSamplesType == null) {
+//							totSamplesType = 0.0;
+//						}
+//						compTotSamples += totSamplesType;
+//						hets = var.getProperty(type+HETS);
+//						homs = var.getProperty(type+HOMS);
+//						if (hets == null) {
+//							hets = 0.0;
+//						}
+//						if (homs == null) {
+//							homs = 0.0;
+//						}
+//					
+//						if (totSamplesType>0) {
+//							System.out.print(contig + "\t" + var.getStart() + "\t" + var.getRef() + "\t" + var.getAlt() + "\t" + type);
+//							System.out.println("\t" + ("" + (int)Math.round(totSamplesType)) + "\t" + ("" + (int)Math.round(hets)) + "\t" + ("" + (int)Math.round(homs)));
+//						}
+//					}
 					
-						if (totSamplesType>0) {
-							System.out.print(contig + "\t" + var.getStart() + "\t" + var.getRef() + "\t" + var.getAlt() + "\t" + type);
-							System.out.println("\t" + ("" + (int)Math.round(totSamplesType)) + "\t" + ("" + (int)Math.round(hets)) + "\t" + ("" + (int)Math.round(homs)));
-						}
-					}
-					
-					if (! compTotSamples.equals(totSamples)) {
-						throw new IllegalStateException("Sanity check failed: sum of samples did not match total! tot=" + totSamples + " comp: " + compTotSamples);
-					}
+//					if (! compTotSamples.equals(totSamples)) {
+//						throw new IllegalStateException("Sanity check failed: sum of samples did not match total! tot=" + totSamples + " comp: " + compTotSamples);
+//					}
 				}
 				
 			}
@@ -295,8 +445,13 @@ public class ComputeVarFreqs {
 		
 		int threads = 8;
 		
+		
 		try {
-			cFreqs.emitTabulated(threads);
+			for(String contig : CONTIGS) {
+				System.err.println("Processing contig " + contig);
+				cFreqs.emitTabulatedByContig(threads, contig);
+				System.err.println("Done processing contig " + contig + "\n\n\n");
+			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

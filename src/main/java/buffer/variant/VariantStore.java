@@ -54,4 +54,6 @@ public interface VariantStore {
 	 */
 	public VariantRec findRecord(String contig, int start, String ref,
 			String alt);
+
+	
 }
