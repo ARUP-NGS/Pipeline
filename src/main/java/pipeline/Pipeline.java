@@ -23,17 +23,16 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.xml.sax.SAXException;
+
 import json.JSONException;
 import operator.OperationFailedException;
 import operator.Operator;
 import operator.hook.OperatorEndHook;
 import operator.hook.OperatorHook;
 import operator.hook.OperatorStartHook;
-
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.xml.sax.SAXException;
-
 import plugin.PluginLoader;
 import plugin.PluginLoaderException;
 import util.OperatorTimeSummary;
@@ -49,7 +48,7 @@ import util.text.QueuedLogHandler;
  */
 public class Pipeline {
 
-	public static final String PIPELINE_VERSION = "1.6";
+	public static final String PIPELINE_VERSION = "1.8";
 	protected File source;
 	protected Document xmlDoc;
 	public static final String PROJECT_HOME="home";

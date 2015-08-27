@@ -7,6 +7,7 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.logging.Logger;
 
 import json.JSONArray;
 import json.JSONException;
@@ -14,11 +15,9 @@ import json.JSONObject;
 import operator.OperationFailedException;
 import operator.Operator;
 
-import org.apache.log4j.Logger;
 import org.w3c.dom.NodeList;
 
 import pipeline.Pipeline;
-
 import util.HttpUtils;
 
 /**
@@ -63,7 +62,7 @@ public class TorrentVariantUploader extends Operator {
             result = HttpUtils.HttpPostJSON(uploadURL, sample);
             Logger.getLogger(Pipeline.primaryLoggerName).info("Uploading sample '" + accession + "' variants to " + uploadURL);
             if(!success.equals(result)){
-                Logger.getLogger(Pipeline.primaryLoggerName).warn("Error uploading variants: " + result);
+                Logger.getLogger(Pipeline.primaryLoggerName).warning("Error uploading variants: " + result);
             }
 		} catch (IOException e) {
 			throw new OperationFailedException("Failed to upload a JSON list of variants: " + e.getMessage(), this);

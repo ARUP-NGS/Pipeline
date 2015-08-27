@@ -7,8 +7,8 @@ import java.io.FileOutputStream;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Logger;
 
-import org.apache.log4j.Logger;
 import org.w3c.dom.NodeList;
 
 import pipeline.Pipeline;
@@ -113,7 +113,7 @@ public abstract class FileBuffer extends PipelineObject {
 	public void initialize(NodeList children) throws IllegalStateException {
 		String filename = properties.get(FILENAME_ATTR);
 		if (filename == null || filename.length()==0) {
-			Logger.getLogger(Pipeline.primaryLoggerName).warn("No filename attribute found for FileBuffer object " + getObjectLabel() + ", assuming filename will be set at runtime.");
+			Logger.getLogger(Pipeline.primaryLoggerName).warning("No filename attribute found for FileBuffer object " + getObjectLabel() + ", assuming filename will be set at runtime.");
 		}
 		
 		if (filename != null) {

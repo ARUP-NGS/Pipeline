@@ -13,15 +13,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import json.JSONException;
-import operator.qc.QCReport;
-
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import pipeline.Pipeline;
-import pipeline.PipelineObject;
-import util.JSONVarsGenerator;
 import buffer.BAMFile;
 import buffer.BEDFile;
 import buffer.CSVFile;
@@ -31,6 +25,11 @@ import buffer.MultiFileBuffer;
 import buffer.ReviewDirSubDir;
 import buffer.TextBuffer;
 import buffer.VCFFile;
+import json.JSONException;
+import operator.qc.QCReport;
+import pipeline.Pipeline;
+import pipeline.PipelineObject;
+import util.JSONVarsGenerator;
 
 /**
  * Create directories and copy files to the directory where GenomicsReviewApp can see them
@@ -262,6 +261,14 @@ public class ReviewDirGenerator extends Operator {
 	 * @throws IOException
 	 */
 	private void copyTextFile(File source, File dest) throws IOException {
+		if (source == null) {
+			Logger.getLogger(Pipeline.primaryLoggerName).warning("Null input file in copyTextFile, ignoring it");
+			return;	
+		}
+		if ( !source.exists()) {
+			Logger.getLogger(Pipeline.primaryLoggerName).warning("Source file " + source.getAbsolutePath() + " does not exist, we aren't copying it.");
+			return;
+		}
 		BufferedReader reader = new BufferedReader(new FileReader(source));
 		if (! dest.exists()) {
 			dest.createNewFile();
