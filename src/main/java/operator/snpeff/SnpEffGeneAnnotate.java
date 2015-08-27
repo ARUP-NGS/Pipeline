@@ -320,6 +320,18 @@ public class SnpEffGeneAnnotate extends Annotator {
 					if (info.transcript.startsWith(preferredNM)) {
 						infoRank += 1000;
 						isUsingPreferredNM = true;
+						try {
+							String specificNMFile = this.getAttribute(NM_DEFS);
+							if (specificNMFile!=null) {
+								if (this.getSpecificPreferredNMs(this.getAttribute(NM_DEFS)).containsKey(info.gene)) {
+									infoRank += 9000; // This transcript is in the user specified preferred NMs. It's over 9000!!!!!
+								}
+							}
+
+						} catch (IOException e) {
+							e.printStackTrace();
+							throw new IllegalArgumentException("Could not read NMs file:  " + this.getAttribute(NM_DEFS));
+						}
 					}
 				}
 				if (infoRank > topRank) {
@@ -638,6 +650,7 @@ public class SnpEffGeneAnnotate extends Annotator {
 						+ TRANSCRIPTS_FROM_ARUPBED + " value given: " + useArupBed);
 			}
 		}
+
 		if (trsFromArupBed && arupBedFile == null) {
 			throw new IllegalArgumentException(TRANSCRIPTS_FROM_ARUPBED
 					+ " set true but no ArupBEDFile passed as input");

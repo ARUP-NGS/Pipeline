@@ -299,6 +299,20 @@ public abstract class Operator extends PipelineObject {
 		return preferredNMs;		
 	}
 
+	protected Map<String, String> getSpecificPreferredNMs(String nmsFilePath) throws IOException {
+		Map<String, String> preferredNMs = new HashMap<String,String>();
+		//Now load the specific nms for this operator
+		if (nmsFilePath != null) {
+			File specificNMFile = new File(nmsFilePath);
+			Logger.getLogger(Pipeline.primaryLoggerName).info("Running getSpecificPreferredNMs on preferred NM list: " + nmsFilePath);
+			Map<String, String> specificNMs = readNMFile(specificNMFile);
+
+			for(String key : specificNMs.keySet()) {
+				preferredNMs.put(key, specificNMs.get(key));
+			}
+		}
+		return preferredNMs;
+	}
 	
 	private static Map<String, String> readNMFile(File file) throws IOException {
 		Map<String, String> nms = new HashMap<String,String>();
