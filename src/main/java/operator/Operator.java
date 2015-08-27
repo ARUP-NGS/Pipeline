@@ -304,7 +304,6 @@ public abstract class Operator extends PipelineObject {
 		//Now load the specific nms for this operator
 		if (nmsFilePath != null) {
 			File specificNMFile = new File(nmsFilePath);
-			Logger.getLogger(Pipeline.primaryLoggerName).info("Running getSpecificPreferredNMs on preferred NM list: " + nmsFilePath);
 			Map<String, String> specificNMs = readNMFile(specificNMFile);
 
 			for(String key : specificNMs.keySet()) {
