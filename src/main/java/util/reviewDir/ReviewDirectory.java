@@ -4,16 +4,17 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Date;
 import java.util.zip.GZIPInputStream;
 
-import json.JSONException;
-import json.JSONObject;
-import json.JSONTokener;
 import buffer.VCFFile;
 import buffer.variant.CSVLineReader;
 import buffer.variant.JSONtoVariantPool;
 import buffer.variant.VariantLineReader;
 import buffer.variant.VariantPool;
+import json.JSONException;
+import json.JSONObject;
+import json.JSONTokener;
 /**
  * Encapsulates a ReviewDIrectory and provides easy access to variants, manifest, etc.
  * @author brendan
@@ -35,6 +36,15 @@ public class ReviewDirectory {
 
 	public String getSampleName() {
 		return manifest.getSampleName();
+	}
+	
+	/**
+	 * Returns the Date representation of the current.time property from the manifest, or null
+	 * if the manifest does not contain such an entry
+	 * @return
+	 */
+	public Date getCompletionDate() {
+		return manifest.getCompletionDate();
 	}
 	
 	public File getBAMFile() {

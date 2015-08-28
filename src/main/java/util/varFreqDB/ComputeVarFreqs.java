@@ -5,7 +5,10 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -30,7 +33,7 @@ public class ComputeVarFreqs {
 	public static final String[] CONTIGS = new String[]{"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "X", "M", "MT"};
 	//public static final String[] CONTIGS = new String[]{"10", "12"};
 	
-	List<SampleInfo> sampleList = new ArrayList<SampleInfo>();
+	Map<String, SampleInfo> allSamples = new HashMap<String, SampleInfo>();
 	
 	
 	public boolean addSample(SampleManifest info) throws IOException {
@@ -56,21 +59,28 @@ public class ComputeVarFreqs {
 			return false;
 		}
 		
-		SampleInfo sampInfo = new SampleInfo(vcf);
+		SampleInfo sampInfo = new SampleInfo(vcf, info.getSampleName(), info.getCompletionDate());
 		sampInfo.analysisType = info.getAnalysisType();
 		sampInfo.bed = new BEDFile(bed);
-		sampleList.add(sampInfo);
-		return true;
-	}
-	
-	
-	
-	private static String formatProperty(String prop) {
-		if (prop.equals("-")) {
-			return "0.0";
+		
+		//Only add if there's nothing else with this key OR if there is a sample with this key but it
+		//has an older date than the current sample
+		
+		if (! allSamples.containsKey(sampInfo.key())) {
+			allSamples.put(sampInfo.key(), sampInfo);
+		} else {
+			
+			Date existing = allSamples.get(sampInfo.key()).completionDate;
+			if (sampInfo.completionDate.after(existing)) {
+				System.err.println("Found conflicting samples with accession " + sampInfo.accession + " replacing older version with this one.");
+				allSamples.put(sampInfo.key(), sampInfo);	
+			} else {
+				System.err.println("Found conflicting samples with accession " + sampInfo.accession + " but preserving existing one since it's newer.");
+			}
+				
 		}
-		else 
-			return prop;
+		
+		return true;
 	}
 	
 	public void readSamplesInDir(File dir) throws ManifestParseException, IOException {
@@ -94,7 +104,7 @@ public class ComputeVarFreqs {
 		Queue<SampleInfo> finishedTasks = new LinkedBlockingQueue<SampleInfo>(20);
 		
 		final ThreadPoolExecutor threadPool = (ThreadPoolExecutor) Executors.newFixedThreadPool( threadCount );
-		for(SampleInfo sampInfo : sampleList) {
+		for(SampleInfo sampInfo : allSamples.values()) {
 			VariantStoreReader readerTask = new VariantStoreReader(sampInfo, finishedTasks);
 			threadPool.submit(readerTask);
 		}
@@ -102,7 +112,7 @@ public class ComputeVarFreqs {
 		System.err.println("Before... completed tasks: " + threadPool.getCompletedTaskCount() + " Finished tasks size: " + finishedTasks.size());
 
 		threadPool.shutdown();
-		while(threadPool.getCompletedTaskCount() < sampleList.size() || (!finishedTasks.isEmpty())) {
+		while(threadPool.getCompletedTaskCount() < allSamples.size() || (!finishedTasks.isEmpty())) {
 			SampleInfo sampInfo = finishedTasks.poll();
 			if (sampInfo == null) {
 				try {
@@ -156,10 +166,10 @@ public class ComputeVarFreqs {
 		}
 		
 		for(SampleInfo err : errors) {
-			sampleList.remove(err);
+			allSamples.remove(err);
 		}
 		
-		System.err.println("Found " + everything.size() + " variants in " + sampleList.size() + " samples.");
+		System.err.println("Found " + everything.size() + " variants in " + allSamples.size() + " samples.");
 		System.err.println(errors.size() + " of which had errors and could not be read.");
 		
 		
@@ -169,7 +179,7 @@ public class ComputeVarFreqs {
 		final ThreadPoolExecutor threadPool2 = (ThreadPoolExecutor) Executors.newFixedThreadPool( threadCount );
 
 		
-		for(SampleInfo info : sampleList) {
+		for(SampleInfo info : allSamples.values()) {
 			info.bed.buildIntervalsMap();
 			threadPool2.submit(new VarCountCalculator(info, everything));							
 		}
@@ -301,11 +311,16 @@ public class ComputeVarFreqs {
 	class SampleInfo {
 		File source = null;
 		String analysisType = null;
-		BEDFile bed = null; 
+		BEDFile bed = null;
+		String sampleName;
+		String accession;
+		Date completionDate = null;
 		private VariantStore pool = null;
 		
-		public SampleInfo(File source) throws IOException {
+		public SampleInfo(File source, String sampleName, Date completionDate) throws IOException {
 			this.source = source;	
+			this.sampleName = sampleName;
+			this.accession = parseAccession(sampleName);
 		}
 		
 		public VariantStore getPool() throws IOException {
@@ -316,10 +331,25 @@ public class ComputeVarFreqs {
 			return pool;
 		}
 		
+		public String key() {
+			return accession + analysisType;
+		}
+		
 		public void disposePool() {
 			pool = null;
 		}
 		
+	}
+
+
+	public static String parseAccession(String sampleName) {
+		String[] toks = sampleName.split("_");
+		for(String tok : toks) {
+			if (tok.length()==11) {
+				return tok;
+			}
+		}
+		return null;
 	}
 	
 }
