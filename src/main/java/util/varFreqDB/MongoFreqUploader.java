@@ -30,7 +30,7 @@ public class MongoFreqUploader {
 	public static final String HETS = "hets";
 	public static final String HOMS = "homs";
 	
-	public static final String TEMP_COLLECTION_NAME = "varfreq_uploadtmp";
+	public static final String TEMP_COLLECTION_PREFIX = "varfreq_uploadtmp";
 	
 
 	private MongoDatabase database;
@@ -66,8 +66,14 @@ public class MongoFreqUploader {
 		
 		//We upload into a new temp collection, then we replace th existing real collection with the temp one
 		//if all goes well. 
-		MongoCollection<Document> collection = database.getCollection(TEMP_COLLECTION_NAME);
 		
+		String randomDigits = ("" + System.currentTimeMillis());
+		randomDigits = randomDigits.substring(randomDigits.length()-5, randomDigits.length());
+		
+		String tmpCollectionName = TEMP_COLLECTION_PREFIX + randomDigits;
+		
+		MongoCollection<Document> collection = database.getCollection(tmpCollectionName);
+			
 		List<Document> docs = new ArrayList<Document>();
 		
 		int entriesUploaded = 0;
