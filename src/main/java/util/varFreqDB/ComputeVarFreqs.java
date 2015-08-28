@@ -59,8 +59,7 @@ public class ComputeVarFreqs {
 			return false;
 		}
 		
-		SampleInfo sampInfo = new SampleInfo(vcf, info.getSampleName(), info.getCompletionDate());
-		sampInfo.analysisType = info.getAnalysisType();
+		SampleInfo sampInfo = new SampleInfo(vcf, info.getSampleName(), info.getAnalysisType(), info.getCompletionDate());
 		sampInfo.bed = new BEDFile(bed);
 		
 		//Only add if there's nothing else with this key OR if there is a sample with this key but it
@@ -309,18 +308,20 @@ public class ComputeVarFreqs {
 	
 	
 	class SampleInfo {
-		File source = null;
-		String analysisType = null;
-		BEDFile bed = null;
-		String sampleName;
-		String accession;
-		Date completionDate = null;
+		final File source;
+		final String analysisType;
+		BEDFile bed;
+		final String sampleName;
+		final String accession;
+		final Date completionDate;
 		private VariantStore pool = null;
 		
-		public SampleInfo(File source, String sampleName, Date completionDate) throws IOException {
+		public SampleInfo(File source, String sampleName, String analysisType, Date completionDate) throws IOException {
 			this.source = source;	
 			this.sampleName = sampleName;
+			this.analysisType = analysisType;
 			this.accession = parseAccession(sampleName);
+			this.completionDate = completionDate;
 		}
 		
 		public VariantStore getPool() throws IOException {
