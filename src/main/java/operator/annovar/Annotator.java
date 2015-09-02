@@ -17,6 +17,7 @@ import org.w3c.dom.NodeList;
 import pipeline.Pipeline;
 import pipeline.PipelineObject;
 import util.Interval;
+import buffer.ArupBEDFile;
 import buffer.BEDFile;
 import buffer.variant.VariantPool;
 import buffer.variant.VariantRec;
@@ -31,6 +32,7 @@ public abstract class Annotator extends Operator {
 
 	protected VariantPool variants = null;
 	protected BEDFile bedFile = null;
+	protected ArupBEDFile arupBedFile = null;
 	
 
 	/**
@@ -132,20 +134,28 @@ public abstract class Annotator extends Operator {
 		if (children == null) {
 			return;
 		}
-		for(int i=0; i<children.getLength(); i++) {
+		for (int i = 0; i < children.getLength(); i++) {
 			Node child = children.item(i);
 			if (child.getNodeType() == Node.ELEMENT_NODE) {
-				Element el = (Element)child;
+				Element el = (Element) child;
 				PipelineObject obj = getObjectFromHandler(el.getNodeName());
 				if (obj instanceof VariantPool) {
-					variants = (VariantPool)obj;
+					variants = (VariantPool) obj;
+				} else if (obj instanceof ArupBEDFile) {
+					arupBedFile = (ArupBEDFile) obj;
+					try {
+						arupBedFile.buildIntervalsMap(true);
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
 				} else if (obj instanceof BEDFile) {
-					bedFile = (BEDFile)obj;
+					bedFile = (BEDFile) obj;
 					try {
 						bedFile.buildIntervalsMap(true);
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
+
 				}
 			}
 		}

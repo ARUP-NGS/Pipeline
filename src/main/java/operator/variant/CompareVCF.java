@@ -1,26 +1,15 @@
 package operator.variant;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.logging.Logger;
-
-import net.sf.samtools.util.RuntimeEOFException;
-
-import org.apache.tools.ant.types.CommandlineJava.SysProperties;
 
 import operator.IOOperator;
 import operator.OperationFailedException;

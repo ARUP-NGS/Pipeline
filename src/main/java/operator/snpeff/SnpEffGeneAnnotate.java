@@ -1,5 +1,8 @@
 package operator.snpeff;
 
+//import htsjdk.tribble.readers.TabixReader;
+//import htsjdk.tribble.readers.TabixReader.Iterator;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -8,6 +11,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -16,12 +20,39 @@ import java.util.regex.Pattern;
 
 import operator.OperationFailedException;
 import operator.annovar.Annotator;
+import operator.snpeff.SerialSnpEffGeneAnnotate.SnpEffInfo;
 
 import org.w3c.dom.NodeList;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 
 import pipeline.Pipeline;
+import pipeline.PipelineObject;
 import util.Interval;
+import buffer.ArupBEDFile;
 import buffer.variant.VariantRec;
+
+//So far I have edited 
+	//	SnpEffGeneAnnotate.java major changes: 
+	//		uses attribute transcripts.from.arupbed = true to use transcripts from arupBedFile input rather than preferred nm list
+	//		if var intersects with intervals, annotations with the transcripts from those intervals will be used
+	//		force snpEff to only use transcripts from the ArupBedFile (faster, filters most annotations we don't want)
+	//	ArupBEDFile.java new extends BEDFile, uses info property in Interval class to store transcripts
+	//	Annotator.java now looks for ArupBEDFile as input and builds interval map if found
+	//	Interval.java added getter for info property
+	//	IntervalsFile.java added intersectsWhich and nearest methods for a query interval input
+	//	VariantRec.java added annotations for 2nd and 3rd annotation
+	//	VarViewerWriter.java added annotations for 2nd and 3rd annotation
+
+//TODO in SnpEff annotator, if bed trs don't match any snpEff trs throw error
+//TODO annotate with all transcripts available from ArupBedFile.nearest search. 
+//TODO have nearest send back ranked list
+//TODO test using nicu bed file to show all possibilities of bed file
+//TODO add proper comments
+//TODO add test mods?
+
+//NOTE currently full ArupBEDFile loaded into an interval map
+//		if this becomes too large (for exome/genome?) we could possibly load one chrom at a time
 
 /**
  * Uses SnpEff to provide gene annotations for the variants given 
@@ -37,6 +68,8 @@ public class SnpEffGeneAnnotate extends Annotator {
 	public static final String UPDOWNSTREAM_LENGTH = "updownstream.length";
 	public static final String SPLICESITE_SIZE = "spliceSite.size";
 	public static final String ALT_JAVA_HOME = "alt.java.home";
+	public static final String TRANSCRIPTS_FROM_ARUPBED = "transcripts.from.arupbed";
+
 
 	protected String javaHome = null;
 	protected String altJavaHome = null;
@@ -45,6 +78,7 @@ public class SnpEffGeneAnnotate extends Annotator {
 	protected int updownStreamLength = 1000;
 	protected int spliceSiteSize = 10;
 	protected boolean performMitoSub = false; //If true, do a substitution of mito chr name to 
+	protected boolean trsFromArupBed = false; //if true, expect ArupBEDFile input with transcripts in 4th column
 	
 	private Map<String, List<SnpEffInfo> > annos = null;
 	private Map<String, String> nmMap = new HashMap<String, String>();
@@ -92,15 +126,30 @@ public class SnpEffGeneAnnotate extends Annotator {
 			e.printStackTrace();
 		}
 
-
+		//Next, make file of unique set of transcripts. Only these transcripts will be used by snpEff (-onlyTr option)
+		//(only if we are using nms from an ARUP BED file)
+		String onlyTr = null;
+		if (trsFromArupBed) {
+			onlyTr = this.getProjectHome() + "/snpeff_onlyTr.txt";
+			try {
+				onlyTrBuild(onlyTr, arupBedFile);
+			} catch (OperationFailedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} 
+		}
 
 		//Next, run snpeff using the input file we just made
-		String command = javaHome + " -Xmx16g -jar " + snpEffDir + "/snpEff.jar -c " + snpEffDir + "/snpEff.config " + snpEffGenome + " -hgvs -nostats -ud " + updownStreamLength + " -spliceSiteSize " + spliceSiteSize + " " + input.getAbsolutePath();
+		String command = javaHome + " -Xmx16g -jar " + snpEffDir + "/snpEff.jar -c " + snpEffDir + 
+				"/snpEff.config " + snpEffGenome + " -hgvs -nostats -ud " + updownStreamLength + 
+				" -spliceSiteSize " + spliceSiteSize + " " + input.getAbsolutePath();
+		// add additional -onlyTr option if we are using transcripts from an ARUP BED file
+		if (trsFromArupBed) {
+			command = command + " -onlyTr " + onlyTr;
+		}
 		Logger.getLogger(Pipeline.primaryLoggerName).info("Executing command: " + command);
 		try {
-			
 			executeCommandCaptureOutput(command, outputFile);
-			
 		} catch (OperationFailedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -139,11 +188,14 @@ public class SnpEffGeneAnnotate extends Annotator {
 			e.printStackTrace();
 		}
 
-		
+
 	}
 	
+
 	@Override
 	public void annotateVariant(VariantRec var) throws OperationFailedException {
+		
+		
 		if (annos == null) {
 			throw new OperationFailedException("Map not initialized", this);
 			
@@ -153,58 +205,222 @@ public class SnpEffGeneAnnotate extends Annotator {
 		
 		String[] allAlts = varStr.split("\n");
 		
+		//crashes if one of the alts has no annotations
 		for(String alt : allAlts) {
 			List<SnpEffInfo> annoList = annos.get(alt);
 			if (annoList == null) {
 				throw new OperationFailedException("No annotation info found for " + varStr, this);
 			}
 		
-			annotateFromList(var, annoList);
+			//use annos from any of the alts to choose highest ranking
+			try {
+				annotateFromList(var, annoList);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 		
 	}
 	
-	private void annotateFromList(VariantRec var, List<SnpEffInfo> infoList) {
+	private void annotateFromList(VariantRec var, List<SnpEffInfo> infoList) throws IOException, OperationFailedException {
+	// inputs are a var and list of associated snpefff annotations
 		
 		if (infoList == null || infoList.size() == 0) {
 			return;
 		}
 		
-		boolean hasPreferredNM = false;
+		boolean hasPreferredNM = false; //can use this to throw error if transcripts for this region not seen in infoList
 		boolean isUsingPreferredNM = false;
+		ArrayList<Integer> nearestIndexes = null;
+		LinkedHashSet<String> varTrs = new LinkedHashSet<String>();
 		
-		SnpEffInfo topHit = infoList.get(0);
-		int topRank = calculateRank(topHit.changeType);
-		for(SnpEffInfo info : infoList) {
+
+		if (trsFromArupBed) {
+			//get var genomic position for query.
+			String varContig = var.getContig();
+			int varStart = var.getStart();
+			int varRefLength = var.getRef().length();
+			int varEnd;
+			if (varRefLength == 0) varRefLength = 1;
+			varEnd = varStart + varRefLength - 1;
+			Interval varInterval = new Interval(varStart, varEnd);
 			
-			int infoRank= calculateRank(info.changeType);
+			//get all transcripts from this var's position
+			//make a "prioritized" transcript list (first in list takes priority)
+			nearestIndexes = arupBedFile.nearest(varContig, varInterval);
 			
-			//First check to see if it's in the nmMap. If so, it gets a really high rank
-			if (nmMap.containsKey(info.gene)) {
-				hasPreferredNM = true;
-				String preferredNM = nmMap.get(info.gene);
-				if (info.transcript.startsWith(preferredNM)) {
-					infoRank += 1000;
-					isUsingPreferredNM = true;
+			List<Interval> cInts = arupBedFile.getIntervalsForContig(varContig);
+			for (Integer idx : nearestIndexes) {
+				Interval idxInter = cInts.get(idx);
+				String[] idxTrs = (String[]) idxInter.getInfo();
+				for (String tr : idxTrs) {
+						varTrs.add(tr);
 				}
 			}
-			
-			if (infoRank > topRank) {
-				topHit = info;
-				topRank = infoRank;
-			}
-		}
 
-		// based on the top hit, find the appropriate cdot
-		// make map of infolist index vs cdot value but only for the transcript of top hit
-		// choose cdot based on:
+			//make a prioritized list of infos to output as annotations
+			ArrayList<SnpEffInfo> annoResults = new ArrayList<SnpEffInfo>(); //infos for output in decending order of importance
+
+			//try to find top ranking snpEff annotation for each transcript	
+			for (String tr : varTrs) { 
+				int topRank = -1;
+				SnpEffInfo topHit = null;
+				
+				for (SnpEffInfo infoi : infoList) {
+					if (tr.equals(infoi.transcript)) {
+						int ranki = calculateRank(infoi.changeType);
+						if (ranki > topRank) {
+							topRank = ranki;
+							topHit = infoi;
+						}
+					}
+				}
+				//if we found an info for this transcript
+				//flesh the info out and add it to the annoResults list
+				//TODO do we want to keep this section below that looks at different cdots/pdots or accept the top ranking for given transcript
+				if (topHit != null) {
+					SnpEffInfo infoForAnno = new SnpEffInfo();
+					infoForAnno.exon = topHit.exon;
+					infoForAnno.transcript = topHit.transcript;
+					infoForAnno.changeType = topHit.changeType;
+					infoForAnno.gene = topHit.gene;
+					loadBestCPDot(infoForAnno, infoList);
+					annoResults.add(infoForAnno);
+					annoResults.add(topHit);
+				}
+
+			}
+			
+			//TODO Currently only annotating with top 3 ranked info, add additional annotations for lower ranked annotations
+			//if no matching infos found, throw error for now
+			//(or just choose next best info?????)
+			if (annoResults.size() > 0) {
+				appendAnnotation(var, VariantRec.CDOT, annoResults.get(0).cDot);
+				appendAnnotation(var, VariantRec.PDOT, annoResults.get(0).pDot);
+				appendAnnotation(var, VariantRec.EXON_NUMBER, annoResults.get(0).exon);
+				appendAnnotation(var, VariantRec.NM_NUMBER, annoResults.get(0).transcript);
+				appendAnnotation(var, VariantRec.GENE_NAME, annoResults.get(0).gene);
+				appendAnnotation(var, VariantRec.VARIANT_TYPE, annoResults.get(0).changeType.replace("_CODING", ""));
+				//add second annotation if it exists
+				if (annoResults.size() >= 2) {
+					appendAnnotation(var, VariantRec.CDOT2, annoResults.get(1).cDot);
+					appendAnnotation(var, VariantRec.PDOT2, annoResults.get(1).pDot);
+					appendAnnotation(var, VariantRec.EXON_NUMBER2, annoResults.get(1).exon);
+					appendAnnotation(var, VariantRec.NM_NUMBER2, annoResults.get(1).transcript);
+					appendAnnotation(var, VariantRec.GENE_NAME2, annoResults.get(1).gene);
+					appendAnnotation(var, VariantRec.VARIANT_TYPE2, annoResults.get(1).changeType.replace("_CODING", ""));
+				}
+				//add third annotation if it exists
+				if (annoResults.size() >= 3) {
+					appendAnnotation(var, VariantRec.CDOT3, annoResults.get(3).cDot);
+					appendAnnotation(var, VariantRec.PDOT3, annoResults.get(3).pDot);
+					appendAnnotation(var, VariantRec.EXON_NUMBER3, annoResults.get(3).exon);
+					appendAnnotation(var, VariantRec.NM_NUMBER3, annoResults.get(3).transcript);
+					appendAnnotation(var, VariantRec.GENE_NAME3, annoResults.get(3).gene);
+					appendAnnotation(var, VariantRec.VARIANT_TYPE3, annoResults.get(3).changeType.replace("_CODING", ""));
+				}
+
+			} else {
+				var.addAnnotation(VariantRec.NON_PREFERRED_TRANSCRIPT, "true");
+				throw new OperationFailedException("No ArupBedFile transcript found in snpEff variant region: " + var.getContig() + ":" + var.getStart(), this);
+				//System.out.println("No ArupBedFile transcript found in snpEff variant region");
+
+				//System.out.println("no anno var-info............... " + var.getContig() + ":" + var.getStart() + ":" + var.getAlt() + " varTrs are:");
+				//System.out.println("nearestIndexes........ ");
+				//for (Integer ni : nearestIndexes) {
+				//	System.out.println(ni + ", ");
+				//}
+
+				//System.out.println("no anno var-info............... " + var.getContig() + ":" + var.getStart() + ":" + var.getAlt() + " varTrs are:");
+				//System.out.println(var.getContig() + ":" + var.getStart() + ":" + var.getAlt());
+				//System.out.println("varTrs........ ");
+				//for (String tr : varTrs) {
+				//	System.out.println(tr + ", ");
+				//}
+				//System.out.println("infoList........ ");
+				//for (SnpEffInfo infoi : infoList) {
+				//	System.out.println(infoi.transcript + ", ");
+				//}
+				//System.out.println("nearestIndexes........ ");
+				//for (Integer ni : nearestIndexes) {
+				//	System.out.println(ni + ", ");
+				//}
+
+			}
+
+		} else {
+		//not trsFromArupBed so use the old method
+			SnpEffInfo topHit = infoList.get(0);
+			int topRank = calculateRank(topHit.changeType);
+			for (SnpEffInfo info : infoList) {
+				int infoRank = calculateRank(info.changeType);
+
+				// First check to see if it's in the nmMap. If so, it gets a
+				// really high rank
+				if (nmMap.containsKey(info.gene)) {
+					hasPreferredNM = true;
+					String preferredNM = nmMap.get(info.gene);
+					if (info.transcript.startsWith(preferredNM)) {
+						infoRank += 1000;
+						isUsingPreferredNM = true;
+					}
+				}
+				if (infoRank > topRank) {
+					topHit = info;
+					topRank = infoRank;
+				}
+			}
+
+			// based on the top hit, find the appropriate cdot
+			// make map of infolist index vs cdot value but only for the transcript of top hit
+			// choose cdot based on:
 			// something is better than nothing
 			// intronic or UTR is better than coding (because these will be most likely to be based on the reference transcript and not the variant)
+			String bestCdot = "";
+			String bestPdot = topHit.pDot;
+			Pattern p = Pattern.compile("[\\+\\-\\*]");
+			for(SnpEffInfo info : infoList) {
+				if (info.transcript.equals(topHit.transcript) && info.cDot != null && ! info.cDot.equals("")) {
+					Matcher bestMatch = p.matcher(bestCdot);
+					Matcher nextMatch = p.matcher(info.cDot);
+					if (nextMatch.find() && ! bestMatch.find()) {
+						bestCdot = info.cDot;
+						if (info.pDot != null && ! info.pDot.equals("")){
+							bestPdot = info.pDot;
+						}
+					} else if (bestCdot.equals("")) {
+						bestCdot = info.cDot;
+						if (info.pDot != null && ! info.pDot.equals("")){
+							bestPdot = info.pDot;
+						}
+					}
+					if (bestPdot == null || bestPdot.equals("") && (info.pDot != null && ! info.pDot.equals(""))){
+						bestPdot = info.pDot;
+					}
+				}
+			}
+
+			appendAnnotation(var, VariantRec.CDOT, bestCdot);
+			appendAnnotation(var, VariantRec.PDOT, bestPdot);
+			appendAnnotation(var, VariantRec.EXON_NUMBER, topHit.exon);
+			appendAnnotation(var, VariantRec.NM_NUMBER, topHit.transcript);
+			appendAnnotation(var, VariantRec.GENE_NAME, topHit.gene);
+			appendAnnotation(var, VariantRec.VARIANT_TYPE, topHit.changeType.replace("_CODING", ""));
+			if (hasPreferredNM && (!isUsingPreferredNM)) {
+				var.addAnnotation(VariantRec.NON_PREFERRED_TRANSCRIPT, "true");
+			}
+		}
+	}
+
+	
+	
+	private void loadBestCPDot(SnpEffInfo hitInfo, List<SnpEffInfo> infoList) {
 		String bestCdot = "";
-		String bestPdot = topHit.pDot;
+		String bestPdot = hitInfo.pDot;
 		Pattern p = Pattern.compile("[\\+\\-\\*]");
 		for(SnpEffInfo info : infoList) {
-			if (info.transcript.equals(topHit.transcript) && info.cDot != null && ! info.cDot.equals("")) {
+			if (info.transcript.equals(hitInfo.transcript) && info.cDot != null && ! info.cDot.equals("")) {
 				Matcher bestMatch = p.matcher(bestCdot);
 				Matcher nextMatch = p.matcher(info.cDot);
 				if (nextMatch.find() && ! bestMatch.find()) {
@@ -223,19 +439,10 @@ public class SnpEffGeneAnnotate extends Annotator {
 				}
 			}
 		}
-
-		
-		appendAnnotation(var, VariantRec.CDOT, bestCdot);
-		appendAnnotation(var, VariantRec.PDOT, bestPdot);
-		appendAnnotation(var, VariantRec.EXON_NUMBER, topHit.exon);
-		appendAnnotation(var, VariantRec.NM_NUMBER, topHit.transcript);
-		appendAnnotation(var, VariantRec.GENE_NAME, topHit.gene);
-		appendAnnotation(var, VariantRec.VARIANT_TYPE, topHit.changeType.replace("_CODING", ""));
-		if (hasPreferredNM && (!isUsingPreferredNM)) {
-			var.addAnnotation(VariantRec.NON_PREFERRED_TRANSCRIPT, "true");
-		}
+		hitInfo.cDot = bestCdot;
+		hitInfo.pDot = bestPdot;
 	}
-	
+			
 	
 	private static int calculateRank(String changeType) {
 		if (changeType == null || changeType.length()==0) {
@@ -247,33 +454,6 @@ public class SnpEffGeneAnnotate extends Annotator {
 		} else {
 			return 6;
 		}
-		
-		// Previous code
-		//if (changeType.contains("intergenic") || changeType.contains("upstream") || changeType.contains("downstream") || changeType.equals("INTERGENIC") || changeType.contains("UPSTREAM") || changeType.contains("DOWNSTREAM")) {
-		//	return 0;
-		//}
-		//Splice is bad since there's no CDot or PDot associated with it. Prefer INTRON instead.
-		//		if (changeType.startsWith("SPLICE") || changeType.startsWith("splice")) {
-		//			return 3; // changed from 0 
-		//		}
-		//if (changeType.contains("UTR")) {   // UTR is capitalized in both snpEff 3.
-		//	return 1;
-		//}
-		//if (changeType.equals("INTRON")) {
-		//	return 1;
-		//}
-		//if (changeType.equals("SYNONYMOUS_CODING")) {
-		//	return 2;
-		//}
-		//if (changeType.startsWith("NON_SYNONYMOUS")) {
-		//	return 4; // changed from 3
-		//}
-		//
-		//if (changeType.startsWith("START") || changeType.startsWith("STOP")) {
-		//	return 5;
-		//}
-		//
-		//return 6;
 	}
 	
 	private static String convertVar(String chr, int pos, String ref, String alt) {
@@ -419,41 +599,45 @@ public class SnpEffGeneAnnotate extends Annotator {
 		return infos;
 	}
 	
-//	private SnpEffInfo parseOutputLineTXT(String line) {
-//		String[] toks = line.split("\t");
-//		SnpEffInfo info = new SnpEffInfo();
-//		if (toks.length < 2) {
-//			return info;
-//		}
-//		info.gene = toks[10];
-//		info.transcript = toks[12];
-//		info.exon = toks[14];
-//		info.changeType = toks[15];
-//		
-//		info.pDot = "";
-//		info.cDot = "";
-//		if (!info.changeType.equals("INTERGENIC") && toks.length>16) {
-//			if (toks[16].length()>0) {
-//				String[] cp = toks[16].split("/");
-//				if (cp.length > 1) {
-//					info.pDot = cp[0];
-//					info.cDot = cp[1];
-//				}
-//				else {
-//					info.cDot = toks[16];
-//				}
-//			}	
-//		}
-//		
-//		
-//		return info;
-//	}
+	//build temp file of transcripts to be used by snpEff exclusively
+	private void onlyTrBuild(String onlyTr, ArupBEDFile arupBedFile) throws OperationFailedException {
+
+		//make unique list of transcripts from bed file by doing a line by line look at transcript column (4)
+		LinkedHashSet<String> trs = new LinkedHashSet<String>();
+
+		for (String contig : arupBedFile.getContigs()) {
+			for (Interval inter : arupBedFile.getIntervalsForContig(contig)) {
+				if (inter.getInfo() instanceof String[]) {
+					for (String tr : (String[]) inter.getInfo()) {
+						trs.add(tr);
+						//System.out.println("another tr is: " + contig + ":" + inter.begin + "-" + tr);
+					}
+					
+				} else {
+					throw new OperationFailedException("ArupBEDFile Interval object has malformed info property", this);
+				}
+			}
+		}
+
+		File trFile = new File(onlyTr);
+		BufferedWriter writer;
+		try {
+			writer = new BufferedWriter(new FileWriter(trFile));
+			for (String tr : trs) {
+				writer.write(tr + "\n");
+			}
+			writer.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+			throw new OperationFailedException("Could not write temp trFile for SnpEff. " + e, this);
+		}
+	}
+
 	
 	public void initialize(NodeList children) {
 		super.initialize(children);
 		
 		altJavaHome = this.getAttribute(ALT_JAVA_HOME);
-		
 		if (altJavaHome == null) {
 			javaHome = "java";
 		}
@@ -462,7 +646,6 @@ public class SnpEffGeneAnnotate extends Annotator {
 		}
 			
 		snpEffDir = this.getPipelineProperty(SNPEFF_DIR);
-
 		if (snpEffDir == null) {
 			snpEffDir = this.getAttribute(SNPEFF_DIR);
 			if (snpEffDir == null) {
@@ -489,20 +672,38 @@ public class SnpEffGeneAnnotate extends Annotator {
 		if (spliceSiteStr != null) {
 			spliceSiteSize = Integer.parseInt(spliceSiteStr);
 		}
-		
-		String nmDefs = this.getAttribute(NM_DEFS);
-		try {
-			nmMap = loadPreferredNMs(nmDefs);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			throw new IllegalArgumentException("Could not read NMs file:  " +nmDefs);
+
+		String useArupBed = this.getAttribute(TRANSCRIPTS_FROM_ARUPBED);
+		if (useArupBed != null) {
+			if (useArupBed.matches("TRUE|True|true")) {
+				trsFromArupBed = true;
+			} else if (! useArupBed.matches("FALSE|False|false")) {
+				throw new IllegalArgumentException("Could not decipher "
+						+ TRANSCRIPTS_FROM_ARUPBED + " value given: " + useArupBed);
+			}
 		}
-		
+		if (trsFromArupBed && arupBedFile == null) {
+			throw new IllegalArgumentException(TRANSCRIPTS_FROM_ARUPBED
+					+ " set true but no ArupBEDFile passed as input");
+		}
+
+		//only load and use preferred nms if not using nms from arupbed
+		String nmDefs = this.getAttribute(NM_DEFS);
+		if (trsFromArupBed && nmDefs != null) {
+			throw new IllegalArgumentException("Can only choose one of " + TRANSCRIPTS_FROM_ARUPBED + ", and "  + NM_DEFS + " together");
+		} else if (! trsFromArupBed ) {
+			try {
+				nmMap = loadPreferredNMs(nmDefs);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				throw new IllegalArgumentException("Could not read NMs file:  " +nmDefs);
+			}
+		} 
 	}
 	
-	
 	class SnpEffInfo {
+
 		String changeType;
 		String cDot;
 		String pDot;

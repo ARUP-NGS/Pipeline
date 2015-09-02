@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringTokenizer;
 
 import buffer.VCFFile;
 import buffer.variant.VariantLineReader;
@@ -570,34 +571,10 @@ public class VCFParser implements VariantLineReader {
 	 */
 	public Map<String, String> createSampleMetricsDict(){
 		// Create dictionaries from key-value pairs from INFO & FORMAT fields
-		Map<String, String> finalDict = createINFODict();
-		Map<String, String>  formatDict = createFORMATDict();
-
-		// Add information from FORMAT dictionary into final dictionary to return
-		for (Map.Entry<String, String> entry: formatDict.entrySet()){
-			String key = entry.getKey();
-			String valueStr=entry.getValue();
-
-			//Add value if key not already in dictionary. otherwise check if values are the same
-			//FreeBayes multisample VCFs have several fields that have the same key in both FORMAT and INFO, but different
-			//values. In general, I think we want the sample-specific fields from the FORMAT to clobber the more general
-			//ones from INFO if there is a conflict, so I'm removing the check here fow now. If there are cases
-			//where we want the INFO, not the FORMAT field, we'll need to be smarter about this
-			finalDict.put(key, valueStr);
-//			if (finalDict.get(key) != null && !finalDict.get(key).equals(valueStr)) {
-//				if (key.equals("DP")) {
-//					//use the filtered read depth in the FORMAT field
-//					finalDict.put(key, valueStr);
-//				} else {
-//					throw new IllegalStateException("Two different values for VCF field '" + key + "': " + finalDict.get(key) + ", " + valueStr + ".");
-//				}
-//				} else {
-//					finalDict.put(key, valueStr);
-//				}
-//				}
-		}
+		
+		Map<String, String>  finalDict = createFORMATDict();
+		finalDict = createINFODict(finalDict);
 		return finalDict;
-
 	}
 
 	
@@ -605,23 +582,21 @@ public class VCFParser implements VariantLineReader {
 	 *  Creates a dictionary of INFO key-value pairs by storing info from column 8 in VCF format 4.1
 	 *  @author elainegee
 	 */
-	private Map<String, String> createINFODict(){
-		HashMap<String, String> dict = new HashMap<String, String>();
+	private Map<String, String> createINFODict(Map<String, String> existing){
+		
 		//Tokenize INFO keys & values
-		String[] infoToks = currentLineToks[7].split(";"); //INFO key-value pairs
-		//Add data to dictionary
-		for (int i=0; i < infoToks.length; i++)  {
-			String[] infoData = infoToks[i].split("=");
-			String valueStr = null;
-			if (infoData.length == 1) {
-				valueStr = infoData[0];
+		//String[] infoToks = currentLineToks[7].split(";"); //INFO key-value pairs
+		StringTokenizer tokener = new StringTokenizer(currentLineToks[7], ";");
+		while(tokener.hasMoreElements()) {
+			String tok = tokener.nextToken();
+			int index = tok.indexOf("=");
+			if (index < 0) {
+				existing.put(tok, tok);
 			} else {
-				valueStr = infoData[1];
-			}
-			dict.put(infoData[0], valueStr);
+				existing.put(tok.substring(0, index), tok.substring(index+1, tok.length()));
+			}	
 		}
-		//Return INFO-only dictionary
-		return dict;
+		return existing;
 	}
 	
 	/**
@@ -630,7 +605,8 @@ public class VCFParser implements VariantLineReader {
 	 *  @author elainegee
 	 */
 	private Map<String, String> createFORMATDict(){
-		HashMap<String, String> dict = new HashMap<String, String>();
+		HashMap<String, String> dict = new HashMap<String, String>(100, 0.5f);
+		
 		//Tokenize FORMAT keys & values
 		
 		//Abort if there's no format data
@@ -681,9 +657,12 @@ public class VCFParser implements VariantLineReader {
 	 * @author elainegee
 	 * @return
 	 */
-	private static Double convertStr2Double(String AnnoOutStr){
+	private static Double convertStr2Double(String str){
+		if (str == null || str.length()==0 || str.equals("-")) {
+			return -1.0;
+		}
 		try {
-			Double outDouble = Double.parseDouble(AnnoOutStr);
+			Double outDouble = Double.parseDouble(str);
 			return outDouble;
 		} catch (NumberFormatException nfe) {
 			return -1.0; //-1.0 indicates no data found
@@ -858,14 +837,14 @@ public class VCFParser implements VariantLineReader {
 	 * @return
 	 */
 	public Double getStrandBiasScore(){
-		String AnnoStr = null;
+		String annoStr = null;
 		if (creator.contains("Torrent")){
-			AnnoStr = "STB";
+			annoStr = "STB";
 		} else {
-			AnnoStr = "FS";
+			annoStr = "FS";
 		}
 		//Get FS from sampleMetrics dictionary
-		String sbStr = getSampleMetricsStr(AnnoStr);
+		String sbStr = getSampleMetricsStr(annoStr);
 		Double sb = convertStr2Double(sbStr);
 		return sb;	
 	}
@@ -1048,6 +1027,21 @@ public class VCFParser implements VariantLineReader {
 			}
 		} catch (IllegalStateException ise) {
 			throw new IllegalStateException ("Error processing request:", ise);
+		}
+	}
+	
+	/**
+	 * A single entry in a VCF INFO field
+	 * @author brendan
+	 *
+	 */
+	private class InfoEntry {
+		final String key;
+		final String value;
+		
+		public InfoEntry(String key, String val) {
+			this.key = key;
+			this.value = val;
 		}
 	}
 					

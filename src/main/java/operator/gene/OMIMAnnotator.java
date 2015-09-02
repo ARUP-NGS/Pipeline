@@ -5,11 +5,9 @@ import gene.Gene;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.logging.Logger;
 
 import operator.OperationFailedException;
-
-import org.apache.log4j.Logger;
-
 import pipeline.Pipeline;
 import disease.DiseaseInfo;
 import disease.OMIMDB;
@@ -70,7 +68,7 @@ public class OMIMAnnotator extends AbstractGeneAnnotator {
 					}
 				}
 				else {
-					Logger.getLogger(Pipeline.primaryLoggerName).warn("No disease info found for in DB for OMIM ID #" + entry.diseaseID);
+					Logger.getLogger(Pipeline.primaryLoggerName).warning("No disease info found for in DB for OMIM ID #" + entry.diseaseID);
 				}
 							
 			}

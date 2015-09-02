@@ -1,6 +1,7 @@
 package operator.gatk;
 
-import org.apache.log4j.Logger;
+import java.util.logging.Logger;
+
 import org.w3c.dom.NodeList;
 
 import operator.CommandOperator;

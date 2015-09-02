@@ -33,7 +33,7 @@ public class MarkDuplicates extends CommandOperator {
 			picardDir = picardDir.substring(0, picardDir.length()-1);
 		}
 				
-		String command = "java -Xmx16G -jar  " + picardDir + "/picard.jar MarkDuplicates REMOVE_DUPLICATES=" + rmDup 
+		String command = "java -Xmx16g -jar " + picardDir + "/picard.jar MarkDuplicates REMOVE_DUPLICATES=" + rmDup 
 				+ " I=" + inputBAM.getAbsolutePath() 
 				+ " METRICS_FILE=" + (inputBAM.getAbsolutePath()).substring(0, (inputBAM.getAbsolutePath()).lastIndexOf('.'))
 				+ ".dupLog O="+ outputBAM.getAbsolutePath() + " ASSUME_SORTED=true VALIDATION_STRINGENCY=LENIENT";
