@@ -5,13 +5,9 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import java.util.logging.Logger;
 
-import operator.OperationFailedException;
-import pipeline.Pipeline;
 import util.Interval;
 
 
@@ -71,6 +67,8 @@ public class ArupBEDFile extends BEDFile {
 							+ line + "\n" + "in bed file " + this.file.getName());
 				}
 
+				
+				
 				String[] untrimmedTrs = toks[3].split("\\|");
 				String[] transcripts = new String[untrimmedTrs.length];
 				for (int i = 0; i < untrimmedTrs.length; i++) {
@@ -81,7 +79,9 @@ public class ArupBEDFile extends BEDFile {
 					}
 				}
 
-				Interval interval = new Interval(begin, end, transcripts);
+				ARUPBedInterval intervalInfo = new ARUPBedInterval(toks[4], transcripts, Integer.parseInt(toks[5]));
+				
+				Interval interval = new Interval(begin, end, intervalInfo);
 
 				List<Interval> contigIntervals = intervals.get(contig);
 				if (contigIntervals == null) {
@@ -98,4 +98,20 @@ public class ArupBEDFile extends BEDFile {
 		sortAllContigs();
 	}
 	
+	/**
+	 * Stores some information parsed from a single line of an ARUP BED file, including gene name, transcript list, and exon number 
+	 * @author brendan
+	 *
+	 */
+	public class ARUPBedInterval {
+		public final String gene;
+		public final String[] transcripts;
+		public final int exonNum;
+		
+		public ARUPBedInterval(String gene, String[] transcripts, int exonNum) {
+			this.gene = gene;
+			this.transcripts = transcripts;
+			this.exonNum = exonNum;
+		}
+	}
 }
