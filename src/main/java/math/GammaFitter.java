@@ -2,9 +2,9 @@ package math;
 
 import java.util.List;
 
-import math.hmm.Utils;
-
 import org.apache.commons.math3.distribution.GammaDistribution;
+
+import math.hmm.Utils;
 
 /**
  * Given an input list of observed values, this creates a gamma function that fits 
@@ -32,6 +32,8 @@ public class GammaFitter {
 		}
 		return Utils.newGammaWithMeanAndStdev( mean , Utils.stdev(vals));
 	}
+	
+	
 	
 	public class GammaFitException extends Exception {
 		

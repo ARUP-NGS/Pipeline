@@ -132,10 +132,10 @@ public class HMMSimulation {
 		
 		List<Integer> positions = new ArrayList<Integer>();
 		int posi = 0;
-		for(int i=0; i<250; i++) {
-			int dist = (int) Math.round(20.0*Math.random());
+		for(int i=0; i<20; i++) {
+			int dist = (int) Math.round(100.0*Math.random());
 			
-			if (posi < 200) {
+			if (Math.random()<0.5) {
 				epModel.addFuncsAtPos(posi, ep1);
 			} else {
 				epModel.addFuncsAtPos(posi, ep2);

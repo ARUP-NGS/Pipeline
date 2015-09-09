@@ -114,4 +114,54 @@ public class ArupBEDFile extends BEDFile {
 			this.exonNum = exonNum;
 		}
 	}
+	
+	
+	/**
+	 * Examines the given file and returns true if this looks like an ARUPBedFile
+	 * @param file
+	 * @return
+	 * @throws IOException 
+	 */
+	public static boolean checkFormat(File file) throws IOException {
+		BufferedReader reader = new BufferedReader(new FileReader(file));
+		String line = reader.readLine();
+		int maxLinesToTest = 5;
+		int linesTested = 0;
+		while(line != null && line.startsWith("#")) {
+			line = reader.readLine();
+		}
+		
+		boolean ok = true;
+		while(line != null && linesTested < maxLinesToTest) {
+			String[] toks = line.split("\t");
+			if (toks.length < 7) {
+				ok = false;
+				break;
+			}
+			
+			String tx = toks[4];
+			String gene = toks[5];
+			String exonNum = toks[6];
+			
+			if (tx.length()>0 && !(tx.startsWith("NM_") || tx.startsWith("NR_") || tx.startsWith("XM_"))) {
+				ok = false;
+				break;
+			}
+					
+			if (exonNum.length()>0) {
+				try {
+					int ex = Integer.parseInt(exonNum);
+				} catch (NumberFormatException nfe) {
+					ok = false;
+					break;
+				}
+			}
+			linesTested++;
+			line = reader.readLine();
+		}
+		
+		
+		reader.close();
+		return ok;
+	}
 }
