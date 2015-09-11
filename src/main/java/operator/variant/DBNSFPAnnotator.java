@@ -555,8 +555,7 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
 
 					while(val != null) {
 						String[] toks = val.split("\t"); //length of the array 16
-
-						if (toks.length == 112) { //the number of columns in the database
+						
 
 							// call the constructer and set variants
 							VariantRec queryResultVar = new VariantRec(toks[0], Integer.parseInt(toks[1]), Integer.parseInt(toks[1]), toks[2], toks[3]);
@@ -581,7 +580,7 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
 										break;
 								}
 							}
-						}
+
 						val = iter.next();
 					}
 				} catch (IOException e) {
