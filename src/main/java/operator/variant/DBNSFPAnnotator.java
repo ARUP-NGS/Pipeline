@@ -2,10 +2,12 @@ package operator.variant;
 
 import java.io.IOException;
 
+import com.sun.org.apache.xpath.internal.SourceTree;
 import operator.OperationFailedException;
 
 import org.broad.tribble.readers.TabixReader;
 
+import org.w3c.dom.NodeList;
 import util.vcfParser.VCFParser;
 import buffer.variant.VariantRec;
 
@@ -165,6 +167,8 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
 
 	public static final String DBNSFP_PATH = "dbnsfp.path";
 
+	public static final String DBNSFP_VERSION = "dbnsfp.version";
+	protected String dbsnfpVersion = null;
 
 	@Override
 	protected String getPathToTabixedFile() {
@@ -172,7 +176,6 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
 	}
 
 		protected void initializeReader(String filePath) {
-
 			try {
 				reader = new TabixReader(filePath);
 			} catch (IOException e) {
@@ -180,6 +183,91 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
 			}
 			initialized = true;
 	}
+
+
+
+
+
+	private int getSiftColumn(String dbsnfpVersion) {
+		if (dbsnfpVersion.equals("3.0")){
+			return 23;
+		} else { // dbsnfpVersion == "2.9"
+			return 26;
+		}
+	}
+
+	private int getPolyphenScoreColumn(String dbsnfpVersion) {
+		if (dbsnfpVersion.equals("3.0")){
+			return 29;
+		} else { // dbsnfpVersion == "2.9"
+			return 29;
+		}
+	}
+
+	private int getPolyphenScoreHVARColumn(String dbsnfpVersion) {
+		if (dbsnfpVersion.equals("3.0")){
+			return 32;
+		} else { // dbsnfpVersion == "2.9"
+			return 32;
+		}
+	}
+
+	private int getLRTScoreColumn(String dbsnfpVersion) {
+		if (dbsnfpVersion.equals("3.0")){
+			return 35;
+		} else { // dbsnfpVersion == "2.9"
+			return 35;
+		}
+	}
+
+	private int getMTScoreColumn(String dbsnfpVersion) {
+		if (dbsnfpVersion.equals("3.0")){
+			return 39;
+		} else { // dbsnfpVersion == "2.9"
+			return 38;
+		}
+	}
+
+	private int getMAScoreColumn(String dbsnfpVersion) {
+		if (dbsnfpVersion.equals("3.0")){
+			return 46;
+		} else { // dbsnfpVersion == "2.9"
+			return 41;
+		}
+	}
+
+	private int getGerpNRColumn(String dbsnfpVersion) {
+		if (dbsnfpVersion.equals("3.0")){
+			return 62;
+		} else { // dbsnfpVersion == "2.9"
+			return 62;
+		}
+	}
+
+	private int getGerpColumn(String dbsnfpVersion) {
+		if (dbsnfpVersion.equals("3.0")){
+			return 63;
+		} else { // dbsnfpVersion == "2.9"
+			return 63;
+		}
+	}
+
+	private int getPhylopColumn(String dbsnfpVersion) {
+		if (dbsnfpVersion.equals("3.0")){
+			return 65;
+		} else { // dbsnfpVersion == "2.9"
+			return 69;
+		}
+	}
+
+	private int getSiphyColumn(String dbsnfpVersion) {
+		if (dbsnfpVersion.equals("3.0")){
+			return 70;
+		} else { // dbsnfpVersion == "2.9"
+			return 78;
+		}
+	}
+
 
 	/**
 	 * When the variant exists in the dbNSFP database annotation properties are added to the variant
@@ -255,27 +343,27 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
 	 */
 	@Override
 	protected boolean addAnnotationsFromString(VariantRec var, String val, int altIndex) {
+
 		String[] toks = val.split("\t");
-		int sift_score_col = 23;
-		int polyphen_score_col = 29;
-		int Polyphen2_hvar_score_col = 32;
-		int lrt_score_column = 35;
-		int mt_score_column = 39;
-		int ma_score_column = 46;
-		int gerp_nr_score_column = 62;
-		int gerp_score_column = 63;
-		int phylop_score_column = 65;
-		int siphy_score_column = 70;
-		int pop_frequency_column = 73;
-		int afr_frequency_column = 75;
-		int eur_frequency_column = 77;
-		int amr_frequency_column = 79;
-		int asn_frequency_column = 81;
-		int exomes_freq_column = 91;
+		int sift_score_col = getSiftColumn(dbsnfpVersion);
+		int polyphen_score_col = getPolyphenScoreColumn(dbsnfpVersion);
+		int Polyphen2_hvar_score_col = getPolyphenScoreHVARColumn(dbsnfpVersion);
+		int lrt_score_column = getLRTScoreColumn(dbsnfpVersion);
+		int mt_score_column = getMTScoreColumn(dbsnfpVersion);
+		int ma_score_column = getMAScoreColumn(dbsnfpVersion);
+		int gerp_nr_score_column = getGerpNRColumn(dbsnfpVersion);
+		int gerp_score_column =  getGerpColumn(dbsnfpVersion);
+		int phylop_score_column = getPhylopColumn(dbsnfpVersion);
+		int siphy_score_column = getSiphyColumn(dbsnfpVersion);
+		//int pop_frequency_column = 73;
+		//int afr_frequency_column = 75;
+		//int eur_frequency_column = 77;
+		//int amr_frequency_column = 79;
+		//int asn_frequency_column = 81;
+		//int exomes_freq_column = 91;
 
 
 		//SIFT_SCORE
-
 		try {
 			if (toks[sift_score_col].contains(";")) {
 				String [] values = toks[sift_score_col].split(";");
@@ -433,6 +521,8 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
 	}
 
 
+
+
 	/**
 	 * Overrides the abstractTabixAnnotator method because the database is not in standard VCF format.
 	 *
@@ -505,7 +595,29 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
 			//are private... right now we just ignore it and skip this variant
 		}
 
+	}
 
+	public void initialize(NodeList children) {
+		super.initialize(children);
+
+		dbsnfpVersion = this.getAttribute(DBNSFP_VERSION);
+		if (dbsnfpVersion == null) {
+			dbsnfpVersion= "2.9";
+		}
+		else {
+
+			if (dbsnfpVersion.equals("2.0")) {
+				//supported DB
+			}
+			else if (dbsnfpVersion.equals("2.9")) {
+				//supported DB
+			}else if (dbsnfpVersion.equals("3.0")) {
+				//supported DB
+			}
+		}
 
 	}
+
+
+
 }

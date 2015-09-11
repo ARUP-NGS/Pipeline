@@ -5,7 +5,7 @@
     </VariantPool>
 
 
-    <GeneAnnotate class="operator.variant.DBNSFPAnnotator">
+    <GeneAnnotate class="operator.variant.DBNSFPAnnotator" dbnsfp.version="3.0">
         <VariantPool />
     </GeneAnnotate>
 
