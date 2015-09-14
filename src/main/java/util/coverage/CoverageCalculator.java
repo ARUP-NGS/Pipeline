@@ -337,7 +337,6 @@ public class CoverageCalculator {
 		public void run() {
 			intervalResults = new ArrayList<IntervalCovSummary>();
 			try {
-				System.err.println("Beginning job for " + subIntervals.size() + " intervals..");
 				BamWindow window = new BamWindow(inputBam, minMQ);
 				
 				for(Interval interval : subIntervals) {
