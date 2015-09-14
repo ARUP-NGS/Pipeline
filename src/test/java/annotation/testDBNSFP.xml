@@ -4,10 +4,11 @@
         <InputVCF />
     </VariantPool>
 
-
-    <GeneAnnotate class="operator.variant.DBNSFPAnnotator" dbnsfp.version="3.0">
+    <GeneAnnotate30 class="operator.variant.DBNSFPAnnotator" dbnsfp.version="3.0">
         <VariantPool />
-    </GeneAnnotate>
+    </GeneAnnotate30>
 
-
+    <GeneAnnotate29 class="operator.variant.DBNSFPAnnotator" dbnsfp.version="2.9">
+        <VariantPool />
+    </GeneAnnotate29>
 </Pipeline>
