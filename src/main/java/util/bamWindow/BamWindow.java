@@ -36,6 +36,7 @@ public class BamWindow {
 	
 	private String currentContig = null;
 	private int currentPos = -1; //In reference coordinates
+	private boolean ignoreDups = true;
 	
 	final LinkedList<MappedRead> records = new LinkedList<MappedRead>(); //List of records mapping to currentPos
 	final LinkedList<MappedTemplate> templates = new LinkedList<MappedTemplate>(); //List of 'templates' overlapping current pos
@@ -334,7 +335,11 @@ public class BamWindow {
 		return records.getLast();
 	}
 	
-	private static MappedTemplate inferTemplateFromRead(SAMRecord read) {
+	private MappedTemplate inferTemplateFromRead(SAMRecord read) {
+		
+		if (ignoreDups && read.getDuplicateReadFlag()) { 
+			return null;
+		}
 		
 		int readStart = read.getAlignmentStart();
 		int readEnd = read.getAlignmentEnd();
@@ -382,8 +387,13 @@ public class BamWindow {
 				? recordIt.next()
 				: null;
 		
-		//Automagically skip reads with mapping quality less than minMQ
-		while(nextRecord != null && (nextRecord.getMappingQuality() < minMQ)) {
+		if (nextRecord != null && nextRecord.getDuplicateReadFlag()) {
+			System.out.println("Read " + nextRecord.getReadName() + " is a dup");
+		}
+		//Automagically skip reads with mapping quality less than minMQ or duplicates
+		while(nextRecord != null 
+				&& ((nextRecord.getMappingQuality() < minMQ)
+				   || (ignoreDups && nextRecord.getDuplicateReadFlag()))) {
 			nextRecord = recordIt.hasNext()
 					? recordIt.next()
 					: null;

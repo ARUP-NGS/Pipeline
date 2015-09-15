@@ -32,6 +32,7 @@ public class CoverageCalculator {
 	private int threads = Math.max(1, Runtime.getRuntime().availableProcessors()/2);
 	private int minMQ = 0;
 	private final boolean countTemplates;
+	private boolean ignoreDups = true;
 	
 	/**
 	 * Creates a new CoverageCalculator object that will examine the given BAM file over
@@ -450,6 +451,14 @@ public class CoverageCalculator {
 	static class CovResult {
 		int sitesAssessed = 0;
 		long covSum = 0;
+	}
+
+	public boolean isIgnoreDups() {
+		return ignoreDups;
+	}
+
+	public void setIgnoreDups(boolean ignoreDups) {
+		this.ignoreDups = ignoreDups;
 	}
 
 

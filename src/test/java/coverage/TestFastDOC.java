@@ -91,6 +91,13 @@ public class TestFastDOC {
 		
 	}
 	
+	
+	public void TestDupIgnoringComputations() {
+		
+		BAMFile testBam = new BAMFile(new File("src/test/java/testbams/tinybam.bam"));
+		
+	}
+	
 	/**
 	 * Test the new util.CoverageCalculator tool
 	 */
@@ -235,7 +242,7 @@ public class TestFastDOC {
 		CoverageCalculator calc0 = new CoverageCalculator(bamFile, intervals, 0, false);
 		CoverageCalculator calc61 = new CoverageCalculator(bamFile, intervals, 61, false);
 		CoverageCalculator calc60 = new CoverageCalculator(bamFile, intervals, 60, false);
-
+		
 		List<IntervalCovSummary> depths0 = calc0.computeCoverageByInterval();
 		List<IntervalCovSummary> depths61 = calc61.computeCoverageByInterval();
 		List<IntervalCovSummary> depths60 = calc60.computeCoverageByInterval();
