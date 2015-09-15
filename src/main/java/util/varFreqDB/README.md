@@ -27,11 +27,16 @@ Note that the output can get pretty ridiculously big - there are often multiple 
 In NGS.Web, this tools is run nightly by a script called `/mnt/ngseqstore1/tools/scripts/variantFrequencyCalculator.py` (cron runs the job nightly - try `sudo crontab -e` to see the actual call details).
 The script takes the output of this tool and does two things.
  1. Puts the data into a tabix-compressed file in `/mnt/ngseqstore1/ngsdata/resources/arupFreqDB...csv.gz`, and updates a link called `/mnt/ngseqstore1/ngsdata/resources/variantFrequencies.csv.gz` to point to this new version
- 2. Uploads the data into a Mongo collection using a small separate app called (MongoFreqUploader)[https://github.com/ARUP-NGS/Pipeline/blob/dev/src/main/java/util/varFreqDB/MongoFreqUploader.java]. 
+ 2. Uploads the data into a Mongo collection using a small separate app called [MongoFreqUploader](https://github.com/ARUP-NGS/Pipeline/blob/dev/src/main/java/util/varFreqDB/MongoFreqUploader.java). 
 
 
 ### Algorithm details
 
 
+The meat of the operation takes place in `ComputeVarFreqs emitTabulatedByContig(...)`. As the name implies, we do this on a per-contig (chromosome) basis, since we don't want to end up reading too much info into memory. There are two basic phases:
+
+  1. Read all variants from the requested contig for all samples into a single, giant VariantPool. Don't tolerate repeats, so the VariantPool should contain just one unique entry for each variant.
+  2. Iterate over all variants in the variant pool and, for each variant, over all samples. For each sample, ask if its BED file contains the current variant. If so, ask if the sample contains the variant, and if so, get the variants zygosity. Increment the variant's annotations accordingly (there are separate annotations for every test type, het, and hom zygosity). 
+  3. Emit everything to output in the format specified above.
 
 
