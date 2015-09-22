@@ -364,6 +364,17 @@ public class SnpEffGeneAnnotate extends Annotator {
 					if (info.transcript.startsWith(preferredNM)) {
 						infoRank += 1000;
 						isUsingPreferredNM = true;
+						try {
+							String specificNMFile = this.getAttribute(NM_DEFS);
+							if (specificNMFile!=null) {
+								if (this.getUserPreferredNMs(this.getAttribute(NM_DEFS)).containsKey(info.gene)) {
+									infoRank += 9000; // This transcript is in the user specified preferred NMs. It's over 9000!!!!!
+								}
+							}
+						} catch (IOException e) {
+							e.printStackTrace();
+							throw new IllegalArgumentException("Could not read NMs file:  " + this.getAttribute(NM_DEFS));
+						}
 					}
 				}
 				if (infoRank > topRank) {
