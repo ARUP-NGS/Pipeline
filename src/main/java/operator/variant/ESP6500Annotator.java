@@ -56,9 +56,9 @@ public class ESP6500Annotator extends AbstractTabixAnnotator {
 					Double maf = Double.parseDouble(vals[vals.length-1]);
 					Double mafEA = Double.parseDouble(vals[0]);
 					Double mafAA = Double.parseDouble(vals[1]);
-					var.addProperty(VariantRec.EXOMES_FREQ, maf);
-					var.addProperty(VariantRec.EXOMES_FREQ_EA, mafEA);
-					var.addProperty(VariantRec.EXOMES_FREQ_AA, mafAA);
+					var.addProperty(VariantRec.EXOMES_FREQ, maf/100);
+					var.addProperty(VariantRec.EXOMES_FREQ_EA, mafEA/100);
+					var.addProperty(VariantRec.EXOMES_FREQ_AA, mafAA/100);
 				}
 				catch(NumberFormatException ex) {
 					//Don't worry about it, no annotation though
