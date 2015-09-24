@@ -22,7 +22,7 @@ public class TestESP6500 extends TestCase {
 	public void setUp() {
 		try {
 			Pipeline ppl = new Pipeline(inputFile, propertiesFile.getAbsolutePath());
-			ppl.setProperty("esp.path", "/home/kevin/salt_home/resources/esp/ESP6500.all.v0.vcf.tgz/ESP6500.all.vcf.gz");
+			ppl.setProperty("esp.path", "src/test/java/testvcfs/ESP6500.test.vcf.gz");
 
 			ppl.initializePipeline();
 			ppl.stopAllLogging();
