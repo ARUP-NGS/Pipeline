@@ -246,7 +246,7 @@ public class CoverageCalculator {
 	 * @author brendan
 	 *
 	 */
-	public class IntervalCovSummary implements Comparable<IntervalCovSummary> {
+	public static class IntervalCovSummary implements Comparable<IntervalCovSummary> {
 		String chr;
 		Interval interval;
 		public double meanDepth;
@@ -299,6 +299,7 @@ public class CoverageCalculator {
 				return this.interval.compareTo(ic.interval);
 			}
 		}
+		
 	}
 	
 

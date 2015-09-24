@@ -107,24 +107,23 @@ public class ForwardBackward {
 		RealVector result = new ArrayRealVector(hmm.getStateCount());
 		double sum = 0.0;
 		
-		
 		int failures = 0;
 		AbstractRealDistribution[] emissionDists = hmm.emissionProbs.getEmissionProbsForIndex(o.position);
-
+		
+		double oval = o.value;
+		if (oval==0.0) {
+			oval = TINY_POSITIVE;
+		}
+		oval = Math.min(maxObservationVal, oval);
+		
 		for(int i=0; i<newState.getDimension(); i++) {
-			
-			double oval = o.value;
-			if (oval==0.0) {
-				oval = TINY_POSITIVE;
-			}
-			oval = Math.min(maxObservationVal, oval);
+	
 			double density = emissionDists[i].density(oval);
 			if (Double.isNaN(density) || density<TINY_POSITIVE) {
 				density = TINY_POSITIVE;
 				failures++;
 			}
-			oval = Math.min(oval, getMaxObsVal());
-			
+					
 			double newVal = newState.getEntry(i)*density;
 			
 			if (Double.isNaN(newVal) && newState.getEntry(i) < TINY_POSITIVE) {
