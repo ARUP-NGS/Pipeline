@@ -24,14 +24,13 @@ public class ESP6500Annotator extends AbstractTabixAnnotator {
 	protected boolean addAnnotationsFromString(VariantRec var, String dbline, int altIndex) {
 		String[] toks = dbline.split("\t");
 		String[] infoToks = toks[7].split(";");
-				
+
 		Double totOverall = 0.0;
 		Double homOverall = 0.0;
-		
+
 		int homRefIndex = -1;
 		int hetIndex = -1;
 		int homAltIndex = -1;
-		
 		//Start by getting the indexes of our allele combinations of interest. We will use these indexes to pull the freqs from EA_GTC etc.
 		for(int i=0; i<infoToks.length; i++) {
 			String tok = infoToks[i];
@@ -39,14 +38,20 @@ public class ESP6500Annotator extends AbstractTabixAnnotator {
 				tok = tok.replace("GTS=", "");
 				String[] vals = tok.split(",");
 				//We just want to grab the index we are looking for.
-				
-				String altString = "A" + String.valueOf(altIndex);
-				homRefIndex = getGTSIndex(vals, "RR");
-				hetIndex = getGTSIndex(vals, altString+"R"); // i.e. A1R
-				homAltIndex = getGTSIndex(vals, altString+altString); // i.e. A1A1
+
+				if (tok.contains("R")) { //Indels only do this.
+					String altString = "A" + String.valueOf(altIndex+1); //Base 1 ie A1 in DB, but altindex is 0 based.
+					homRefIndex = getGTSIndex(vals, "RR");
+					hetIndex = getGTSIndex(vals, altString+"R"); // i.e. A1R
+					homAltIndex = getGTSIndex(vals, altString+altString); // i.e. A1A1
+				} else { //Otherwise it is a SNP.
+					homRefIndex = 2;
+					hetIndex = 1;
+					homAltIndex = 0;
+				}
 			}
 		}
-		
+
 		for(int i=0; i<infoToks.length; i++) {
 			String tok = infoToks[i];
 			if (tok.startsWith("MAF=")) {
@@ -65,22 +70,22 @@ public class ESP6500Annotator extends AbstractTabixAnnotator {
 				}
 			}
 			//KB fix mutli-alts
-			//Do we want to use these three columns in the case of a non homozygous different alt.
-			
+
 			if (tok.startsWith("EA_GTC=")) {
 				tok = tok.replace("EA_GTC=", "");
 				String[] vals = tok.split(",");
 				try {
-					
+					int total = getTotalCounts(vals);
 					Double homRef = Double.parseDouble(vals[homRefIndex]);
 					Double het = Double.parseDouble(vals[hetIndex]);
 					Double homAlt = Double.parseDouble(vals[homAltIndex]);
-					
+
 					double tot = homRef + het + homAlt;
-					var.addProperty(VariantRec.EXOMES_EA_HOMREF, homRef / tot);
-					var.addProperty(VariantRec.EXOMES_EA_HET, het/tot);
-					var.addProperty(VariantRec.EXOMES_EA_HOMALT, homAlt/ tot);
-					totOverall += tot;
+
+					var.addProperty(VariantRec.EXOMES_EA_HOMREF, homRef / total);
+					var.addProperty(VariantRec.EXOMES_EA_HET, het/total);
+					var.addProperty(VariantRec.EXOMES_EA_HOMALT, homAlt/ total);
+					totOverall += total;
 					homOverall += homAlt;
 				}
 				catch(NumberFormatException ex) {
@@ -92,15 +97,15 @@ public class ESP6500Annotator extends AbstractTabixAnnotator {
 				tok = tok.replace("AA_GTC=", "");
 				String[] vals = tok.split(",");
 				try {
+					int total = getTotalCounts(vals);
 					Double homRef = Double.parseDouble(vals[homRefIndex]);
 					Double het = Double.parseDouble(vals[hetIndex]);
 					Double homAlt = Double.parseDouble(vals[homAltIndex]);
-					
-					double tot = homRef + het + homAlt;
-					var.addProperty(VariantRec.EXOMES_AA_HOMREF, homRef / tot);
-					var.addProperty(VariantRec.EXOMES_AA_HET, het/tot);
-					var.addProperty(VariantRec.EXOMES_AA_HOMALT, homAlt/ tot);
-					totOverall += tot;
+
+					var.addProperty(VariantRec.EXOMES_AA_HOMREF, homRef / total);
+					var.addProperty(VariantRec.EXOMES_AA_HET, het/total);
+					var.addProperty(VariantRec.EXOMES_AA_HOMALT, homAlt/ total);
+					totOverall += total;
 					homOverall += homAlt;
 				}
 				catch(NumberFormatException ex) {
@@ -118,10 +123,24 @@ public class ESP6500Annotator extends AbstractTabixAnnotator {
 		return true;
 	}
 
-	
+
+	/** Given a certain frequency count info field (list of comma seperated ints), this will calculate the sum of those counts.
+	 *
+	 * @param infoField
+	 * @return sum
+	 */
+	private int getTotalCounts(String[] infoField) {
+		int sum = 0;
+		for(int i =0; i < infoField.length; i++) {
+			sum += Integer.valueOf(infoField[i]);
+		}
+		return sum;
+	}
+
+
 	/** Given the GTS string this will find the index of the query string. This index will be used to access the correct frequency in
 	 * other info fields.
-	 * 
+	 *
 	 * @param GTS
 	 * @param combination
 	 * @return
