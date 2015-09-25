@@ -39,7 +39,7 @@ public class TestDBSNP extends TestCase {
             Pipeline ppl = new Pipeline(inputFile, propertiesFile.getAbsolutePath());
             ppl.setProperty(
                     "dbsnp.path",
-                    "src/test/java/testvcfs/dbsnp_00_All_15-04-12_testing.vcf.gz");
+                    "src/test/java/testvcfs/dbsnp_00_All_15-09-24_testing.vcf.gz");
             ppl.initializePipeline();
             ppl.stopAllLogging();
             ppl.execute();
@@ -144,22 +144,60 @@ public class TestDBSNP extends TestCase {
         }
     }
 
-//Commented out for now - we should never see an multiallelic variant as input
-//    public void testMultiAllelicVariant() {
-//        try {
-//            //1	17114420	rs202217127	G	A
-//
-//            VariantRec  var1 = new VariantRec("4", 10105588, 10105588, "T", "G,C,A");
-//            annotator.annotateVariant(var1);
-//            Assert.assertTrue(var1.getAnnotation(VariantRec.RSNUM).equals("rs373722200"));
-//
-//        } catch (Exception ex) {
-//            thrown = true;
-//            System.err.println("Exception during testing: " + ex.getLocalizedMessage());
-//            ex.printStackTrace();
-//            Assert.assertTrue(false);
-//        }
-//    }
+	//Test Bad input.
+	public void testMultiAllelicVariantInput() {
+		try {
+			VariantRec  var1 = new VariantRec("4", 10105588, 10105588, "T", "G,C,A"); //Should not be observed in Pipeline normalized variantpool variants.
+			var1 = VCFParser.normalizeVariant(var1);
+			annotator.annotateVariant(var1);
+			Assert.assertNull(var1.getAnnotation(VariantRec.RSNUM));
+		} catch (Exception ex) {
+			thrown = true;
+			System.err.println("Exception during testing: " + ex.getLocalizedMessage());
+			ex.printStackTrace();
+			Assert.assertTrue(false);
+		}
+	}
+
+	public void testMultiAllelicVariantQuery() {
+		try {
+
+			//1	17231846	rs77384259	A	C,G	.	.	RS=77384259;RSPOS=17231846;dbSNPBuildID=132;SSR=16;SAO=0;VP=0x050000000005000102000140;WGT=1;VC=SNV;ASP;GNO;OTHERKG
+			VariantRec  var2 = new VariantRec("1", 17231846, 17231846, "A", "G");
+			var2 = VCFParser.normalizeVariant(var2);
+			annotator.annotateVariant(var2);
+			Assert.assertTrue(var2.getAnnotation(VariantRec.RSNUM).equals("rs77384259"));
+
+			//Tricky variant as there are two queries that return, which have the same position. Because we go through each alt the correct one should be chosen.
+			//1	25648165	rs372082737	T	TAAATAAAATAAAATAAAATAAAATAAAATAAA	.	.	RS=372082737;RSPOS=25648165;dbSNPBuildID=138;SSR=0;SAO=0;VP=0x050000080005100002000200;WGT=1;VC=DIV;INT;ASP;OTHERKG
+			//1	25648165	rs56928540	T	TAAATAAAATA,TAAATAAAATAAAATA,TAAATAAAATAAAATAAAATA	.	.	RS=56928540;RSPOS=25648200;dbSNPBuildID=129;SSR=0;SAO=0;VP=0x050100080005000102000204;WGT=1;VC=DIV;SLO;INT;ASP;GNO;OTHERKG;NOV
+			VariantRec  var3 = new VariantRec("1", 25648165, 25648165, "T", "TAAATAAAATAAAATAAAATAAAATAAAATAAA");
+			var3 = VCFParser.normalizeVariant(var3);
+			annotator.annotateVariant(var3);
+			Assert.assertTrue(var3.getAnnotation(VariantRec.RSNUM).equals("rs372082737"));
+
+			VariantRec  var3A1 = new VariantRec("1", 25648165, 25648165, "T", "TAAATAAAATA");
+			var3A1 = VCFParser.normalizeVariant(var3A1);
+			annotator.annotateVariant(var3A1);
+			Assert.assertTrue(var3A1.getAnnotation(VariantRec.RSNUM).equals("rs56928540"));
+
+			VariantRec  var3A2 = new VariantRec("1", 25648165, 25648165, "T", "TAAATAAAATAAAATA");
+			var3A2 = VCFParser.normalizeVariant(var3A2);
+			annotator.annotateVariant(var3A2);
+			Assert.assertTrue(var3A2.getAnnotation(VariantRec.RSNUM).equals("rs56928540"));
+
+			VariantRec  var3A3 = new VariantRec("1", 25648165, 25648165, "T", "TAAATAAAATAAAATAAAATA");
+			var3A3 = VCFParser.normalizeVariant(var3A3);
+			annotator.annotateVariant(var3A3);
+			Assert.assertTrue(var3A3.getAnnotation(VariantRec.RSNUM).equals("rs56928540"));
+
+		} catch (Exception ex) {
+			thrown = true;
+			System.err.println("Exception during testing: " + ex.getLocalizedMessage());
+			ex.printStackTrace();
+			Assert.assertTrue(false);
+		}
+	}
 
     public void testVariantNotInDBsnp() {
         try {
