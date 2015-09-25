@@ -22,8 +22,8 @@ public class TestESP6500 extends TestCase {
 	public void setUp() {
 		try {
 			Pipeline ppl = new Pipeline(inputFile, propertiesFile.getAbsolutePath());
-			ppl.setProperty("esp.path", "src/test/java/testvcfs/ESP6500.test.vcf.gz");
-
+			//ppl.setProperty("esp.path", "src/test/java/testvcfs/ESP6500.test.vcf.gz");
+			ppl.setProperty("esp.path", "/home/kevin/salt_home/resources/esp/ESP6500.all.v0.vcf.tgz/ESP6500.all.vcf.gz");
 			ppl.initializePipeline();
 			ppl.stopAllLogging();
 			ppl.execute();
@@ -111,6 +111,43 @@ public class TestESP6500 extends TestCase {
 			Assert.assertEquals((17.0/1786.0), var3.getProperty(VariantRec.EXOMES_AA_HET), 0.0001);
 			Assert.assertEquals((60.0/1786.0), var3.getProperty(VariantRec.EXOMES_AA_HOMALT), 0.0001);
 			Assert.assertEquals((80/(3915.0+1786.0)), var3.getProperty(VariantRec.EXOMES_HOM_FREQ), 0.0001);
+
+		} catch (Exception ex) {
+			thrown = true;
+			System.err.println("Exception during testing: " + ex.getLocalizedMessage());
+			ex.printStackTrace();
+		}
+		Assert.assertFalse(thrown);
+	}
+
+	
+	@Test
+	public void testXChrSNPs() {
+		/* X	154158158	rs371159191	T	C	.	PASS	DBSNP=dbSNP_138;EA_AC=1,6726;AA_AC=0,3835;TAC=1,10561;
+		MAF=0.0149,0.0,0.0095;
+		GTS=CC,CT,C,TT,T;
+		EA_GTC=0,0,1,2428,1870;
+		AA_GTC=0,0,0,1632,571;
+		GTC=0,0,1,4060,2441;
+		*/
+		try {
+			VariantRec var1 = new VariantRec("X", 154158158, 154158158, "T", "C");
+
+			var1 = VCFParser.normalizeVariant(var1);
+			annotator.annotateVariant(var1);
+
+			Assert.assertEquals(0.0149/100, var1.getProperty(VariantRec.EXOMES_FREQ_EA), 0.0000001);
+			Assert.assertEquals(0.0, var1.getProperty(VariantRec.EXOMES_FREQ_AA), 0.0000001);
+			Assert.assertEquals(0.0095/100, var1.getProperty(VariantRec.EXOMES_FREQ), 0.0000001);
+
+			Assert.assertEquals((2428.0/(2428.0)), var1.getProperty(VariantRec.EXOMES_EA_HOMREF), 0.0001);
+			Assert.assertEquals(0.0, var1.getProperty(VariantRec.EXOMES_EA_HET), 0.0001);
+			Assert.assertEquals(0.0, var1.getProperty(VariantRec.EXOMES_EA_HOMALT), 0.0001);
+
+			Assert.assertEquals((1632.0/(1632.0)), var1.getProperty(VariantRec.EXOMES_AA_HOMREF), 0.0001);
+			Assert.assertEquals(0.0, var1.getProperty(VariantRec.EXOMES_AA_HET), 0.0001);
+			Assert.assertEquals(0.0, var1.getProperty(VariantRec.EXOMES_AA_HOMALT), 0.0001);
+			Assert.assertEquals(0.0, var1.getProperty(VariantRec.EXOMES_HOM_FREQ), 0.0001);
 
 		} catch (Exception ex) {
 			thrown = true;
