@@ -15,7 +15,7 @@ import buffer.VCFFile;
 public class Genotyper extends IOOperator {
 
 	public final String defaultMemOptions = " -Xms2048m -Xmx16g";
-	public static final String PATH = "path";
+	public static final String GATK_PATH = "gatk.path";
 	public static final String THREADS = "threads";
 	public static final String JVM_ARGS="jvmargs";
 	public static final String CALLCONF = "call_conf";
@@ -51,7 +51,7 @@ public class Genotyper extends IOOperator {
 		if (propsPath != null)
 			gatkPath = propsPath.toString();
 		
-		String path = properties.get(PATH);
+		String path = properties.get(GATK_PATH);
 		if (path != null) {
 			gatkPath = path;
 		}
