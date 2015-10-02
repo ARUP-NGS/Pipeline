@@ -77,7 +77,7 @@ public class SamSVFilter extends CommandOperator {
 			outputPath = outputPath.substring(0, outputPath.length()-1);
 		}
 		logger.info("Now attempting to parse " + inputBam + " into spanning, single, and soft-masked alignment groups with " + threads + " threads");
-		String command = "java " + memoryRange + " " + jvmARGStr + " -jar " + useqPath + "/SamSVFilter -s " + outputPath +" -a "+ inputBam + bedString + SVoptions;
+		String command = "java " + memoryRange + " " + jvmARGStr + " -jar " + useqPath + "/SamSVFilter -s " + outputPath +" -a "+ inputBam + bedString + " " + SVoptions;
 		
 		return command;
 	}
