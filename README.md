@@ -11,10 +11,9 @@ While Pipeline can be compiled via an IDE like Eclipse or Netbeans, it's best to
   
 To create an executable jar file with dependencies included, use:
 
-    mvn package assembly:assembly
+    mvn package assembly:assembly -DpipelineProps=/path/to/pipeline_properties.xml
   
-The executable .jar will end up in the target/ directory
-
+The executable .jar will end up in the target/ directory. If the "-DpipelineProps=" argument is omitted a soft link to SNPEff must be provided in the base directory of Pipeline/. Either way it is to allow unit tests to know where SNPEff is located so it can run it.
 
 Basic usage
 -----------
