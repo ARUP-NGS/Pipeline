@@ -57,7 +57,8 @@ public class Pipeline {
 	public static final String primaryLoggerName = "pipeline.primary";
 	public static final String defaultPropertiesPath = ".pipelineprops.xml";
 	public static final String PLUGIN_PATH = "plugin.path";
-	
+	public static final String TEMPLATE_DIR_PATH = "template.dir";
+
 	protected Logger primaryLogger = Logger.getLogger(primaryLoggerName);
 	protected String defaultLogFilename = "pipelinelog";
 	protected String instanceLogPath = null; //Gets set when pipeinstancelog file handler is created
@@ -91,6 +92,9 @@ public class Pipeline {
 	public Pipeline(File inputFile, String propsPath) {
 		this.source = inputFile;
 
+
+
+
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 		DocumentBuilder builder;
 		try {
@@ -111,7 +115,11 @@ public class Pipeline {
 			setPropertiesPath(propsPath);
 		}
 		initializeLogger();
-		loadProperties();	
+		loadProperties();
+
+		//expose the template directory
+		props.setProperty(TEMPLATE_DIR_PATH, inputFile.getParentFile().getAbsolutePath());
+
 	}
 	
 	public Pipeline(Document doc) {
@@ -137,13 +145,16 @@ public class Pipeline {
 	 */
 	public Pipeline(Document doc, String propsPath) {
 		this.source = null;
+
+
 		xmlDoc = doc;
 
 		if (propsPath != null)
 			setPropertiesPath(propsPath);
 		
 		initializeLogger();
-		loadProperties();	
+		loadProperties();
+
 	}
 
 	
@@ -275,6 +286,8 @@ public class Pipeline {
 			this.threadCount = threads;
 			primaryLogger.info("Setting default thread count to : " + threadCount);
 		}
+
+
 		
 		//Set the PROJECT_HOME property to user.dir, unless it was already specified
 		if (props.getProperty(PROJECT_HOME) == null) {
@@ -295,6 +308,8 @@ public class Pipeline {
 				pluginLoader.addPluginPath(path);
 			}
 		}
+
+
 	}
 
 	/**

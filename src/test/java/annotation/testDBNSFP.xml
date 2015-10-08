@@ -1,5 +1,11 @@
 <Pipeline>
 
+    <qcCapture class="buffer.BEDFile" filename.relative="BOCAPAN_19genes_qc10_v1.bed" />
+    <varCapture class="buffer.BEDFile" filename.relative="BOCAPAN_19genes_fullgene_v1.bed" />
+
+    <reference class="buffer.ReferenceFile" reference.key='mito.reference' />
+
+
     <VariantPool class="buffer.variant.VariantPool">
         <InputVCF />
     </VariantPool>
