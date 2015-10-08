@@ -36,7 +36,7 @@ public class FastDepthOfCoverage extends IOOperator {
 			intervals.buildIntervalsMap();
 
 			
-			CoverageCalculator covCalc = new CoverageCalculator(bam.getFile(), intervals);
+			CoverageCalculator covCalc = new CoverageCalculator(bam.getFile(), intervals, false);
 			covCalc.setThreadCount( getPipelineOwner().getThreadCount() );
 			
 			int[] depthHistogram = covCalc.computeOverallCoverage();

@@ -18,19 +18,15 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.w3c.dom.NodeList;
+
+import buffer.ArupBEDFile;
+import buffer.ArupBEDFile.ARUPBedInterval;
+import buffer.variant.VariantRec;
 import operator.OperationFailedException;
 import operator.annovar.Annotator;
-import operator.snpeff.SerialSnpEffGeneAnnotate.SnpEffInfo;
-
-import org.w3c.dom.NodeList;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-
 import pipeline.Pipeline;
-import pipeline.PipelineObject;
 import util.Interval;
-import buffer.ArupBEDFile;
-import buffer.variant.VariantRec;
 
 
 /**
@@ -323,11 +319,10 @@ public class SnpEffGeneAnnotate extends Annotator {
 						try {
 							String specificNMFile = this.getAttribute(NM_DEFS);
 							if (specificNMFile!=null) {
-								if (this.getSpecificPreferredNMs(this.getAttribute(NM_DEFS)).containsKey(info.gene)) {
+								if (this.getUserPreferredNMs(this.getAttribute(NM_DEFS)).containsKey(info.gene)) {
 									infoRank += 9000; // This transcript is in the user specified preferred NMs. It's over 9000!!!!!
 								}
 							}
-
 						} catch (IOException e) {
 							e.printStackTrace();
 							throw new IllegalArgumentException("Could not read NMs file:  " + this.getAttribute(NM_DEFS));
@@ -575,8 +570,8 @@ public class SnpEffGeneAnnotate extends Annotator {
 
 		for (String contig : arupBedFile.getContigs()) {
 			for (Interval inter : arupBedFile.getIntervalsForContig(contig)) {
-				if (inter.getInfo() instanceof String[]) {
-					for (String tr : (String[]) inter.getInfo()) {
+				if (inter.getInfo() instanceof ARUPBedInterval) {
+					for (String tr : ((ARUPBedInterval) inter.getInfo()).transcripts) {
 						trs.add(tr);
 						//System.out.println("another tr is: " + contig + ":" + inter.begin + "-" + tr);
 					}

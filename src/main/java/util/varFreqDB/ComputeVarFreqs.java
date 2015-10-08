@@ -5,15 +5,23 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Queue;
+import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
-import util.reviewDir.ManifestParseException;
-import util.reviewDir.SampleManifest;
-import util.vcfParser.VCFParser;
-import util.vcfParser.VCFParser.GTType;
 import buffer.BEDFile;
 import buffer.variant.VariantPool;
 import buffer.variant.VariantRec;
+import buffer.variant.VariantStore;
+import util.reviewDir.ManifestParseException;
+import util.reviewDir.SampleManifest;
+import util.vcfParser.VCFParser;
 
 public class ComputeVarFreqs {
 
@@ -22,7 +30,11 @@ public class ComputeVarFreqs {
 	public static final String HETS = "hets";
 	public static final String HOMS = "homs";
 	
-	List<SampleInfo> sampleList = new ArrayList<SampleInfo>();
+	public static final String[] CONTIGS = new String[]{"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "X", "M", "MT"};
+	//public static final String[] CONTIGS = new String[]{"10", "12"};
+	
+	Map<String, SampleInfo> allSamples = new HashMap<String, SampleInfo>();
+	
 	
 	public boolean addSample(SampleManifest info) throws IOException {
 		System.err.println("Adding sample : " + info.getSampleName() + " :" + info.getAnalysisType());
@@ -47,21 +59,27 @@ public class ComputeVarFreqs {
 			return false;
 		}
 		
-		SampleInfo sampInfo = new SampleInfo(vcf);
-		sampInfo.analysisType = info.getAnalysisType();
+		SampleInfo sampInfo = new SampleInfo(vcf, info.getSampleName(), info.getAnalysisType(), info.getCompletionDate());
 		sampInfo.bed = new BEDFile(bed);
-		sampleList.add(sampInfo);
-		return true;
-	}
-	
-	
-	
-	private static String formatProperty(String prop) {
-		if (prop.equals("-")) {
-			return "0.0";
+		
+		//Only add if there's nothing else with this key OR if there is a sample with this key but it
+		//has an older date than the current sample
+		
+		if (! allSamples.containsKey(sampInfo.key())) {
+			allSamples.put(sampInfo.key(), sampInfo);
+		} else {
+			
+			Date existing = allSamples.get(sampInfo.key()).completionDate;
+			if (sampInfo.completionDate.after(existing)) {
+				System.err.println("Found conflicting samples with accession " + sampInfo.accession + " replacing older version with this one.");
+				allSamples.put(sampInfo.key(), sampInfo);	
+			} else {
+				System.err.println("Found conflicting samples with accession " + sampInfo.accession + " but preserving existing one since it's newer.");
+			}
+				
 		}
-		else 
-			return prop;
+		
+		return true;
 	}
 	
 	public void readSamplesInDir(File dir) throws ManifestParseException, IOException {
@@ -76,31 +94,46 @@ public class ComputeVarFreqs {
 	}
 	
 	
-	private static void incrementProperty(VariantRec var, String key) {
-		Double current = var.getProperty(key);
-		if (current == null) {
-			current = 0.0;
-		}
-		current++;
-		var.addProperty(key, current);
-	}
-	
-	public void emitTabulated() throws IOException {
-		
-		//Step 1 : Read all variants into gigantic variant pool (without duplicates)
+	public void emitTabulatedByContig(int threadCount, String contig) throws IOException {
 		System.err.println("Tabulating variants, this may take a moment....");
 		List<SampleInfo> errors = new ArrayList<SampleInfo>();
 		List<String> analysisTypes = new ArrayList<String>();
-		VariantPool everything = new VariantPool();
+		VariantStore everything = new VariantPool();
 		
+		Queue<SampleInfo> finishedTasks = new LinkedBlockingQueue<SampleInfo>(20);
 		
-		for(SampleInfo sampInfo : sampleList) {
-			if (! analysisTypes.contains(sampInfo.analysisType)) {
-				analysisTypes.add(sampInfo.analysisType);
+		final ThreadPoolExecutor threadPool = (ThreadPoolExecutor) Executors.newFixedThreadPool( threadCount );
+		for(SampleInfo sampInfo : allSamples.values()) {
+			VariantStoreReader readerTask = new VariantStoreReader(sampInfo, finishedTasks);
+			threadPool.submit(readerTask);
+		}
+		
+		System.err.println("Before... completed tasks: " + threadPool.getCompletedTaskCount() + " Finished tasks size: " + finishedTasks.size());
+
+		threadPool.shutdown();
+		while(threadPool.getCompletedTaskCount() < allSamples.size() || (!finishedTasks.isEmpty())) {
+			SampleInfo sampInfo = finishedTasks.poll();
+			if (sampInfo == null) {
+				try {
+					Thread.sleep(500);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				continue;
 			}
 			
+			System.err.println("Completed tasks: " + threadPool.getCompletedTaskCount() + " Finished tasks size: " + finishedTasks.size());
+			
 			try {
-				everything.addAll(sampInfo.getPool(), false); //Do not allow duplicates
+				if (! analysisTypes.contains(sampInfo.analysisType)) {
+					analysisTypes.add(sampInfo.analysisType);
+				}
+					
+				System.err.println("Chr : " + contig + " adding variants for " + sampInfo.source.getName() + " pool size: " + everything.size());
+				VariantPool vp = new VariantPool(sampInfo.getPool().getVariantsForContig(contig));
+				everything.addAll(vp, false); //Do not allow duplicates
+				sampInfo.disposePool();
 			}
 			catch (Exception ex) {
 				errors.add(sampInfo);
@@ -108,111 +141,104 @@ public class ComputeVarFreqs {
 					System.err.println("Error reading variants in " + sampInfo.source.getAbsolutePath() + ": " + ex.getLocalizedMessage() + ", skipping it.");
 				}
 			}
-			sampInfo.disposePool();
+			
+			if (finishedTasks.isEmpty() && threadPool.getActiveCount()>0) {
+				try {
+					System.err.println("Queue is empty, but still some active tasks, sleeping for a bit...");
+					Thread.sleep(200);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+
 		}
 		
+		System.err.println("Completed tasks: " + threadPool.getCompletedTaskCount() + " queue size: " + finishedTasks.size());
+		System.err.println("All done adding  variants...");
+		
+		try {
+			threadPool.awaitTermination(10, TimeUnit.DAYS);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
 		for(SampleInfo err : errors) {
-			sampleList.remove(err);
+			allSamples.remove(err);
 		}
 		
-		System.err.println("Found " + everything.size() + " variants in " + sampleList.size() + " samples.");
+		System.err.println("Found " + everything.size() + " variants in " + allSamples.size() + " samples.");
 		System.err.println(errors.size() + " of which had errors and could not be read.");
 		
 		
 		//Step 2: Iterate across all samples, then across all variants, see how many
 		// samples targeted each variant 
 		
-		
-		for(SampleInfo info : sampleList) {
-			info.bed.buildIntervalsMap();
-			String typeKey = info.analysisType;
-			
-			for(String contig: everything.getContigs()) {
-				for(VariantRec var : everything.getVariantsForContig(contig)) {
-					
-					//Is this variant targeted for this sample?
-					boolean targeted = info.bed.contains(var.getContig(), var.getStart(), false);
-					
-					if (targeted) {
-						incrementProperty(var, typeKey+SAMPLES);
-						incrementProperty(var, SAMPLES);
-						
-						VariantRec queryVar = info.getPool().findRecordNoWarn(contig, var.getStart());
+		final ThreadPoolExecutor threadPool2 = (ThreadPoolExecutor) Executors.newFixedThreadPool( threadCount );
 
-						if (queryVar != null) {
-							if (queryVar.getZygosity() == GTType.HET) {
-								incrementProperty(var, typeKey+HETS);
-								incrementProperty(var, HETS);
-							}
-							else {
-								incrementProperty(var, typeKey+HOMS);
-								incrementProperty(var, HOMS);
-							}
-						}
-					}
-					
-					
-				}
-			}
-			
-			info.disposePool();
+		
+		for(SampleInfo info : allSamples.values()) {
+			info.bed.buildIntervalsMap();
+			threadPool2.submit(new VarCountCalculator(info, everything));							
 		}
 		
-		//Now emit everything
-		System.out.print("#chr\tpos\tref\talt\test.type\tsample.count\thets\thoms");
-		System.out.println();
-		
-		for(String contig: everything.getContigs()) {
-			for(VariantRec var : everything.getVariantsForContig(contig)) {
+		threadPool2.shutdown();
+		try {
+			threadPool2.awaitTermination(10, TimeUnit.DAYS);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		System.err.println("Done adding all variants, now just emitting output...");
+
+
+		for(VariantRec var : everything.getVariantsForContig(contig)) {
+			Double totSamples = var.getProperty(SAMPLES);
+			Double compTotSamples = 0.0; 
+			if (totSamples != null && totSamples > 0) {
+				Double hets = var.getProperty(HETS);
+				Double homs = var.getProperty(HOMS);
+				if (hets == null) {
+					hets = 0.0;
+				}
+				if (homs == null) {
+					homs = 0.0;
+				}
+
+				System.out.println(contig + "\t" + var.getStart() + "\t" + var.getRef() + "\t" + var.getAlt() + "\toverall\t" + (int)Math.round(totSamples) + "\t" + (int)Math.round(hets) + "\t" + (int)Math.round(homs));
 				
-				//First do 'overall'
-				Double totSamples = var.getProperty(SAMPLES);
-				Double compTotSamples = 0.0; //Sanity check, make sure sum of samples by type matches overall total
-				if (totSamples != null && totSamples > 0) {
-					Double hets = var.getProperty(HETS);
-					Double homs = var.getProperty(HOMS);
+				for(String type : analysisTypes) {
+					Double totSamplesType = var.getProperty(type+SAMPLES);
+					if (totSamplesType == null) {
+						totSamplesType = 0.0;
+					}
+					compTotSamples += totSamplesType;
+					hets = var.getProperty(type+HETS);
+					homs = var.getProperty(type+HOMS);
 					if (hets == null) {
 						hets = 0.0;
 					}
 					if (homs == null) {
 						homs = 0.0;
 					}
-					
 
-					System.out.print(contig + "\t" + var.getStart() + "\t" + var.getRef() + "\t" + var.getAlt() + "\toverall");
-					System.out.println("\t" + ("" + (int)Math.round(totSamples)) + "\t" + ("" + (int)Math.round(hets)) + "\t" + ("" + (int)Math.round(homs)));
-					
-					for(String type : analysisTypes) {
-						Double totSamplesType = var.getProperty(type+SAMPLES);
-						if (totSamplesType == null) {
-							totSamplesType = 0.0;
-						}
-						compTotSamples += totSamplesType;
-						hets = var.getProperty(type+HETS);
-						homs = var.getProperty(type+HOMS);
-						if (hets == null) {
-							hets = 0.0;
-						}
-						if (homs == null) {
-							homs = 0.0;
-						}
-					
+					if (totSamplesType>0) {
 						System.out.print(contig + "\t" + var.getStart() + "\t" + var.getRef() + "\t" + var.getAlt() + "\t" + type);
-						System.out.println("\t" + ("" + (int)Math.round(totSamplesType)) + "\t" + ("" + (int)Math.round(hets)) + "\t" + ("" + (int)Math.round(homs)));
-					}
-					
-					if (! compTotSamples.equals(totSamples)) {
-						throw new IllegalStateException("Sanity check failed: sum of samples did not match total! tot=" + totSamples + " comp: " + compTotSamples);
+						System.out.println("\t" + (int)Math.round(totSamplesType) + "\t" + (int)Math.round(hets) + "\t" + (int)Math.round(homs));
 					}
 				}
-				
-			}
-		}
-		
 			
-		
+			if (! compTotSamples.equals(totSamples)) {
+				throw new IllegalStateException("Sanity check failed: sum of samples did not match total! tot=" + totSamples + " comp: " + compTotSamples);
+			}
+			}
+
+		}	
 	}
+	
+	
 	
 	public static String[] readSamplesFromFile(String filename) throws IOException {
 		BufferedReader reader = new BufferedReader(new FileReader(filename));
@@ -257,15 +283,23 @@ public class ComputeVarFreqs {
 				System.err.println("Warning: Skipping file : " + samples[i]  + " : " + e.getLocalizedMessage());
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
-				System.err.println("Error in file : " + args[i]  + " : " + e.getLocalizedMessage() + " skipping it.");
+				System.err.println("Error in file : " + samples[i]  + " : " + e.getLocalizedMessage() + " skipping it.");
 				e.printStackTrace();
 			}	
 		}
 		
 
 		System.err.println("Found " + added + " valid samples");
+		
+		int threads = 8;
+		
+		
 		try {
-			cFreqs.emitTabulated();
+			for(String contig : CONTIGS) {
+				System.err.println("Processing contig " + contig);
+				cFreqs.emitTabulatedByContig(threads, contig);
+				System.err.println("Done processing contig " + contig + "\n\n\n");
+			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -274,16 +308,23 @@ public class ComputeVarFreqs {
 	
 	
 	class SampleInfo {
-		File source = null;
-		String analysisType = null;
-		BEDFile bed = null; 
-		private VariantPool pool = null;
+		final File source;
+		final String analysisType;
+		BEDFile bed;
+		final String sampleName;
+		final String accession;
+		final Date completionDate;
+		private VariantStore pool = null;
 		
-		public SampleInfo(File source) throws IOException {
+		public SampleInfo(File source, String sampleName, String analysisType, Date completionDate) throws IOException {
 			this.source = source;	
+			this.sampleName = sampleName;
+			this.analysisType = analysisType;
+			this.accession = parseAccession(sampleName);
+			this.completionDate = completionDate;
 		}
 		
-		public VariantPool getPool() throws IOException {
+		public VariantStore getPool() throws IOException {
 			if (pool == null) {
 				VCFParser vcfParser = new VCFParser(source);
 				pool = new VariantPool(vcfParser);
@@ -291,12 +332,29 @@ public class ComputeVarFreqs {
 			return pool;
 		}
 		
+		public String key() {
+			return accession + analysisType;
+		}
+		
 		public void disposePool() {
 			pool = null;
 		}
 		
 	}
-	
+
+
+	public static String parseAccession(String sampleName) {
+		String[] toks = sampleName.split("_");
+		for(String tok : toks) {
+			if (tok.length()==11) {
+				return tok;
+			}
+		}
+		return null;
 	}
+	
+}
+
+
 	
 

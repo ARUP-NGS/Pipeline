@@ -18,8 +18,8 @@ import java.util.Set;
  */
 public class SmallMap<K, V> implements Map<K, V> {
 
-	private int CAPACITY = 2; //defaults to 16, bigger values mean more memory 
-	private float LOADFACTOR = 4; //defaults to 0.75, bigger values mean less memory
+	private int CAPACITY = 10; //defaults to 16, bigger values mean more memory 
+	private float LOADFACTOR = 0.75f; //defaults to 0.75, bigger values mean less memory
 	
 	private Map<K, V> map = null; //We instantiate only when we need to
 	

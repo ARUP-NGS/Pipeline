@@ -17,37 +17,36 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.logging.Logger;
 
-import ncbi.GeneInfoDB;
-import operator.OperationFailedException;
-import operator.Operator;
-
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import pipeline.Pipeline;
-import pipeline.PipelineObject;
-import util.vcfParser.VCFParser;
-import util.vcfParser.VCFParser.GTType;
 import buffer.BEDFile;
 import buffer.CSVFile;
 import buffer.FileBuffer;
 import buffer.ReferenceFile;
 import buffer.VCFFile;
+import ncbi.GeneInfoDB;
+import operator.OperationFailedException;
+import operator.Operator;
+import pipeline.Pipeline;
+import pipeline.PipelineObject;
+import util.vcfParser.VCFParser;
+import util.vcfParser.VCFParser.GTType;
 
 /**
  * Base class for things that maintain a collection of VariantRecs
  * @author brendan
  *
  */
-public class VariantPool extends Operator  {
+public class VariantPool extends Operator implements VariantStore {
 	
 	public static final String ALL_GENES = "all.genes"; //If specified as attribute, include all genes one variant per gene
 	public static final String STRIPINITIALMATCHINGBASEPARAM = "strip.initial.matching.bases"; //if specified as attribute, otherwise default to true (i.e. will strip)
 	public static final String STRIPTRAILINGMATCHINGBASEPARAM = "strip.trailing.matching.bases"; //if specified as attribute, otherwise default to true (i.e. will strip)
 	public static final String IONTORRENTFILE = "ion.torrent"; //if True, it will create a different csv line reader. /default to false
 
-	protected Map<String, List<VariantRec>>  vars = new HashMap<String, List<VariantRec>>();
+	private Map<String, List<VariantRec>>  vars = new HashMap<String, List<VariantRec>>();
 	private VariantRec qRec = new VariantRec("?", 0, 0, "x", "x", 0.0, "./.", GTType.UNKNOWN);
 	private boolean operationPerformed = false; //Set to true when performOperation called, avoids loading variants multiple times
 	
@@ -57,10 +56,10 @@ public class VariantPool extends Operator  {
 	
 	/**
 	 * Build a new variant pool from the given list of variants
-	 * @param varList
+	 * @param collection
 	 */
-	public VariantPool(List<VariantRec> varList) {
-		for(VariantRec v : varList) {
+	public VariantPool(Collection<VariantRec> collection) {
+		for(VariantRec v : collection) {
 			List<VariantRec> contig = vars.get(v.getContig());
 			if (contig == null) {
 				contig = new ArrayList<VariantRec>(2048);
@@ -221,7 +220,7 @@ public class VariantPool extends Operator  {
 		contig = contig.replace("chr", "");
 		List<VariantRec> varList = vars.get(contig);
 		if (varList == null) {
-			Logger.getLogger(Pipeline.primaryLoggerName).warning("AnnovarResults could not find contig: " + contig);
+			//Logger.getLogger(Pipeline.primaryLoggerName).warning("rResults could not find contig: " + contig);
 			return null;
 		}
 		
@@ -409,7 +408,7 @@ public class VariantPool extends Operator  {
 	 * Add all variants from source to pool, allowing duplicate entries
 	 * @param source
 	 */
-	public void addAll(VariantPool source) {
+	public void addAll(VariantStore source) {
 		addAll(source, true);
 	}
 	
@@ -417,7 +416,7 @@ public class VariantPool extends Operator  {
 	 * Utility method to convert a list of VariantStubs to full VariantRecs
 	 * @param vars
 	 */
-	private static List<VariantRec> convertToFullRecord(List<VariantRec> vars) {
+	private static List<VariantRec> convertToFullRecord(Collection<VariantRec> vars) {
 		List<VariantRec> fullVars = new ArrayList<VariantRec>(vars.size());
 		for(VariantRec v : vars) {
 			VariantRec fv = v;
@@ -429,16 +428,17 @@ public class VariantPool extends Operator  {
 		return fullVars;
 	}
 	
+
 	/**
 	 * Add all variants from source to this pool
 	 * @param source Variants to add to this pool
 	 * @param allowDups If duplicate variants should be added
 	 */
-	public void addAll(VariantPool source, boolean allowDups) {
+	public void addAll(VariantStore source, boolean allowDups) {
 		for(String contig : source.getContigs()) {
 			List<VariantRec> curVars = this.getVariantsForContig(contig);
 			List<VariantRec> sourceVars = convertToFullRecord( source.getVariantsForContig(contig));
-			
+			Collections.sort(sourceVars, VariantRec.getPositionComparator());
 			if (curVars == null || curVars.size() == 0) {
 				List<VariantRec> newContigVars = new ArrayList<VariantRec>();
 				newContigVars.addAll(sourceVars);
@@ -1276,5 +1276,7 @@ public class VariantPool extends Operator  {
 		}
 		return VariantPoolSet;
 	}
+
+
 	
 }
