@@ -666,6 +666,8 @@ public class Pipeline {
 		if (projHome != null && (!projHome.endsWith("/"))) {
 			projHome = projHome + "/";
 		}
+		
+		String jvmArgs = argParser.getStringOp("jvmargs");
 
 		//File to obtain properties from
 		String propsPath = argParser.getStringOp("props");
@@ -687,10 +689,14 @@ public class Pipeline {
 				File input = new File(args[i]);
 				Pipeline pipeline = new Pipeline(input, propsPath);
 				
+				//The following chunk of code seems to override some of the pipeline properties with command line passed arguments. Lets add another one for a tmp directory.
 				//Set project home
 				if (projHome != null && projHome.length()>0)
 					pipeline.setProperty(Pipeline.PROJECT_HOME, projHome);
 				
+				//Set jvmargs tmp directory.
+				if (jvmArgs != null && jvmArgs.length()>0)
+					pipeline.setProperty(PipelineXMLConstants.JVMARGS_TMPDIR, jvmArgs);
 				
 				//Set plugin path if specified on command line
 				if (pluginPath != null && pluginPath.length()>0) {
@@ -732,10 +738,6 @@ public class Pipeline {
 			}
 		}
 	}
-	
-
-
-
 
 	private List<PipelineListener> listeners = new ArrayList<PipelineListener>();
 	private Operator currentOperator = null;
