@@ -411,7 +411,7 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
         try {
             if (toks[sift_score_col].contains(";")) {
                 String[] values = toks[sift_score_col].split(";");
-                System.out.println(sift_score_col);
+                //System.out.println(sift_score_col);
                 double lowest = 2.0;
                 for (String i : values) {
                     try {
