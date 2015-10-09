@@ -123,7 +123,9 @@ public abstract class FileBuffer extends PipelineObject {
 
 		//added to allow relative filenames
 		if (filename == null){
-			filename =  this.getPipelineProperty(Pipeline.TEMPLATE_DIR_PATH) + "/" +  properties.get(REL_FILENAME);
+			if (properties.get(REL_FILENAME) != null) {
+				filename = this.getPipelineProperty(Pipeline.TEMPLATE_DIR_PATH) + "/" + properties.get(REL_FILENAME);
+			}
 		}
 
 		if (filename == null || filename.length()==0) {
