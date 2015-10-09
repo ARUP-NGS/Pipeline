@@ -84,7 +84,7 @@ public class BEDFile extends IntervalsFile {
 	/**
 	 * Sort all intervals in all contigs by starting position
 	 */
-	private void sortAllContigs() {
+	protected void sortAllContigs() {
 		for(String contig : intervals.keySet()) {
 			List<Interval> list = intervals.get(contig);
 			Collections.sort(list, new IntervalComparator());

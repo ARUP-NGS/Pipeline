@@ -14,7 +14,16 @@ public class Interval implements Comparable<Interval>, JSONString {
 	public final int begin;
 	public final int end;
 	private Object info = null; //Optional information associated with this interval. 
+	//public String[] trans = null; //Optional attribute added for ArupBEDFile class
+										//which has transcript(s) with each interval
 	
+//	public Interval(int begin, int end, Object info, String[] trans) {
+//		this.begin = begin;
+//		this.end = end;
+//		this.info = info;
+//		this.trans = trans;
+//	}
+
 	public Interval(int begin, int end, Object info) {
 		this.begin = begin;
 		this.end = end;
@@ -24,6 +33,14 @@ public class Interval implements Comparable<Interval>, JSONString {
 	public Interval(int begin, int end) {
 		this.begin = begin;
 		this.end = end;
+	}
+
+	/**
+	 * Set optional object attached to this interval
+	 * @return
+	 */
+	public void setInfo(Object info) {
+		this.info = info;
 	}
 
 	/**

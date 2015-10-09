@@ -5,7 +5,6 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 
-import org.apache.tools.ant.types.CommandlineJava.SysProperties;
 
 import net.sf.samtools.SAMRecord;
 import json.JSONException;

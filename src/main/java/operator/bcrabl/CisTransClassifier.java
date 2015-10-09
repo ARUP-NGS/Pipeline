@@ -1,10 +1,10 @@
 package operator.bcrabl;
+import java.util.logging.Logger;
+
+import pipeline.Pipeline;
 import net.sf.samtools.SAMFileReader;
 import net.sf.samtools.SAMRecord;
 import net.sf.samtools.SAMRecordIterator;
-
-import org.apache.log4j.Logger;
-
 import buffer.BAMFile;
 import buffer.variant.VariantRec;
 
@@ -26,7 +26,7 @@ public class CisTransClassifier  {
 
 
 	public void setPermittedDist(int permittedDist) {
-		Logger.getLogger(getClass()).info("Cis/trans setting required max distance to " + permittedDist);
+		Logger.getLogger(Pipeline.primaryLoggerName).info("Cis/trans setting required max distance to " + permittedDist);
 		this.permittedDist = permittedDist;
 	}
 
@@ -39,7 +39,7 @@ public class CisTransClassifier  {
 
 
 	public void setRequiredMappingQual(int requiredMappingQual) {
-		Logger.getLogger(getClass()).info("Cis/trans setting required mapping quality to " + requiredMappingQual);
+		Logger.getLogger(Pipeline.primaryLoggerName).info("Cis/trans setting required mapping quality to " + requiredMappingQual);
 		this.requiredMappingQual = requiredMappingQual;
 	}
 
@@ -52,7 +52,7 @@ public class CisTransClassifier  {
 
 
 	public void setRequiredBaseQual(int requiredBaseQual) {
-		Logger.getLogger(getClass()).info("Cis/trans setting required base quality to " + requiredBaseQual);
+		Logger.getLogger(Pipeline.primaryLoggerName).info("Cis/trans setting required base quality to " + requiredBaseQual);
 		this.requiredBaseQual = requiredBaseQual;
 	}
 

@@ -2,9 +2,9 @@ package operator.bcrabl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
-import org.apache.log4j.Logger;
-
+import pipeline.Pipeline;
 import buffer.BAMFile;
 import buffer.variant.VariantPool;
 import buffer.variant.VariantRec;
@@ -36,7 +36,7 @@ public class SimpleReportGenerator {
 		
 		//Sanity check
 		if (vars.getContigCount() > 1) {
-			Logger.getLogger(getClass()).error("Incorrect number of contigs found for BCR-ABL sample!");
+			Logger.getLogger(Pipeline.primaryLoggerName).severe("Incorrect number of contigs found for BCR-ABL sample!");
 			report.setMessage("There was an error generating this report: An incorrect number of contigs (" + vars.getContigCount() + ") was found");
 			return report;
 		}
@@ -137,7 +137,7 @@ public class SimpleReportGenerator {
 			}
 			
 			if (varDepth == null) {
-				Logger.getLogger(getClass()).error("Could not read var.depth annotation for VariantRec: " + var);
+				Logger.getLogger(Pipeline.primaryLoggerName).severe("Could not read var.depth annotation for VariantRec: " + var);
 			}
 			
 			if (depth > 0) {
@@ -149,7 +149,7 @@ public class SimpleReportGenerator {
 			
 		}
 		catch (Exception ex) {
-			Logger.getLogger(getClass()).error("Error computing alt.freq for BCR-ABL sample with VariantRec: " + var + " Exception: " + ex);	
+			Logger.getLogger(Pipeline.primaryLoggerName).severe("Error computing alt.freq for BCR-ABL sample with VariantRec: " + var + " Exception: " + ex);	
 		}
 		
 		return var.getAnnotation(VariantRec.PDOT).replace("p.",  "") + "  (" + var.getAnnotation(VariantRec.CDOT) + "); " + freqStr + " Coverage: " + depthStr;

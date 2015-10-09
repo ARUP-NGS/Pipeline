@@ -84,6 +84,20 @@ public class VarViewerWriter extends VariantPoolWriter {
 			 VariantRec.CLNDSDBID,
 			 VariantRec.CLNDSDB,
 			 VariantRec.CLNDBN,
+			 //added for snpEff use of arupBedFile
+			 //adds up to two additional annotations if multiple transcripts are defined for a bed file region
+			 VariantRec.CDOT2,
+			 VariantRec.PDOT2,
+			 VariantRec.EXON_NUMBER2,
+			 VariantRec.NM_NUMBER2,
+			 VariantRec.GENE_NAME2,
+			 VariantRec.VARIANT_TYPE2,
+			 VariantRec.CDOT3,
+			 VariantRec.PDOT3,
+			 VariantRec.EXON_NUMBER3,
+			 VariantRec.NM_NUMBER3,
+			 VariantRec.GENE_NAME3,
+			 VariantRec.VARIANT_TYPE3,
 			 }));
 	
 	public final static List<String> geneKeys = new ArrayList<String>( Arrays.asList(new String[]{
