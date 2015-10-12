@@ -4,4 +4,8 @@
 	<entry key="propKey">value</entry>
 	<entry key="key2">value2</entry>
 	<entry key="key3">value3</entry>
+	<entry key="mito.reference">/home/ksimmon/pipeline_sept/Pipeline/src/test/java/testvcfs/clinvar_2015-06-11_1000_testing.vcf</entry>
+
+
+
 </properties>

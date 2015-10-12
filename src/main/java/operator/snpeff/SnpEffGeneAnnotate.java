@@ -3,12 +3,7 @@ package operator.snpeff;
 //import htsjdk.tribble.readers.TabixReader;
 //import htsjdk.tribble.readers.TabixReader.Iterator;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -58,6 +53,7 @@ import util.Interval;
 public class SnpEffGeneAnnotate extends Annotator {
 
 	public static final String NM_DEFS = "nm.Definitions";
+	public static final String NM_DEFS_REL = "nm.Definitions.relative";
 	public static final String SNPEFF_DIR = "snpeff.dir";
 	public static final String SNPEFF_GENOME = "snpeff.genome";
 	public static final String PERFORM_MITO_SUB = "perform.mito.sub";	
@@ -75,8 +71,10 @@ public class SnpEffGeneAnnotate extends Annotator {
 	protected int spliceSiteSize = 10;
 	protected boolean performMitoSub = false; //If true, do a substitution of mito chr name to 
 	protected boolean trsFromArupBed = false; //if true, expect ArupBEDFile input with transcripts in 4th column
-	
+
+	protected String preferredNMFile = null;
 	private Map<String, List<SnpEffInfo> > annos = null;
+
 	private Map<String, String> nmMap = new HashMap<String, String>();
 	
 	public void prepare() {
@@ -361,15 +359,19 @@ public class SnpEffGeneAnnotate extends Annotator {
 						infoRank += 1000;
 						isUsingPreferredNM = true;
 						try {
-							String specificNMFile = this.getAttribute(NM_DEFS);
-							if (specificNMFile!=null) {
-								if (this.getUserPreferredNMs(this.getAttribute(NM_DEFS)).containsKey(info.gene)) {
+
+							//preferredNMFile
+							if (preferredNMFile != null) {
+								if (this.getUserPreferredNMs(preferredNMFile).containsKey(info.gene)) {
 									infoRank += 9000; // This transcript is in the user specified preferred NMs. It's over 9000!!!!!
 								}
 							}
+
+
+
 						} catch (IOException e) {
 							e.printStackTrace();
-							throw new IllegalArgumentException("Could not read NMs file:  " + this.getAttribute(NM_DEFS));
+							throw new IllegalArgumentException("Could not read NMs file:  " + preferredNMFile);
 						}
 					}
 				}
@@ -695,7 +697,22 @@ public class SnpEffGeneAnnotate extends Annotator {
 		}
 
 		//only load and use preferred nms if not using nms from arupbed
-		String nmDefs = this.getAttribute(NM_DEFS);
+    	String nmDefs = this.getAttribute(NM_DEFS);
+		if (nmDefs == null) {
+			if (properties.get(NM_DEFS_REL) != null) {
+				nmDefs = this.getPipelineProperty(Pipeline.TEMPLATE_DIR_PATH) + "/" + properties.get(NM_DEFS_REL);
+			}
+		}
+
+		if (!(new File(nmDefs).isFile())) {
+			throw new IllegalArgumentException("The preferred NM file specified is not a valid file path");
+		}
+
+		preferredNMFile = nmDefs;
+
+
+
+
 		if (trsFromArupBed && nmDefs != null) {
 			throw new IllegalArgumentException("Can only choose one of " + TRANSCRIPTS_FROM_ARUPBED + ", and "  + NM_DEFS + " together");
 		} else if (! trsFromArupBed ) {

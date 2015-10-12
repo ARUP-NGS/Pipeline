@@ -50,6 +50,7 @@ public class TestDBNSFP extends TestCase {
             annotator_29 = (DBNSFPAnnotator) ppl.getObjectHandler().getObjectForLabel("GeneAnnotate29");
 
 
+
         } catch (Exception ex) {
             thrown = true;
             System.err.println("Exception during testing: " + ex.getLocalizedMessage());
@@ -60,6 +61,11 @@ public class TestDBNSFP extends TestCase {
 
     public void testFirstDBVariantAllAnnotations30() {
         try {
+
+
+
+
+
             VariantRec var1 = new VariantRec("1", 69091, 69091, "A", "C");
             var1 = VCFParser.normalizeVariant(var1);
             annotator_30.annotateVariant(var1);
