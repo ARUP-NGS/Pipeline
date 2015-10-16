@@ -21,7 +21,7 @@ public class BEDFile extends IntervalsFile {
 	
 	public BEDFile(File file) {
 		super(file);
-			}
+	}
 
 	@Override
 	public String getTypeStr() {

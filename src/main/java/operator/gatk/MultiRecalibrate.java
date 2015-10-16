@@ -27,8 +27,6 @@ public class MultiRecalibrate extends MultiOperator {
 	public static final String PATH = "path";
 	public static final String THREADS = "threads";
 	public static final String JVM_ARGS="jvmargs";
-	public static final String GATK_KNOWN_SITES = "gatk.multirecal.knownsites";
-
 	protected String defaultGATKPath = "~/GenomeAnalysisTK/GenomeAnalysisTK.jar";
 	protected String gatkPath = defaultGATKPath;
 	
@@ -185,25 +183,18 @@ public class MultiRecalibrate extends MultiOperator {
 		}
 		
 		String referencePath = reference.getAbsolutePath();
-
 		List<FileBuffer> knownSitesFiles = getAllInputBuffersForClass(VCFFile.class);
+		
 		StringBuffer knownSitesStr = new StringBuffer();
-
 		for(FileBuffer buff : knownSitesFiles) {
 			knownSitesStr.append("-knownSites " + buff.getAbsolutePath() + " ");
 		}
-
+		
 		if (knownSitesFiles.size() == 0) {
-			//Check for these knownsites in the properties file before giving up. Note this will only accept one whereas before it could accept any number.
-			//1. Read from pipelineProps files.
-			String knownSitesFile = getPipelineProperty(GATK_KNOWN_SITES);
-			if (knownSitesFile != null) { //Get from pipelineProps.
-				knownSitesStr.append("-knownSites " + knownSitesFile + " ");
-			} else {
-				throw new IllegalArgumentException("You must list some known sites files for CountCovariates to work");
-			}
+			throw new IllegalArgumentException("You must list some known sites files for CountCovariates to work");
 		}
-
+		
+		
 		String covariateList = "-cov QualityScoreCovariate -cov DinucCovariate -cov MappingQualityCovariate -cov HomopolymerCovariate ";
 		
 		String command = "java " + defaultMemOptions + " " + jvmARGStr + " -jar " + gatkPath + 

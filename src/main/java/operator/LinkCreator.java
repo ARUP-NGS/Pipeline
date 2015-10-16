@@ -98,31 +98,15 @@ public class LinkCreator extends Operator {
 			throw new IllegalArgumentException("No sample name given to LinkCreator");
 		}
 		
-		//allow webroot to be in proberties
-		webRoot = this.getAttribute(WEBROOT);
-		if (webRoot == null) {
-			webRoot = this.getPipelineProperty(WEBROOT);
+		
+		if (this.getAttribute(WEBROOT) != null && this.getAttribute(WEBROOT).length()>1) {
+			webRoot = this.getAttribute(WEBROOT);
+			//test to see if this exists
+			File testFile = new File(webRoot);
+			if (!testFile.exists()) {
+				throw new IllegalArgumentException("web root file " + testFile.getAbsolutePath() + " does not exist");
+			}
 		}
-
-		if (webRoot == null) {
-			throw new IllegalArgumentException("web root file is not set");
-		}
-
-		//File testFile = new File(webRoot);
-		if ( !(new File(webRoot)).isDirectory() ) {
-			throw new IllegalArgumentException("web root file " + webRoot + " is not valid direcory");
-		}
-
-//		if (this.getAttribute(WEBROOT) != null && this.getAttribute(WEBROOT).length()>1) {
-//			webRoot = this.getAttribute(WEBROOT);
-//			//test to see if this exists
-//			File testFile = new File(webRoot);
-//			if (!testFile.exists()) {
-//				throw new IllegalArgumentException("web root file " + testFile.getAbsolutePath() + " does not exist");
-//			}
-//		}
-
-
 		if (this.getAttribute(RESULT_DIR) != null && this.getAttribute(RESULT_DIR).length()>1) {
 			resultDir = this.getAttribute(RESULT_DIR);
 			File testFile = new File(webRoot + "/" + resultDir);

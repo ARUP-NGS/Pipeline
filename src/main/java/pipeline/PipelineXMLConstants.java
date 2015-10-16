@@ -22,5 +22,4 @@ public class PipelineXMLConstants {
 	public static final String MAIL_RECIPIENT = "brendan.d.ofallon@aruplab.com";
 	public static final String PYLOWCOV_PATH = null;
 	public static final String PINDEL_PATH = "pindel.path";
-	public static final String JVMARGS_TMPDIR = "jvmargs";
 }

@@ -24,12 +24,6 @@ public abstract class FileBuffer extends PipelineObject {
 	public static final String FILENAME_ATTR = "filename";
 	public static final String BINARY_ATTR = "binary";
 	public static final String CONTIG_ATTR = "contig";
-
-	//add these to create new keys for template changes
-	public static final String REL_FILENAME = "filename.relative";
-	public static final String REF_KEY = "reference.key";
-
-
 	
 	protected File file;
 	protected Map<String, String> properties = new HashMap<String, String>();
@@ -117,17 +111,7 @@ public abstract class FileBuffer extends PipelineObject {
 	}
 	
 	public void initialize(NodeList children) throws IllegalStateException {
-
 		String filename = properties.get(FILENAME_ATTR);
-
-
-		//added to allow relative filenames
-		if (filename == null){
-			if (properties.get(REL_FILENAME) != null) {
-				filename = this.getPipelineProperty(Pipeline.TEMPLATE_DIR_PATH) + "/" + properties.get(REL_FILENAME);
-			}
-		}
-
 		if (filename == null || filename.length()==0) {
 			Logger.getLogger(Pipeline.primaryLoggerName).warning("No filename attribute found for FileBuffer object " + getObjectLabel() + ", assuming filename will be set at runtime.");
 		}
@@ -142,6 +126,7 @@ public abstract class FileBuffer extends PipelineObject {
 					pathMod = projHome;
 				}
 			}
+
 
 			file = new File(pathMod + filename);
 		}

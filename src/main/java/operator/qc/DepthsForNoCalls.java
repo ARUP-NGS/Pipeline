@@ -85,7 +85,7 @@ public class DepthsForNoCalls extends IOOperator {
 						" -rf BadCigar " +
 						" -L " + noCallBED.getAbsolutePath() +
 						" --omitDepthOutputAtEachBase " +
-						" -o " + this.getProjectHome() + "/nocallDepths";
+						" -o nocallDepths ";
 
 
 				Logger.getLogger(Pipeline.primaryLoggerName).info("Running depth of coverage tool for no-call regions...");

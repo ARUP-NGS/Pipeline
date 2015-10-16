@@ -1,0 +1,16 @@
+
+<Pipeline>
+
+
+
+<InputVCF class="buffer.VCFFile" filename="src/test/java/testvcfs/myeloid.vcf" />
+
+<VariantPool class="buffer.variant.VariantPool">
+	<InputVCF />
+</VariantPool>
+
+<GeneAnnotate class="operator.variant.ScSncAnnotate">
+	<VariantPool />
+</GeneAnnotate>
+
+</Pipeline>

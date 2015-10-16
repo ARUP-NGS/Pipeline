@@ -51,7 +51,7 @@ public class ParallelOperator extends Operator {
 		
 		threadPool.shutdown(); //No new tasks will be submitted,
 		try {
-			System.out.println("Awaiting termination of thread pool");
+			System.out.println("Awaiting termingation of thread pool");
 			threadPool.awaitTermination(7, TimeUnit.DAYS);
 			System.out.println("Threadpool has terminated");
 		} catch (InterruptedException e1) {

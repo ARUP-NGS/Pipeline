@@ -10,12 +10,6 @@ public class ReferenceFile extends FileBuffer {
 
 	public void initialize(NodeList children) throws IllegalStateException {
 		String filename = properties.get(FILENAME_ATTR);
-
-		if (filename == null) {
-			filename =  this.getPipelineProperty(properties.get(REF_KEY));
-		}
-
-
 		if (filename == null || filename.length()==0) {
 			throw new IllegalStateException("Property '" + FILENAME_ATTR + "' required to create file buffer object");
 		}
