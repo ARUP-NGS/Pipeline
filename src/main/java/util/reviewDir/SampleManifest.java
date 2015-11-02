@@ -1,7 +1,6 @@
 package util.reviewDir;
 
 import java.io.File;
-import java.util.Date;
 import java.util.Map;
 
 /**
@@ -19,13 +18,17 @@ public class SampleManifest {
 	public static final String ANNOTATED_VARS = "annotated.vars";
 	public static final String JSON_VARS = "json.vars";
 	public static final String ANALYSIS_TYPE = "analysis.type";
-	public static final String CURRENT_TIME = "current.time";
 	public static final String VCF = "VCF";
 	public static final String BAM = "BAM";
 	public static final String BED = "BED";
 	public static final String QC_JSON = "QC.JSON";
 	public static final String LOG = "LOG";
 	public static final String INPUT = "INPUT";
+			
+	//Sample manifest fields.
+	public static final String CAPTURE = "capture";
+	public static final String PIPELINE_VERSION = "pipeline.version";
+	public static final String TIME = "current.time";
 	
 	protected Map<String, String> manifest = null;
 	protected Map<String, File> files = null;
@@ -51,14 +54,6 @@ public class SampleManifest {
 	
 	public String getProperty(String key) {
 		return manifest.get(key);
-	}
-	
-	public Date getCompletionDate() {
-		if (! manifest.containsKey(CURRENT_TIME)) {
-			return null;
-		} 
-		long millis = Long.parseLong( manifest.get(CURRENT_TIME) );
-		return new Date(millis);
 	}
 	
 	public boolean hasProperty(String key) {
@@ -105,4 +100,14 @@ public class SampleManifest {
 		return files.get(ANNOTATED_VARS);
 	}
 	
+	public String getPipelineVersion() {
+		return manifest.get(PIPELINE_VERSION);
+	}
+	
+	public String getTime() {
+		return manifest.get(TIME);
+	}
+	public String getCapture() {
+		return manifest.get(CAPTURE);
+	}
 }
