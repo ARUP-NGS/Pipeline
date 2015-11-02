@@ -8,6 +8,7 @@ import java.io.PrintStream;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -15,6 +16,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import buffer.variant.VariantPool;
+import buffer.variant.VariantRec;
 import json.JSONArray;
 import json.JSONException;
 import json.JSONObject;
@@ -23,16 +26,14 @@ import net.sf.samtools.util.DateParser;
 import net.sourceforge.argparse4j.ArgumentParsers;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.ArgumentParserException;
-import net.sourceforge.argparse4j.inf.MutuallyExclusiveGroup;
 import net.sourceforge.argparse4j.inf.Namespace;
 import net.sourceforge.argparse4j.inf.Subparser;
 import net.sourceforge.argparse4j.inf.Subparsers;
+import util.Comparators.old.compareReviewDirs;
 import util.prereviewDataGen.AnalysisTypeConverter;
 import util.reviewDir.ManifestParseException;
 import util.reviewDir.ReviewDirectory;
 import util.text.TextTable;
-import buffer.variant.VariantPool;
-import buffer.variant.VariantRec;
 
 
 /**
@@ -92,6 +93,11 @@ public class QCJsonReader {
 
 		Subparser emit = s.addParser("emit")
 				.help("Emit a single qc metric with no other output. \nUSAGE: QCJsonReader emit QC_QUERY path1 path2 ...");
+		
+		Subparser validate = s.addParser("validate")
+				.help("Given two directories full of RDs this tools performs a comprehensive comparison between all RDs. It intelligently compares runs "
+						+ "that used the same fastq file (so ideally, you have a truth set directories of RDs and a new test set run using a newer"
+						+ "pipeline version and fastq names werent changed). Used in validations, and produces a PASS or FAIL along with a detailed summary.");
 		//emit.addArgument("query")
 		//  .required(true)
 		//	.help("QC metrics to emit.");
@@ -188,7 +194,12 @@ public class QCJsonReader {
 		if (command.startsWith("monthlyQA")){
 			performMonthlyQA(paths, System.out, null);	
 			return;
-		}		
+		}
+		
+		if (command.startsWith("validate")) {
+			performValidation(paths, System.out);
+			return;
+		}
 
 		System.err.println("Unrecognized command. Read the help, and try again.");
 	}
@@ -1220,11 +1231,7 @@ Number of Sanger Requests not Confirmed (Average per Sample)
 				}
 			}
 		}
-
-
-
-
-
+		
 		if (misMatches.size()>0) {
 			out.println("*********************\n Found " + misMatches.size() + " mismatching annotations for key: " + annoKey + "\n First 10 mismatches:");
 			for(int i=0; i<Math.min(10, misMatches.size()); i++) {
@@ -1238,16 +1245,19 @@ Number of Sanger Requests not Confirmed (Average per Sample)
 		return misMatches;
 	}
 
+	/** Compares two review directories.
+	 * @param paths
+	 * @param out
+	 * @throws IOException
+	 */
 	private static void performComparison(List<String> paths, PrintStream out) throws IOException {
 		if (paths.size() != 2) {
 			out.println("Please enter two directories to compare.");
 			return;
 		}
 
-
-
 		try {
-
+						
 			ReviewDirectory dirA = new ReviewDirectory(paths.get(0));
 			ReviewDirectory dirB = new ReviewDirectory(paths.get(1));
 
@@ -1577,6 +1587,94 @@ Number of Sanger Requests not Confirmed (Average per Sample)
 		}
 
 		out.println(data.toString());
+	}
+	
+	/** Basically a wrapper for the performComparison() function. This will match up RDs with the same fastq name so we are comparing identical samples, run through both a validated
+	 * and non-validated pipeline and make sure nothing is amiss.
+	 * 
+	 * @param paths
+	 * @param out
+	 */
+	private static void performValidation(List<String> paths, PrintStream out) {
+		if (paths.size() != 2) {
+			out.println("Please enter two directories full of Review Directories to validate.");
+			return;
+		}
+		
+		File dir1 = new File(paths.get(0));
+		File dir2 = new File(paths.get(1));
+		if (dir1.isDirectory() && dir2.isDirectory()) {
+			if(dir1.list().length > 0 && dir2.list().length > 0) {
+				//OK lets do our thing.
+				System.out.println("Begining validation of: " + dir1.getName() + " and " + dir2.getName());
+				Map<String, ReviewDirectory[]> comparisonMap = new HashMap<String, ReviewDirectory[]>();
+				Map<ReviewDirectory, String> reviewDirPathMap = new HashMap<ReviewDirectory, String>();
+				
+				ArrayList<ReviewDirectory> RDs1 = new ArrayList<ReviewDirectory>();
+				ArrayList<ReviewDirectory> RDs2 = new ArrayList<ReviewDirectory>();
+				
+				for (File f : dir1.listFiles()) {
+					try {
+						ReviewDirectory newRD = new ReviewDirectory(f.getAbsolutePath());
+						RDs1.add(newRD);
+						reviewDirPathMap.put(newRD, f.getAbsolutePath());
+					} catch (IOException | ManifestParseException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+
+				for (File f : dir2.listFiles()) {
+					try {
+						ReviewDirectory newRD = new ReviewDirectory(f.getAbsolutePath());
+						RDs2.add(newRD);
+						reviewDirPathMap.put(newRD, f.getAbsolutePath());
+					} catch (IOException | ManifestParseException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+				
+				System.out.println(dir1.getName() + " has " + String.valueOf(RDs1.size()) + " review directories." );
+				System.out.println(dir2.getName() + " has " + String.valueOf(RDs2.size()) + " review directories." );
+				
+				//Now lets populate our comparisonMap.
+				for (ReviewDirectory rd1 : RDs1) {
+					String[] rd1Fastqs = rd1.getFastqNames();
+					
+					for (ReviewDirectory rd2 : RDs2) {
+						String[] rd2Fastqs = rd2.getFastqNames();
+
+						if( Arrays.equals(rd1Fastqs, rd2Fastqs) ) {
+							System.out.println("Found a match.");
+							comparisonMap.put(rd1Fastqs[0], new ReviewDirectory[]{rd1, rd2} );
+						}
+					}
+				}
+				
+				//Now comparisonMap is complete. We just need to loop through the comparison tool which already exists, beefing it up of course.
+				for (Map.Entry<String, ReviewDirectory[]> entry : comparisonMap.entrySet()) {
+					List<String> inputs = new ArrayList<String>();
+					inputs.add(entry.getValue()[0].getSourceDirPath());
+					inputs.add(entry.getValue()[1].getSourceDirPath());					
+					try {
+						System.out.println("\n\n\n");
+						performComparison(inputs, out);
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				} 
+				
+			} else {
+				System.out.println("It seems one (or both) the directories given are empty.");
+				return;
+			}
+		} else {
+			System.out.println("It seems one (or both) of the inputs are either not directories or don't exist.");
+			return;
+		}
+		
 	}
 
 
