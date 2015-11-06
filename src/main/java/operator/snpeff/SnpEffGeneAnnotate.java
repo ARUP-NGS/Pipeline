@@ -21,7 +21,7 @@ import java.util.regex.Pattern;
 import org.w3c.dom.NodeList;
 
 import buffer.ArupBEDFile;
-import buffer.ArupBEDFile.ARUPBedInterval;
+import buffer.ArupBEDFile.ARUPBedIntervalInfo;
 import buffer.variant.VariantRec;
 import operator.OperationFailedException;
 import operator.annovar.Annotator;
@@ -570,8 +570,8 @@ public class SnpEffGeneAnnotate extends Annotator {
 
 		for (String contig : arupBedFile.getContigs()) {
 			for (Interval inter : arupBedFile.getIntervalsForContig(contig)) {
-				if (inter.getInfo() instanceof ARUPBedInterval) {
-					for (String tr : ((ARUPBedInterval) inter.getInfo()).transcripts) {
+				if (inter.getInfo() instanceof ARUPBedIntervalInfo) {
+					for (String tr : ((ARUPBedIntervalInfo) inter.getInfo()).transcripts) {
 						trs.add(tr);
 						//System.out.println("another tr is: " + contig + ":" + inter.begin + "-" + tr);
 					}
