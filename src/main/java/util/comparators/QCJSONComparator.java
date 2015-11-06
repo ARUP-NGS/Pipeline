@@ -24,7 +24,8 @@ class QCJSONComparator extends ReviewDirComparator {
 
 	@Override
 	public void performComparison() throws IOException, JSONException {
-		/* This is my assumption for what the json object will contain. I dont know how robust it is...
+		/* 
+		 * This is my assumption for what the json object will contain. I dont know how robust it is...
 		 * Key #1: capture.extent
 		 * Key #2: final.coverage.metrics
 		 * Key #3: raw.coverage.metrics

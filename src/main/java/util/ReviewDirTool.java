@@ -30,6 +30,7 @@ import net.sourceforge.argparse4j.inf.Namespace;
 import net.sourceforge.argparse4j.inf.Subparser;
 import net.sourceforge.argparse4j.inf.Subparsers;
 import util.comparators.CompareReviewDirs;
+import util.comparators.ComparisonSummaryTable;
 import util.prereviewDataGen.AnalysisTypeConverter;
 import util.reviewDir.ManifestParseException;
 import util.reviewDir.ReviewDirectory;
@@ -130,7 +131,7 @@ public class ReviewDirTool {
 			performSummary(paths, System.out);
 			return;
 		}
-
+		
 		if (command.equals("list")) {
 			performList(paths, System.out);
 			return;
@@ -1607,7 +1608,7 @@ Number of Sanger Requests not Confirmed (Average per Sample)
 		File dir2 = new File(paths.get(1));
 		if (dir1.isDirectory() && dir2.isDirectory()) {
 			if(dir1.list().length > 0 && dir2.list().length > 0) {
-				//OK lets do our thing.
+				// Prepare comparison ------------------------------------------------------------------------------
 				System.out.println("Begining validation of: " + dir1.getName() + " and " + dir2.getName());
 				Map<String, List<ReviewDirectory>> comparisonMap = new HashMap<String, List<ReviewDirectory>>();
 				Map<ReviewDirectory, String> reviewDirPathMap = new HashMap<ReviewDirectory, String>();
@@ -1661,23 +1662,28 @@ Number of Sanger Requests not Confirmed (Average per Sample)
 						}
 					}
 				}
-				
-				//Now comparisonMap is complete. We just need to loop through the comparison tool which already exists, beefing it up of course.
+				// End Prepare comparison --------------------------------------------------------------------------
+
+				List<ComparisonSummaryTable> valSummary = new ArrayList<ComparisonSummaryTable>();
 				for (Map.Entry<String, List<ReviewDirectory>> entry : comparisonMap.entrySet()) {
-					List<String> inputs = new ArrayList<String>();
-					inputs.add(entry.getValue().get(0).getSourceDirPath());
-					inputs.add(entry.getValue().get(1).getSourceDirPath());
-					CompareReviewDirs crd;
+					
 					try {
-						crd = new CompareReviewDirs(inputs.get(0), inputs.get(1));
+						CompareReviewDirs crd = new CompareReviewDirs(entry.getValue().get(0).getSourceDirPath(), entry.getValue().get(1).getSourceDirPath());
 						crd.compare();
+						//Now collect relevant summary information from our comparator class.
 						System.out.println("===================================================");
+						valSummary.add(crd.getSummary());
 					} catch (IOException | ManifestParseException | JSONException e) {
 						// TODO Auto-generated catch block
-						System.out.println("Error with comparison for RDs: " + inputs.get(0) + " and " + inputs.get(1));
+						System.out.println("Error with comparison for RDs: " + entry.getValue().get(0).getSourceDirPath() + " and " + entry.getValue().get(1).getSourceDirPath());
 						e.printStackTrace();
 					}
-				} 
+				}
+				
+				//print summary information out at the end.
+				for (ComparisonSummaryTable st : valSummary) {
+					st.printTable();
+				}
 				
 			} else {
 				System.out.println("It seems one (or both) the directories given are empty.");

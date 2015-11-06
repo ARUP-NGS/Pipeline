@@ -1,18 +1,13 @@
 package util.comparators;
 
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Logger;
 
 import json.JSONException;
-import json.JSONObject;
-import net.sourceforge.argparse4j.ArgumentParsers;
-import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.ArgumentParserException;
-import net.sourceforge.argparse4j.inf.Namespace;
 import operator.IOOperator;
 import pipeline.Pipeline;
 import util.comparators.ReviewDirComparator.Severity;
@@ -31,11 +26,15 @@ public class CompareReviewDirs extends IOOperator {
 	private static ManifestSummaryComparator manifestSummaryComparator = null;
 	private static QCJSONComparator qcJSONComparator = null;
 	private static VCFComparator vcfComparator = null;
-	//private static AnnotationComparator annotationComparator = null;
 	private static AnnotatedJSONComparator annotatedJSONComparator = null;
 
-	Logger logger = Logger.getLogger(Pipeline.primaryLoggerName);
+	private ComparisonSummaryTable summary = new ComparisonSummaryTable();
+	private LinkedHashMap<String, Object> finalJSONOutput = new LinkedHashMap<String, Object>();
 
+	private Logger logger = Logger.getLogger(Pipeline.primaryLoggerName);
+
+	
+	
 	private ReviewDirectory rd1 = null;
 	private ReviewDirectory rd2 = null;
 
@@ -44,13 +43,13 @@ public class CompareReviewDirs extends IOOperator {
 		rd2 = new ReviewDirectory(reviewdir2);
 	}
 
-	/**
+/*	*//**
 	 * @param args
 	 * @throws ManifestParseException 
 	 * @throws IOException 
 	 * @throws ArgumentParserException 
 	 * @throws JSONException 
-	 */
+	 *//*
 	public static void main(String[] args) throws IOException, ManifestParseException, ArgumentParserException, JSONException {
 		ArgumentParser parser = ArgumentParsers.newArgumentParser("compare");
 		parser.description("Compare two Review Directories from Pipeline.");
@@ -72,11 +71,10 @@ public class CompareReviewDirs extends IOOperator {
 
 		CompareReviewDirs crd = new CompareReviewDirs(reviewdir1, reviewdir2);
 		crd.compare();
-	}
+	}*/
 	
 	public void compare() throws IOException, JSONException {
 		logger.info("Begin Review Directory Comparison.");
-		LinkedHashMap<String, Object> finalJSONOutput = new LinkedHashMap<String, Object>();
 		
 		//Compare Manifest information
 		manifestSummaryComparator = new ManifestSummaryComparator(rd1, rd2, "Summary Information Comparison");
@@ -94,39 +92,53 @@ public class CompareReviewDirs extends IOOperator {
 		finalJSONOutput.put("vcf.summary", vcfComparator.getJSONOutput());
 
 		//Compare annotations.
-		//annotationComparator = new AnnotationComparator(rd1, rd2, "Variant annotation comparison");
-		//annotationComparator.performOperation();
-		//finalJSONOutput.put("annotations.summary", annotationComparator.getJSONOutput());
-
-		//Compare annotations.
-		annotatedJSONComparator = new AnnotatedJSONComparator(rd1, rd2, "Variant annotation comparison");
+		annotatedJSONComparator = new AnnotatedJSONComparator(rd1, rd2, "annotated.json");
 		annotatedJSONComparator.performOperation();
 		finalJSONOutput.put("annotations.summary", annotatedJSONComparator.getJSONOutput());		
 		
-		List<Map<Severity,Integer>> summaryList = new ArrayList();
-		summaryList.add(manifestSummaryComparator.getSeveritySummary());
-		summaryList.add(qcJSONComparator.getSeveritySummary());
-		summaryList.add(vcfComparator.getSeveritySummary());
-		summaryList.add(annotatedJSONComparator.getSeveritySummary());
-		this.generateComparisonSummary(summaryList);
-		
-		JSONObject ResultsJson = new JSONObject(finalJSONOutput);
-		String ResultsStr = ResultsJson.toString();
-		//System.out.println(ResultsStr);
+		this.generateComparisonSummary(Arrays.asList(manifestSummaryComparator, qcJSONComparator, vcfComparator, annotatedJSONComparator));
 	}
 	
-	private void generateComparisonSummary(List<Map<Severity,Integer>> summaryList) {
-		for (Map<Severity,Integer> curMap : summaryList) {
-			for (Map.Entry<Severity, Integer> entry : curMap.entrySet()) {
-			    Severity sev = entry.getKey();
-			    Integer value = entry.getValue();
+	/** Given a list of our comparators this will grab the map detailing the number of comparisons of a given severity from each
+	 *  and will get totals and provide the user a summary.
+	 *  
+	 * @param summaryList
+	 * @return 
+	 */
+	private void generateComparisonSummary(List<ReviewDirComparator> comparators) {		
+		summary.setCompareType("Validation Overview");
+		summary.setColNames(Arrays.asList(this.rd1.getSampleName(), this.rd2.getSampleName(), "Notes"));
+		for (Severity sev : Severity.values()) {
+			Integer tot = 0;
+			for (ReviewDirComparator curComparator : comparators) {
+				tot += curComparator.getSeveritySummary().get(sev);
 			}
+			List<String> newRow = Arrays.asList(sev.toString(), String.valueOf(tot), "", "");
+			summary.addRow(newRow);
 		}
+		//validationSummary.printTable();
+	}
+	
+	public ComparisonSummaryTable getSummary() {
+		return summary;
+	}
+
+	public void setSummary(ComparisonSummaryTable validationSummary) {
+		this.summary = validationSummary;
+	}
+
+	public LinkedHashMap<String, Object> getFinalJSONOutput() {
+		return finalJSONOutput;
+	}
+
+	public void setFinalJSONOutput(LinkedHashMap<String, Object> finalJSONOutput) {
+		this.finalJSONOutput = finalJSONOutput;
 	}
 	
 	@Override
-	public void performOperation() throws IOException, JSONException {
-		Logger logger = Logger.getLogger(Pipeline.primaryLoggerName);
+	public void performOperation() {
+		System.out.println("Not implemented");
+/*		Logger logger = Logger.getLogger(Pipeline.primaryLoggerName);
 		// Get folder locations
 		String revDirLoc1 = this.getAttribute("ReviewDir1");
 		String revDirLoc2 = this.getAttribute("ReviewDir2");
@@ -137,6 +149,6 @@ public class CompareReviewDirs extends IOOperator {
 			this.compare();
 		} catch (ManifestParseException e) {
 			e.printStackTrace();
-		}
+		}*/
 	}
 }

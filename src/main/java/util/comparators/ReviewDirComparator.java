@@ -27,7 +27,7 @@ public abstract class ReviewDirComparator {
 	ReviewDirectory rd1 = null;
 	ReviewDirectory rd2 = null;
 	
-	SummaryTable summaryTable = new SummaryTable();
+	ComparisonSummaryTable summaryTable = new ComparisonSummaryTable();
 	LinkedHashMap<String, Object> summaryJSON = new LinkedHashMap<String, Object>();
 	Logger logger = Logger.getLogger(Pipeline.primaryLoggerName);
 	private Map<Severity, Integer> severitySummary = new HashMap<Severity, Integer>();
@@ -158,53 +158,4 @@ public abstract class ReviewDirComparator {
 	 */
 	abstract void performComparison() throws IOException, JSONException;
 
-	
-	/** Member class of ReviewDirComparator. This class encapsulates all the comparison information and provides an easy framework for building nice looking output
-	 *  of several column tables.
-	 *  
-	 * @author kevin
-	 *
-	 */
-	protected class SummaryTable {
-
-		List<List<String> > rowData = new ArrayList<List<String> >();
-		List<String> colNames;
-		String comparisonType = "";
-		
-		public SummaryTable() {
-			this.colNames = Arrays.asList("","","");
-		}
-		
-		public void setColNames(List<String> colNames) {
-			this.colNames = colNames;
-		}
-		
-		public void setCompareType(String comparison) {
-			this.comparisonType = comparison;
-		}
-		
-		public void addRow(List<String> row) {
-			if (row.size() != colNames.size() + 1) {
-				throw new IllegalArgumentException("Incorrect number of columns, got " + row.size() + ", but should be " + colNames.size());
-			}
-			rowData.add(row);
-		}
-		
-		public void printTable() {
-			StringBuilder str = new StringBuilder();
-			int counter = 0;
-			System.out.println("");
-			this.printInColumns(this.comparisonType,colNames.get(0), colNames.get(1), colNames.get(2));
-			this.printInColumns("==============","==============","==============", "==============");
-			//System.out.println("==============");
-			for(List<String> row : rowData) {
-				this.printInColumns(row.get(0), row.get(1), row.get(2), row.get(3));
-				counter += 1;
-			}
-		}
-		
-		public void printInColumns(String name, String f1, String f2, String f3) {
-			System.out.printf("%-40.40s %-50.50s %-50.50s %-40.40s%n", (String) name+":", (String) f1, (String) f2, (String) f3);
-		}
-	}
 }
