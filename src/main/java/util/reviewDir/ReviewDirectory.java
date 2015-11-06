@@ -23,14 +23,13 @@ public class ReviewDirectory {
 
 	private File sourceDir;
 	private SampleManifest manifest;
-	private String[] fastqNames = null;
+	private PipelineLogFiles logs = null;
 
 	public ReviewDirectory(String path) throws IOException, ManifestParseException {
 		sourceDir = new File(path);
 		if ((!sourceDir.exists()) || (!sourceDir.isDirectory())) {
 			throw new IOException("Can't read source directory at " + sourceDir.getAbsolutePath());
 		}
-
 		manifest = SampleManifest.create(path);
 	}
 
@@ -77,21 +76,14 @@ public class ReviewDirectory {
 		return new VariantPool(csvReader);
 	}
 
-	/** Returns an array of length 2 of the names of fastq1 and fastq2 of a normal paired-end pipeline run. Requires parsing these out of the log files
-	 *  which isn't foolproof.
-	 * @return
+	/** This provides a handle to a review directories log file, thus saving time by only parsing it when it is explicitly asked for.
+	 *
 	 */
-	public String[] getFastqNames() {
-		if (fastqNames == null) {
-			PipeInstanceLog log = new PipeInstanceLog(manifest.getLog().getAbsolutePath());
-			try {
-				fastqNames = log.getFastqNames();
-			} catch (Exception e) {
-				System.out.println("Error parsing fastq file names from log file: " + log.getLogFileName());
-				e.printStackTrace();
-			}
+	public PipelineLogFiles getLogFile() {
+		if (logs == null) {
+			logs = new PipelineLogFiles(manifest.getLog().getAbsolutePath(), manifest.getLog().getAbsoluteFile().getParentFile() + "/" + "pipeline_input.xml");
 		}
-		return fastqNames;
+		return logs;
 	}
 
 	/**

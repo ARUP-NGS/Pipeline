@@ -1,6 +1,7 @@
 package util.reviewDir;
 
 import java.io.File;
+import java.util.Date;
 import java.util.Map;
 
 /**
@@ -18,6 +19,7 @@ public class SampleManifest {
 	public static final String ANNOTATED_VARS = "annotated.vars";
 	public static final String JSON_VARS = "json.vars";
 	public static final String ANALYSIS_TYPE = "analysis.type";
+	public static final String CURRENT_TIME = "current.time";
 	public static final String VCF = "VCF";
 	public static final String BAM = "BAM";
 	public static final String BED = "BED";
@@ -50,6 +52,14 @@ public class SampleManifest {
 	
 	public File getManifestFile() {
 		return new File( getSourceFile().getAbsolutePath() + "/" + MANIFEST_FILENAME);
+	}
+	
+	public Date getCompletionDate() {
+		if (! manifest.containsKey(CURRENT_TIME)) {
+			return null;
+		} 
+		long millis = Long.parseLong( manifest.get(CURRENT_TIME) );
+		return new Date(millis);
 	}
 	
 	public String getProperty(String key) {
