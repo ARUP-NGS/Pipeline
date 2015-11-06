@@ -29,7 +29,7 @@ import net.sourceforge.argparse4j.inf.ArgumentParserException;
 import net.sourceforge.argparse4j.inf.Namespace;
 import net.sourceforge.argparse4j.inf.Subparser;
 import net.sourceforge.argparse4j.inf.Subparsers;
-import util.Comparators.old.compareReviewDirs;
+import util.comparators.CompareReviewDirs;
 import util.prereviewDataGen.AnalysisTypeConverter;
 import util.reviewDir.ManifestParseException;
 import util.reviewDir.ReviewDirectory;
@@ -37,11 +37,13 @@ import util.text.TextTable;
 
 
 /**
- * A smallish utility to read QC data from qc.json files
+ * A massive utility that has grown to perform many various operations on review directories. It provides summary information, comparisons, and parses QC metrics from
+ * one or more Review Directories.
+ * 
  * @author brendan
  *
  */
-public class QCJsonReader {
+public class ReviewDirTool {
 
 	static DecimalFormat formatter = new DecimalFormat("0.0##");
 	static DecimalFormat smallFormatter = new DecimalFormat("0.00000");
@@ -1607,7 +1609,7 @@ Number of Sanger Requests not Confirmed (Average per Sample)
 			if(dir1.list().length > 0 && dir2.list().length > 0) {
 				//OK lets do our thing.
 				System.out.println("Begining validation of: " + dir1.getName() + " and " + dir2.getName());
-				Map<String, ReviewDirectory[]> comparisonMap = new HashMap<String, ReviewDirectory[]>();
+				Map<String, List<ReviewDirectory>> comparisonMap = new HashMap<String, List<ReviewDirectory>>();
 				Map<ReviewDirectory, String> reviewDirPathMap = new HashMap<ReviewDirectory, String>();
 				
 				ArrayList<ReviewDirectory> RDs1 = new ArrayList<ReviewDirectory>();
@@ -1637,31 +1639,44 @@ Number of Sanger Requests not Confirmed (Average per Sample)
 				
 				System.out.println(dir1.getName() + " has " + String.valueOf(RDs1.size()) + " review directories." );
 				System.out.println(dir2.getName() + " has " + String.valueOf(RDs2.size()) + " review directories." );
-				
+				boolean RD1isTruth = false;
 				//Now lets populate our comparisonMap.
 				for (ReviewDirectory rd1 : RDs1) {
-					String[] rd1Fastqs = rd1.getFastqNames();
+					String[] rd1Fastqs = rd1.getLogFile().getFastqNames();
 					
 					for (ReviewDirectory rd2 : RDs2) {
-						String[] rd2Fastqs = rd2.getFastqNames();
-
+						String[] rd2Fastqs = rd2.getLogFile().getFastqNames();
+						System.out.println(Arrays.toString(rd1Fastqs));
+						System.out.println(Arrays.toString(rd2Fastqs));
 						if( Arrays.equals(rd1Fastqs, rd2Fastqs) ) {
-							System.out.println("Found a match.");
-							comparisonMap.put(rd1Fastqs[0], new ReviewDirectory[]{rd1, rd2} );
+							List<ReviewDirectory> rds = new ArrayList();
+							//Make sure the older run RD gets put in the first column as our truth set.
+							if(Long.valueOf(rd1.getSampleManifest().getTime()) < Long.valueOf(rd2.getSampleManifest().getTime())) {
+								RD1isTruth = true;
+								rds.add(rd1);
+								rds.add(rd2);
+							} else {
+								rds.add(rd2);
+								rds.add(rd1);
+							}
+							comparisonMap.put(rd1Fastqs[0], rds );
 						}
 					}
 				}
 				
 				//Now comparisonMap is complete. We just need to loop through the comparison tool which already exists, beefing it up of course.
-				for (Map.Entry<String, ReviewDirectory[]> entry : comparisonMap.entrySet()) {
+				for (Map.Entry<String, List<ReviewDirectory>> entry : comparisonMap.entrySet()) {
 					List<String> inputs = new ArrayList<String>();
-					inputs.add(entry.getValue()[0].getSourceDirPath());
-					inputs.add(entry.getValue()[1].getSourceDirPath());					
+					inputs.add(entry.getValue().get(0).getSourceDirPath());
+					inputs.add(entry.getValue().get(1).getSourceDirPath());
+					CompareReviewDirs crd;
 					try {
-						System.out.println("\n\n\n");
-						performComparison(inputs, out);
-					} catch (IOException e) {
+						crd = new CompareReviewDirs(inputs.get(0), inputs.get(1));
+						crd.compare();
+						System.out.println("===================================================");
+					} catch (IOException | ManifestParseException | JSONException e) {
 						// TODO Auto-generated catch block
+						System.out.println("Error with comparison for RDs: " + inputs.get(0) + " and " + inputs.get(1));
 						e.printStackTrace();
 					}
 				} 
