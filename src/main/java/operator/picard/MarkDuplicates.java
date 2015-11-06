@@ -16,10 +16,12 @@ import pipeline.PipelineXMLConstants;
 public class MarkDuplicates extends CommandOperator {
 	
 	public static final String PICARD_REMOVE_DUPLICATES = "picard.remove.duplicates";
+	public static final String PICARD_MAKE_INDEX = "picard.make.index";
 	protected String defaultPicardDir = "~/picard-tools-1.55/";
 	public static final String JVM_ARGS="jvmargs";
 	protected String picardDir = defaultPicardDir;
-	String rmDup = "true"; //Defaults to true, remove the duplicates
+	private String rmDup = "true"; //Defaults to true, remove the duplicates
+	private String makeIndex = "false"; //Defaults to false
 
 	protected String getCommand() throws OperationFailedException {
 		FileBuffer inputBAM = this.getInputBufferForClass(BAMFile.class);
@@ -33,23 +35,25 @@ public class MarkDuplicates extends CommandOperator {
 			picardDir = picardDir.substring(0, picardDir.length()-1);
 		}
 				
-		String command = "java -Xmx16g -jar " + picardDir + "/picard.jar MarkDuplicates REMOVE_DUPLICATES=" + rmDup 
+		String command = "java -Xmx16g -jar " + picardDir + "/picard.jar MarkDuplicates"
+				+ " REMOVE_DUPLICATES=" + rmDup 
+				+ " CREATE_INDEX="+ makeIndex
 				+ " I=" + inputBAM.getAbsolutePath() 
 				+ " METRICS_FILE=" + (inputBAM.getAbsolutePath()).substring(0, (inputBAM.getAbsolutePath()).lastIndexOf('.'))
-				+ ".dupLog O="+ outputBAM.getAbsolutePath() + " ASSUME_SORTED=true VALIDATION_STRINGENCY=LENIENT";
+				+ ".dupLog O="+ outputBAM.getAbsolutePath() + " ASSUME_SORTED=true VALIDATION_STRINGENCY=SILENT";
 		
 		return(command);
-
 	}
 
 	@Override
 	public void initialize(NodeList children) {
 		super.initialize(children);
 		
-		rmDup = this.getAttribute(PICARD_REMOVE_DUPLICATES);
-		if(rmDup == null) {
-			rmDup = "true";
-		}
+		rmDup = this.getAttribute(PICARD_REMOVE_DUPLICATES).toLowerCase();
+		if(rmDup == null) rmDup = "true";
+		
+		makeIndex = this.getAttribute(PICARD_MAKE_INDEX);
+		if (makeIndex == null) makeIndex = "false";
 		
 	}
 	
