@@ -19,10 +19,10 @@ public class PipelineLogFiles {
 	//Could potentially just have a map of all useful information. Using descriptive variables instead.
 	//protected Map<String, String> logInfo = new HashMap<String, String>();
 
-	private String fastq1;
-	private String fastq2;
+	private String fastq1 = null;
+	private String fastq2 = null;
 
-	private Boolean annotatedWithAnnovar;
+	private Boolean annotatedWithAnnovar = null;
 	
 	protected File pipeInstanceLog = null;
 	protected File pipelineInputTemplate = null;
@@ -56,8 +56,8 @@ public class PipelineLogFiles {
 	 * 
 	 */
 	private void processPipelineInputTemplate() {
-		Pattern fastq1 = Pattern.compile(".*"); //For fastqs.
-		Pattern fastq2 = Pattern.compile(".*R2.*.fastq.gz.*"); //For fastqs.
+		Pattern fastq1Pat = Pattern.compile("/.*R1.*fast[aq].gz"); //For fastqs.
+		Pattern fastq2Pat = Pattern.compile("/.*R2.*fast[aq].gz"); //For fastqs.
 
 		Pattern annovar = Pattern.compile(".*class=\"operator.annovar.GeneAnnotator\".*");
 		
@@ -66,16 +66,15 @@ public class PipelineLogFiles {
 				//System.out.println(scanner.nextLine());
 				String line = scanner.nextLine();
 				if (fastq1 == null) {
-					Matcher fastq1Matcher = fastq1.matcher(line);
+					Matcher fastq1Matcher = fastq1Pat.matcher(line);
 					if(fastq1Matcher.find()) { //WWe got a match?
-						System.out.println("HERE fast1");
-						this.fastq1 = fastq1Matcher.group(0);
+						this.fastq1 = new File(fastq1Matcher.group(0)).getName();
 					}
 				}
 				if (fastq2 == null) {
-					Matcher fastq2Matcher = fastq2.matcher(line);
+					Matcher fastq2Matcher = fastq2Pat.matcher(line);
 					if(fastq2Matcher.find()) { //WWe got a match?
-						this.fastq1 = fastq2Matcher.group(0);
+						this.fastq2 = new File(fastq2Matcher.group(0)).getName();
 					}
 				}
 				if (annotatedWithAnnovar == null) {

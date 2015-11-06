@@ -1646,8 +1646,6 @@ Number of Sanger Requests not Confirmed (Average per Sample)
 					
 					for (ReviewDirectory rd2 : RDs2) {
 						String[] rd2Fastqs = rd2.getLogFile().getFastqNames();
-						System.out.println(Arrays.toString(rd1Fastqs));
-						System.out.println(Arrays.toString(rd2Fastqs));
 						if( Arrays.equals(rd1Fastqs, rd2Fastqs) ) {
 							List<ReviewDirectory> rds = new ArrayList();
 							//Make sure the older run RD gets put in the first column as our truth set.
