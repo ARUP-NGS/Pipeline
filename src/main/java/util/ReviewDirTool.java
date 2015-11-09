@@ -13,8 +13,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.apache.tools.ant.types.Comparison;
 
 import buffer.variant.VariantPool;
 import buffer.variant.VariantRec;
@@ -31,6 +34,7 @@ import net.sourceforge.argparse4j.inf.Subparser;
 import net.sourceforge.argparse4j.inf.Subparsers;
 import util.comparators.CompareReviewDirs;
 import util.comparators.ComparisonSummaryTable;
+import util.comparators.ReviewDirComparator.Severity;
 import util.prereviewDataGen.AnalysisTypeConverter;
 import util.reviewDir.ManifestParseException;
 import util.reviewDir.ReviewDirectory;
@@ -1592,6 +1596,10 @@ Number of Sanger Requests not Confirmed (Average per Sample)
 		out.println(data.toString());
 	}
 	
+	public static String[] getNames(Class<? extends Enum<?>> e) {
+	    return Arrays.toString(e.getEnumConstants()).replaceAll("^.|.$", "").split(", ");
+	}
+	
 	/** Basically a wrapper for the performComparison() function. This will match up RDs with the same fastq name so we are comparing identical samples, run through both a validated
 	 * and non-validated pipeline and make sure nothing is amiss.
 	 * 
@@ -1600,7 +1608,7 @@ Number of Sanger Requests not Confirmed (Average per Sample)
 	 */
 	private static void performValidation(List<String> paths, PrintStream out) {
 		if (paths.size() != 2) {
-			out.println("Please enter two directories full of Review Directories to validate.");
+			out.println("Please enter two directories of Review Directories to validate.");
 			return;
 		}
 		
@@ -1663,16 +1671,20 @@ Number of Sanger Requests not Confirmed (Average per Sample)
 					}
 				}
 				// End Prepare comparison --------------------------------------------------------------------------
+				Map<String, Map<Severity, Integer> > valSummary = new HashMap<String, Map<Severity, Integer> >();
+				Map<Severity, Integer> severitySummary = new HashMap<Severity, Integer> ();
+				LinkedHashMap<String, Object> validationJSON = new LinkedHashMap<String, Object>();
 
-				List<ComparisonSummaryTable> valSummary = new ArrayList<ComparisonSummaryTable>();
 				for (Map.Entry<String, List<ReviewDirectory>> entry : comparisonMap.entrySet()) {
-					
 					try {
 						CompareReviewDirs crd = new CompareReviewDirs(entry.getValue().get(0).getSourceDirPath(), entry.getValue().get(1).getSourceDirPath());
 						crd.compare();
 						//Now collect relevant summary information from our comparator class.
 						System.out.println("===================================================");
-						valSummary.add(crd.getSummary());
+						String comparisonName = crd.getRd1().getSampleName() + "-" + crd.getRd2().getSampleName();
+						valSummary.put(comparisonName, crd.getSeverityTotals());
+						validationJSON.put(comparisonName, crd.getFinalJSONOutput());
+						//valSummary.add(crd.getSummary());
 					} catch (IOException | ManifestParseException | JSONException e) {
 						// TODO Auto-generated catch block
 						System.out.println("Error with comparison for RDs: " + entry.getValue().get(0).getSourceDirPath() + " and " + entry.getValue().get(1).getSourceDirPath());
@@ -1680,13 +1692,40 @@ Number of Sanger Requests not Confirmed (Average per Sample)
 					}
 				}
 				
+				ComparisonSummaryTable st = new ComparisonSummaryTable();
+				st.setCompareType("Validation Summary");
+				st.setColNames(Arrays.asList("MAJOR", "MODERATE", "MINOR", "EXACT"));
+				LinkedHashMap<String, Object> validationSummary = new LinkedHashMap<String, Object>();
+				validationSummary.put("severity.key", getNames(Severity.class));
 				//print summary information out at the end.
-				for (ComparisonSummaryTable st : valSummary) {
-					st.printTable();
+				for (Map.Entry<String, Map<Severity, Integer>> entry : valSummary.entrySet()) {
+				    String comparisonName = entry.getKey();
+				    
+					List<String> newRow = new ArrayList<>();
+					newRow.add(comparisonName);
+					
+					String major = String.valueOf(entry.getValue().get(Severity.MAJOR));
+					String moderate = String.valueOf(entry.getValue().get(Severity.MODERATE));
+					String minor = String.valueOf(entry.getValue().get(Severity.MINOR));
+					String exact = String.valueOf(entry.getValue().get(Severity.EXACT));
+
+					newRow.add(major);
+					newRow.add(moderate);
+					newRow.add(minor);
+					newRow.add(exact);
+					
+					String[] summaryArray = {major, moderate, minor, exact};
+					validationSummary.put(comparisonName, summaryArray);
+					
+					st.addRow(newRow);
 				}
+				st.printSeverityTable();
 				
+				validationJSON.put("validation", validationSummary);
+				String jsonString = new JSONObject(validationJSON).toString();
+				System.out.println(jsonString);
 			} else {
-				System.out.println("It seems one (or both) the directories given are empty.");
+				System.out.println("It seems one (or both) the directories given are empty:" + dir1.getName() + " and " + dir2.getName());
 				return;
 			}
 		} else {
