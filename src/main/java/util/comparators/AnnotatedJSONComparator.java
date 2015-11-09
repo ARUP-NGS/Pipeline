@@ -59,13 +59,14 @@ public class AnnotatedJSONComparator extends ReviewDirComparator  {
 					
 					this.compareComplexAnnotation(refVar, compareVar, VariantRec.CDOT);
 					this.compareComplexAnnotation(refVar, compareVar, VariantRec.PDOT);
+					
 				} else {
 					continue;
 				}				
 			}
 		}
 		
-		this.addNewSummaryEntry("Variants Compared", String.valueOf(this.numberOfVarComparisons), "");
+		//this.addNewSummaryEntry("variant.comparisons", "Variants Compared", String.valueOf(this.numberOfVarComparisons), "");
 		this.populateEntries();
 	}
 	
@@ -74,14 +75,13 @@ public class AnnotatedJSONComparator extends ReviewDirComparator  {
 		for (Map.Entry<String, Integer> entry : discordanceTally.entrySet()) {
 		    String key = entry.getKey();
 		    Integer value = entry.getValue();
-		    //this.addNewSummaryEntry("\"" + key + "\" discordance", String.valueOf(value) + " / " + String.valueOf(this.numberOfVarComparisons), this.compareNumberNotes(value.doubleValue(), this.numberOfVarComparisons.doubleValue(), false));
-		    this.addNewSummaryEntry("\"" + key + "\" discordance", String.valueOf(value), this.compareNumberNotes(value.doubleValue(), this.numberOfVarComparisons.doubleValue(), false));
+		    this.addNewSummaryEntry(key + ".discordance", "\"" + key + "\" discordance", String.valueOf(value), this.compareNumberNotes(value.doubleValue(), this.numberOfVarComparisons.doubleValue(), false));
 		}
 		
 		for (Map.Entry<String, Double> entry : freqDiscordanceTotals.entrySet()) {
 		    String key = entry.getKey();
 		    Double value = entry.getValue();
-			this.addNewSummaryEntry("\"" + key + "\" avg. discordance", String.valueOf(value/this.numberOfVarComparisons), "");
+			this.addNewSummaryEntry(key + ".discordance", "\"" + key + "\" avg. discordance", String.valueOf(value/this.numberOfVarComparisons), "");
 		}
 	}
 	
@@ -95,7 +95,6 @@ public class AnnotatedJSONComparator extends ReviewDirComparator  {
 		}
 		try {
 			if (!var1.getAnnotation(annotation).equals(var2.getAnnotation(annotation))) {
-				System.out.println("Here");
 				this.discordanceTally.put(annotation, discordanceTally.get(annotation) + 1);
 			}
 		} catch (NullPointerException e) {

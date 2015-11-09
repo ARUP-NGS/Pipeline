@@ -2,8 +2,10 @@ package util.comparators;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
 import json.JSONException;
@@ -27,12 +29,14 @@ public class CompareReviewDirs extends IOOperator {
 	private static QCJSONComparator qcJSONComparator = null;
 	private static VCFComparator vcfComparator = null;
 	private static AnnotatedJSONComparator annotatedJSONComparator = null;
+	
+	private Map<Severity, Integer> severityTotals = new HashMap<Severity, Integer>();
 
-	private ComparisonSummaryTable summary = new ComparisonSummaryTable();
+	//private ComparisonSummaryTable summary = new ComparisonSummaryTable();
 	private LinkedHashMap<String, Object> finalJSONOutput = new LinkedHashMap<String, Object>();
 
 	private Logger logger = Logger.getLogger(Pipeline.primaryLoggerName);
-
+	
 	
 	
 	private ReviewDirectory rd1 = null;
@@ -79,22 +83,22 @@ public class CompareReviewDirs extends IOOperator {
 		//Compare Manifest information
 		manifestSummaryComparator = new ManifestSummaryComparator(rd1, rd2, "Summary Information Comparison");
 		manifestSummaryComparator.performOperation();
-		finalJSONOutput.put("manifest.summary", manifestSummaryComparator.getJSONOutput());
+		finalJSONOutput.put("compare.manifest", manifestSummaryComparator.getJSONOutput());
 
 		//Compare QC metrics
 		qcJSONComparator = new QCJSONComparator(rd1, rd2, "(Raw) QC Metrics Comparison");
 		qcJSONComparator.performOperation();
-		finalJSONOutput.put("qcjson.summary", qcJSONComparator.getJSONOutput());
+		finalJSONOutput.put("compare.qcjson", qcJSONComparator.getJSONOutput());
 
 		//Compare VCFs
 		vcfComparator = new VCFComparator(rd1, rd2, "VCF Comparison");
 		vcfComparator.performOperation();
-		finalJSONOutput.put("vcf.summary", vcfComparator.getJSONOutput());
+		finalJSONOutput.put("compare.vcf", vcfComparator.getJSONOutput());
 
 		//Compare annotations.
 		annotatedJSONComparator = new AnnotatedJSONComparator(rd1, rd2, "annotated.json");
 		annotatedJSONComparator.performOperation();
-		finalJSONOutput.put("annotations.summary", annotatedJSONComparator.getJSONOutput());		
+		finalJSONOutput.put("compare.annotatedjson", annotatedJSONComparator.getJSONOutput());		
 		
 		this.generateComparisonSummary(Arrays.asList(manifestSummaryComparator, qcJSONComparator, vcfComparator, annotatedJSONComparator));
 	}
@@ -106,26 +110,51 @@ public class CompareReviewDirs extends IOOperator {
 	 * @return 
 	 */
 	private void generateComparisonSummary(List<ReviewDirComparator> comparators) {		
-		summary.setCompareType("Validation Overview");
-		summary.setColNames(Arrays.asList(this.rd1.getSampleName(), this.rd2.getSampleName(), "Notes"));
+		//summary.setCompareType("Validation Overview");
+		//summary.setColNames(Arrays.asList(this.rd1.getSampleName(), this.rd2.getSampleName(), "Notes"));
 		for (Severity sev : Severity.values()) {
 			Integer tot = 0;
 			for (ReviewDirComparator curComparator : comparators) {
 				tot += curComparator.getSeveritySummary().get(sev);
 			}
-			List<String> newRow = Arrays.asList(sev.toString(), String.valueOf(tot), "", "");
-			summary.addRow(newRow);
+			severityTotals.put(sev, tot);
+			//List<String> newRow = Arrays.asList(sev.toString(), String.valueOf(tot), "", "");
+			//summary.addRow(newRow);
 		}
 		//validationSummary.printTable();
 	}
 	
-	public ComparisonSummaryTable getSummary() {
+	public Map<Severity, Integer> getSeverityTotals() {
+		return severityTotals;
+	}
+
+	public void setSeverityTotals(Map<Severity, Integer> severityTotals) {
+		this.severityTotals = severityTotals;
+	}
+	
+	public ReviewDirectory getRd1() {
+		return rd1;
+	}
+
+	public void setRd1(ReviewDirectory rd1) {
+		this.rd1 = rd1;
+	}
+
+	public ReviewDirectory getRd2() {
+		return rd2;
+	}
+
+	public void setRd2(ReviewDirectory rd2) {
+		this.rd2 = rd2;
+	}
+	
+/*	public ComparisonSummaryTable getSummary() {
 		return summary;
 	}
 
 	public void setSummary(ComparisonSummaryTable validationSummary) {
 		this.summary = validationSummary;
-	}
+	}*/
 
 	public LinkedHashMap<String, Object> getFinalJSONOutput() {
 		return finalJSONOutput;

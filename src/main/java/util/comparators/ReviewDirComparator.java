@@ -33,6 +33,10 @@ public abstract class ReviewDirComparator {
 	private Map<Severity, Integer> severitySummary = new HashMap<Severity, Integer>();
 	
 	
+	public enum Severity {
+		MAJOR, MODERATE, MINOR, EXACT
+	}
+	
 	public ReviewDirComparator() {
 	}
 	
@@ -56,20 +60,20 @@ public abstract class ReviewDirComparator {
 	 * @param c2Entry
 	 * @param c3Entry - Note (may or may not be empty) describing the discordance.
 	 */
-	void addNewEntry(String rowName, String c1Entry, String c2Entry , String c3Entry) {
+	void addNewEntry(String jsonKey, String rowName, String c1Entry, String c2Entry , String c3Entry) {
 		List<String> newRow = Arrays.asList(rowName, c1Entry, c2Entry, c3Entry);
 		this.summaryTable.addRow(newRow);
 		
 		String[] jsonString = {c1Entry,c2Entry,c3Entry};
-		this.summaryJSON.put(rowName, jsonString);
+		this.summaryJSON.put(jsonKey, jsonString);
 	}
 	
-	void addNewSummaryEntry(String rowName, String c1Entry, String c3Entry) {
+	void addNewSummaryEntry(String jsonKey, String rowName, String c1Entry, String c3Entry) {
 		List<String> newRow = Arrays.asList(rowName, c1Entry, "", c3Entry); //give blank column for aesthetic purposes.
 		this.summaryTable.addRow(newRow);
 		
 		String[] jsonString = {c1Entry,c3Entry};
-		this.summaryJSON.put(rowName, jsonString);
+		this.summaryJSON.put(jsonKey, jsonString);
 	}
 	
 	LinkedHashMap<String, Object> getJSONOutput() {		
@@ -90,11 +94,6 @@ public abstract class ReviewDirComparator {
 		this.summaryTable.printTable();
 	}
 	
-	
-	protected enum Severity {
-		MAJOR, MODERATE, MINOR, EXACT
-	}
-	
 	/** Given two numbers (passed as Strings) this function will create a string summarizing the difference between the two numbers.
 	 *  Such as: Difference of 0.4 (0.6%)
 	 * @param n1
@@ -107,6 +106,8 @@ public abstract class ReviewDirComparator {
 			//Double num1 = Double.parseDouble(n1);
 			//Double num2 = Double.parseDouble(n2);
 			
+			//Lets check if one number is missing and if so set a major difference.
+
 			Double diff = 0.0;
 			if (calcDiff) {
 				diff = Math.abs(n1 - n2);

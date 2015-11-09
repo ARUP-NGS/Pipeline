@@ -26,13 +26,13 @@ public class VCFComparator extends ReviewDirComparator {
 	 * (non-Javadoc)
 	 * @see util.comparators.ReviewDirComparator#addNewEntry(java.lang.String, java.lang.String, java.lang.String, java.lang.String)
 	 */
-	void addNewEntry(String rowName, String c1Entry, String c2Entry , String c3Entry) {
+/*	void addNewEntry(String rowName, String c1Entry, String c2Entry , String c3Entry) {
 		List<String> newRow = Arrays.asList(rowName, c1Entry, c2Entry, c3Entry);
 		super.summaryTable.addRow(newRow);
 
 		String[] jsonString = {c1Entry,c2Entry,c3Entry};
 		this.summaryJSON.put(rowName, jsonString);
-	}
+	}*/
 
 
 	@Override
@@ -61,17 +61,16 @@ public class VCFComparator extends ReviewDirComparator {
 		Double vp2HetPercent = (double) 100*(vp2.countHeteros()/vp2.size());
 		Double vp2AvgQual    = vp2.meanQuality();
 
-		this.addNewEntry("Size of VP", vp1Size, vp2Size, compareNumberNotes(Double.valueOf(vp1Size), Double.valueOf(vp2Size), true));
-		this.addNewEntry("SNPs", vp1SNPS, vp2SNPS, compareNumberNotes(Double.valueOf(vp1SNPS), Double.valueOf(vp2SNPS), true));
-		this.addNewEntry("Insertions", vp1Ins, vp2Ins, compareNumberNotes(Double.valueOf(vp1Ins), Double.valueOf(vp2Ins), true));
-		this.addNewEntry("Deletions", vp1Del, vp2Del, compareNumberNotes(Double.valueOf(vp1Del), Double.valueOf(vp2Del), true));
-		this.addNewEntry("Het Percentage", String.format("%.1f", vp1HetPercent), String.format("%.1f", vp2HetPercent), compareNumberNotes(vp1HetPercent, vp2HetPercent, true));
-		this.addNewEntry("Average Quality", String.format("%.1f", vp1AvgQual), String.format("%.1f", vp2AvgQual), compareNumberNotes(vp1AvgQual, vp2AvgQual, true));
-		
+		this.addNewEntry("vp.size", "Size of VP", vp1Size, vp2Size, compareNumberNotes(Double.valueOf(vp1Size), Double.valueOf(vp2Size), true));
+		this.addNewEntry("snps", "SNPs", vp1SNPS, vp2SNPS, compareNumberNotes(Double.valueOf(vp1SNPS), Double.valueOf(vp2SNPS), true));
+		this.addNewEntry("insertions", "Insertions", vp1Ins, vp2Ins, compareNumberNotes(Double.valueOf(vp1Ins), Double.valueOf(vp2Ins), true));
+		this.addNewEntry("deletions", "Deletions", vp1Del, vp2Del, compareNumberNotes(Double.valueOf(vp1Del), Double.valueOf(vp2Del), true));
+		this.addNewEntry("het.percent", "Het Percentage", String.format("%.1f", vp1HetPercent), String.format("%.1f", vp2HetPercent), compareNumberNotes(vp1HetPercent, vp2HetPercent, true));
+		this.addNewEntry("average.quality", "Average Quality", String.format("%.1f", vp1AvgQual), String.format("%.1f", vp2AvgQual), compareNumberNotes(vp1AvgQual, vp2AvgQual, true));
 	}
 
 	void compareIntersection(VariantPool vp1, VariantPool vp2) {
-		this.addNewSummaryEntry("Number of Intersecting Variants",String.valueOf(vp1.intersect(vp2).size()) + " (out of) " + String.valueOf(Math.max(vp1.size(), vp2.size())), "");
+		this.addNewSummaryEntry("intersection", "Number of Intersecting Variants",String.valueOf(vp1.intersect(vp2).size()) + "/" + String.valueOf(Math.max(vp1.size(), vp2.size())), "");
 
 		//Break unique variants out by type because maybe that is helpful.
 		VariantPool vp1Sub2 = vp1.subtract(vp2);
@@ -83,7 +82,7 @@ public class VCFComparator extends ReviewDirComparator {
 		vp1Sub2Note.append("Ins: " + vp1Sub2Ins + " | ");
 		vp1Sub2Note.append("Del: " + vp1Sub2Del);
 
-		this.addNewSummaryEntry("Variants Unique to " + rd1.getSampleName(), String.valueOf(vp1Sub2.size()), vp1Sub2Note.toString());
+		this.addNewSummaryEntry("unique.truth", "Variants Unique to " + rd1.getSampleName(), String.valueOf(vp1Sub2.size()), vp1Sub2Note.toString());
 
 		VariantPool vp2Sub1 = vp2.subtract(vp1);
 		String vp2Sub1SNPS = String.valueOf(vp2Sub1.countSNPs());
@@ -94,7 +93,7 @@ public class VCFComparator extends ReviewDirComparator {
 		vp2Sub1Note.append("Ins: " + vp2Sub1Ins + " | ");
 		vp2Sub1Note.append("Del: " + vp2Sub1Del);
 
-		this.addNewSummaryEntry("Variants Unique to " + rd2.getSampleName(), String.valueOf(vp2Sub1.size()), vp2Sub1Note.toString());
+		this.addNewSummaryEntry("unique.test", "Variants Unique to " + rd2.getSampleName(), String.valueOf(vp2Sub1.size()), vp2Sub1Note.toString());
 	}
 
 	void intersectVariantPools() {

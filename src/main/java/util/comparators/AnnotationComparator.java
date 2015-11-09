@@ -167,13 +167,13 @@ public class AnnotationComparator extends ReviewDirComparator {
 		//logger.info("Average annotation has this fraction of entries with differences between csvs: "
 		//		+ colAvgFrac);
 
-		addNewEntry("Average # annotation differences", String.valueOf(colAvgFrac), "-", "");
+		//addNewEntry("Average # annotation differences", String.valueOf(colAvgFrac), "-", "");
 
 		varAvgFrac = varAvgFrac / numRows;
 		logger.info("Average variant has this fraction of entries with differences between csvs: "
 				+ varAvgFrac);
 
-		addNewEntry("Average variant has this fraction of entries with differences between csvs", String.valueOf(varAvgFrac), "-", "");
+		//addNewEntry("Average variant has this fraction of entries with differences between csvs", String.valueOf(varAvgFrac), "-", "");
 
 		Integer maxVarDiffs = 0;
 		String maxVarLoc = "N/A";
