@@ -90,13 +90,13 @@ public class ArupBEDFile extends BEDFile {
 				}
 
 				String[] untrimmedExons = toks[5].split("\\|");
-				int[] exons = new int[untrimmedExons.length];
+				String[] exons = new String[untrimmedExons.length];
 				for (int i = 0; i < untrimmedExons.length; i++) {
 					if (untrimmedExons[i].trim().length() < 1) {
 					throw new IllegalArgumentException("ARUP BED file gene name appears to be blank in 5th column for line \n" 
 							+ line + "\n" + "in bed file " + this.file.getName());
 					}
-					else exons[i] = Integer.parseInt(untrimmedExons[i].trim());
+					else exons[i] = untrimmedExons[i].trim();
 				}
 
 				ARUPBedIntervalInfo intervalInfo = new ARUPBedIntervalInfo(genes, transcripts, exons);
@@ -127,9 +127,9 @@ public class ArupBEDFile extends BEDFile {
 
 		public final String[] genes;
 		public final String[] transcripts;
-		public final int[] exons;
+		public final String[] exons;
 		
-		public ARUPBedIntervalInfo(String[] genes, String[] transcripts, int[] exons) {
+		public ARUPBedIntervalInfo(String[] genes, String[] transcripts, String[] exons) {
 			this.genes = genes;
 			this.transcripts = transcripts;
 			this.exons = exons;
