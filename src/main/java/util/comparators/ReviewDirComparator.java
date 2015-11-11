@@ -14,7 +14,6 @@ import json.JSONException;
 import pipeline.Pipeline;
 import util.reviewDir.ReviewDirectory;
 
-
 /**
  * Base class for all review directory comparators including: SummaryComparator, QCMetricsComparator, VCFComparator, AnnotationComparator. It contains two review directories
  * as well as all the variables needed to collect summary information.
@@ -22,7 +21,7 @@ import util.reviewDir.ReviewDirectory;
  * @author Kevin
  */
 public abstract class ReviewDirComparator {
-	
+
 	//Variables for all the subclasses.
 	ReviewDirectory rd1 = null;
 	ReviewDirectory rd2 = null;
@@ -30,8 +29,8 @@ public abstract class ReviewDirComparator {
 	ComparisonSummaryTable summaryTable = new ComparisonSummaryTable();
 	LinkedHashMap<String, Object> summaryJSON = new LinkedHashMap<String, Object>();
 	Logger logger = Logger.getLogger(Pipeline.primaryLoggerName);
-	private Map<Severity, Integer> severitySummary = new HashMap<Severity, Integer>();
 	
+	private Map<Severity, List<String>> severitySummary = new HashMap<Severity, List<String>>();
 	
 	public enum Severity {
 		MAJOR, MODERATE, MINOR, EXACT
@@ -48,9 +47,9 @@ public abstract class ReviewDirComparator {
 		this.initializeSeveritySummary();
 	}
 	
-	void initializeSeveritySummary() {
+	private void initializeSeveritySummary() {
 		for (Severity sev : Severity.values()) {
-			this.severitySummary.put(sev, 0);
+			this.severitySummary.put(sev, new ArrayList<String>());
 		}
 	}
 	
@@ -60,15 +59,19 @@ public abstract class ReviewDirComparator {
 	 * @param c2Entry
 	 * @param c3Entry - Note (may or may not be empty) describing the discordance.
 	 */
-	void addNewEntry(String jsonKey, String rowName, String c1Entry, String c2Entry , String c3Entry) {
+	protected void addNewEntry(String jsonKey, String rowName, String c1Entry, String c2Entry , String c3Entry) {
 		List<String> newRow = Arrays.asList(rowName, c1Entry, c2Entry, c3Entry);
 		this.summaryTable.addRow(newRow);
 		
+/*		if (!c3Entry.equals("")) {
+			String[] jsonString = {c1Entry,c2Entry,c3Entry};
+			this.summaryJSON.put(jsonKey, jsonString);
+		}*/
 		String[] jsonString = {c1Entry,c2Entry,c3Entry};
 		this.summaryJSON.put(jsonKey, jsonString);
 	}
 	
-	void addNewSummaryEntry(String jsonKey, String rowName, String c1Entry, String c3Entry) {
+	protected void addNewSummaryEntry(String jsonKey, String rowName, String c1Entry, String c3Entry) {
 		List<String> newRow = Arrays.asList(rowName, c1Entry, "", c3Entry); //give blank column for aesthetic purposes.
 		this.summaryTable.addRow(newRow);
 		
@@ -76,11 +79,11 @@ public abstract class ReviewDirComparator {
 		this.summaryJSON.put(jsonKey, jsonString);
 	}
 	
-	LinkedHashMap<String, Object> getJSONOutput() {		
+	public LinkedHashMap<String, Object> getJSONOutput() {		
 		return this.summaryJSON;
 	}
 	
-	Map<Severity, Integer> getSeveritySummary() {
+	public Map<Severity, List<String>> getSeveritySummary() {
 		return this.severitySummary;
 	}
 	
@@ -89,7 +92,7 @@ public abstract class ReviewDirComparator {
 	 * @throws IOException
 	 * @throws JSONException
 	 */
-	void performOperation() throws IOException, JSONException {
+	protected void performOperation() throws IOException, JSONException {
 		performComparison();
 		this.summaryTable.printTable();
 	}
@@ -100,7 +103,7 @@ public abstract class ReviewDirComparator {
 	 * @param n2
 	 * @return
 	 */
-	String compareNumberNotes(Double n1, Double n2, boolean calcDiff) {
+	protected String compareNumberNotes(Double n1, Double n2, boolean calcDiff, String compareKey) {
 		try{
 			StringBuilder note = new StringBuilder();
 			//Double num1 = Double.parseDouble(n1);
@@ -125,33 +128,32 @@ public abstract class ReviewDirComparator {
 			Severity severity = null;
 			if (difPercent > 0.2) {
 				severity = Severity.MAJOR;
-				severitySummary.put(severity, severitySummary.get(severity) + 1);
+				severitySummary.get(severity).add(compareKey);
 			} else if (0.2 >= difPercent && difPercent > 0.1) {
 				severity = Severity.MODERATE;
-				severitySummary.put(severity, severitySummary.get(severity) + 1);
+				severitySummary.get(severity).add(compareKey);
 			} else if (0.1 >= difPercent && difPercent > 0.0) {
 				severity = Severity.MINOR;
-				severitySummary.put(severity, severitySummary.get(severity) + 1);
+				severitySummary.get(severity).add(compareKey);
 			} else if (difPercent == 0.0 ){
 				severity = Severity.EXACT;
-				severitySummary.put(severity, severitySummary.get(severity) + 1);
+				severitySummary.get(severity).add(compareKey);
 				//return severity;
 				return ""; //Lets just leave the notes blank if its equal
 			}
 			
 			note.append("["+severity.toString()+"]");
-			note.append(" Difference of ");
+			note.append(" | ");
 			note.append(String.format("%.1f", diff));
-			note.append(" (");
-			note.append(defaultFormat.format(diff/n2));
-			note.append(")");
+			note.append(" | ");
+			note.append(defaultFormat.format(difPercent));
 			
 			return note.toString();			
 		} catch(Exception e) {
 			return "";
 		}
-
 	}
+	
 	/** This function gets overridden by each of the sub-classes and is where the specific comparators perform their specific comparisons.
 	 * 
 	 * @throws IOException

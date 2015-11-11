@@ -20,6 +20,10 @@ import util.reviewDir.ReviewDirectory;
 /*
  * Compares review directories, including VCFs, CSVs, and QC Metrics.
  * Contains two ReviewDirectory objects. Can be run using the performOperation override i.e. as a pipeline operation or through the main class.
+ * To use:
+ * 	CompareReviewDirs crd = new CompareReviewDirs(path1, path2);
+	crd.compare();
+						
  * @author Kevin Boehme
  */
 
@@ -30,11 +34,11 @@ public class CompareReviewDirs extends IOOperator {
 	private static VCFComparator vcfComparator = null;
 	private static AnnotatedJSONComparator annotatedJSONComparator = null;
 	
-	private Map<Severity, Integer> severityTotals = new HashMap<Severity, Integer>();
+	private Map<Severity, List<String>> severityTotals = new HashMap<Severity, List<String>>();
 
 	//private ComparisonSummaryTable summary = new ComparisonSummaryTable();
 	private LinkedHashMap<String, Object> finalJSONOutput = new LinkedHashMap<String, Object>();
-
+	
 	private Logger logger = Logger.getLogger(Pipeline.primaryLoggerName);
 	
 	
@@ -100,35 +104,19 @@ public class CompareReviewDirs extends IOOperator {
 		annotatedJSONComparator.performOperation();
 		finalJSONOutput.put("compare.annotatedjson", annotatedJSONComparator.getJSONOutput());		
 		
-		this.generateComparisonSummary(Arrays.asList(manifestSummaryComparator, qcJSONComparator, vcfComparator, annotatedJSONComparator));
+		severityTotals.putAll(manifestSummaryComparator.getSeveritySummary());
+		severityTotals.putAll(qcJSONComparator.getSeveritySummary());
+		severityTotals.putAll(vcfComparator.getSeveritySummary());
+		severityTotals.putAll(annotatedJSONComparator.getSeveritySummary());
+		
+		
 	}
 	
-	/** Given a list of our comparators this will grab the map detailing the number of comparisons of a given severity from each
-	 *  and will get totals and provide the user a summary.
-	 *  
-	 * @param summaryList
-	 * @return 
-	 */
-	private void generateComparisonSummary(List<ReviewDirComparator> comparators) {		
-		//summary.setCompareType("Validation Overview");
-		//summary.setColNames(Arrays.asList(this.rd1.getSampleName(), this.rd2.getSampleName(), "Notes"));
-		for (Severity sev : Severity.values()) {
-			Integer tot = 0;
-			for (ReviewDirComparator curComparator : comparators) {
-				tot += curComparator.getSeveritySummary().get(sev);
-			}
-			severityTotals.put(sev, tot);
-			//List<String> newRow = Arrays.asList(sev.toString(), String.valueOf(tot), "", "");
-			//summary.addRow(newRow);
-		}
-		//validationSummary.printTable();
-	}
-	
-	public Map<Severity, Integer> getSeverityTotals() {
+	public Map<Severity, List<String>> getSeverityTotals() {
 		return severityTotals;
 	}
 
-	public void setSeverityTotals(Map<Severity, Integer> severityTotals) {
+	public void setSeverityTotals(Map<Severity, List<String>> severityTotals) {
 		this.severityTotals = severityTotals;
 	}
 	
@@ -147,14 +135,6 @@ public class CompareReviewDirs extends IOOperator {
 	public void setRd2(ReviewDirectory rd2) {
 		this.rd2 = rd2;
 	}
-	
-/*	public ComparisonSummaryTable getSummary() {
-		return summary;
-	}
-
-	public void setSummary(ComparisonSummaryTable validationSummary) {
-		this.summary = validationSummary;
-	}*/
 
 	public LinkedHashMap<String, Object> getFinalJSONOutput() {
 		return finalJSONOutput;

@@ -57,7 +57,7 @@ class QCJSONComparator extends ReviewDirComparator {
 		try {
 			double mean1 = coverage1.getDouble("mean.coverage");
 			double mean2 = coverage2.getDouble("mean.coverage");
-			this.addNewEntry("mean.coverage", "Mean coverage", String.format("%.1f", mean1), String.format("%.1f", mean2), compareNumberNotes(mean1, mean2, true));
+			this.addNewEntry("mean.coverage", "Mean coverage", String.format("%.1f", mean1), String.format("%.1f", mean2), compareNumberNotes(mean1, mean2, true, "mean.coverage"));
 
 			JSONArray cutoffs1 = processCoverage(coverage1.getJSONArray("fraction.above.cov.cutoff"));
 			JSONArray cutoffs2 = processCoverage(coverage2.getJSONArray("fraction.above.cov.cutoff"));
@@ -75,7 +75,7 @@ class QCJSONComparator extends ReviewDirComparator {
 					Double json1facAbove = cutoffs1.getDouble(entry.getValue()); 			
 					Double json2facAbove = cutoffs2.getDouble(cutOffMap2.get(entry.getKey()));
 					
-					this.addNewEntry("fraction.greater." + entry.getKey(),  "Fraction of bases > " + entry.getKey() + "X coverage", String.valueOf(json1facAbove), String.valueOf(json2facAbove), compareNumberNotes(json1facAbove, json2facAbove, true));
+					this.addNewEntry("fraction.greater." + entry.getKey(),  "Fraction of bases > " + entry.getKey() + "X coverage", String.valueOf(json1facAbove), String.valueOf(json2facAbove), compareNumberNotes(json1facAbove, json2facAbove, true, "fraction.greater." + entry.getKey()));
 				} else {	
 					this.addNewEntry("fraction.greater." + entry.getKey(), "Fraction of bases > " + entry.getKey() + "X coverage", "NA", "NA", "");
 				}
@@ -91,12 +91,12 @@ class QCJSONComparator extends ReviewDirComparator {
 
 			Double nocallInterval1 = nocalls1.getDouble("interval.count");
 			Double nocallInterval2 = nocalls2.getDouble("interval.count");
-			this.addNewEntry("no.call.regions", "Number of no-call regions", String.valueOf(nocallInterval1), String.valueOf(nocallInterval2), compareNumberNotes(nocallInterval1, nocallInterval2, true));
+			this.addNewEntry("no.call.regions", "Number of no-call regions", String.valueOf(nocallInterval1), String.valueOf(nocallInterval2), compareNumberNotes(nocallInterval1, nocallInterval2, true, "no.call.regions"));
 
 
 			Double nocallExtent1 = nocalls1.getDouble("no.call.extent");
 			Double nocallExtent2 = nocalls2.getDouble("no.call.extent");
-			this.addNewEntry("no.call.extent", "Extent (total size) of no-call regions", String.valueOf(nocallExtent1), String.valueOf(nocallExtent2), compareNumberNotes(nocallExtent1, nocallExtent2, true));
+			this.addNewEntry("no.call.extent", "Extent (total size) of no-call regions", String.valueOf(nocallExtent1), String.valueOf(nocallExtent2), compareNumberNotes(nocallExtent1, nocallExtent2, true, "no.call.extent"));
 
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block

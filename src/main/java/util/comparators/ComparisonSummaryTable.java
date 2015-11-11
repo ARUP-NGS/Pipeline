@@ -30,7 +30,7 @@ public class ComparisonSummaryTable {
 	
 	public void addRow(List<String> row) {
 		if (row.size() != colNames.size() + 1) {
-			throw new IllegalArgumentException("Incorrect number of columns, got " + row.size() + ", but should be " + colNames.size());
+			throw new IllegalArgumentException("Incorrect number of columns, got " + row.size() + ", but should be " + String.valueOf(colNames.size() + 1));
 		} else {
 			rowData.add(row);
 		}
@@ -57,6 +57,10 @@ public class ComparisonSummaryTable {
 		this.printInColumns("==============","==============","==============", "==============");
 		//System.out.println("==============");
 		for(List<String> row : rowData) {
+/*			if (!row.get(3).equals("") ) {
+				this.printInColumns(row.get(0), row.get(1), row.get(2), row.get(3));
+				counter += 1;
+			}*/
 			this.printInColumns(row.get(0), row.get(1), row.get(2), row.get(3));
 			counter += 1;
 		}

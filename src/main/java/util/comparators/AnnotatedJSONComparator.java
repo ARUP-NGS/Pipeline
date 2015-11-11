@@ -75,7 +75,7 @@ public class AnnotatedJSONComparator extends ReviewDirComparator  {
 		for (Map.Entry<String, Integer> entry : discordanceTally.entrySet()) {
 		    String key = entry.getKey();
 		    Integer value = entry.getValue();
-		    this.addNewSummaryEntry(key + ".discordance", "\"" + key + "\" discordance", String.valueOf(value), this.compareNumberNotes(value.doubleValue(), this.numberOfVarComparisons.doubleValue(), false));
+		    this.addNewSummaryEntry(key + ".discordance", "\"" + key + "\" discordance", String.valueOf(value), this.compareNumberNotes(value.doubleValue(), this.numberOfVarComparisons.doubleValue(), false, key));
 		}
 		
 		for (Map.Entry<String, Double> entry : freqDiscordanceTotals.entrySet()) {

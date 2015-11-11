@@ -1671,7 +1671,7 @@ Number of Sanger Requests not Confirmed (Average per Sample)
 					}
 				}
 				// End Prepare comparison --------------------------------------------------------------------------
-				Map<String, Map<Severity, Integer> > valSummary = new HashMap<String, Map<Severity, Integer> >();
+				Map<String, Map<Severity, List<String>> > valSummary = new HashMap<String, Map<Severity, List<String>> >();
 				Map<Severity, Integer> severitySummary = new HashMap<Severity, Integer> ();
 				LinkedHashMap<String, Object> validationJSON = new LinkedHashMap<String, Object>();
 
@@ -1694,32 +1694,31 @@ Number of Sanger Requests not Confirmed (Average per Sample)
 				
 				ComparisonSummaryTable st = new ComparisonSummaryTable();
 				st.setCompareType("Validation Summary");
-				st.setColNames(Arrays.asList("MAJOR", "MODERATE", "MINOR", "EXACT"));
+				//st.setColNames(Arrays.asList("MAJOR", "MODERATE", "MINOR", "EXACT"));
 				LinkedHashMap<String, Object> validationSummary = new LinkedHashMap<String, Object>();
 				validationSummary.put("severity.key", getNames(Severity.class));
 				//print summary information out at the end.
-				for (Map.Entry<String, Map<Severity, Integer>> entry : valSummary.entrySet()) {
+				for (Map.Entry<String, Map<Severity, List<String>>> entry : valSummary.entrySet()) {
 				    String comparisonName = entry.getKey();
-				    
-					List<String> newRow = new ArrayList<>();
-					newRow.add(comparisonName);
-					
-					String major = String.valueOf(entry.getValue().get(Severity.MAJOR));
-					String moderate = String.valueOf(entry.getValue().get(Severity.MODERATE));
-					String minor = String.valueOf(entry.getValue().get(Severity.MINOR));
-					String exact = String.valueOf(entry.getValue().get(Severity.EXACT));
-
-					newRow.add(major);
-					newRow.add(moderate);
-					newRow.add(minor);
-					newRow.add(exact);
-					
-					String[] summaryArray = {major, moderate, minor, exact};
-					validationSummary.put(comparisonName, summaryArray);
-					
-					st.addRow(newRow);
+					for (Severity sev: Severity.values()) {
+						List<String> newRow = new ArrayList<>();
+						newRow.add(comparisonName);
+						
+						
+						String sevNum = String.valueOf(entry.getValue().get(sev).size());
+						String sevKeys = String.valueOf(entry.getValue().get(sev));
+						//newRow.add(sev.toString());
+						newRow.add(sevNum);
+						newRow.add(sevKeys);
+						newRow.add("");
+						
+						String[] summaryArray = {sevNum, sevKeys};
+						validationSummary.put(comparisonName, summaryArray);
+						
+						st.addRow(newRow);				
+					}
 				}
-				st.printSeverityTable();
+				st.printTable();
 				
 				validationJSON.put("validation", validationSummary);
 				String jsonString = new JSONObject(validationJSON).toString();
@@ -1732,7 +1731,6 @@ Number of Sanger Requests not Confirmed (Average per Sample)
 			System.out.println("It seems one (or both) of the inputs are either not directories or don't exist.");
 			return;
 		}
-		
 	}
 
 
