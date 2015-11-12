@@ -34,6 +34,15 @@ public class CopyFile extends Operator {
 	public void performOperation() throws OperationFailedException {
 		Logger logger = Logger.getLogger(Pipeline.primaryLoggerName);
 		int count = 0;
+		
+		destinationDir = new File(this.getAttribute(DEST_DIR));
+		if (! destinationDir.exists()) {
+			throw new IllegalArgumentException("Destination directory " + destinationDir.getAbsolutePath() + " does not exist");
+		}
+		if (! destinationDir.isDirectory()) {
+			throw new IllegalArgumentException("Destination directory " + destinationDir.getAbsolutePath() + " is not a directory");
+		}
+		
 		for(FileBuffer buf : filesToCopy) {
 			File destFullPath = new File(destinationDir.getAbsolutePath() + System.getProperty("file.separator") + buf.getFilename());
 			logger.info("Copying file " + buf.getFilename() + " to " + destFullPath.getAbsolutePath());
@@ -79,13 +88,6 @@ public class CopyFile extends Operator {
 			throw new IllegalArgumentException("No destination directory specified");
 		}
 		
-		destinationDir = new File(this.getAttribute(DEST_DIR));
-		if (! destinationDir.exists()) {
-			throw new IllegalArgumentException("Destination directory " + destinationDir.getAbsolutePath() + " does not exist");
-		}
-		if (! destinationDir.isDirectory()) {
-			throw new IllegalArgumentException("Destination directory " + destinationDir.getAbsolutePath() + " is not a directory");
-		}
 		
 		for(int i=0; i<children.getLength(); i++) {
 			Node iChild = children.item(i);
