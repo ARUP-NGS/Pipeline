@@ -39,10 +39,14 @@ class QCJSONComparator extends ReviewDirComparator {
 		JSONObject json1 = ReviewDirTool.toJSONObj(rd1.getSampleManifest().getQCJSON().getAbsolutePath());
 		JSONObject json2 = ReviewDirTool.toJSONObj(rd2.getSampleManifest().getQCJSON().getAbsolutePath());
 		
-		JSONObject coverage1 = new JSONObject(json1.get("raw.coverage.metrics").toString());
-		JSONObject coverage2 = new JSONObject(json2.get("raw.coverage.metrics").toString());
-		this.compareRawCoverageMetrics(coverage1, coverage2);
+		JSONObject coverage1 = new JSONObject(json1.get("final.coverage.metrics").toString());
+		JSONObject coverage2 = new JSONObject(json2.get("final.coverage.metrics").toString());
+		this.compareCoverageMetrics(coverage1, coverage2);
 
+		JSONObject Bam1 = new JSONObject(json1.get("final.bam.metrics").toString());
+		JSONObject Bam2 = new JSONObject(json2.get("final.bam.metrics").toString());
+		this.compareBAMMetrics(Bam1, Bam2);
+		
 		JSONObject nocalls1 = new JSONObject(json1.get("nocalls").toString());
 		JSONObject nocalls2 = new JSONObject(json2.get("nocalls").toString());
 		this.compareNoCalls(nocalls1, nocalls2);
@@ -53,11 +57,34 @@ class QCJSONComparator extends ReviewDirComparator {
 		
 	}
 	
-	private void compareRawCoverageMetrics(JSONObject coverage1, JSONObject  coverage2) throws JSONException {
+	private void compareBAMMetrics(JSONObject bam1, JSONObject  bam2) {
+		try {
+			double basesAboveQ10_1 = bam1.getDouble("bases.above.q10")/bam1.getDouble("bases.read");
+			double basesAboveQ10_2 = bam2.getDouble("bases.above.q10")/bam2.getDouble("bases.read");
+			
+			double basesAboveQ20_1 = bam1.getDouble("bases.above.q20");
+			double basesAboveQ20_2 = bam2.getDouble("bases.above.q20");
+			
+			double basesAboveQ30_1 = bam1.getDouble("bases.above.q30");
+			double basesAboveQ30_2 = bam2.getDouble("bases.above.q30");
+			
+			//mean.insert.size
+			double meanInsertSize_1 = bam1.getDouble("mean.insert.size");
+			double meanInsertSize_2 = bam2.getDouble("mean.insert.size");
+			
+			this.addNewEntry("bases.above.q10", "Percent bases above Q10", String.format("%.1f", basesAboveQ10_1), String.format("%.1f", basesAboveQ10_2), compareNumberNotes(basesAboveQ10_1, basesAboveQ10_2, true, "bases.above.q10", false));
+
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	private void compareCoverageMetrics(JSONObject coverage1, JSONObject  coverage2) throws JSONException {
 		try {
 			double mean1 = coverage1.getDouble("mean.coverage");
 			double mean2 = coverage2.getDouble("mean.coverage");
-			this.addNewEntry("mean.coverage", "Mean coverage", String.format("%.1f", mean1), String.format("%.1f", mean2), compareNumberNotes(mean1, mean2, true, "mean.coverage"));
+			this.addNewEntry("mean.coverage", "Mean coverage", String.format("%.1f", mean1), String.format("%.1f", mean2), compareNumberNotes(mean1, mean2, true, "mean.coverage", false));
 
 			JSONArray cutoffs1 = processCoverage(coverage1.getJSONArray("fraction.above.cov.cutoff"));
 			JSONArray cutoffs2 = processCoverage(coverage2.getJSONArray("fraction.above.cov.cutoff"));
@@ -75,7 +102,7 @@ class QCJSONComparator extends ReviewDirComparator {
 					Double json1facAbove = cutoffs1.getDouble(entry.getValue()); 			
 					Double json2facAbove = cutoffs2.getDouble(cutOffMap2.get(entry.getKey()));
 					
-					this.addNewEntry("fraction.greater." + entry.getKey(),  "Fraction of bases > " + entry.getKey() + "X coverage", String.valueOf(json1facAbove), String.valueOf(json2facAbove), compareNumberNotes(json1facAbove, json2facAbove, true, "fraction.greater." + entry.getKey()));
+					this.addNewEntry("fraction.greater." + entry.getKey(),  "Fraction of bases > " + entry.getKey() + "X coverage", String.valueOf(json1facAbove), String.valueOf(json2facAbove), compareNumberNotes(json1facAbove, json2facAbove, true, "fraction.greater." + entry.getKey(), false));
 				} else {	
 					this.addNewEntry("fraction.greater." + entry.getKey(), "Fraction of bases > " + entry.getKey() + "X coverage", "NA", "NA", "");
 				}
@@ -91,12 +118,12 @@ class QCJSONComparator extends ReviewDirComparator {
 
 			Double nocallInterval1 = nocalls1.getDouble("interval.count");
 			Double nocallInterval2 = nocalls2.getDouble("interval.count");
-			this.addNewEntry("no.call.regions", "Number of no-call regions", String.valueOf(nocallInterval1), String.valueOf(nocallInterval2), compareNumberNotes(nocallInterval1, nocallInterval2, true, "no.call.regions"));
+			this.addNewEntry("no.call.regions", "Number of no-call regions", String.valueOf(nocallInterval1), String.valueOf(nocallInterval2), compareNumberNotes(nocallInterval1, nocallInterval2, true, "no.call.regions", false));
 
 
 			Double nocallExtent1 = nocalls1.getDouble("no.call.extent");
 			Double nocallExtent2 = nocalls2.getDouble("no.call.extent");
-			this.addNewEntry("no.call.extent", "Extent (total size) of no-call regions", String.valueOf(nocallExtent1), String.valueOf(nocallExtent2), compareNumberNotes(nocallExtent1, nocallExtent2, true, "no.call.extent"));
+			this.addNewEntry("no.call.extent", "Extent (total size) of no-call regions", String.valueOf(nocallExtent1), String.valueOf(nocallExtent2), compareNumberNotes(nocallExtent1, nocallExtent2, true, "no.call.extent", false));
 
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block

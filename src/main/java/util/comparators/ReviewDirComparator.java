@@ -2,9 +2,8 @@ package util.comparators;
 
 import java.io.IOException;
 import java.text.NumberFormat;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -12,6 +11,8 @@ import java.util.logging.Logger;
 
 import json.JSONException;
 import pipeline.Pipeline;
+import util.comparators.CompareReviewDirs.DiscordanceSummary;
+import util.comparators.CompareReviewDirs.Severity;
 import util.reviewDir.ReviewDirectory;
 
 /**
@@ -30,10 +31,10 @@ public abstract class ReviewDirComparator {
 	LinkedHashMap<String, Object> summaryJSON = new LinkedHashMap<String, Object>();
 	Logger logger = Logger.getLogger(Pipeline.primaryLoggerName);
 	
-	private Map<Severity, List<String>> severitySummary = new HashMap<Severity, List<String>>();
+	private DiscordanceSummary discordanceSummary = new DiscordanceSummary();
 	
-	public enum Severity {
-		MAJOR, MODERATE, MINOR, EXACT
+	public DiscordanceSummary getDiscordanceSummary() {
+		return this.discordanceSummary;
 	}
 	
 	public ReviewDirComparator() {
@@ -44,13 +45,6 @@ public abstract class ReviewDirComparator {
 		this.rd2 = rd2;
 		//this.summaryTable.setColumnNames("", "", "Notes");
 		this.summaryTable.setCompareType(analysisHeader);
-		this.initializeSeveritySummary();
-	}
-	
-	private void initializeSeveritySummary() {
-		for (Severity sev : Severity.values()) {
-			this.severitySummary.put(sev, new ArrayList<String>());
-		}
 	}
 	
 	/** Function which collects specific comparisons between the two review directories. 
@@ -63,7 +57,8 @@ public abstract class ReviewDirComparator {
 		List<String> newRow = Arrays.asList(rowName, c1Entry, c2Entry, c3Entry);
 		this.summaryTable.addRow(newRow);
 		
-/*		if (!c3Entry.equals("")) {
+/*		
+		if (!c3Entry.equals("")) {
 			String[] jsonString = {c1Entry,c2Entry,c3Entry};
 			this.summaryJSON.put(jsonKey, jsonString);
 		}*/
@@ -83,9 +78,9 @@ public abstract class ReviewDirComparator {
 		return this.summaryJSON;
 	}
 	
-	public Map<Severity, List<String>> getSeveritySummary() {
+/*	public Map<Severity, List<String>> getSeveritySummary() {
 		return this.severitySummary;
-	}
+	}*/
 	
 	/** Function which runs the core operations for each comparison.
 	 * @return
@@ -97,18 +92,22 @@ public abstract class ReviewDirComparator {
 		this.summaryTable.printTable();
 	}
 	
+	protected String handleComparison(Double n1, Double n2, boolean calcDiff, String compareKey) {
+
+		return "";
+	}
+	
 	/** Given two numbers (passed as Strings) this function will create a string summarizing the difference between the two numbers.
 	 *  Such as: Difference of 0.4 (0.6%)
 	 * @param n1
 	 * @param n2
 	 * @return
 	 */
-	protected String compareNumberNotes(Double n1, Double n2, boolean calcDiff, String compareKey) {
+	protected String compareNumberNotes(Double n1, Double n2, boolean calcDiff, String compareKey, boolean anyDiscordanceIsMajor) { //, EnumMap cutOffs) {
 		try{
 			StringBuilder note = new StringBuilder();
 			//Double num1 = Double.parseDouble(n1);
 			//Double num2 = Double.parseDouble(n2);
-			
 			//Lets check if one number is missing and if so set a major difference.
 
 			Double diff = 0.0;
@@ -126,19 +125,18 @@ public abstract class ReviewDirComparator {
 				difPercent = diff/n2;
 			}
 			Severity severity = null;
-			if (difPercent > 0.2) {
+			if (difPercent >= 0.2 || (anyDiscordanceIsMajor && difPercent > 0.0)) {
 				severity = Severity.MAJOR;
-				severitySummary.get(severity).add(compareKey);
-			} else if (0.2 >= difPercent && difPercent > 0.1) {
+				discordanceSummary.addNewDiscordance(severity, compareKey);
+			} else if (0.2 > difPercent && difPercent >= 0.1) {
 				severity = Severity.MODERATE;
-				severitySummary.get(severity).add(compareKey);
-			} else if (0.1 >= difPercent && difPercent > 0.0) {
+				discordanceSummary.addNewDiscordance(severity, compareKey);
+			} else if (0.1 > difPercent && difPercent > 0.0) {
 				severity = Severity.MINOR;
-				severitySummary.get(severity).add(compareKey);
+				discordanceSummary.addNewDiscordance(severity, compareKey);
 			} else if (difPercent == 0.0 ){
 				severity = Severity.EXACT;
-				severitySummary.get(severity).add(compareKey);
-				//return severity;
+				discordanceSummary.addNewDiscordance(severity, compareKey);
 				return ""; //Lets just leave the notes blank if its equal
 			}
 			

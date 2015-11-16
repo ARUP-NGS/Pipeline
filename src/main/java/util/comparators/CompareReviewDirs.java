@@ -1,29 +1,28 @@
 package util.comparators;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 
 import json.JSONException;
 import net.sourceforge.argparse4j.inf.ArgumentParserException;
 import operator.IOOperator;
 import pipeline.Pipeline;
-import util.comparators.ReviewDirComparator.Severity;
 import util.reviewDir.ManifestParseException;
 import util.reviewDir.ReviewDirectory;
 
 
 /*
  * Compares review directories, including VCFs, CSVs, and QC Metrics.
- * Contains two ReviewDirectory objects. Can be run using the performOperation override i.e. as a pipeline operation or through the main class.
+ * Contains two ReviewDirectory objects as well as a specific implementation of the ReviewDirComparator base class for each comparison type (vcf, qc.json, annotated.json).
+ * Can be run using the performOperation override i.e. as a pipeline operation or through the main class.
  * To use:
  * 	CompareReviewDirs crd = new CompareReviewDirs(path1, path2);
-	crd.compare();
-						
+ *	crd.compare();
+ *						
  * @author Kevin Boehme
  */
 
@@ -34,14 +33,11 @@ public class CompareReviewDirs extends IOOperator {
 	private static VCFComparator vcfComparator = null;
 	private static AnnotatedJSONComparator annotatedJSONComparator = null;
 	
-	private Map<Severity, List<String>> severityTotals = new HashMap<Severity, List<String>>();
+	private DiscordanceSummary discordanceSummary = new DiscordanceSummary();
 
-	//private ComparisonSummaryTable summary = new ComparisonSummaryTable();
 	private LinkedHashMap<String, Object> finalJSONOutput = new LinkedHashMap<String, Object>();
 	
 	private Logger logger = Logger.getLogger(Pipeline.primaryLoggerName);
-	
-	
 	
 	private ReviewDirectory rd1 = null;
 	private ReviewDirectory rd2 = null;
@@ -50,7 +46,57 @@ public class CompareReviewDirs extends IOOperator {
 		rd1 = new ReviewDirectory(reviewdir1);
 		rd2 = new ReviewDirectory(reviewdir2);
 	}
+	
+	public enum Severity {
+		MAJOR, MODERATE, MINOR, EXACT
+	}
+	
+	public enum ComparisonType {
+		FREQUENCY, TEXT, PERCENTAGE, WHOLENUMBERS
+	}
+	
+	/** Just a wrapper for a map for each of the severity classes. It provides convenient helper functions
+	 *  to access and increment summaries.
+	 * @author kevin
+	 *
+	 */
+	public static class DiscordanceSummary {
+		
+		private Map<Severity, Map<String, AtomicInteger>> severitySummary = new HashMap<Severity, Map<String, AtomicInteger>>();
+		
+		public DiscordanceSummary() {
+			for (Severity sev : Severity.values()) {
+				this.severitySummary.put(sev, new HashMap<String, AtomicInteger>());
+			}
+		}
+		
+		public void putAllSeverity(Severity sev, Map<String, AtomicInteger> sevSum) {
+			this.severitySummary.get(sev).putAll(sevSum);
+		}
+		
+		public Map<String, AtomicInteger> getSeveritySummary(Severity sev) {
+			return severitySummary.get(sev);
+		}
+		
+		public void addNewDiscordance(Severity sev, String key) {
+			if (this.severitySummary.get(sev).get(key) != null) {
+				this.severitySummary.get(sev).get(key).incrementAndGet();
+			} else {
+				this.severitySummary.get(sev).put(key, new AtomicInteger(1));
+			}
+		}
+				
+		/** This will loop through the given DiscordanceSummary object and add its contents to this DiscordanceSummary object.
+		 * @param disSum
+		 */
+		public void collect(DiscordanceSummary disSum) {
+			for (Severity sev : Severity.values()) {
+				this.putAllSeverity(sev, disSum.getSeveritySummary(sev));
+			}
+		}
 
+	}
+	
 /*	*//**
 	 * @param args
 	 * @throws ManifestParseException 
@@ -90,7 +136,7 @@ public class CompareReviewDirs extends IOOperator {
 		finalJSONOutput.put("compare.manifest", manifestSummaryComparator.getJSONOutput());
 
 		//Compare QC metrics
-		qcJSONComparator = new QCJSONComparator(rd1, rd2, "(Raw) QC Metrics Comparison");
+		qcJSONComparator = new QCJSONComparator(rd1, rd2, "(Final) QC Metrics Comparison");
 		qcJSONComparator.performOperation();
 		finalJSONOutput.put("compare.qcjson", qcJSONComparator.getJSONOutput());
 
@@ -100,24 +146,31 @@ public class CompareReviewDirs extends IOOperator {
 		finalJSONOutput.put("compare.vcf", vcfComparator.getJSONOutput());
 
 		//Compare annotations.
-		annotatedJSONComparator = new AnnotatedJSONComparator(rd1, rd2, "annotated.json");
+		annotatedJSONComparator = new AnnotatedJSONComparator(rd1, rd2, "Annotated JSON");
 		annotatedJSONComparator.performOperation();
 		finalJSONOutput.put("compare.annotatedjson", annotatedJSONComparator.getJSONOutput());		
-		
-		severityTotals.putAll(manifestSummaryComparator.getSeveritySummary());
-		severityTotals.putAll(qcJSONComparator.getSeveritySummary());
-		severityTotals.putAll(vcfComparator.getSeveritySummary());
-		severityTotals.putAll(annotatedJSONComparator.getSeveritySummary());
-		
-		
+
+		//Collect up all of the discordance information from each comparator.
+		discordanceSummary.collect(manifestSummaryComparator.getDiscordanceSummary());
+		discordanceSummary.collect(qcJSONComparator.getDiscordanceSummary());
+		discordanceSummary.collect(vcfComparator.getDiscordanceSummary());
+		discordanceSummary.collect(annotatedJSONComparator.getDiscordanceSummary());
 	}
 	
-	public Map<Severity, List<String>> getSeverityTotals() {
+/*	public Map<Severity, List<String>> getSeverityTotals() {
 		return severityTotals;
 	}
 
 	public void setSeverityTotals(Map<Severity, List<String>> severityTotals) {
 		this.severityTotals = severityTotals;
+	}*/
+	
+	public DiscordanceSummary getDiscordanceSummary() {
+		return discordanceSummary;
+	}
+
+	public void setDiscordanceSummary(DiscordanceSummary discordanceSummary) {
+		this.discordanceSummary = discordanceSummary;
 	}
 	
 	public ReviewDirectory getRd1() {

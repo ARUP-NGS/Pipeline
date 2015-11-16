@@ -46,13 +46,13 @@ public class VCFComparator extends ReviewDirComparator {
 		String vp2Del = String.valueOf(vp2.countDeletions());
 		Double vp2HetPercent = (double) 100*(vp2.countHeteros()/vp2.size());
 		Double vp2AvgQual    = vp2.meanQuality();
-
-		this.addNewEntry("vp.size", "Size of VP", vp1Size, vp2Size, compareNumberNotes(Double.valueOf(vp1Size), Double.valueOf(vp2Size), true, "vp.size"));
-		this.addNewEntry("snps", "SNPs", vp1SNPS, vp2SNPS, compareNumberNotes(Double.valueOf(vp1SNPS), Double.valueOf(vp2SNPS), true, "snps"));
-		this.addNewEntry("insertions", "Insertions", vp1Ins, vp2Ins, compareNumberNotes(Double.valueOf(vp1Ins), Double.valueOf(vp2Ins), true, "insertions"));
-		this.addNewEntry("deletions", "Deletions", vp1Del, vp2Del, compareNumberNotes(Double.valueOf(vp1Del), Double.valueOf(vp2Del), true, "deletions"));
-		this.addNewEntry("het.percent", "Het Percentage", String.format("%.1f", vp1HetPercent), String.format("%.1f", vp2HetPercent), compareNumberNotes(vp1HetPercent, vp2HetPercent, true, "het.percent"));
-		this.addNewEntry("average.quality", "Average Quality", String.format("%.1f", vp1AvgQual), String.format("%.1f", vp2AvgQual), compareNumberNotes(vp1AvgQual, vp2AvgQual, true, "average.quality"));
+		
+		this.addNewEntry("vp.size", "Size of VP", vp1Size, vp2Size, compareNumberNotes(Double.valueOf(vp1Size), Double.valueOf(vp2Size), true, "vp.size", true));
+		this.addNewEntry("snps", "SNPs", vp1SNPS, vp2SNPS, compareNumberNotes(Double.valueOf(vp1SNPS), Double.valueOf(vp2SNPS), true, "snps", true));
+		this.addNewEntry("insertions", "Insertions", vp1Ins, vp2Ins, compareNumberNotes(Double.valueOf(vp1Ins), Double.valueOf(vp2Ins), true, "insertions", true));
+		this.addNewEntry("deletions", "Deletions", vp1Del, vp2Del, compareNumberNotes(Double.valueOf(vp1Del), Double.valueOf(vp2Del), true, "deletions", true));
+		this.addNewEntry("het.percent", "Het Percentage", String.format("%.1f", vp1HetPercent), String.format("%.1f", vp2HetPercent), compareNumberNotes(vp1HetPercent, vp2HetPercent, true, "het.percent", true));
+		this.addNewEntry("average.quality", "Average Quality", String.format("%.1f", vp1AvgQual), String.format("%.1f", vp2AvgQual), compareNumberNotes(vp1AvgQual, vp2AvgQual, true, "average.quality", false));
 	}
 
 	void compareIntersection(VariantPool vp1, VariantPool vp2) {

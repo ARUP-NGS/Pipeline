@@ -24,6 +24,9 @@ import util.reviewDir.ReviewDirectory;
 public class AnnotatedJSONComparator extends ReviewDirComparator  {
 
 	private Integer numberOfVarComparisons = 0;
+	
+	private Map<String, Integer> simpleDiscordanceTally = new HashMap<String, Integer>();
+	
 	private Map<String, Integer> discordanceTally = new HashMap<String, Integer>();
 	private Map<String, Double> discordanceMax = new HashMap<String, Double>();
 	private Map<String, Double> freqDiscordanceTotals = new HashMap<String, Double>();
@@ -72,10 +75,17 @@ public class AnnotatedJSONComparator extends ReviewDirComparator  {
 	
 	private void populateEntries() {
 		
+		for (Map.Entry<String, Integer> entry : simpleDiscordanceTally.entrySet()) {
+		    String key = entry.getKey();
+		    Integer value = entry.getValue();
+		  //this.compareNumberNotes(value.doubleValue(), this.numberOfVarComparisons.doubleValue(), false, key));
+		    this.addNewSummaryEntry(key + ".discordance", "\"" + key + "\" discordance", String.valueOf(value), this.compareNumberNotes(value.doubleValue(), this.numberOfVarComparisons.doubleValue(), false, key, true));
+		}
+		
 		for (Map.Entry<String, Integer> entry : discordanceTally.entrySet()) {
 		    String key = entry.getKey();
 		    Integer value = entry.getValue();
-		    this.addNewSummaryEntry(key + ".discordance", "\"" + key + "\" discordance", String.valueOf(value), this.compareNumberNotes(value.doubleValue(), this.numberOfVarComparisons.doubleValue(), false, key));
+		    this.addNewSummaryEntry(key + ".discordance", "\"" + key + "\" discordance", String.valueOf(value), this.compareNumberNotes(value.doubleValue(), this.numberOfVarComparisons.doubleValue(), false, key, false));
 		}
 		
 		for (Map.Entry<String, Double> entry : freqDiscordanceTotals.entrySet()) {
@@ -90,12 +100,12 @@ public class AnnotatedJSONComparator extends ReviewDirComparator  {
 	 * @param var2
 	 */
 	private void compareSimpleAnnotations(VariantRec var1, VariantRec var2, String annotation) {
-		if (this.discordanceTally.get(annotation) == null) {
-			this.discordanceTally.put(annotation, 0);
+		if (this.simpleDiscordanceTally.get(annotation) == null) {
+			this.simpleDiscordanceTally.put(annotation, 0);
 		}
 		try {
 			if (!var1.getAnnotation(annotation).equals(var2.getAnnotation(annotation))) {
-				this.discordanceTally.put(annotation, discordanceTally.get(annotation) + 1);
+				this.simpleDiscordanceTally.put(annotation, discordanceTally.get(annotation) + 1);
 			}
 		} catch (NullPointerException e) {
 			e.getMessage();

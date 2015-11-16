@@ -16,8 +16,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.apache.tools.ant.types.Comparison;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import buffer.variant.VariantPool;
 import buffer.variant.VariantRec;
@@ -33,8 +32,9 @@ import net.sourceforge.argparse4j.inf.Namespace;
 import net.sourceforge.argparse4j.inf.Subparser;
 import net.sourceforge.argparse4j.inf.Subparsers;
 import util.comparators.CompareReviewDirs;
+import util.comparators.CompareReviewDirs.DiscordanceSummary;
+import util.comparators.CompareReviewDirs.Severity;
 import util.comparators.ComparisonSummaryTable;
-import util.comparators.ReviewDirComparator.Severity;
 import util.prereviewDataGen.AnalysisTypeConverter;
 import util.reviewDir.ManifestParseException;
 import util.reviewDir.ReviewDirectory;
@@ -1671,7 +1671,10 @@ Number of Sanger Requests not Confirmed (Average per Sample)
 					}
 				}
 				// End Prepare comparison --------------------------------------------------------------------------
-				Map<String, Map<Severity, List<String>> > valSummary = new HashMap<String, Map<Severity, List<String>> >();
+				
+				//Start processing summary of comparison -----------------------------------------------------------------
+				Map<String, DiscordanceSummary> valSummary = new HashMap<String, DiscordanceSummary>();
+				
 				Map<Severity, Integer> severitySummary = new HashMap<Severity, Integer> ();
 				LinkedHashMap<String, Object> validationJSON = new LinkedHashMap<String, Object>();
 
@@ -1682,47 +1685,63 @@ Number of Sanger Requests not Confirmed (Average per Sample)
 						//Now collect relevant summary information from our comparator class.
 						System.out.println("===================================================");
 						String comparisonName = crd.getRd1().getSampleName() + "-" + crd.getRd2().getSampleName();
-						valSummary.put(comparisonName, crd.getSeverityTotals());
+						valSummary.put(comparisonName, crd.getDiscordanceSummary());
 						validationJSON.put(comparisonName, crd.getFinalJSONOutput());
 						//valSummary.add(crd.getSummary());
 					} catch (IOException | ManifestParseException | JSONException e) {
-						// TODO Auto-generated catch block
 						System.out.println("Error with comparison for RDs: " + entry.getValue().get(0).getSourceDirPath() + " and " + entry.getValue().get(1).getSourceDirPath());
 						e.printStackTrace();
 					}
 				}
 				
-				ComparisonSummaryTable st = new ComparisonSummaryTable();
-				st.setCompareType("Validation Summary");
-				//st.setColNames(Arrays.asList("MAJOR", "MODERATE", "MINOR", "EXACT"));
 				LinkedHashMap<String, Object> validationSummary = new LinkedHashMap<String, Object>();
-				validationSummary.put("severity.key", getNames(Severity.class));
-				//print summary information out at the end.
-				for (Map.Entry<String, Map<Severity, List<String>>> entry : valSummary.entrySet()) {
-				    String comparisonName = entry.getKey();
-					for (Severity sev: Severity.values()) {
-						List<String> newRow = new ArrayList<>();
-						newRow.add(comparisonName);
-						
-						
-						String sevNum = String.valueOf(entry.getValue().get(sev).size());
-						String sevKeys = String.valueOf(entry.getValue().get(sev));
-						//newRow.add(sev.toString());
-						newRow.add(sevNum);
-						newRow.add(sevKeys);
-						newRow.add("");
-						
-						String[] summaryArray = {sevNum, sevKeys};
-						validationSummary.put(comparisonName, summaryArray);
-						
-						st.addRow(newRow);				
+				//validationSummary.put("severity.key", getNames(Severity.class));
+				System.out.println("\n\n+++++++++++++++++++++++++");
+				System.out.println("| Summary of Validation |");
+				System.out.println("+++++++++++++++++++++++++");
+
+				for (Severity sev: Severity.values()) {
+					if (!sev.toString().equals("EXACT")) {
+						ComparisonSummaryTable st = new ComparisonSummaryTable();
+						st.setCompareType(sev.toString());
+						st.setColNames(Arrays.asList("#", "Type", ""));
+						LinkedHashMap<String, Object> sevJSON = new LinkedHashMap<String, Object>();
+
+						for (Map.Entry<String, DiscordanceSummary> entry : valSummary.entrySet()) {
+							String comparisonName = entry.getKey();
+							DiscordanceSummary disSum = entry.getValue();
+							
+							List<String> newRow = new ArrayList<>();
+							newRow.add(comparisonName);
+							
+							//newRow.add(sev.toString());
+							Integer sum = 0;
+							for (AtomicInteger i : disSum.getSeveritySummary(sev).values()) {
+							    sum += i.get();
+							}
+							if (sum > 0) {
+								String sevNum = String.valueOf(sum);
+								newRow.add(sevNum);
+								
+								String sevMap = disSum.getSeveritySummary(sev).keySet().toString();
+								newRow.add(sevMap);
+								newRow.add("");
+								
+								String[] summaryArray = {sevNum, sevMap};
+								//validationSummary.put(comparisonName, summaryArray);
+								sevJSON.put(comparisonName, summaryArray);
+								st.addRow(newRow);
+							}				
+						}
+						st.printSeverityTable();
+						validationSummary.put(sev.toString(), sevJSON);
 					}
 				}
-				st.printTable();
-				
 				validationJSON.put("validation", validationSummary);
 				String jsonString = new JSONObject(validationJSON).toString();
 				System.out.println(jsonString);
+				//END processing summary of comparison -----------------------------------------------------------------
+
 			} else {
 				System.out.println("It seems one (or both) the directories given are empty:" + dir1.getName() + " and " + dir2.getName());
 				return;
