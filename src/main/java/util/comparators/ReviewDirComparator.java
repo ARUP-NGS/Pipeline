@@ -126,9 +126,13 @@ public abstract class ReviewDirComparator {
 			Double n2 = 0.0;
 			boolean calcSeverity = true;
 			Severity severity = null;
-
-			//Handle the correct comparison type here. The first few actually return strings whereas the last ones for the numbers continue on to complete the comparison.. Maybe that is not the
-			//best design approach.
+			
+			NumberFormat defaultFormat = NumberFormat.getPercentInstance();
+			defaultFormat.setMinimumFractionDigits(1);
+			Double difPercent = null;
+			
+			//Handle the correct comparison type here. The first few actually return strings in the switch statement whereas the last ones for the numbers 
+			//continue on to complete the comparison.. Maybe that is not the best design approach.
 			switch (compareType) {
 				case NONE:
 					return "";
@@ -173,53 +177,65 @@ public abstract class ReviewDirComparator {
 					n1 = Double.valueOf(s1);
 					n2 = Double.valueOf(s2);
 					diff = Math.abs(n1 - n2);
+					
+					if (diff == 0.0 || n2 == 0.0 || n1 == 0.0) {
+						difPercent = 0.0;
+					} else {
+						difPercent = diff/n2;
+					}
+					
+					severity = calculateSeverity(difPercent, compareKey);
 					break;
 				case ONENUMBER: //Used for annotations, where we are given number discordant and total comparisons.
 					n1 = Double.valueOf(s1);
 					n2 = Double.valueOf(s2);
 					diff = Double.valueOf(n1/n2);
+					
+					if (diff == 0.0 || n2 == 0.0 || n1 == 0.0) {
+						difPercent = 0.0;
+					} else {
+						difPercent = diff/n2;
+					}
+					
+					severity = calculateSeverity(difPercent, compareKey);
+					break;
 				default:
 					break;
 			}
-			
-			
-			NumberFormat defaultFormat = NumberFormat.getPercentInstance();
-			defaultFormat.setMinimumFractionDigits(1);
-			Double difPercent = null;
-			if (diff == 0.0 || n2 == 0.0 || n1 == 0.0) {
-				difPercent = 0.0;
-			} else {
-				difPercent = diff/n2;
-			}
-			
-			if (calcSeverity) {
-				if (difPercent >= 0.2) {
-					severity = Severity.MAJOR;
-					discordanceSummary.addNewDiscordance(severity, compareKey);
-				} else if (0.2 > difPercent && difPercent >= 0.1) {
-					severity = Severity.MODERATE;
-					discordanceSummary.addNewDiscordance(severity, compareKey);
-				} else if (0.1 > difPercent && difPercent > 0.0) {
-					severity = Severity.MINOR;
-					discordanceSummary.addNewDiscordance(severity, compareKey);
-				} else if (difPercent == 0.0 ){
-					severity = Severity.EXACT;
-					discordanceSummary.addNewDiscordance(severity, compareKey);
-					//return ""; //Lets just leave the notes blank if its equal
-				}
-			}
-			
+
 			note.append("["+severity.toString()+"]");
-			note.append(" | ");
-			note.append(String.format("%.1f", diff));
-			note.append(" | ");
-			note.append(defaultFormat.format(difPercent));
+			if (severity != Severity.EXACT) {
+				note.append(" | ");
+				note.append(String.format("%.1f", diff));
+				note.append(" | ");
+				note.append(defaultFormat.format(difPercent));
+			}
 			
 			return note.toString();			
 		} catch(Exception e) {
 			return "";
 		}
 	}
+	
+	private Severity calculateSeverity(Double difPercent, String compareKey) {
+		Severity severity = null;
+		if (difPercent >= 0.2) {
+			severity = Severity.MAJOR;
+			discordanceSummary.addNewDiscordance(severity, compareKey);
+		} else if (0.2 > difPercent && difPercent >= 0.1) {
+			severity = Severity.MODERATE;
+			discordanceSummary.addNewDiscordance(severity, compareKey);
+		} else if (0.1 > difPercent && difPercent > 0.0) {
+			severity = Severity.MINOR;
+			discordanceSummary.addNewDiscordance(severity, compareKey);
+		} else if (difPercent == 0.0 ){
+			severity = Severity.EXACT;
+			discordanceSummary.addNewDiscordance(severity, compareKey);
+			//return ""; //Lets just leave the notes blank if its equal
+		}
+		return severity;
+	}
+	
 	
 	/** This function gets overridden by each of the sub-classes and is where the specific comparators perform their specific comparisons.
 	 * 

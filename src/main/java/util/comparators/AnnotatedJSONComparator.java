@@ -1,7 +1,9 @@
 package util.comparators;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import buffer.variant.VariantPool;
@@ -27,8 +29,10 @@ public class AnnotatedJSONComparator extends ReviewDirComparator  {
 	private Integer numberOfVarComparisons = 0;
 	
 	private Map<String, Integer> simpleDiscordanceTally = new HashMap<String, Integer>();
-	private Map<String, Integer> newlydroppedAnnotations = new HashMap<String, Integer>();
 	
+	private Map<String, Integer> droppedAnnos = new HashMap<String, Integer>();
+	private Map<String, Integer> gainedAnnos = new HashMap<String, Integer>();
+
 	private Map<String, Integer> discordanceTally = new HashMap<String, Integer>();
 	private Map<String, Double> discordanceMax = new HashMap<String, Double>();
 	private Map<String, Double> freqDiscordanceTotals = new HashMap<String, Double>();
@@ -38,6 +42,7 @@ public class AnnotatedJSONComparator extends ReviewDirComparator  {
 	
 	public AnnotatedJSONComparator(ReviewDirectory rd1, ReviewDirectory rd2, String analysisHeader) {
 		super(rd1, rd2, analysisHeader);
+		this.summaryTable.setColNames(Arrays.asList("Dropped","Discordant",""));
 	}
 
 	@Override
@@ -45,6 +50,24 @@ public class AnnotatedJSONComparator extends ReviewDirComparator  {
 		VariantPool vp1 = rd1.getVariantsFromJSON();
 		VariantPool vp2 = rd2.getVariantsFromJSON();
 
+		List<String> annotations = Arrays.asList(VariantRec.GENE_NAME, 
+				VariantRec.RSNUM, 
+				VariantRec.HGMD_HIT, 
+				VariantRec.HGMD_INFO, 
+				VariantRec.POP_FREQUENCY, 
+				VariantRec.EXOMES_63K_FREQ,
+				VariantRec.ARUP_FREQ, 
+				VariantRec.CDOT, 
+				VariantRec.PDOT);
+	
+		for (String annotation : annotations) {
+			droppedAnnos.put(annotation, 0);
+			gainedAnnos.put(annotation, 0);
+			simpleDiscordanceTally.put(annotation, 0);
+			discordanceMax.put(annotation, 0.0);
+			freqDiscordanceTotals.put(annotation, 0.0);
+		}
+		
 		//Loop through Variant Pools
 		for(String contig : vp1.getContigs()) {
 			for(VariantRec refVar : vp1.getVariantsForContig(contig)) {
@@ -84,17 +107,11 @@ public class AnnotatedJSONComparator extends ReviewDirComparator  {
 		    this.addNewAnnotationSummaryEntry(key + ".discordance", "\"" + key + "\" discordance", String.valueOf(value), this.numberOfVarComparisons.toString(), ComparisonType.ONENUMBER);
 		}
 		
-		for (Map.Entry<String, Integer> entry : discordanceTally.entrySet()) {
-		    String key = entry.getKey();
-		    Integer value = entry.getValue();
-		    this.addNewAnnotationSummaryEntry(key + ".discordance", "\"" + key + "\" discordance", String.valueOf(value), this.numberOfVarComparisons.toString(), ComparisonType.ONENUMBER);
-		}
-		
-		for (Map.Entry<String, Double> entry : freqDiscordanceTotals.entrySet()) {
+/*		for (Map.Entry<String, Double> entry : freqDiscordanceTotals.entrySet()) {
 		    String key = entry.getKey();
 		    Double value = entry.getValue();
 			this.addNewSummaryEntry(key + ".discordance", "\"" + key + "\" avg. discordance", String.format("%.3f", value/this.numberOfVarComparisons), "");
-		}
+		}*/
 	}
 	
 	/** Simple equals is sufficient to compare (Gene, DBSNP id, HGMD hit)
@@ -102,16 +119,16 @@ public class AnnotatedJSONComparator extends ReviewDirComparator  {
 	 * @param var2
 	 */
 	private void compareSimpleAnnotations(VariantRec var1, VariantRec var2, String annotation) {
-		
-		if (this.simpleDiscordanceTally.get(annotation) == null) {
-			this.simpleDiscordanceTally.put(annotation, 0);
-		}
-		try {
+		if (var1.getAnnotation(annotation) != null && var2.getAnnotation(annotation) == null) { //Dropped an annotation
+			droppedAnnos.put(annotation, droppedAnnos.get(annotation) + 1);
+		} else if (var1.getAnnotation(annotation) == null && var2.getAnnotation(annotation) != null) { //gained an annotation
+			gainedAnnos.put(annotation, gainedAnnos.get(annotation) + 1);
+		} else if (var1.getAnnotation(annotation) != null && var2.getAnnotation(annotation) != null) {
 			if (!var1.getAnnotation(annotation).equals(var2.getAnnotation(annotation))) {
 				this.simpleDiscordanceTally.put(annotation, discordanceTally.get(annotation) + 1);
 			}
-		} catch (NullPointerException e) {
-			e.getMessage();
+		} else {
+			throw new NullPointerException();
 		}
 	}
 	
@@ -120,11 +137,6 @@ public class AnnotatedJSONComparator extends ReviewDirComparator  {
 	 * @param var2
 	 */
 	private void compareFreqAnnotations(VariantRec var1, VariantRec var2, String annotation) {
-		if (this.discordanceMax.get(annotation) == null) {
-			this.discordanceMax.put(annotation, 0.0);
-			this.freqDiscordanceTotals.put(annotation, 0.0);
-		}
-		
 		try {
 			Double freqDiff = Math.abs(var1.getProperty(annotation) - var2.getProperty(annotation));
 			

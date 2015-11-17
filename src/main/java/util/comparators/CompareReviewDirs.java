@@ -61,7 +61,7 @@ public class CompareReviewDirs extends IOOperator {
 	}
 	
 	public enum ComparisonType {
-		TWONUMBERS, ONENUMBER, TEXT, TIME, EXACTNUMBER, NONE
+		TWONUMBERS, ONENUMBER, EXACTNUMBER, TEXT, TIME, NONE
 	}
 	
 	/** Just a wrapper for a map for each of the severity classes. It provides convenient helper functions
@@ -194,6 +194,9 @@ public class CompareReviewDirs extends IOOperator {
 		parser.addArgument("-i", "--input")
 			.nargs(2)
 			.help("Enter two paths: Either two RDs or two folders of RDs (in the case of validations).");
+		parser.addArgument("-o", "--out")
+			.nargs(1)
+			.help("Name of output file, where a summary of the comparison will be written.");
 		
 		Namespace ns = null;
 		try {
@@ -203,6 +206,7 @@ public class CompareReviewDirs extends IOOperator {
 		    System.exit(1);
 		}
 		List<String> paths = ns.getList("input");
+		String outFileName = ns.getString("out");
 		System.out.println(paths);
 		//check if inputs are valid RDs if not, assume its a validation.
 		try {
@@ -210,6 +214,7 @@ public class CompareReviewDirs extends IOOperator {
 			ReviewDirectory rd2 = new ReviewDirectory(paths.get(1));
 			CompareReviewDirs crd = new CompareReviewDirs(paths.get(0), paths.get(1));
 			crd.compare();
+			
 		} catch (ManifestParseException e) {
 			PrintStream out = System.out;
 			if (paths.get(0) == "" || paths.get(1) == "") {
