@@ -228,7 +228,7 @@ public class SnpEffGeneAnnotate extends Annotator {
 			List<Interval> cInts = arupBedFile.getIntervalsForContig(varContig);
 			for (Integer idx : nearestIndexes) {
 				Interval idxInter = cInts.get(idx);
-				String[] idxTrs = (String[]) idxInter.getInfo();
+				String[] idxTrs = ((ARUPBedIntervalInfo) idxInter.getInfo()).transcripts;
 				for (String tr : idxTrs) {
 						varTrs.add(tr);
 				}
