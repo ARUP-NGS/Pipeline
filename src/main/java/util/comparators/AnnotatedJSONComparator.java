@@ -7,6 +7,7 @@ import java.util.Map;
 import buffer.variant.VariantPool;
 import buffer.variant.VariantRec;
 import json.JSONException;
+import util.comparators.CompareReviewDirs.ComparisonType;
 import util.reviewDir.ReviewDirectory;
 
 /** *Variant annotation comparison (from annotated.json.gz files – will require parsing / reading that data into a buffer.variant.VariantPool object)
@@ -26,6 +27,7 @@ public class AnnotatedJSONComparator extends ReviewDirComparator  {
 	private Integer numberOfVarComparisons = 0;
 	
 	private Map<String, Integer> simpleDiscordanceTally = new HashMap<String, Integer>();
+	private Map<String, Integer> newlydroppedAnnotations = new HashMap<String, Integer>();
 	
 	private Map<String, Integer> discordanceTally = new HashMap<String, Integer>();
 	private Map<String, Double> discordanceMax = new HashMap<String, Double>();
@@ -79,19 +81,19 @@ public class AnnotatedJSONComparator extends ReviewDirComparator  {
 		    String key = entry.getKey();
 		    Integer value = entry.getValue();
 		  //this.compareNumberNotes(value.doubleValue(), this.numberOfVarComparisons.doubleValue(), false, key));
-		    this.addNewSummaryEntry(key + ".discordance", "\"" + key + "\" discordance", String.valueOf(value), this.compareNumberNotes(value.doubleValue(), this.numberOfVarComparisons.doubleValue(), false, key, true));
+		    this.addNewAnnotationSummaryEntry(key + ".discordance", "\"" + key + "\" discordance", String.valueOf(value), this.numberOfVarComparisons.toString(), ComparisonType.ONENUMBER);
 		}
 		
 		for (Map.Entry<String, Integer> entry : discordanceTally.entrySet()) {
 		    String key = entry.getKey();
 		    Integer value = entry.getValue();
-		    this.addNewSummaryEntry(key + ".discordance", "\"" + key + "\" discordance", String.valueOf(value), this.compareNumberNotes(value.doubleValue(), this.numberOfVarComparisons.doubleValue(), false, key, false));
+		    this.addNewAnnotationSummaryEntry(key + ".discordance", "\"" + key + "\" discordance", String.valueOf(value), this.numberOfVarComparisons.toString(), ComparisonType.ONENUMBER);
 		}
 		
 		for (Map.Entry<String, Double> entry : freqDiscordanceTotals.entrySet()) {
 		    String key = entry.getKey();
 		    Double value = entry.getValue();
-			this.addNewSummaryEntry(key + ".discordance", "\"" + key + "\" avg. discordance", String.valueOf(value/this.numberOfVarComparisons), "");
+			this.addNewSummaryEntry(key + ".discordance", "\"" + key + "\" avg. discordance", String.format("%.3f", value/this.numberOfVarComparisons), "");
 		}
 	}
 	
@@ -100,6 +102,7 @@ public class AnnotatedJSONComparator extends ReviewDirComparator  {
 	 * @param var2
 	 */
 	private void compareSimpleAnnotations(VariantRec var1, VariantRec var2, String annotation) {
+		
 		if (this.simpleDiscordanceTally.get(annotation) == null) {
 			this.simpleDiscordanceTally.put(annotation, 0);
 		}

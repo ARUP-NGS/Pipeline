@@ -18,11 +18,8 @@ import net.sourceforge.argparse4j.ArgumentParsers;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.ArgumentParserException;
 import net.sourceforge.argparse4j.inf.Namespace;
-import net.sourceforge.argparse4j.inf.Subparser;
 import operator.IOOperator;
 import pipeline.Pipeline;
-import util.comparators.CompareReviewDirs.DiscordanceSummary;
-import util.comparators.CompareReviewDirs.Severity;
 import util.reviewDir.ManifestParseException;
 import util.reviewDir.ReviewDirectory;
 

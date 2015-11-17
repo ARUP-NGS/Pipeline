@@ -2,15 +2,18 @@ package util.comparators;
 
 import java.io.IOException;
 import java.text.NumberFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
-import java.util.EnumMap;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 import json.JSONException;
 import pipeline.Pipeline;
+import util.comparators.CompareReviewDirs.ComparisonType;
 import util.comparators.CompareReviewDirs.DiscordanceSummary;
 import util.comparators.CompareReviewDirs.Severity;
 import util.reviewDir.ReviewDirectory;
@@ -53,8 +56,10 @@ public abstract class ReviewDirComparator {
 	 * @param c2Entry
 	 * @param c3Entry - Note (may or may not be empty) describing the discordance.
 	 */
-	protected void addNewEntry(String jsonKey, String rowName, String c1Entry, String c2Entry , String c3Entry) {
-		List<String> newRow = Arrays.asList(rowName, c1Entry, c2Entry, c3Entry);
+	protected void addNewEntry(String jsonKey, String rowName, String c1Entry, String c2Entry , ComparisonType compareType) {
+		String notes = "";
+		notes = this.generateComparionsNotes(jsonKey, c1Entry, c2Entry, compareType);
+		List<String> newRow = Arrays.asList(rowName, c1Entry, c2Entry, notes);
 		this.summaryTable.addRow(newRow);
 		
 /*		
@@ -62,7 +67,7 @@ public abstract class ReviewDirComparator {
 			String[] jsonString = {c1Entry,c2Entry,c3Entry};
 			this.summaryJSON.put(jsonKey, jsonString);
 		}*/
-		String[] jsonString = {c1Entry,c2Entry,c3Entry};
+		String[] jsonString = {c1Entry, c2Entry, notes};
 		this.summaryJSON.put(jsonKey, jsonString);
 	}
 	
@@ -71,6 +76,16 @@ public abstract class ReviewDirComparator {
 		this.summaryTable.addRow(newRow);
 		
 		String[] jsonString = {c1Entry,c3Entry};
+		this.summaryJSON.put(jsonKey, jsonString);
+	}
+	
+	protected void addNewAnnotationSummaryEntry(String jsonKey, String rowName, String c1Entry, String totalComparisons, ComparisonType compareType) {
+		String notes = "";
+		notes = this.generateComparionsNotes(jsonKey, c1Entry, totalComparisons, compareType);
+		List<String> newRow = Arrays.asList(rowName, c1Entry, "", notes); //give blank column for aesthetic purposes.
+		this.summaryTable.addRow(newRow);
+		
+		String[] jsonString = {c1Entry,notes};
 		this.summaryJSON.put(jsonKey, jsonString);
 	}
 	
@@ -103,41 +118,95 @@ public abstract class ReviewDirComparator {
 	 * @param n2
 	 * @return
 	 */
-	protected String compareNumberNotes(Double n1, Double n2, boolean calcDiff, String compareKey, boolean anyDiscordanceIsMajor) { //, EnumMap cutOffs) {
+	protected String generateComparionsNotes(String compareKey, String s1, String s2, ComparisonType compareType) { //, EnumMap cutOffs) {
 		try{
 			StringBuilder note = new StringBuilder();
-			//Double num1 = Double.parseDouble(n1);
-			//Double num2 = Double.parseDouble(n2);
-			//Lets check if one number is missing and if so set a major difference.
-
 			Double diff = 0.0;
-			if (calcDiff) {
-				diff = Math.abs(n1 - n2);
-			} else {
-				diff = n1;
+			Double n1 = 0.0;
+			Double n2 = 0.0;
+			boolean calcSeverity = true;
+			Severity severity = null;
+
+			//Handle the correct comparison type here. The first few actually return strings whereas the last ones for the numbers continue on to complete the comparison.. Maybe that is not the
+			//best design approach.
+			switch (compareType) {
+				case NONE:
+					return "";
+				case TEXT:
+					if (s1.equals(s2)) {
+						return "";
+					} else {
+						severity = Severity.MAJOR;
+						discordanceSummary.addNewDiscordance(severity, compareKey);
+						return "["+severity.toString()+"]";
+					}
+				case TIME:
+					SimpleDateFormat sdfRunTime = new SimpleDateFormat("HH:mm:ss");
+					
+					Date run1Time;
+					Date run2Time;
+					try {
+						run1Time = sdfRunTime.parse(s1);
+						run2Time = sdfRunTime.parse(s2); // Set end date
+						long duration  = run2Time.getTime() - run1Time.getTime();
+
+						//long diffInSeconds = TimeUnit.MILLISECONDS.toSeconds(duration);
+						long diffInMinutes = TimeUnit.MILLISECONDS.toMinutes(duration);
+						//long diffInHours = TimeUnit.MILLISECONDS.toHours(duration);
+						
+						String runTimeNotes = "Test run took " + diffInMinutes + " minutes longer.";
+						return runTimeNotes;
+					} catch (ParseException e) {
+						e.printStackTrace();
+					}
+				case EXACTNUMBER:
+					calcSeverity = false;
+					n1 = Double.valueOf(s1);
+					n2 = Double.valueOf(s2);
+					diff = Math.abs(n1 - n2);
+					if (diff > 0) {
+						severity = Severity.MAJOR;
+					} else {
+						severity = Severity.EXACT;
+					}
+				case TWONUMBERS:
+					n1 = Double.valueOf(s1);
+					n2 = Double.valueOf(s2);
+					diff = Math.abs(n1 - n2);
+					break;
+				case ONENUMBER: //Used for annotations, where we are given number discordant and total comparisons.
+					n1 = Double.valueOf(s1);
+					n2 = Double.valueOf(s2);
+					diff = Double.valueOf(n1/n2);
+				default:
+					break;
 			}
+			
+			
 			NumberFormat defaultFormat = NumberFormat.getPercentInstance();
 			defaultFormat.setMinimumFractionDigits(1);
 			Double difPercent = null;
-			if (diff == 0.0 || n2 == 0.0) {
+			if (diff == 0.0 || n2 == 0.0 || n1 == 0.0) {
 				difPercent = 0.0;
 			} else {
 				difPercent = diff/n2;
 			}
-			Severity severity = null;
-			if (difPercent >= 0.2 || (anyDiscordanceIsMajor && difPercent > 0.0)) {
-				severity = Severity.MAJOR;
-				discordanceSummary.addNewDiscordance(severity, compareKey);
-			} else if (0.2 > difPercent && difPercent >= 0.1) {
-				severity = Severity.MODERATE;
-				discordanceSummary.addNewDiscordance(severity, compareKey);
-			} else if (0.1 > difPercent && difPercent > 0.0) {
-				severity = Severity.MINOR;
-				discordanceSummary.addNewDiscordance(severity, compareKey);
-			} else if (difPercent == 0.0 ){
-				severity = Severity.EXACT;
-				discordanceSummary.addNewDiscordance(severity, compareKey);
-				return ""; //Lets just leave the notes blank if its equal
+			
+			if (calcSeverity) {
+				if (difPercent >= 0.2) {
+					severity = Severity.MAJOR;
+					discordanceSummary.addNewDiscordance(severity, compareKey);
+				} else if (0.2 > difPercent && difPercent >= 0.1) {
+					severity = Severity.MODERATE;
+					discordanceSummary.addNewDiscordance(severity, compareKey);
+				} else if (0.1 > difPercent && difPercent > 0.0) {
+					severity = Severity.MINOR;
+					discordanceSummary.addNewDiscordance(severity, compareKey);
+				} else if (difPercent == 0.0 ){
+					severity = Severity.EXACT;
+					discordanceSummary.addNewDiscordance(severity, compareKey);
+					//return ""; //Lets just leave the notes blank if its equal
+				}
 			}
 			
 			note.append("["+severity.toString()+"]");

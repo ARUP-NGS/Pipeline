@@ -13,6 +13,7 @@ import java.util.Date;
 import java.util.Vector;
 import java.util.concurrent.TimeUnit;
 
+import util.comparators.CompareReviewDirs.ComparisonType;
 import util.reviewDir.ReviewDirectory;
 
 /**
@@ -44,20 +45,13 @@ public class ManifestSummaryComparator extends ReviewDirComparator {
 		String date2 = sdf.format(Long.parseLong(rd2.getSampleManifest().getTime()));
 
 		//Build table
-		this.addNewEntry("sample.name", "Sample name", rd1.getSampleName(), rd2.getSampleName(), "");
-		this.addNewEntry("analysis.type", "Analysis Type", rd1.getAnalysisType() , rd2.getAnalysisType(), "");
-		this.addNewEntry("pipeline.version", "Pipeline Version", rd1.getSampleManifest().getPipelineVersion(), rd2.getSampleManifest().getPipelineVersion(), "");
+		this.addNewEntry("sample.name", "Sample name", rd1.getSampleName(), rd2.getSampleName(), ComparisonType.NONE);
+		this.addNewEntry("analysis.type", "Analysis Type", rd1.getAnalysisType() , rd2.getAnalysisType(), ComparisonType.NONE);
+		this.addNewEntry("pipeline.version", "Pipeline Version", rd1.getSampleManifest().getPipelineVersion(), rd2.getSampleManifest().getPipelineVersion(), ComparisonType.NONE);
 		
-		//Capture
-		String captureNotes = "";
-		if (!new File( rd1.getSampleManifest().getCapture()).getName().equals(new File(rd2.getSampleManifest().getCapture()).getName()) ) {
-			captureNotes = "Captures NOT THE SAME.";
-		} else {
-			captureNotes = "";
-		}
-		this.addNewEntry("capture", "Capture", new File(rd1.getSampleManifest().getCapture()).getName(), new File(rd2.getSampleManifest().getCapture()).getName() , captureNotes);
+		this.addNewEntry("capture", "Capture", new File(rd1.getSampleManifest().getCapture()).getName(), new File(rd2.getSampleManifest().getCapture()).getName() , ComparisonType.TEXT);
 		
-		this.addNewEntry("run.date", "Run date", date1, date2 , "");
+		this.addNewEntry("run.date", "Run date", date1, date2 , ComparisonType.NONE);
 		
 		SimpleDateFormat sdfRunTime = new SimpleDateFormat("HH:mm:ss");
 		
@@ -73,7 +67,7 @@ public class ManifestSummaryComparator extends ReviewDirComparator {
 			//long diffInHours = TimeUnit.MILLISECONDS.toHours(duration);
 			
 			String runTimeNotes = "Test run took " + diffInMinutes + " minutes longer.";
-			this.addNewEntry("total.run.time", "Total Run Time", this.getRunTimeFromLog(rd1.getSampleManifest().getLog()), this.getRunTimeFromLog(rd2.getSampleManifest().getLog()), runTimeNotes);
+			this.addNewEntry("total.run.time", "Total Run Time", this.getRunTimeFromLog(rd1.getSampleManifest().getLog()), this.getRunTimeFromLog(rd2.getSampleManifest().getLog()), ComparisonType.TIME);
 		} catch (ParseException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

@@ -1,11 +1,10 @@
 package util.comparators;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
 
 import buffer.variant.VariantPool;
 import json.JSONException;
+import util.comparators.CompareReviewDirs.ComparisonType;
 import util.reviewDir.ReviewDirectory;
 
 
@@ -47,12 +46,12 @@ public class VCFComparator extends ReviewDirComparator {
 		Double vp2HetPercent = (double) 100*(vp2.countHeteros()/vp2.size());
 		Double vp2AvgQual    = vp2.meanQuality();
 		
-		this.addNewEntry("vp.size", "Size of VP", vp1Size, vp2Size, compareNumberNotes(Double.valueOf(vp1Size), Double.valueOf(vp2Size), true, "vp.size", true));
-		this.addNewEntry("snps", "SNPs", vp1SNPS, vp2SNPS, compareNumberNotes(Double.valueOf(vp1SNPS), Double.valueOf(vp2SNPS), true, "snps", true));
-		this.addNewEntry("insertions", "Insertions", vp1Ins, vp2Ins, compareNumberNotes(Double.valueOf(vp1Ins), Double.valueOf(vp2Ins), true, "insertions", true));
-		this.addNewEntry("deletions", "Deletions", vp1Del, vp2Del, compareNumberNotes(Double.valueOf(vp1Del), Double.valueOf(vp2Del), true, "deletions", true));
-		this.addNewEntry("het.percent", "Het Percentage", String.format("%.1f", vp1HetPercent), String.format("%.1f", vp2HetPercent), compareNumberNotes(vp1HetPercent, vp2HetPercent, true, "het.percent", true));
-		this.addNewEntry("average.quality", "Average Quality", String.format("%.1f", vp1AvgQual), String.format("%.1f", vp2AvgQual), compareNumberNotes(vp1AvgQual, vp2AvgQual, true, "average.quality", false));
+		this.addNewEntry("vp.size", "Size of VP", vp1Size, vp2Size, ComparisonType.EXACTNUMBER);
+		this.addNewEntry("snps", "SNPs", vp1SNPS, vp2SNPS, ComparisonType.EXACTNUMBER);
+		this.addNewEntry("insertions", "Insertions", vp1Ins, vp2Ins, ComparisonType.EXACTNUMBER);
+		this.addNewEntry("deletions", "Deletions", vp1Del, vp2Del, ComparisonType.EXACTNUMBER);
+		this.addNewEntry("het.percent", "Het Percentage", String.format("%.1f", vp1HetPercent), String.format("%.1f", vp2HetPercent), ComparisonType.TWONUMBERS);
+		this.addNewEntry("average.quality", "Average Quality", String.format("%.1f", vp1AvgQual), String.format("%.1f", vp2AvgQual), ComparisonType.TWONUMBERS);
 	}
 
 	void compareIntersection(VariantPool vp1, VariantPool vp2) {
