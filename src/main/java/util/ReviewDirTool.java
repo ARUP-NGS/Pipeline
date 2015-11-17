@@ -101,10 +101,6 @@ public class ReviewDirTool {
 		Subparser emit = s.addParser("emit")
 				.help("Emit a single qc metric with no other output. \nUSAGE: QCJsonReader emit QC_QUERY path1 path2 ...");
 		
-		Subparser validate = s.addParser("validate")
-				.help("Given two directories full of RDs this tools performs a comprehensive comparison between all RDs. It intelligently compares runs "
-						+ "that used the same fastq file (so ideally, you have a truth set directories of RDs and a new test set run using a newer"
-						+ "pipeline version and fastq names werent changed). Used in validations, and produces a PASS or FAIL along with a detailed summary.");
 		//emit.addArgument("query")
 		//  .required(true)
 		//	.help("QC metrics to emit.");
@@ -200,11 +196,6 @@ public class ReviewDirTool {
 
 		if (command.startsWith("monthlyQA")){
 			performMonthlyQA(paths, System.out, null);	
-			return;
-		}
-		
-		if (command.startsWith("validate")) {
-			performValidation(paths, System.out);
 			return;
 		}
 
@@ -1599,159 +1590,6 @@ Number of Sanger Requests not Confirmed (Average per Sample)
 	public static String[] getNames(Class<? extends Enum<?>> e) {
 	    return Arrays.toString(e.getEnumConstants()).replaceAll("^.|.$", "").split(", ");
 	}
-	
-	/** Basically a wrapper for the performComparison() function. This will match up RDs with the same fastq name so we are comparing identical samples, run through both a validated
-	 * and non-validated pipeline and make sure nothing is amiss.
-	 * 
-	 * @param paths
-	 * @param out
-	 */
-	private static void performValidation(List<String> paths, PrintStream out) {
-		if (paths.size() != 2) {
-			out.println("Please enter two directories of Review Directories to validate.");
-			return;
-		}
-		
-		File dir1 = new File(paths.get(0));
-		File dir2 = new File(paths.get(1));
-		if (dir1.isDirectory() && dir2.isDirectory()) {
-			if(dir1.list().length > 0 && dir2.list().length > 0) {
-				// Prepare comparison ------------------------------------------------------------------------------
-				System.out.println("Begining validation of: " + dir1.getName() + " and " + dir2.getName());
-				Map<String, List<ReviewDirectory>> comparisonMap = new HashMap<String, List<ReviewDirectory>>();
-				Map<ReviewDirectory, String> reviewDirPathMap = new HashMap<ReviewDirectory, String>();
-				
-				ArrayList<ReviewDirectory> RDs1 = new ArrayList<ReviewDirectory>();
-				ArrayList<ReviewDirectory> RDs2 = new ArrayList<ReviewDirectory>();
-				
-				for (File f : dir1.listFiles()) {
-					try {
-						ReviewDirectory newRD = new ReviewDirectory(f.getAbsolutePath());
-						RDs1.add(newRD);
-						reviewDirPathMap.put(newRD, f.getAbsolutePath());
-					} catch (IOException | ManifestParseException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-				}
-
-				for (File f : dir2.listFiles()) {
-					try {
-						ReviewDirectory newRD = new ReviewDirectory(f.getAbsolutePath());
-						RDs2.add(newRD);
-						reviewDirPathMap.put(newRD, f.getAbsolutePath());
-					} catch (IOException | ManifestParseException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-				}
-				
-				System.out.println(dir1.getName() + " has " + String.valueOf(RDs1.size()) + " review directories." );
-				System.out.println(dir2.getName() + " has " + String.valueOf(RDs2.size()) + " review directories." );
-				boolean RD1isTruth = false;
-				//Now lets populate our comparisonMap.
-				for (ReviewDirectory rd1 : RDs1) {
-					String[] rd1Fastqs = rd1.getLogFile().getFastqNames();
-					
-					for (ReviewDirectory rd2 : RDs2) {
-						String[] rd2Fastqs = rd2.getLogFile().getFastqNames();
-						if( Arrays.equals(rd1Fastqs, rd2Fastqs) ) {
-							List<ReviewDirectory> rds = new ArrayList();
-							//Make sure the older run RD gets put in the first column as our truth set.
-							if(Long.valueOf(rd1.getSampleManifest().getTime()) < Long.valueOf(rd2.getSampleManifest().getTime())) {
-								RD1isTruth = true;
-								rds.add(rd1);
-								rds.add(rd2);
-							} else {
-								rds.add(rd2);
-								rds.add(rd1);
-							}
-							comparisonMap.put(rd1Fastqs[0], rds );
-						}
-					}
-				}
-				// End Prepare comparison --------------------------------------------------------------------------
-				
-				//Start processing summary of comparison -----------------------------------------------------------------
-				Map<String, DiscordanceSummary> valSummary = new HashMap<String, DiscordanceSummary>();
-				
-				Map<Severity, Integer> severitySummary = new HashMap<Severity, Integer> ();
-				LinkedHashMap<String, Object> validationJSON = new LinkedHashMap<String, Object>();
-
-				for (Map.Entry<String, List<ReviewDirectory>> entry : comparisonMap.entrySet()) {
-					try {
-						CompareReviewDirs crd = new CompareReviewDirs(entry.getValue().get(0).getSourceDirPath(), entry.getValue().get(1).getSourceDirPath());
-						crd.compare();
-						//Now collect relevant summary information from our comparator class.
-						System.out.println("===================================================");
-						String comparisonName = crd.getRd1().getSampleName() + "-" + crd.getRd2().getSampleName();
-						valSummary.put(comparisonName, crd.getDiscordanceSummary());
-						validationJSON.put(comparisonName, crd.getFinalJSONOutput());
-						//valSummary.add(crd.getSummary());
-					} catch (IOException | ManifestParseException | JSONException e) {
-						System.out.println("Error with comparison for RDs: " + entry.getValue().get(0).getSourceDirPath() + " and " + entry.getValue().get(1).getSourceDirPath());
-						e.printStackTrace();
-					}
-				}
-				
-				LinkedHashMap<String, Object> validationSummary = new LinkedHashMap<String, Object>();
-				//validationSummary.put("severity.key", getNames(Severity.class));
-				System.out.println("\n\n+++++++++++++++++++++++++");
-				System.out.println("| Summary of Validation |");
-				System.out.println("+++++++++++++++++++++++++");
-
-				for (Severity sev: Severity.values()) {
-					if (!sev.toString().equals("EXACT")) {
-						ComparisonSummaryTable st = new ComparisonSummaryTable();
-						st.setCompareType(sev.toString());
-						st.setColNames(Arrays.asList("#", "Type", ""));
-						LinkedHashMap<String, Object> sevJSON = new LinkedHashMap<String, Object>();
-
-						for (Map.Entry<String, DiscordanceSummary> entry : valSummary.entrySet()) {
-							String comparisonName = entry.getKey();
-							DiscordanceSummary disSum = entry.getValue();
-							
-							List<String> newRow = new ArrayList<>();
-							newRow.add(comparisonName);
-							
-							//newRow.add(sev.toString());
-							Integer sum = 0;
-							for (AtomicInteger i : disSum.getSeveritySummary(sev).values()) {
-							    sum += i.get();
-							}
-							if (sum > 0) {
-								String sevNum = String.valueOf(sum);
-								newRow.add(sevNum);
-								
-								String sevMap = disSum.getSeveritySummary(sev).keySet().toString();
-								newRow.add(sevMap);
-								newRow.add("");
-								
-								String[] summaryArray = {sevNum, sevMap};
-								//validationSummary.put(comparisonName, summaryArray);
-								sevJSON.put(comparisonName, summaryArray);
-								st.addRow(newRow);
-							}				
-						}
-						st.printSeverityTable();
-						validationSummary.put(sev.toString(), sevJSON);
-					}
-				}
-				validationJSON.put("validation", validationSummary);
-				String jsonString = new JSONObject(validationJSON).toString();
-				System.out.println(jsonString);
-				//END processing summary of comparison -----------------------------------------------------------------
-
-			} else {
-				System.out.println("It seems one (or both) the directories given are empty:" + dir1.getName() + " and " + dir2.getName());
-				return;
-			}
-		} else {
-			System.out.println("It seems one (or both) of the inputs are either not directories or don't exist.");
-			return;
-		}
-	}
-
 
 	static class QCInfoList {
 		Map<String, List<Double>> items = new HashMap<String, List<Double>>();
