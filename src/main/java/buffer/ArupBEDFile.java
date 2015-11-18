@@ -164,11 +164,12 @@ public class ArupBEDFile extends BEDFile {
 			String gene = toks[5];
 			String exonNum = toks[6];
 			
+			/*
 			if (tx.length()>0 && !(tx.startsWith("NM_") || tx.startsWith("NR_") || tx.startsWith("XM_"))) {
 				ok = false;
 				break;
 			}
-					
+			
 			if (exonNum.length()>0) {
 				try {
 					int ex = Integer.parseInt(exonNum);
@@ -177,6 +178,19 @@ public class ArupBEDFile extends BEDFile {
 					break;
 				}
 			}
+			*/
+			
+			// Use less restrictive versions of above till ArupBedFile format finalized
+			if (tx.length()==0) {
+				ok = false;
+				break;
+			}
+					
+			if (exonNum.length()==0) {
+				ok = false;
+				break;
+			}
+
 			linesTested++;
 			line = reader.readLine();
 		}

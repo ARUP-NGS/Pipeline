@@ -597,6 +597,7 @@ public class SnpEffGeneAnnotate extends Annotator {
 	}
 
 	
+	@Override
 	public void initialize(NodeList children) {
 		super.initialize(children);
 		
@@ -650,6 +651,7 @@ public class SnpEffGeneAnnotate extends Annotator {
 			throw new IllegalArgumentException(TRANSCRIPTS_FROM_ARUPBED
 					+ " set true but no ArupBEDFile passed as input");
 		}
+		
 
 		//only load and use preferred nms if not using nms from arupbed
 		String nmDefs = this.getAttribute(NM_DEFS);
