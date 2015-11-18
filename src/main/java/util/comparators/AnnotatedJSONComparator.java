@@ -27,22 +27,19 @@ import util.reviewDir.ReviewDirectory;
 public class AnnotatedJSONComparator extends ReviewDirComparator  {
 
 	private Integer numberOfVarComparisons = 0;
-	
-	private Map<String, Integer> simpleDiscordanceTally = new HashMap<String, Integer>();
-	
+		
 	private Map<String, Integer> droppedAnnos = new HashMap<String, Integer>();
 	private Map<String, Integer> gainedAnnos = new HashMap<String, Integer>();
-
+	
 	private Map<String, Integer> discordanceTally = new HashMap<String, Integer>();
-	private Map<String, Double> discordanceMax = new HashMap<String, Double>();
-	private Map<String, Double> freqDiscordanceTotals = new HashMap<String, Double>();
+	//private Map<String, Double> freqDiscordanceTotals = new HashMap<String, Double>();
 
 	public AnnotatedJSONComparator() {
 	}
 	
 	public AnnotatedJSONComparator(ReviewDirectory rd1, ReviewDirectory rd2, String analysisHeader) {
 		super(rd1, rd2, analysisHeader);
-		this.summaryTable.setColNames(Arrays.asList("Dropped","Discordant",""));
+		this.summaryTable.setColNames(Arrays.asList("Dropped","Gained","Changed",""));
 	}
 
 	@Override
@@ -51,21 +48,19 @@ public class AnnotatedJSONComparator extends ReviewDirComparator  {
 		VariantPool vp2 = rd2.getVariantsFromJSON();
 
 		List<String> annotations = Arrays.asList(VariantRec.GENE_NAME, 
-				VariantRec.RSNUM, 
-				VariantRec.HGMD_HIT, 
-				VariantRec.HGMD_INFO, 
-				VariantRec.POP_FREQUENCY, 
+				VariantRec.RSNUM,
+				VariantRec.HGMD_HIT,
+				VariantRec.HGMD_INFO,
+				VariantRec.POP_FREQUENCY,
 				VariantRec.EXOMES_63K_FREQ,
-				VariantRec.ARUP_FREQ, 
-				VariantRec.CDOT, 
+				VariantRec.ARUP_FREQ,
+				VariantRec.CDOT,
 				VariantRec.PDOT);
 	
 		for (String annotation : annotations) {
 			droppedAnnos.put(annotation, 0);
 			gainedAnnos.put(annotation, 0);
-			simpleDiscordanceTally.put(annotation, 0);
-			discordanceMax.put(annotation, 0.0);
-			freqDiscordanceTotals.put(annotation, 0.0);
+			discordanceTally.put(annotation, 0);
 		}
 		
 		//Loop through Variant Pools
@@ -100,18 +95,16 @@ public class AnnotatedJSONComparator extends ReviewDirComparator  {
 	
 	private void populateEntries() {
 		
-		for (Map.Entry<String, Integer> entry : simpleDiscordanceTally.entrySet()) {
-		    String key = entry.getKey();
-		    Integer value = entry.getValue();
+		for (Map.Entry<String, Integer> entry : discordanceTally.entrySet()) {
+		    String key     = entry.getKey();
+		    Integer value  = entry.getValue();
 		  //this.compareNumberNotes(value.doubleValue(), this.numberOfVarComparisons.doubleValue(), false, key));
-		    this.addNewAnnotationSummaryEntry(key + ".discordance", "\"" + key + "\" discordance", String.valueOf(value), this.numberOfVarComparisons.toString(), ComparisonType.ONENUMBER);
+		    String jsonKey = key + ".discordance";
+		    String rowName = "\"" + key + "\" discordance";
+		    String dropped = String.valueOf(droppedAnnos.get(key));
+		    String gained  = String.valueOf(gainedAnnos.get(key));
+		    this.addNewAnnotationSummaryEntry(jsonKey, rowName, dropped, gained, String.valueOf(value), this.numberOfVarComparisons.toString(), ComparisonType.ONENUMBER);
 		}
-		
-/*		for (Map.Entry<String, Double> entry : freqDiscordanceTotals.entrySet()) {
-		    String key = entry.getKey();
-		    Double value = entry.getValue();
-			this.addNewSummaryEntry(key + ".discordance", "\"" + key + "\" avg. discordance", String.format("%.3f", value/this.numberOfVarComparisons), "");
-		}*/
 	}
 	
 	/** Simple equals is sufficient to compare (Gene, DBSNP id, HGMD hit)
@@ -119,16 +112,19 @@ public class AnnotatedJSONComparator extends ReviewDirComparator  {
 	 * @param var2
 	 */
 	private void compareSimpleAnnotations(VariantRec var1, VariantRec var2, String annotation) {
-		if (var1.getAnnotation(annotation) != null && var2.getAnnotation(annotation) == null) { //Dropped an annotation
+		String v1Annotation = var1.getAnnotation(annotation);
+		String v2Annotation = var2.getAnnotation(annotation);
+		if (v1Annotation != null && v2Annotation == null) { //Dropped an annotation
 			droppedAnnos.put(annotation, droppedAnnos.get(annotation) + 1);
-		} else if (var1.getAnnotation(annotation) == null && var2.getAnnotation(annotation) != null) { //gained an annotation
+		} else if (v1Annotation == null && v2Annotation != null) { //gained an annotation
 			gainedAnnos.put(annotation, gainedAnnos.get(annotation) + 1);
-		} else if (var1.getAnnotation(annotation) != null && var2.getAnnotation(annotation) != null) {
-			if (!var1.getAnnotation(annotation).equals(var2.getAnnotation(annotation))) {
-				this.simpleDiscordanceTally.put(annotation, discordanceTally.get(annotation) + 1);
+		} else if (v1Annotation != null && v2Annotation != null) {
+			if (!v1Annotation.equals(v2Annotation)) {
+				this.discordanceTally.put(annotation, discordanceTally.get(annotation) + 1);
 			}
 		} else {
-			throw new NullPointerException();
+			//throw new NullPointerException();
+			//both null
 		}
 	}
 	
@@ -137,15 +133,25 @@ public class AnnotatedJSONComparator extends ReviewDirComparator  {
 	 * @param var2
 	 */
 	private void compareFreqAnnotations(VariantRec var1, VariantRec var2, String annotation) {
-		try {
-			Double freqDiff = Math.abs(var1.getProperty(annotation) - var2.getProperty(annotation));
-			
-			this.discordanceMax.put(annotation, Math.max(discordanceMax.get(annotation), freqDiff));
-			
-			this.freqDiscordanceTotals.put(annotation, this.freqDiscordanceTotals.get(annotation) + freqDiff);
-		} catch (NullPointerException e) {
-			e.getMessage();
+		
+		Double v1Annotation = var1.getProperty(annotation);
+		Double v2Annotation = var2.getProperty(annotation);
+		if (v1Annotation != null && v2Annotation == null) { //Dropped an annotation
+			droppedAnnos.put(annotation, droppedAnnos.get(annotation) + 1);
+		} else if (v1Annotation == null && v2Annotation != null) { //gained an annotation
+			gainedAnnos.put(annotation, gainedAnnos.get(annotation) + 1);
+		} else if (v1Annotation != null && v2Annotation != null) {
+			if (v1Annotation != v2Annotation) {
+				this.discordanceTally.put(annotation, discordanceTally.get(annotation) + 1);
+			}
+		} else {
+			//throw new NullPointerException();
+			//both null
 		}
+		
+		//Double freqDiff = Math.abs(var1.getProperty(annotation) - var2.getProperty(annotation));
+		//this.discordanceMax.put(annotation, Math.max(discordanceMax.get(annotation), freqDiff));
+		//this.freqDiscordanceTotals.put(annotation, this.freqDiscordanceTotals.get(annotation) + freqDiff);
 	}
 	
 	/** Complex comparisons for annotations that could be drastically different in normal use (cdot, pdot due to annovar vs snpeff).

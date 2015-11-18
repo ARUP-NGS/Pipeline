@@ -1,6 +1,7 @@
 package util.comparators;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 import buffer.variant.VariantPool;
 import json.JSONException;
@@ -55,34 +56,25 @@ public class VCFComparator extends ReviewDirComparator {
 	}
 
 	void compareIntersection(VariantPool vp1, VariantPool vp2) {
-		this.addNewSummaryEntry("intersection", "Number of Intersecting Variants",String.valueOf(vp1.intersect(vp2).size()) + "/" + String.valueOf(Math.max(vp1.size(), vp2.size())), "");
 
 		//Break unique variants out by type because maybe that is helpful.
 		VariantPool vp1Sub2 = vp1.subtract(vp2);
-		String vp1Sub2SNPS = String.valueOf(vp1Sub2.countSNPs());
-		String vp1Sub2Ins = String.valueOf(vp1Sub2.countInsertions());
-		String vp1Sub2Del = String.valueOf(vp1Sub2.countDeletions());
-		StringBuilder vp1Sub2Note = new StringBuilder("");
-		if (vp1Sub2.size() > 0) {
-			vp1Sub2Note.append("SNPs: " + vp1Sub2SNPS + " | ");
-			vp1Sub2Note.append("Ins: " + vp1Sub2Ins + " | ");
-			vp1Sub2Note.append("Del: " + vp1Sub2Del);
-		}
-
-		this.addNewSummaryEntry("unique.truth", "Variants Unique to " + rd1.getSampleName(), String.valueOf(vp1Sub2.size()), vp1Sub2Note.toString());
-
 		VariantPool vp2Sub1 = vp2.subtract(vp1);
-		String vp2Sub1SNPS = String.valueOf(vp2Sub1.countSNPs());
-		String vp2Sub1Ins = String.valueOf(vp2Sub1.countInsertions());
-		String vp2Sub1Del = String.valueOf(vp2Sub1.countDeletions());
-		StringBuilder vp2Sub1Note = new StringBuilder("");
-		if (vp2Sub1.size() > 0) {
-			vp2Sub1Note.append("SNPs: " + vp2Sub1SNPS + " | ");
-			vp2Sub1Note.append("Ins: " + vp2Sub1Ins + " | ");
-			vp2Sub1Note.append("Del: " + vp2Sub1Del);
-		}
 
-		this.addNewSummaryEntry("unique.test", "Variants Unique to " + rd2.getSampleName(), String.valueOf(vp2Sub1.size()), vp2Sub1Note.toString());
+		
+		String varSNPS = String.valueOf(vp1Sub2.countSNPs() + vp2Sub1.countSNPs());
+		String varINS = String.valueOf(vp1Sub2.countInsertions() + vp2Sub1.countInsertions());
+		String varDEL = String.valueOf(vp1Sub2.countDeletions() + vp2Sub1.countDeletions());
+		StringBuilder varTypeNotes = new StringBuilder("");
+		
+		if (vp1Sub2.size() > 0 || vp2Sub1.size() > 0) {
+			varTypeNotes.append("SNPs: " + varSNPS + " | ");
+			varTypeNotes.append("Ins: " + varINS + " | ");
+			varTypeNotes.append("Del: " + varDEL);
+		}
+		
+		//varTypeNotes.toString()
+		this.addNewEntry("unique.variants", "Unique variants", String.valueOf(vp1Sub2.size()), String.valueOf(vp2Sub1.size()), ComparisonType.NONE);
 	}
 
 	void intersectVariantPools() {

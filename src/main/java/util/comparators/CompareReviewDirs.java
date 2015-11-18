@@ -94,7 +94,7 @@ public class CompareReviewDirs extends IOOperator {
 				this.severitySummary.get(sev).put(key, new AtomicInteger(1));
 			}
 		}
-				
+
 		/** This will loop through the given DiscordanceSummary object and add its contents to this DiscordanceSummary object.
 		 * @param disSum
 		 */
@@ -103,7 +103,6 @@ public class CompareReviewDirs extends IOOperator {
 				this.putAllSeverity(sev, disSum.getSeveritySummary(sev));
 			}
 		}
-
 	}
 	
 	public void compare() throws IOException, JSONException {
@@ -135,14 +134,6 @@ public class CompareReviewDirs extends IOOperator {
 		discordanceSummary.collect(vcfComparator.getDiscordanceSummary());
 		//discordanceSummary.collect(annotatedJSONComparator.getDiscordanceSummary());
 	}
-	
-/*	public Map<Severity, List<String>> getSeverityTotals() {
-		return severityTotals;
-	}
-
-	public void setSeverityTotals(Map<Severity, List<String>> severityTotals) {
-		this.severityTotals = severityTotals;
-	}*/
 	
 	public DiscordanceSummary getDiscordanceSummary() {
 		return discordanceSummary;

@@ -2,6 +2,7 @@ package util.comparators;
 
 import java.io.IOException;
 import java.text.NumberFormat;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -21,6 +22,7 @@ class QCJSONComparator extends ReviewDirComparator {
 
 	public QCJSONComparator(ReviewDirectory rd1, ReviewDirectory rd2, String analysisHeader) {
 		super(rd1, rd2, analysisHeader);
+		this.summaryTable.setColNames(Arrays.asList("TRUTH", "TEST", "Notes"));
 	}
 
 	@Override

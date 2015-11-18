@@ -79,13 +79,15 @@ public abstract class ReviewDirComparator {
 		this.summaryJSON.put(jsonKey, jsonString);
 	}
 	
-	protected void addNewAnnotationSummaryEntry(String jsonKey, String rowName, String c1Entry, String totalComparisons, ComparisonType compareType) {
+	
+	protected void addNewAnnotationSummaryEntry(String jsonKey, String rowName, String dropped, String gained, String changed, String totalComparisons, ComparisonType compareType) {
 		String notes = "";
-		notes = this.generateComparionsNotes(jsonKey, c1Entry, totalComparisons, compareType);
-		List<String> newRow = Arrays.asList(rowName, c1Entry, "", notes); //give blank column for aesthetic purposes.
+		//notes = this.generateComparionsNotes(jsonKey, c1Entry, totalComparisons, compareType);
+		notes = "";
+		List<String> newRow = Arrays.asList(rowName, dropped, gained, changed, notes); //give blank column for aesthetic purposes.
 		this.summaryTable.addRow(newRow);
 		
-		String[] jsonString = {c1Entry,notes};
+		String[] jsonString = {dropped, gained, changed, notes};
 		this.summaryJSON.put(jsonKey, jsonString);
 	}
 	
