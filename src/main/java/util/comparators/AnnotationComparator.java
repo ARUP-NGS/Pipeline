@@ -23,7 +23,7 @@ import util.reviewDir.ReviewDirectory;
  * Reports the number of annotations shared and the numbers of annotations uniue to each.
  * 
  */
-public class AnnotationComparator extends ReviewDirComparator {
+public class AnnotationComparator extends Comparator {
 
 	public AnnotationComparator(ReviewDirectory rd1, ReviewDirectory rd2, String analysisHeader) {
 		super(rd1, rd2, analysisHeader);

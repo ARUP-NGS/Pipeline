@@ -18,7 +18,7 @@ import util.reviewDir.ReviewDirectory;
  * @author Kevin
  *
  */
-class QCJSONComparator extends ReviewDirComparator {
+class QCJSONComparator extends Comparator {
 
 	public QCJSONComparator(ReviewDirectory rd1, ReviewDirectory rd2, String analysisHeader) {
 		super(rd1, rd2, analysisHeader);

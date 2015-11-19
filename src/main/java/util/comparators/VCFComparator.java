@@ -15,7 +15,7 @@ import util.reviewDir.ReviewDirectory;
  * @author kevin
  *
  */
-public class VCFComparator extends ReviewDirComparator {
+public class VCFComparator extends Comparator {
 
 	public VCFComparator(ReviewDirectory rd1, ReviewDirectory rd2, String analysisHeader) {
 		super(rd1, rd2, analysisHeader);

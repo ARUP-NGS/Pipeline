@@ -24,7 +24,7 @@ import util.reviewDir.ReviewDirectory;
  * 
  * @author Kevin
  */
-public abstract class ReviewDirComparator {
+public abstract class Comparator {
 
 	//Variables for all the subclasses.
 	ReviewDirectory rd1 = null;
@@ -40,10 +40,10 @@ public abstract class ReviewDirComparator {
 		return this.discordanceSummary;
 	}
 	
-	public ReviewDirComparator() {
+	public Comparator() {
 	}
 	
-	public ReviewDirComparator(ReviewDirectory rd1, ReviewDirectory rd2, String analysisHeader) {
+	public Comparator(ReviewDirectory rd1, ReviewDirectory rd2, String analysisHeader) {
 		this.rd1 = rd1;
 		this.rd2 = rd2;
 		//this.summaryTable.setColumnNames("", "", "Notes");
@@ -109,11 +109,6 @@ public abstract class ReviewDirComparator {
 		this.summaryTable.printTable();
 	}
 	
-	protected String handleComparison(Double n1, Double n2, boolean calcDiff, String compareKey) {
-
-		return "";
-	}
-	
 	/** Given two numbers (passed as Strings) this function will create a string summarizing the difference between the two numbers.
 	 *  Such as: Difference of 0.4 (0.6%)
 	 * @param n1
@@ -165,6 +160,8 @@ public abstract class ReviewDirComparator {
 					} catch (ParseException e) {
 						e.printStackTrace();
 					}
+				case ANNOTATIONS:
+					
 				case EXACTNUMBER:
 					calcSeverity = false;
 					n1 = Double.valueOf(s1);

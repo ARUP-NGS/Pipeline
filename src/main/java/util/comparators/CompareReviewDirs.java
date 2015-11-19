@@ -1,6 +1,7 @@
 package util.comparators;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -61,7 +62,7 @@ public class CompareReviewDirs extends IOOperator {
 	}
 	
 	public enum ComparisonType {
-		TWONUMBERS, ONENUMBER, EXACTNUMBER, TEXT, TIME, NONE
+		TWONUMBERS, ONENUMBER, EXACTNUMBER, TEXT, TIME, ANNOTATIONS, NONE
 	}
 	
 	/** Just a wrapper for a map for each of the severity classes. It provides convenient helper functions
@@ -176,29 +177,34 @@ public class CompareReviewDirs extends IOOperator {
 	 */
 	public static void main(String[] args) {
 		ArgumentParser parser = ArgumentParsers.newArgumentParser("CompareReviewDirs.jar")
-				.defaultHelp(true)
-				.description("Perform comparisons of Pipeline review directories, comparing annotations, BAM coverage/metrics, variants, run times, etc. "
-				+ "If given two directories full of RDs this tools performs a comprehensive comparison between all RDs, intelligently comparing runs "
-				+ "that used the same fastq file (so ideally, you have a truth set directories of RDs and a new test set run using a newer"
-				+ "pipeline version and fastq names werent changed). Used in validations, and produces a PASS or FAIL along with a detailed summary.");
+			.defaultHelp(true)
+			.description("Perform comparisons of Pipeline review directories, comparing annotations, BAM coverage/metrics, variants, run times, etc. "
+			+ "If given two directories full of RDs this tools performs a comprehensive comparison between all RDs, intelligently comparing runs "
+			+ "that used the same fastq file (so ideally, you have a truth set directories of RDs and a new test set run using a newer"
+			+ "pipeline version and fastq names werent changed). Used in validations, and produces a PASS or FAIL along with a detailed summary.");
 		
 		parser.addArgument("-i", "--input")
 			.nargs(2)
+			.required(true)
 			.help("Enter two paths: Either two RDs or two folders of RDs (in the case of validations).");
 		parser.addArgument("-o", "--out")
 			.nargs(1)
-			.help("Name of output file, where a summary of the comparison will be written.");
+			.required(true)
+			.help("Name of output file, where a summary of the comparison will be written (will write a json and a summary file).");
 		
 		Namespace ns = null;
+		List<String> paths = null;
+		String outFileName = "";
 		try {
 		    ns = parser.parseArgs(args);
+			paths = ns.getList("input");
+			outFileName = ns.getString("out").replace("[", "").replace("]", "");
 		} catch (ArgumentParserException e) {
 		    parser.handleError(e);
 		    System.exit(1);
 		}
-		List<String> paths = ns.getList("input");
-		String outFileName = ns.getString("out");
 		System.out.println(paths);
+		System.out.println(outFileName);
 		//check if inputs are valid RDs if not, assume its a validation.
 		try {
 			ReviewDirectory rd1 = new ReviewDirectory(paths.get(0));
@@ -206,10 +212,15 @@ public class CompareReviewDirs extends IOOperator {
 			CompareReviewDirs crd = new CompareReviewDirs(paths.get(0), paths.get(1));
 			crd.compare();
 			
+			try (FileWriter file = new FileWriter(outFileName + ".json")) {
+				file.write(new JSONObject(crd.getFinalJSONOutput()).toString());
+				System.out.println("Successfully Copied JSON Object to File: " + outFileName + ".json");
+			}
+			
 		} catch (ManifestParseException e) {
 			PrintStream out = System.out;
 			if (paths.get(0) == "" || paths.get(1) == "") {
-				out.println("Please enter two directories of Review Directories to validate.");
+				out.println("Error with input.");
 				return;
 			}
 			
@@ -231,7 +242,6 @@ public class CompareReviewDirs extends IOOperator {
 							RDs1.add(newRD);
 							reviewDirPathMap.put(newRD, f.getAbsolutePath());
 						} catch (IOException | ManifestParseException ex) {
-							// TODO Auto-generated catch block
 							ex.printStackTrace();
 						}
 					}
@@ -242,14 +252,12 @@ public class CompareReviewDirs extends IOOperator {
 							RDs2.add(newRD);
 							reviewDirPathMap.put(newRD, f.getAbsolutePath());
 						} catch (IOException | ManifestParseException ex) {
-							// TODO Auto-generated catch block
 							ex.printStackTrace();
 						}
 					}
 					
 					System.out.println(dir1.getName() + " has " + String.valueOf(RDs1.size()) + " review directories." );
 					System.out.println(dir2.getName() + " has " + String.valueOf(RDs2.size()) + " review directories." );
-					boolean RD1isTruth = false;
 					//Now lets populate our comparisonMap.
 					for (ReviewDirectory rd1 : RDs1) {
 						String[] rd1Fastqs = rd1.getLogFile().getFastqNames();
@@ -257,10 +265,9 @@ public class CompareReviewDirs extends IOOperator {
 						for (ReviewDirectory rd2 : RDs2) {
 							String[] rd2Fastqs = rd2.getLogFile().getFastqNames();
 							if( Arrays.equals(rd1Fastqs, rd2Fastqs) ) {
-								List<ReviewDirectory> rds = new ArrayList();
+								List<ReviewDirectory> rds = new ArrayList<ReviewDirectory>();
 								//Make sure the older run RD gets put in the first column as our truth set.
 								if(Long.valueOf(rd1.getSampleManifest().getTime()) < Long.valueOf(rd2.getSampleManifest().getTime())) {
-									RD1isTruth = true;
 									rds.add(rd1);
 									rds.add(rd2);
 								} else {
@@ -276,7 +283,7 @@ public class CompareReviewDirs extends IOOperator {
 					//Start processing summary of comparison -----------------------------------------------------------------
 					Map<String, DiscordanceSummary> valSummary = new HashMap<String, DiscordanceSummary>();
 					
-					Map<Severity, Integer> severitySummary = new HashMap<Severity, Integer> ();
+					//Map<Severity, Integer> severitySummary = new HashMap<Severity, Integer> ();
 					LinkedHashMap<String, Object> validationJSON = new LinkedHashMap<String, Object>();
 
 					for (Map.Entry<String, List<ReviewDirectory>> entry : comparisonMap.entrySet()) {
@@ -339,8 +346,17 @@ public class CompareReviewDirs extends IOOperator {
 						}
 					}
 					validationJSON.put("validation", validationSummary);
-					String jsonString = new JSONObject(validationJSON).toString();
-					System.out.println(jsonString);
+					//String jsonString = new JSONObject(validationJSON).toString();
+					//System.out.println(jsonString);
+					
+					// try-with-resources statement based on post comment below :)
+					try (FileWriter file = new FileWriter(outFileName + ".json")) {
+						file.write(new JSONObject(validationJSON).toString());
+						System.out.println("Successfully Copied JSON Object to File: " + outFileName + ".json");
+					} catch (IOException e1) {
+						e1.printStackTrace();
+					}
+					
 					//END processing summary of comparison -----------------------------------------------------------------
 
 				} else {
@@ -353,10 +369,8 @@ public class CompareReviewDirs extends IOOperator {
 			}
 			
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (JSONException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}

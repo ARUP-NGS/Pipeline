@@ -21,7 +21,7 @@ import util.reviewDir.ReviewDirectory;
  * @author Kevin
  *
  */
-public class ManifestSummaryComparator extends ReviewDirComparator {
+public class ManifestSummaryComparator extends Comparator {
 
 	public ManifestSummaryComparator(ReviewDirectory rd1, ReviewDirectory rd2, String analysisHeader) {
 		super(rd1, rd2, analysisHeader);

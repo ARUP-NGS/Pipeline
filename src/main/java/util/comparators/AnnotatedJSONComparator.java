@@ -24,7 +24,7 @@ import util.reviewDir.ReviewDirectory;
  * @author kevin
  *
  */
-public class AnnotatedJSONComparator extends ReviewDirComparator  {
+public class AnnotatedJSONComparator extends Comparator  {
 
 	private Integer numberOfVarComparisons = 0;
 		
@@ -103,7 +103,7 @@ public class AnnotatedJSONComparator extends ReviewDirComparator  {
 		    String rowName = "\"" + key + "\" discordance";
 		    String dropped = String.valueOf(droppedAnnos.get(key));
 		    String gained  = String.valueOf(gainedAnnos.get(key));
-		    this.addNewAnnotationSummaryEntry(jsonKey, rowName, dropped, gained, String.valueOf(value), this.numberOfVarComparisons.toString(), ComparisonType.ONENUMBER);
+		    this.addNewAnnotationSummaryEntry(jsonKey, rowName, dropped, gained, String.valueOf(value), this.numberOfVarComparisons.toString(), ComparisonType.ANNOTATIONS);
 		}
 	}
 	
