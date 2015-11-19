@@ -36,33 +36,25 @@ public class ComparisonSummaryTable {
 		}
 	}
 	
-	public void printSeverityTable() {
-		StringBuilder str = new StringBuilder();
-		int counter = 0;
+	public void printSummaryTable() {
 		System.out.println("");
-		this.printSeverityInColumns(this.comparisonType, colNames.get(0), colNames.get(1));
-		this.printSeverityInColumns("==============","===","==============");
-		//System.out.println("==============");
+		this.printSummaryInColumns(this.comparisonType, colNames.get(0), colNames.get(1));
+		this.printSummaryInColumns("==============","===","==============");
 		for(List<String> row : rowData) {
-			this.printSeverityInColumns(row.get(0), row.get(1), row.get(2));
-			counter += 1;
+			this.printSummaryInColumns(row.get(0), row.get(1), row.get(2));
 		}
 	}
 	
 	public void printTable() {
-		StringBuilder str = new StringBuilder();
-		int counter = 0;
 		System.out.println("");
 		this.printInColumns(this.comparisonType,colNames.get(0), colNames.get(1), colNames.get(2));
 		this.printInColumns("==============","==============","==============", "==============");
-		//System.out.println("==============");
 		for(List<String> row : rowData) {
 /*			if (!row.get(3).equals("") ) {
 				this.printInColumns(row.get(0), row.get(1), row.get(2), row.get(3));
 				counter += 1;
 			}*/
 			this.printInColumns(row.get(0), row.get(1), row.get(2), row.get(3));
-			counter += 1;
 		}
 	}
 	
@@ -70,7 +62,7 @@ public class ComparisonSummaryTable {
 		System.out.printf("%-40.40s %-50.50s %-50.50s %-40.40s%n", name+":", f1, f2, f3);
 	}
 	
-	public void printSeverityInColumns(String name, String sevNum, String sevMap) {
+	public void printSummaryInColumns(String name, String sevNum, String sevMap) {
 		System.out.printf("%-30.30s %-5.5s %-200.200s%n", (String) name+":", sevNum, sevMap);
 	}
 }

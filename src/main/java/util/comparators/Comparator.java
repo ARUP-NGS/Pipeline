@@ -71,26 +71,6 @@ public abstract class Comparator {
 		this.summaryJSON.put(jsonKey, jsonString);
 	}
 	
-	protected void addNewSummaryEntry(String jsonKey, String rowName, String c1Entry, String c3Entry) {
-		List<String> newRow = Arrays.asList(rowName, c1Entry, "", c3Entry); //give blank column for aesthetic purposes.
-		this.summaryTable.addRow(newRow);
-		
-		String[] jsonString = {c1Entry,c3Entry};
-		this.summaryJSON.put(jsonKey, jsonString);
-	}
-	
-	
-	protected void addNewAnnotationSummaryEntry(String jsonKey, String rowName, String dropped, String gained, String changed, String totalComparisons, ComparisonType compareType) {
-		String notes = "";
-		//notes = this.generateComparionsNotes(jsonKey, c1Entry, totalComparisons, compareType);
-		notes = "";
-		List<String> newRow = Arrays.asList(rowName, dropped, gained, changed, notes); //give blank column for aesthetic purposes.
-		this.summaryTable.addRow(newRow);
-		
-		String[] jsonString = {dropped, gained, changed, notes};
-		this.summaryJSON.put(jsonKey, jsonString);
-	}
-	
 	public LinkedHashMap<String, Object> getJSONOutput() {		
 		return this.summaryJSON;
 	}
@@ -108,112 +88,108 @@ public abstract class Comparator {
 		performComparison();
 		this.summaryTable.printTable();
 	}
+
 	
-	/** Given two numbers (passed as Strings) this function will create a string summarizing the difference between the two numbers.
-	 *  Such as: Difference of 0.4 (0.6%)
-	 * @param n1
-	 * @param n2
+	/** Given two strings (most often numbers formated as strings) this function will create a string summarizing the difference between the two numbers.
+	 *  Comparison is based on a given ComparisonType.
+	 *  This funcation is an attempt to localize all comparison logic in one spot.
+	 * @param compareKey
+	 * @param s1
+	 * @param s2
+	 * @param compareType
 	 * @return
 	 */
 	protected String generateComparionsNotes(String compareKey, String s1, String s2, ComparisonType compareType) { //, EnumMap cutOffs) {
-		try{
-			StringBuilder note = new StringBuilder();
-			Double diff = 0.0;
-			Double n1 = 0.0;
-			Double n2 = 0.0;
-			boolean calcSeverity = true;
-			Severity severity = null;
-			
-			NumberFormat defaultFormat = NumberFormat.getPercentInstance();
-			defaultFormat.setMinimumFractionDigits(1);
-			Double difPercent = null;
-			
-			//Handle the correct comparison type here. The first few actually return strings in the switch statement whereas the last ones for the numbers 
-			//continue on to complete the comparison.. Maybe that is not the best design approach.
-			switch (compareType) {
-				case NONE:
+		//Handle the correct comparison type here. The first few actually return strings in the switch statement whereas the last ones for the numbers 
+		//continue on to complete the comparison.. Maybe that is not the best design approach.
+		Double diff;
+		Double diffPercent;
+		switch (compareType) {
+			case NONE:
+				return "";
+			case TEXT:
+				if (s1.equals(s2)) {
 					return "";
-				case TEXT:
-					if (s1.equals(s2)) {
-						return "";
-					} else {
-						severity = Severity.MAJOR;
-						discordanceSummary.addNewDiscordance(severity, compareKey);
-						return "["+severity.toString()+"]";
-					}
-				case TIME:
-					SimpleDateFormat sdfRunTime = new SimpleDateFormat("HH:mm:ss");
-					
-					Date run1Time;
-					Date run2Time;
-					try {
-						run1Time = sdfRunTime.parse(s1);
-						run2Time = sdfRunTime.parse(s2); // Set end date
-						long duration  = run2Time.getTime() - run1Time.getTime();
+				} else {
+					Severity severity = Severity.MAJOR;
+					discordanceSummary.addNewDiscordance(severity, compareKey);
+					return "["+severity.toString()+"]";
+				}
+			case TIME:
+				SimpleDateFormat sdfRunTime = new SimpleDateFormat("HH:mm:ss");
+				
+				Date run1Time;
+				Date run2Time;
+				try {
+					run1Time = sdfRunTime.parse(s1);
+					run2Time = sdfRunTime.parse(s2); // Set end date
+					long duration  = run2Time.getTime() - run1Time.getTime();
 
-						//long diffInSeconds = TimeUnit.MILLISECONDS.toSeconds(duration);
-						long diffInMinutes = TimeUnit.MILLISECONDS.toMinutes(duration);
-						//long diffInHours = TimeUnit.MILLISECONDS.toHours(duration);
-						
-						String runTimeNotes = "Test run took " + diffInMinutes + " minutes longer.";
-						return runTimeNotes;
-					} catch (ParseException e) {
-						e.printStackTrace();
-					}
-				case ANNOTATIONS:
+					//long diffInSeconds = TimeUnit.MILLISECONDS.toSeconds(duration);
+					long diffInMinutes = TimeUnit.MILLISECONDS.toMinutes(duration);
+					//long diffInHours = TimeUnit.MILLISECONDS.toHours(duration);
 					
-				case EXACTNUMBER:
-					calcSeverity = false;
-					n1 = Double.valueOf(s1);
-					n2 = Double.valueOf(s2);
-					diff = Math.abs(n1 - n2);
-					if (diff > 0) {
-						severity = Severity.MAJOR;
-					} else {
-						severity = Severity.EXACT;
-					}
-				case TWONUMBERS:
-					n1 = Double.valueOf(s1);
-					n2 = Double.valueOf(s2);
-					diff = Math.abs(n1 - n2);
-					
-					if (diff == 0.0 || n2 == 0.0 || n1 == 0.0) {
-						difPercent = 0.0;
-					} else {
-						difPercent = diff/n2;
-					}
-					
-					severity = calculateSeverity(difPercent, compareKey);
-					break;
-				case ONENUMBER: //Used for annotations, where we are given number discordant and total comparisons.
-					n1 = Double.valueOf(s1);
-					n2 = Double.valueOf(s2);
-					diff = Double.valueOf(n1/n2);
-					
-					if (diff == 0.0 || n2 == 0.0 || n1 == 0.0) {
-						difPercent = 0.0;
-					} else {
-						difPercent = diff/n2;
-					}
-					
-					severity = calculateSeverity(difPercent, compareKey);
-					break;
-				default:
-					break;
-			}
-
-			note.append("["+severity.toString()+"]");
-			if (severity != Severity.EXACT) {
-				note.append(" | ");
-				note.append(String.format("%.1f", diff));
-				note.append(" | ");
-				note.append(defaultFormat.format(difPercent));
-			}
-			
-			return note.toString();			
-		} catch(Exception e) {
-			return "";
+					String runTimeNotes = "Test run took " + diffInMinutes + " minutes longer.";
+					return runTimeNotes;
+				} catch (ParseException e) {
+					e.printStackTrace();
+				}
+				return "";
+			case ANNOTATIONS:
+				return "";
+			case EXACTNUMBERS:
+				Double int1 = Double.valueOf(s1);
+				Double int2 = Double.valueOf(s2);
+				diff = Math.abs(int1 - int2);
+				Severity severity;
+				if (diff > 0) {
+					severity = Severity.MAJOR;
+				} else {
+					severity = Severity.EXACT;
+				}
+				if (diff == 0.0) {
+					diffPercent = 0.0;
+				} else {
+					diffPercent = diff/int2;
+				}
+				
+				return createNote(severity, diff, diffPercent);
+			case TWONUMBERS:
+				Double n1 = Double.valueOf(s1);
+				Double n2 = Double.valueOf(s2);
+				diff = Math.abs(n1 - n2);
+				if (diff == 0.0 || n2 == 0.0 || n1 == 0.0) {
+					diffPercent = 0.0;
+				} else {
+					diffPercent = diff/n2;
+				}
+				
+				severity = calculateSeverity(diffPercent, compareKey);
+				return createNote(severity, diff, diffPercent);
+			default:
+				return "";
 		}
+	}
+	
+	/** Given severity of difference, absolute value of difference, and percent difference, this will return a formated string.
+	 * @param sev
+	 * @param diff 			absolute value of difference
+	 * @param diffPercent	Percent difference
+	 * @return
+	 */
+	private String createNote(Severity sev, Double diff, Double diffPercent) {
+		NumberFormat defaultFormat = NumberFormat.getPercentInstance();
+		defaultFormat.setMinimumFractionDigits(1);
+		
+		StringBuilder note = new StringBuilder();
+		note.append("["+sev.toString()+"]");
+		if (sev != Severity.EXACT) {
+			note.append(" | ");
+			note.append(String.format("%.1f", diff));
+			note.append(" | ");
+			note.append(defaultFormat.format(diffPercent));
+		}
+		return note.toString();
 	}
 	
 	private Severity calculateSeverity(Double difPercent, String compareKey) {

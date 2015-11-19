@@ -51,7 +51,7 @@ public class CompareReviewDirs extends IOOperator {
 	}
 	
 	public enum ComparisonType {
-		TWONUMBERS, ONENUMBER, EXACTNUMBER, TEXT, TIME, ANNOTATIONS, NONE
+		TWONUMBERS, EXACTNUMBERS, TEXT, TIME, ANNOTATIONS, NONE
 	}
 	
 	/** Just a wrapper for a map for each of the severity classes. It provides convenient helper functions

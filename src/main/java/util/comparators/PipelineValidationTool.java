@@ -3,7 +3,6 @@ package util.comparators;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -248,7 +247,7 @@ public class PipelineValidationTool {
 						st.addRow(newRow);
 					}				
 				}
-				st.printSeverityTable();
+				st.printSummaryTable();
 				validationSummary.put(sev.toString(), sevJSON);
 			}
 		}

@@ -32,14 +32,13 @@ public class AnnotatedJSONComparator extends Comparator  {
 	private Map<String, Integer> gainedAnnos = new HashMap<String, Integer>();
 	
 	private Map<String, Integer> discordanceTally = new HashMap<String, Integer>();
-	//private Map<String, Double> freqDiscordanceTotals = new HashMap<String, Double>();
-
+	
 	public AnnotatedJSONComparator() {
 	}
 	
 	public AnnotatedJSONComparator(ReviewDirectory rd1, ReviewDirectory rd2, String analysisHeader) {
 		super(rd1, rd2, analysisHeader);
-		this.summaryTable.setColNames(Arrays.asList("Dropped","Gained","Changed",""));
+		this.summaryTable.setColNames(Arrays.asList("Dropped | Gained","Changed","Notes"));
 	}
 
 	@Override
@@ -89,7 +88,6 @@ public class AnnotatedJSONComparator extends Comparator  {
 			}
 		}
 		
-		//this.addNewSummaryEntry("variant.comparisons", "Variants Compared", String.valueOf(this.numberOfVarComparisons), "");
 		this.populateEntries();
 	}
 	
@@ -97,13 +95,14 @@ public class AnnotatedJSONComparator extends Comparator  {
 		
 		for (Map.Entry<String, Integer> entry : discordanceTally.entrySet()) {
 		    String key     = entry.getKey();
-		    Integer value  = entry.getValue();
+		    Integer changed  = entry.getValue();
 		  //this.compareNumberNotes(value.doubleValue(), this.numberOfVarComparisons.doubleValue(), false, key));
 		    String jsonKey = key + ".discordance";
 		    String rowName = "\"" + key + "\" discordance";
 		    String dropped = String.valueOf(droppedAnnos.get(key));
 		    String gained  = String.valueOf(gainedAnnos.get(key));
-		    this.addNewAnnotationSummaryEntry(jsonKey, rowName, dropped, gained, String.valueOf(value), this.numberOfVarComparisons.toString(), ComparisonType.ANNOTATIONS);
+		    
+		    this.addNewEntry(jsonKey, rowName, dropped + " | " + gained, String.valueOf(changed)+"/" + this.numberOfVarComparisons, ComparisonType.ANNOTATIONS);
 		}
 	}
 	

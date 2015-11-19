@@ -1,7 +1,6 @@
 package util.comparators;
 
 import java.io.IOException;
-import java.text.NumberFormat;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -91,8 +90,6 @@ class QCJSONComparator extends Comparator {
 
 			JSONArray cutoffs1 = processCoverage(coverage1.getJSONArray("fraction.above.cov.cutoff"));
 			JSONArray cutoffs2 = processCoverage(coverage2.getJSONArray("fraction.above.cov.cutoff"));
-			//cutoffs1 = convertToPercentage(cutoffs1);
-			//cutoffs2 = convertToPercentage(cutoffs2);
 			
 			//Map quality cutoff to index of that quality cutoff. i.e 10x, 50x, 200x, etc..
 			Map<String, Integer> cutOffMap1 = getCutoffIndexes(coverage1);

@@ -1,7 +1,6 @@
 package util.comparators;
 
 import java.io.IOException;
-import java.util.Arrays;
 
 import buffer.variant.VariantPool;
 import json.JSONException;
@@ -47,10 +46,10 @@ public class VCFComparator extends Comparator {
 		Double vp2HetPercent = (double) 100*(vp2.countHeteros()/vp2.size());
 		Double vp2AvgQual    = vp2.meanQuality();
 		
-		this.addNewEntry("vp.size", "Size of VP", vp1Size, vp2Size, ComparisonType.EXACTNUMBER);
-		this.addNewEntry("snps", "SNPs", vp1SNPS, vp2SNPS, ComparisonType.EXACTNUMBER);
-		this.addNewEntry("insertions", "Insertions", vp1Ins, vp2Ins, ComparisonType.EXACTNUMBER);
-		this.addNewEntry("deletions", "Deletions", vp1Del, vp2Del, ComparisonType.EXACTNUMBER);
+		this.addNewEntry("vp.size", "Size of VP", vp1Size, vp2Size, ComparisonType.EXACTNUMBERS);
+		this.addNewEntry("snps", "SNPs", vp1SNPS, vp2SNPS, ComparisonType.EXACTNUMBERS);
+		this.addNewEntry("insertions", "Insertions", vp1Ins, vp2Ins, ComparisonType.EXACTNUMBERS);
+		this.addNewEntry("deletions", "Deletions", vp1Del, vp2Del, ComparisonType.EXACTNUMBERS);
 		this.addNewEntry("het.percent", "Het Percentage", String.format("%.1f", vp1HetPercent), String.format("%.1f", vp2HetPercent), ComparisonType.TWONUMBERS);
 		this.addNewEntry("average.quality", "Average Quality", String.format("%.1f", vp1AvgQual), String.format("%.1f", vp2AvgQual), ComparisonType.TWONUMBERS);
 	}
