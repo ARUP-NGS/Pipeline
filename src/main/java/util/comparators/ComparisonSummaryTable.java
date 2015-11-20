@@ -16,8 +16,10 @@ public class ComparisonSummaryTable {
 	List<String> colNames;
 	String comparisonType = "";
 	
-	public ComparisonSummaryTable() {
-		this.colNames = Arrays.asList("","","");
+	public ComparisonSummaryTable(String comparison, List<String> colNames) {
+		this.comparisonType = comparison;
+		this.colNames = colNames;
+		//this.colNames = Arrays.asList("","","");
 	}
 	
 	public void setColNames(List<String> colNames) {
@@ -50,16 +52,12 @@ public class ComparisonSummaryTable {
 		this.printInColumns(this.comparisonType,colNames.get(0), colNames.get(1), colNames.get(2));
 		this.printInColumns("==============","==============","==============", "==============");
 		for(List<String> row : rowData) {
-/*			if (!row.get(3).equals("") ) {
-				this.printInColumns(row.get(0), row.get(1), row.get(2), row.get(3));
-				counter += 1;
-			}*/
 			this.printInColumns(row.get(0), row.get(1), row.get(2), row.get(3));
 		}
 	}
 	
 	public void printInColumns(String name, String f1, String f2, String f3) {
-		System.out.printf("%-40.40s %-50.50s %-50.50s %-40.40s%n", name+":", f1, f2, f3);
+		System.out.printf("%-40.40s %-30.30s %-30.30s %-60.60s%n", name+":", f1, f2, f3);
 	}
 	
 	public void printSummaryInColumns(String name, String sevNum, String sevMap) {

@@ -22,8 +22,8 @@ import util.reviewDir.ReviewDirectory;
 public class ManifestSummaryComparator extends Comparator {
 
 	public ManifestSummaryComparator(ReviewDirectory rd1, ReviewDirectory rd2, String analysisHeader) {
-		super(rd1, rd2, analysisHeader);
-		this.summaryTable.setColNames(Arrays.asList("TRUTH", "TEST", "Notes"));
+		super(rd1, rd2);
+		super.summaryTable = new ComparisonSummaryTable(analysisHeader, Arrays.asList("TRUTH", "TEST", "Notes"));
 	}
 	
 	/** This performComparisonAndBuildSummaryTable function usually revolves around generating 3 arrays to input to the 

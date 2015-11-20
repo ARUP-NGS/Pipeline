@@ -47,7 +47,7 @@ public class CompareReviewDirs extends IOOperator {
 	}
 	
 	public enum Severity {
-		MAJOR, MODERATE, MINOR, EXACT
+		MAJOR, MODERATE, MINOR, EXACT//, UNKOWN
 	}
 	
 	public enum ComparisonType {
@@ -63,6 +63,11 @@ public class CompareReviewDirs extends IOOperator {
 		
 		private Map<Severity, Map<String, AtomicInteger>> severitySummary = new HashMap<Severity, Map<String, AtomicInteger>>();
 		
+		//private Map<String, AtomicInteger> MAJORSummary = new HashMap<String, AtomicInteger>();
+		//private Map<String, AtomicInteger> MODERATESummary = new HashMap<String, AtomicInteger>();
+		//private Map<String, AtomicInteger> MINORSummary = new HashMap<String, AtomicInteger>();
+		//private Map<String, AtomicInteger> EXACTSummary = new HashMap<String, AtomicInteger>();
+
 		public DiscordanceSummary() {
 			for (Severity sev : Severity.values()) {
 				this.severitySummary.put(sev, new HashMap<String, AtomicInteger>());
@@ -78,10 +83,24 @@ public class CompareReviewDirs extends IOOperator {
 		}
 		
 		public void addNewDiscordance(Severity sev, String key) {
+//			switch(sev) {
+//			case MAJOR:
+//				MAJORSummary
+//				break;
+//			case MODERATE:
+//				break;
+//			case MINOR:
+//				break;
+//			case EXACT:
+//				break;
+//			default:
+//				break;
+//			}
+			
 			if (this.severitySummary.get(sev).get(key) != null) {
 				this.severitySummary.get(sev).get(key).incrementAndGet();
 			} else {
-				this.severitySummary.get(sev).put(key, new AtomicInteger(1));
+				this.severitySummary.get(sev).put(key, new AtomicInteger(0));
 			}
 		}
 
@@ -122,7 +141,7 @@ public class CompareReviewDirs extends IOOperator {
 		discordanceSummary.collect(manifestSummaryComparator.getDiscordanceSummary());
 		discordanceSummary.collect(qcJSONComparator.getDiscordanceSummary());
 		discordanceSummary.collect(vcfComparator.getDiscordanceSummary());
-		//discordanceSummary.collect(annotatedJSONComparator.getDiscordanceSummary());
+		discordanceSummary.collect(annotatedJSONComparator.getDiscordanceSummary());
 	}
 	
 	public DiscordanceSummary getDiscordanceSummary() {

@@ -22,11 +22,8 @@ import util.reviewDir.ReviewDirectory;
 	Exac.freq
 	HGMD hit
  * @author kevin
- *
  */
 public class AnnotatedJSONComparator extends Comparator  {
-
-	private Integer numberOfVarComparisons = 0;
 		
 	private Map<String, Integer> droppedAnnos = new HashMap<String, Integer>();
 	private Map<String, Integer> gainedAnnos = new HashMap<String, Integer>();
@@ -37,8 +34,8 @@ public class AnnotatedJSONComparator extends Comparator  {
 	}
 	
 	public AnnotatedJSONComparator(ReviewDirectory rd1, ReviewDirectory rd2, String analysisHeader) {
-		super(rd1, rd2, analysisHeader);
-		this.summaryTable.setColNames(Arrays.asList("Dropped | Gained","Changed","Notes"));
+		super(rd1, rd2);
+		super.summaryTable = new ComparisonSummaryTable(analysisHeader, Arrays.asList("", "", ""));
 	}
 
 	@Override
@@ -68,7 +65,7 @@ public class AnnotatedJSONComparator extends Comparator  {
 				//Find this variant in other record and them compare them...
 				VariantRec compareVar = vp2.findRecord(refVar.getContig(), refVar.getStart(), refVar.getRef(), refVar.getAlt());
 				if (compareVar != null) {
-					this.numberOfVarComparisons += 1;
+					super.annotationsCompared += 1;
 					
 					this.compareSimpleAnnotations(refVar, compareVar, VariantRec.GENE_NAME);
 					this.compareSimpleAnnotations(refVar, compareVar, VariantRec.RSNUM);
@@ -87,7 +84,7 @@ public class AnnotatedJSONComparator extends Comparator  {
 				}				
 			}
 		}
-		
+		this.summaryTable.setColNames(Arrays.asList("Dropped | Gained","Changed (out of " + String.valueOf(super.annotationsCompared) + ")","Notes"));
 		this.populateEntries();
 	}
 	
@@ -102,7 +99,7 @@ public class AnnotatedJSONComparator extends Comparator  {
 		    String dropped = String.valueOf(droppedAnnos.get(key));
 		    String gained  = String.valueOf(gainedAnnos.get(key));
 		    
-		    this.addNewEntry(jsonKey, rowName, dropped + " | " + gained, String.valueOf(changed)+"/" + this.numberOfVarComparisons, ComparisonType.ANNOTATIONS);
+		    this.addNewEntry(jsonKey, rowName, dropped + " | " + gained, String.valueOf(changed), ComparisonType.ANNOTATIONS);
 		}
 	}
 	
@@ -147,10 +144,6 @@ public class AnnotatedJSONComparator extends Comparator  {
 			//throw new NullPointerException();
 			//both null
 		}
-		
-		//Double freqDiff = Math.abs(var1.getProperty(annotation) - var2.getProperty(annotation));
-		//this.discordanceMax.put(annotation, Math.max(discordanceMax.get(annotation), freqDiff));
-		//this.freqDiscordanceTotals.put(annotation, this.freqDiscordanceTotals.get(annotation) + freqDiff);
 	}
 	
 	/** Complex comparisons for annotations that could be drastically different in normal use (cdot, pdot due to annovar vs snpeff).

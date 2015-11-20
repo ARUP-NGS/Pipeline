@@ -1,6 +1,7 @@
 package util.comparators;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 import buffer.variant.VariantPool;
 import json.JSONException;
@@ -17,7 +18,8 @@ import util.reviewDir.ReviewDirectory;
 public class VCFComparator extends Comparator {
 
 	public VCFComparator(ReviewDirectory rd1, ReviewDirectory rd2, String analysisHeader) {
-		super(rd1, rd2, analysisHeader);
+		super(rd1, rd2);
+		super.summaryTable = new ComparisonSummaryTable(analysisHeader, Arrays.asList("TRUTH", "TEST", "Notes"));
 	}
 
 	@Override

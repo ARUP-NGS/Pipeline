@@ -20,8 +20,8 @@ import util.reviewDir.ReviewDirectory;
 class QCJSONComparator extends Comparator {
 
 	public QCJSONComparator(ReviewDirectory rd1, ReviewDirectory rd2, String analysisHeader) {
-		super(rd1, rd2, analysisHeader);
-		this.summaryTable.setColNames(Arrays.asList("TRUTH", "TEST", "Notes"));
+		super(rd1, rd2);
+		super.summaryTable = new ComparisonSummaryTable(analysisHeader, Arrays.asList("TRUTH", "TEST", "Notes"));
 	}
 
 	@Override
@@ -70,12 +70,15 @@ class QCJSONComparator extends Comparator {
 			double basesAboveQ30_1 = bam1.getDouble("bases.above.q30");
 			double basesAboveQ30_2 = bam2.getDouble("bases.above.q30");
 			
-			//mean.insert.size
 			double meanInsertSize_1 = bam1.getDouble("mean.insert.size");
 			double meanInsertSize_2 = bam2.getDouble("mean.insert.size");
 			
 			this.addNewEntry("fraction.bases.above.q10", "Fraction bases above Q10", String.format("%.1f", basesAboveQ10_1), String.format("%.1f", basesAboveQ10_2), ComparisonType.TWONUMBERS);
+			this.addNewEntry("fraction.bases.above.q20", "Fraction bases above Q20", String.format("%.1f", basesAboveQ20_1), String.format("%.1f", basesAboveQ20_2), ComparisonType.TWONUMBERS);
+			this.addNewEntry("fraction.bases.above.q30", "Fraction bases above Q30", String.format("%.1f", basesAboveQ30_1), String.format("%.1f", basesAboveQ30_2), ComparisonType.TWONUMBERS);
+			this.addNewEntry("mean.insert.size", "Mean insert size", String.valueOf(meanInsertSize_1), String.valueOf(meanInsertSize_2), ComparisonType.TWONUMBERS);
 
+			
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

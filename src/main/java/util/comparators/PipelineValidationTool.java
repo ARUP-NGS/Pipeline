@@ -216,9 +216,7 @@ public class PipelineValidationTool {
 		
 		for (Severity sev: Severity.values()) {
 			if (!sev.toString().equals("EXACT")) {
-				ComparisonSummaryTable st = new ComparisonSummaryTable();
-				st.setCompareType(sev.toString());
-				st.setColNames(Arrays.asList("#", "Type", ""));
+				ComparisonSummaryTable st = new ComparisonSummaryTable(sev.toString(), Arrays.asList("#", "Type", ""));
 				LinkedHashMap<String, Object> sevJSON = new LinkedHashMap<String, Object>();
 
 				for (Map.Entry<String, DiscordanceSummary> entry : valSummary.entrySet()) {
