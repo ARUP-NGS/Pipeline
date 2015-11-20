@@ -7,7 +7,6 @@ import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import json.JSONException;
@@ -56,7 +55,7 @@ public abstract class Comparator {
 	protected void addNewEntry(String jsonKey, String rowName, String c1Entry, String c2Entry , ComparisonType compareType) {
 		String notes = this.generateComparionsNotes(jsonKey, c1Entry, c2Entry, compareType);
 		
-		this.summaryTable.addRow(Arrays.asList(rowName, c1Entry, c2Entry, this.generateComparionsNotes(jsonKey, c1Entry, c2Entry, compareType)));
+		this.summaryTable.addRow(Arrays.asList(rowName, c1Entry, c2Entry, notes));
 		
 		String[] jsonString = {c1Entry, c2Entry, notes};
 		this.summaryJSON.put(jsonKey, jsonString);
@@ -125,7 +124,58 @@ public abstract class Comparator {
 				}
 				return "";
 			case ANNOTATIONS:
-				return "";
+				String[] te = s1.split(" | ");
+				Double dropped = Double.valueOf(s1.split(" | ")[0]);
+				Double gained = Double.valueOf(s1.split(" | ")[2]);
+				Double changed = Double.valueOf(s2);
+				
+				//If we dropped more than 5% of annotations should we flag a major change?
+				Double diffChanged = Math.abs(changed - this.annotationsCompared);
+				Double diffDropped = Math.abs(changed - this.annotationsCompared);
+				if (changed == 0.0  || dropped == 0.0) {
+					diffPercent = 0.0;
+				} else {
+					diffPercent = diffChanged/this.annotationsCompared;
+				}
+				if (diffPercent >= 0.1) {
+					severity = Severity.MAJOR;
+				} else if (0.1 > diffPercent && diffPercent > 0.0) {
+					severity = Severity.MINOR;
+				} else if (diffPercent == 0.0 ){
+					severity = Severity.EXACT;
+					//return ""; //Lets just leave the notes blank if its equal
+				} else {
+					severity = Severity.MAJOR; //.UNKOWN;
+				}
+				discordanceSummary.addNewDiscordance(severity, compareKey);
+				
+				return createNote(severity, diffChanged, diffPercent);
+				
+			case VARIANTS:
+				//If both are not 0 then this is a major change.
+				Integer uniqueVars1 = Integer.valueOf(s1);
+				Integer uniqueVars2 = Integer.valueOf(s2);
+				if ((uniqueVars1 + uniqueVars2) > 0) {
+					severity = Severity.MAJOR;
+				} else {
+					severity = Severity.EXACT;
+				}
+				return "["+severity.toString()+"]";
+			case TWOPERCENTS: // Assume two numbers are percentages.
+				diffPercent = Math.abs(Double.valueOf(s1) - Double.valueOf(s2));
+				if (diffPercent >= 0.1) {
+					severity = Severity.MAJOR;
+				} else if (0.1 > diffPercent && diffPercent > 0.0) {
+					severity = Severity.MINOR;
+				} else if (diffPercent == 0.0 ){
+					severity = Severity.EXACT;
+					//return ""; //Lets just leave the notes blank if its equal
+				} else {
+					severity = Severity.MAJOR; //.UNKOWN;
+				}
+				discordanceSummary.addNewDiscordance(severity, compareKey);
+
+				return createNote(severity, diffPercent, diffPercent);
 			case EXACTNUMBERS:
 				Double int1 = Double.valueOf(s1);
 				Double int2 = Double.valueOf(s2);
@@ -153,10 +203,8 @@ public abstract class Comparator {
 				} else {
 					diffPercent = diff/n2;
 				}
-				if (diffPercent >= 0.2) {
+				if (diffPercent >= 0.1) {
 					severity = Severity.MAJOR;
-				} else if (0.2 > diffPercent && diffPercent >= 0.1) {
-					severity = Severity.MODERATE;
 				} else if (0.1 > diffPercent && diffPercent > 0.0) {
 					severity = Severity.MINOR;
 				} else if (diffPercent == 0.0 ){

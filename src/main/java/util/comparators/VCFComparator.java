@@ -75,7 +75,7 @@ public class VCFComparator extends Comparator {
 		}
 		
 		//varTypeNotes.toString()
-		this.addNewEntry("unique.variants", "Unique variants", String.valueOf(vp1Sub2.size()), String.valueOf(vp2Sub1.size()), ComparisonType.NONE);
+		this.addNewEntry("unique.variants", "Unique variants", String.valueOf(vp1Sub2.size()), String.valueOf(vp2Sub1.size()), ComparisonType.VARIANTS);
 	}
 
 	void intersectVariantPools() {

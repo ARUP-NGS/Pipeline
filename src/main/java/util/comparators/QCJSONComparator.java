@@ -61,22 +61,22 @@ class QCJSONComparator extends Comparator {
 	
 	private void compareBAMMetrics(JSONObject bam1, JSONObject  bam2) {
 		try {
-			double basesAboveQ10_1 = bam1.getDouble("bases.above.q10")/bam1.getDouble("bases.read");
-			double basesAboveQ10_2 = bam2.getDouble("bases.above.q10")/bam2.getDouble("bases.read");
+			double basesAboveQ10_1 = bam1.getDouble("bases.above.q10")/bam1.getDouble("bases.read") * 100.0;
+			double basesAboveQ10_2 = bam2.getDouble("bases.above.q10")/bam2.getDouble("bases.read") * 100.0;
 			
-			double basesAboveQ20_1 = bam1.getDouble("bases.above.q20");
-			double basesAboveQ20_2 = bam2.getDouble("bases.above.q20");
+			double basesAboveQ20_1 = bam1.getDouble("bases.above.q20")/bam1.getDouble("bases.read") * 100.0;
+			double basesAboveQ20_2 = bam2.getDouble("bases.above.q20")/bam2.getDouble("bases.read") * 100.0;
 			
-			double basesAboveQ30_1 = bam1.getDouble("bases.above.q30");
-			double basesAboveQ30_2 = bam2.getDouble("bases.above.q30");
+			double basesAboveQ30_1 = bam1.getDouble("bases.above.q30")/bam1.getDouble("bases.read") * 100.0;
+			double basesAboveQ30_2 = bam2.getDouble("bases.above.q30")/bam2.getDouble("bases.read") * 100.0;
 			
 			double meanInsertSize_1 = bam1.getDouble("mean.insert.size");
 			double meanInsertSize_2 = bam2.getDouble("mean.insert.size");
 			
-			this.addNewEntry("fraction.bases.above.q10", "Fraction bases above Q10", String.format("%.1f", basesAboveQ10_1), String.format("%.1f", basesAboveQ10_2), ComparisonType.TWONUMBERS);
-			this.addNewEntry("fraction.bases.above.q20", "Fraction bases above Q20", String.format("%.1f", basesAboveQ20_1), String.format("%.1f", basesAboveQ20_2), ComparisonType.TWONUMBERS);
-			this.addNewEntry("fraction.bases.above.q30", "Fraction bases above Q30", String.format("%.1f", basesAboveQ30_1), String.format("%.1f", basesAboveQ30_2), ComparisonType.TWONUMBERS);
-			this.addNewEntry("mean.insert.size", "Mean insert size", String.valueOf(meanInsertSize_1), String.valueOf(meanInsertSize_2), ComparisonType.TWONUMBERS);
+			this.addNewEntry("percent.bases.above.q10", "Percent bases above Q10", String.format("%.1f", basesAboveQ10_1), String.format("%.1f", basesAboveQ10_2), ComparisonType.TWOPERCENTS);
+			this.addNewEntry("percent.bases.above.q20", "Percent bases above Q20", String.format("%.1f", basesAboveQ20_1), String.format("%.1f", basesAboveQ20_2), ComparisonType.TWOPERCENTS);
+			this.addNewEntry("percent.bases.above.q30", "Percent bases above Q30", String.format("%.1f", basesAboveQ30_1), String.format("%.1f", basesAboveQ30_2), ComparisonType.TWOPERCENTS);
+			this.addNewEntry("mean.insert.size", "Mean insert size", String.format("%.1f", meanInsertSize_1), String.format("%.1f", meanInsertSize_2), ComparisonType.TWONUMBERS);
 
 			
 		} catch (JSONException e) {
@@ -105,9 +105,9 @@ class QCJSONComparator extends Comparator {
 					Double json1facAbove = cutoffs1.getDouble(entry.getValue()); 			
 					Double json2facAbove = cutoffs2.getDouble(cutOffMap2.get(entry.getKey()));
 					
-					this.addNewEntry("fraction.greater." + entry.getKey(),  "Fraction of bases > " + entry.getKey() + "X coverage", String.valueOf(json1facAbove), String.valueOf(json2facAbove), ComparisonType.TWONUMBERS);
+					this.addNewEntry("percent.greater." + entry.getKey(),  "Percent of bases > " + entry.getKey() + "X coverage", String.valueOf(json1facAbove), String.valueOf(json2facAbove), ComparisonType.TWOPERCENTS);
 				} else {	
-					this.addNewEntry("fraction.greater." + entry.getKey(), "Fraction of bases > " + entry.getKey() + "X coverage", "NA", "NA", ComparisonType.NONE);
+					this.addNewEntry("percent.greater." + entry.getKey(), "Percent of bases > " + entry.getKey() + "X coverage", "NA", "NA", ComparisonType.NONE);
 				}
 			}
 		} catch (JSONException e) {

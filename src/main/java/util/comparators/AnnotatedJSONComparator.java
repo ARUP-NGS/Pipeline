@@ -30,6 +30,7 @@ public class AnnotatedJSONComparator extends Comparator  {
 	
 	private Map<String, Integer> discordanceTally = new HashMap<String, Integer>();
 	
+	
 	public AnnotatedJSONComparator() {
 	}
 	
@@ -84,7 +85,9 @@ public class AnnotatedJSONComparator extends Comparator  {
 				}				
 			}
 		}
-		this.summaryTable.setColNames(Arrays.asList("Dropped | Gained","Changed (out of " + String.valueOf(super.annotationsCompared) + ")","Notes"));
+		//this.summaryTable.setColNames(Arrays.asList("Dropped | Gained","Changed (out of " + String.valueOf(super.annotationsCompared) + ")","Notes"));
+		this.summaryTable.setColNames(Arrays.asList("Dropped | Gained","Changed" + String.valueOf(""),"Notes"));
+
 		this.populateEntries();
 	}
 	

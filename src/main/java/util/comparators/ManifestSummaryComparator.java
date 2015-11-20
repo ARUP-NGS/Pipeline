@@ -64,10 +64,9 @@ public class ManifestSummaryComparator extends Comparator {
 			long diffInMinutes = TimeUnit.MILLISECONDS.toMinutes(duration);
 			//long diffInHours = TimeUnit.MILLISECONDS.toHours(duration);
 			
-			String runTimeNotes = "Test run took " + diffInMinutes + " minutes longer.";
+			//String runTimeNotes = "Test run took " + diffInMinutes + " minutes longer.";
 			this.addNewEntry("total.run.time", "Total Run Time", this.getRunTimeFromLog(rd1.getSampleManifest().getLog()), this.getRunTimeFromLog(rd2.getSampleManifest().getLog()), ComparisonType.TIME);
 		} catch (ParseException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} // Set start date
 	}
@@ -84,6 +83,7 @@ public class ManifestSummaryComparator extends Comparator {
 			}
 			line = br.readLine();  
 		}
+		br.close();
 		return PipelineElapsedTime.lastElement().split("time: ")[1];
 	}
 }

@@ -1,7 +1,6 @@
 package util.comparators;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /** This class encapsulates all the comparison information and provides an easy framework for building nice looking output
@@ -57,7 +56,7 @@ public class ComparisonSummaryTable {
 	}
 	
 	public void printInColumns(String name, String f1, String f2, String f3) {
-		System.out.printf("%-40.40s %-30.30s %-30.30s %-60.60s%n", name+":", f1, f2, f3);
+		System.out.printf("%-40.40s %-40.40s %-40.40s %-60.60s%n", name+":", f1, f2, f3);
 	}
 	
 	public void printSummaryInColumns(String name, String sevNum, String sevMap) {

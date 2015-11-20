@@ -9,7 +9,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import json.JSONException;
 import json.JSONObject;
@@ -206,8 +205,8 @@ public class PipelineValidationTool {
 		System.out.println("| Summary of Validation |");
 		System.out.println("+++++++++++++++++++++++++");
 		
-		Map<String, DiscordanceSummary> valSummary = new HashMap<String, DiscordanceSummary>();
-		LinkedHashMap<String, Object> validationJSON = new LinkedHashMap<String, Object>();
+		Map<String, DiscordanceSummary> valSummary = new LinkedHashMap<String, DiscordanceSummary>();
+		Map<String, Object> validationJSON = new LinkedHashMap<String, Object>();
 		for (CompareReviewDirs crd : crds) {
 			String comparisonName = crd.getRd1().getSampleName() + "-" + crd.getRd2().getSampleName();
 			valSummary.put(comparisonName, crd.getDiscordanceSummary());
@@ -226,24 +225,20 @@ public class PipelineValidationTool {
 					List<String> newRow = new ArrayList<>();
 					newRow.add(comparisonName);
 					
-					//newRow.add(sev.toString());
-					Integer sum = 0;
-					for (AtomicInteger i : disSum.getSeveritySummary(sev).values()) {
-					    sum += i.get();
-					}
-					if (sum > 0) {
-						String sevNum = String.valueOf(sum);
-						newRow.add(sevNum);
-						
-						String sevMap = disSum.getSeveritySummary(sev).keySet().toString();
-						newRow.add(sevMap);
-						newRow.add("");
-						
-						String[] summaryArray = {sevNum, sevMap};
-						//validationSummary.put(comparisonName, summaryArray);
-						sevJSON.put(comparisonName, summaryArray);
-						st.addRow(newRow);
-					}				
+					int sum = disSum.getSeveritySummary(sev).size();
+					//if (sum > 0) {
+					String sevNum = String.valueOf(sum);
+					newRow.add(sevNum);
+					
+					String sevMap = disSum.getSeveritySummary(sev).toString();
+					newRow.add(sevMap);
+					newRow.add("");
+					
+					String[] summaryArray = {sevNum, sevMap};
+					//validationSummary.put(comparisonName, summaryArray);
+					sevJSON.put(comparisonName, summaryArray);
+					st.addRow(newRow);
+					//}				
 				}
 				st.printSummaryTable();
 				validationSummary.put(sev.toString(), sevJSON);

@@ -1,10 +1,11 @@
 package util.comparators;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 
 import json.JSONException;
@@ -47,11 +48,11 @@ public class CompareReviewDirs extends IOOperator {
 	}
 	
 	public enum Severity {
-		MAJOR, MODERATE, MINOR, EXACT//, UNKOWN
+		MAJOR, MINOR, EXACT//, UNKOWN
 	}
 	
 	public enum ComparisonType {
-		TWONUMBERS, EXACTNUMBERS, TEXT, TIME, ANNOTATIONS, NONE
+		TWONUMBERS, EXACTNUMBERS, VARIANTS, TWOPERCENTS, TEXT, TIME, ANNOTATIONS, NONE
 	}
 	
 	/** Just a wrapper for a map for each of the severity classes. It provides convenient helper functions
@@ -61,47 +62,20 @@ public class CompareReviewDirs extends IOOperator {
 	 */
 	public static class DiscordanceSummary {
 		
-		private Map<Severity, Map<String, AtomicInteger>> severitySummary = new HashMap<Severity, Map<String, AtomicInteger>>();
+		private Map<Severity, List<String>> severitySummary = new HashMap<Severity, List<String>>();
 		
-		//private Map<String, AtomicInteger> MAJORSummary = new HashMap<String, AtomicInteger>();
-		//private Map<String, AtomicInteger> MODERATESummary = new HashMap<String, AtomicInteger>();
-		//private Map<String, AtomicInteger> MINORSummary = new HashMap<String, AtomicInteger>();
-		//private Map<String, AtomicInteger> EXACTSummary = new HashMap<String, AtomicInteger>();
-
 		public DiscordanceSummary() {
 			for (Severity sev : Severity.values()) {
-				this.severitySummary.put(sev, new HashMap<String, AtomicInteger>());
+				this.severitySummary.put(sev, new ArrayList<String>());
 			}
 		}
 		
-		public void putAllSeverity(Severity sev, Map<String, AtomicInteger> sevSum) {
-			this.severitySummary.get(sev).putAll(sevSum);
-		}
-		
-		public Map<String, AtomicInteger> getSeveritySummary(Severity sev) {
+		public List<String> getSeveritySummary(Severity sev) {
 			return severitySummary.get(sev);
 		}
 		
 		public void addNewDiscordance(Severity sev, String key) {
-//			switch(sev) {
-//			case MAJOR:
-//				MAJORSummary
-//				break;
-//			case MODERATE:
-//				break;
-//			case MINOR:
-//				break;
-//			case EXACT:
-//				break;
-//			default:
-//				break;
-//			}
-			
-			if (this.severitySummary.get(sev).get(key) != null) {
-				this.severitySummary.get(sev).get(key).incrementAndGet();
-			} else {
-				this.severitySummary.get(sev).put(key, new AtomicInteger(0));
-			}
+			this.severitySummary.get(sev).add(key);
 		}
 
 		/** This will loop through the given DiscordanceSummary object and add its contents to this DiscordanceSummary object.
@@ -109,7 +83,7 @@ public class CompareReviewDirs extends IOOperator {
 		 */
 		public void collect(DiscordanceSummary disSum) {
 			for (Severity sev : Severity.values()) {
-				this.putAllSeverity(sev, disSum.getSeveritySummary(sev));
+				this.severitySummary.get(sev).addAll(disSum.getSeveritySummary(sev));
 			}
 		}
 	}
@@ -138,6 +112,10 @@ public class CompareReviewDirs extends IOOperator {
 		finalJSONOutput.put("compare.annotatedjson", annotatedJSONComparator.getJSONOutput());		
 
 		//Collect up all of the discordance information from each comparator.
+		for (String d : manifestSummaryComparator.getDiscordanceSummary().getSeveritySummary(Severity.MAJOR)) {
+			System.out.println(d);
+		}
+		
 		discordanceSummary.collect(manifestSummaryComparator.getDiscordanceSummary());
 		discordanceSummary.collect(qcJSONComparator.getDiscordanceSummary());
 		discordanceSummary.collect(vcfComparator.getDiscordanceSummary());
