@@ -215,7 +215,6 @@ class QCJSONComparator extends Comparator {
 	
 	/** Convert values in a JSONArray from fractions to percentages. This function is intented to deal with multiple representations of coverage 
 	 * cutoffs for pipeline runs. Some are in percentages and some are in fractions, and this normalizes to percentages.
-	 * will convert
 	 * @param num
 	 * @return
 	 */

@@ -4,11 +4,14 @@ import java.io.IOException;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import buffer.variant.VariantRec;
 import json.JSONException;
 import util.comparators.CompareReviewDirs.ComparisonType;
 import util.comparators.CompareReviewDirs.DiscordanceSummary;
@@ -28,6 +31,7 @@ public abstract class Comparator {
 	ReviewDirectory rd2 = null;
 	
 	Integer annotationsCompared = 0;
+	List<VariantRec> variants = new ArrayList<VariantRec>();
 	
 	ComparisonSummaryTable summaryTable;
 	LinkedHashMap<String, Object> summaryJSON = new LinkedHashMap<String, Object>();
@@ -175,7 +179,17 @@ public abstract class Comparator {
 				}
 				discordanceSummary.addNewDiscordance(severity, compareKey);
 
-				return createNote(severity, diffPercent, diffPercent);
+				StringBuilder note = new StringBuilder();
+				note.append("["+severity.toString()+"]");
+				if (severity != Severity.EXACT) {
+					note.append(" | ");
+					note.append(String.format("%.1f", diffPercent));
+					note.append(" | ");
+					note.append(String.format("%.1f", diffPercent));
+					note.append("%");
+				}
+				
+				return note.toString();
 			case EXACTNUMBERS:
 				Double int1 = Double.valueOf(s1);
 				Double int2 = Double.valueOf(s2);
