@@ -47,7 +47,7 @@ public class TestExAC63KExomesAnnotator extends TestCase {
 			pplVCF.initializePipeline();
 			pplVCF.stopAllLogging();
 			pplVCF.execute();
-			annotatorVCF = (ExAC63KExomesAnnotator) pplVCF.getObjectHandler().getObjectForLabel("ESPAnnotator");
+			annotatorVCF = (ExAC63KExomesAnnotator) pplVCF.getObjectHandler().getObjectForLabel("ExACAnnotator");
 			
 			
 		} catch (Exception ex) {
@@ -121,6 +121,7 @@ public class TestExAC63KExomesAnnotator extends TestCase {
 			// 1	877645	.	T	G,C	11199.11	PASS	AC=71,1; AC_Het=24,1,0; AC_Hom=0,0; ; AC_AFR=0,1; AC_AMR=1,0; AC_Adj=24,1; AC_EAS=0,0; AC_FIN=1,0; AC_NFE=21,0; AC_OTH=0,0; AC_SAS=1,0; ; AF=6.486e-04,9.135e-06; AN=109472; ; AN_AFR=678; AN_AMR=1440; AN_Adj=9890; AN_EAS=974; AN_FIN=266; AN_NFE=5784; AN_OTH=50; AN_SAS=698; ; Het_AFR=0,1,0; Het_AMR=1,0,0; Het_EAS=0,0,0; Het_FIN=1,0,0; Het_NFE=21,0,0; Het_OTH=0,0,0; Het_SAS=1,0,0; ; Hom_AFR=0,0; Hom_AMR=0,0; Hom_EAS=0,0; Hom_FIN=0,0; Hom_NFE=0,0; Hom_OTH=0,0; Hom_SAS=0,0
 			VariantRec var1 = new VariantRec("1", 877645, 877645, "T", "G");
 			var1 = VCFParser.normalizeVariant(var1);
+			System.out.println(var1);
 			annotatorVCF.annotateVariant(var1);
 			
 			Assert.assertTrue(var1.getProperty(VariantRec.EXOMES_63K_FREQ).equals(Double.parseDouble("6.486e-04")));
