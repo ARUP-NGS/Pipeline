@@ -128,7 +128,6 @@ public abstract class Comparator {
 				}
 				return "";
 			case ANNOTATIONS:
-				String[] te = s1.split(" | ");
 				Double dropped = Double.valueOf(s1.split(" | ")[0]);
 				Double gained = Double.valueOf(s1.split(" | ")[2]);
 				Double changed = Double.valueOf(s2);

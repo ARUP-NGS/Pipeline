@@ -185,7 +185,7 @@ public class PipelineValidationTool {
 				crd.compare();
 				crds.add(crd);
 				//Now collect relevant summary information from our comparator class.
-				System.out.println("===================================================");
+				System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
 			} catch (IOException | ManifestParseException | JSONException ex) {
 				System.out.println("Error with comparison for RDs: " + entry.getValue().get(0).getSourceDirPath() + " and " + entry.getValue().get(1).getSourceDirPath());
 				ex.printStackTrace();

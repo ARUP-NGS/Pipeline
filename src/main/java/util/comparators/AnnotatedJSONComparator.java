@@ -156,5 +156,7 @@ public class AnnotatedJSONComparator extends Comparator  {
 	private void compareComplexAnnotation(VariantRec var1, VariantRec var2, String annotation) {
 		//AnnovarSnpEffComparator cdotCompare = new AnnovarSnpEffComparator();
 		//Trying to use the comparator already written.
+		//Just use a simple string comparison for now.. Only useful for comparing apples to apples (same annotators).
+		compareSimpleAnnotations(var1, var2, annotation);
 	}
 }

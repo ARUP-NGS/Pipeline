@@ -1,7 +1,11 @@
 package util.comparators;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+
+import buffer.variant.VariantRec;
 
 /** This class encapsulates all the comparison information and provides an easy framework for building nice looking output
  *  of several column tables.
@@ -14,6 +18,8 @@ public class ComparisonSummaryTable {
 	List<List<String> > rowData = new ArrayList<List<String> >();
 	List<String> colNames;
 	String comparisonType = "";
+	Map<String, List<VariantRec>> failedVariants = new LinkedHashMap<String, List<VariantRec>>(); //Keep track of variants to display for a given analysis comparison.
+
 	
 	public ComparisonSummaryTable(String comparison, List<String> colNames) {
 		this.comparisonType = comparison;
@@ -51,7 +57,19 @@ public class ComparisonSummaryTable {
 		this.printInColumns(this.comparisonType,colNames.get(0), colNames.get(1), colNames.get(2));
 		this.printInColumns("==============","==============","==============", "==============");
 		for(List<String> row : rowData) {
-			this.printInColumns(row.get(0), row.get(1), row.get(2), row.get(3));
+			String analysisTypeKey = row.get(0);
+			this.printInColumns(analysisTypeKey, row.get(1), row.get(2), row.get(3));
+			List<VariantRec> listOfVariants = failedVariants.get(analysisTypeKey);
+			if (listOfVariants != null && listOfVariants.size() > 0) {
+				System.out.println("\t==================================================================================");
+			    for (VariantRec rec : listOfVariants) {
+			    	System.out.println("\t||"+rec.toBasicString() + "\t||");
+			    }
+				System.out.println("\t==================================================================================");
+			} else {
+			    // No such key
+				continue;
+			}
 		}
 	}
 	
