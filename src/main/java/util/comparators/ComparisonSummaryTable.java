@@ -60,6 +60,6 @@ public class ComparisonSummaryTable {
 	}
 	
 	public void printSummaryInColumns(String name, String sevNum, String sevMap) {
-		System.out.printf("%-30.30s %-5.5s %-200.200s%n", (String) name+":", sevNum, sevMap);
+		System.out.printf("%-70.70s %-5.5s %-200.200s%n", (String) name+":", sevNum, sevMap);
 	}
 }

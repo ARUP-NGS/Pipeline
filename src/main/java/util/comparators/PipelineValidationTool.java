@@ -208,7 +208,7 @@ public class PipelineValidationTool {
 		Map<String, DiscordanceSummary> valSummary = new LinkedHashMap<String, DiscordanceSummary>();
 		Map<String, Object> validationJSON = new LinkedHashMap<String, Object>();
 		for (CompareReviewDirs crd : crds) {
-			String comparisonName = crd.getRd1().getSampleName() + "-" + crd.getRd2().getSampleName();
+			String comparisonName = "(" + crd.getRd1().getAnalysisType() + ") " + crd.getRd1().getSampleName() + "-" + crd.getRd2().getSampleName();
 			valSummary.put(comparisonName, crd.getDiscordanceSummary());
 			validationJSON.put(comparisonName, crd.getFinalJSONOutput());	
 		}
