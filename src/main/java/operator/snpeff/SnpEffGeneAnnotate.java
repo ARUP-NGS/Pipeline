@@ -21,34 +21,13 @@ import java.util.regex.Pattern;
 import org.w3c.dom.NodeList;
 
 import buffer.ArupBEDFile;
-import buffer.ArupBEDFile.ARUPBedInterval;
+import buffer.ArupBEDFile.ARUPBedIntervalInfo;
 import buffer.variant.VariantRec;
 import operator.OperationFailedException;
 import operator.annovar.Annotator;
 import pipeline.Pipeline;
 import util.Interval;
 
-//So far I have edited 
-	//	SnpEffGeneAnnotate.java major changes: 
-	//		uses attribute transcripts.from.arupbed = true to use transcripts from arupBedFile input rather than preferred nm list
-	//		if var intersects with intervals, annotations with the transcripts from those intervals will be used
-	//		force snpEff to only use transcripts from the ArupBedFile (faster, filters most annotations we don't want)
-	//	ArupBEDFile.java new extends BEDFile, uses info property in Interval class to store transcripts
-	//	Annotator.java now looks for ArupBEDFile as input and builds interval map if found
-	//	Interval.java added getter for info property
-	//	IntervalsFile.java added intersectsWhich and nearest methods for a query interval input
-	//	VariantRec.java added annotations for 2nd and 3rd annotation
-	//	VarViewerWriter.java added annotations for 2nd and 3rd annotation
-
-//TODO in SnpEff annotator, if bed trs don't match any snpEff trs throw error
-//TODO annotate with all transcripts available from ArupBedFile.nearest search. 
-//TODO have nearest send back ranked list
-//TODO test using nicu bed file to show all possibilities of bed file
-//TODO add proper comments
-//TODO add test mods?
-
-//NOTE currently full ArupBEDFile loaded into an interval map
-//		if this becomes too large (for exome/genome?) we could possibly load one chrom at a time
 
 /**
  * Uses SnpEff to provide gene annotations for the variants given 
@@ -249,7 +228,7 @@ public class SnpEffGeneAnnotate extends Annotator {
 			List<Interval> cInts = arupBedFile.getIntervalsForContig(varContig);
 			for (Integer idx : nearestIndexes) {
 				Interval idxInter = cInts.get(idx);
-				String[] idxTrs = (String[]) idxInter.getInfo();
+				String[] idxTrs = ((ARUPBedIntervalInfo) idxInter.getInfo()).transcripts;
 				for (String tr : idxTrs) {
 						varTrs.add(tr);
 				}
@@ -320,29 +299,6 @@ public class SnpEffGeneAnnotate extends Annotator {
 			} else {
 				var.addAnnotation(VariantRec.NON_PREFERRED_TRANSCRIPT, "true");
 				throw new OperationFailedException("No ArupBedFile transcript found in snpEff variant region: " + var.getContig() + ":" + var.getStart(), this);
-				//System.out.println("No ArupBedFile transcript found in snpEff variant region");
-
-				//System.out.println("no anno var-info............... " + var.getContig() + ":" + var.getStart() + ":" + var.getAlt() + " varTrs are:");
-				//System.out.println("nearestIndexes........ ");
-				//for (Integer ni : nearestIndexes) {
-				//	System.out.println(ni + ", ");
-				//}
-
-				//System.out.println("no anno var-info............... " + var.getContig() + ":" + var.getStart() + ":" + var.getAlt() + " varTrs are:");
-				//System.out.println(var.getContig() + ":" + var.getStart() + ":" + var.getAlt());
-				//System.out.println("varTrs........ ");
-				//for (String tr : varTrs) {
-				//	System.out.println(tr + ", ");
-				//}
-				//System.out.println("infoList........ ");
-				//for (SnpEffInfo infoi : infoList) {
-				//	System.out.println(infoi.transcript + ", ");
-				//}
-				//System.out.println("nearestIndexes........ ");
-				//for (Integer ni : nearestIndexes) {
-				//	System.out.println(ni + ", ");
-				//}
-
 			}
 
 		} else {
@@ -614,8 +570,8 @@ public class SnpEffGeneAnnotate extends Annotator {
 
 		for (String contig : arupBedFile.getContigs()) {
 			for (Interval inter : arupBedFile.getIntervalsForContig(contig)) {
-				if (inter.getInfo() instanceof ARUPBedInterval) {
-					for (String tr : ((ARUPBedInterval) inter.getInfo()).transcripts) {
+				if (inter.getInfo() instanceof ARUPBedIntervalInfo) {
+					for (String tr : ((ARUPBedIntervalInfo) inter.getInfo()).transcripts) {
 						trs.add(tr);
 						//System.out.println("another tr is: " + contig + ":" + inter.begin + "-" + tr);
 					}
@@ -641,6 +597,7 @@ public class SnpEffGeneAnnotate extends Annotator {
 	}
 
 	
+	@Override
 	public void initialize(NodeList children) {
 		super.initialize(children);
 		
@@ -689,10 +646,12 @@ public class SnpEffGeneAnnotate extends Annotator {
 						+ TRANSCRIPTS_FROM_ARUPBED + " value given: " + useArupBed);
 			}
 		}
+
 		if (trsFromArupBed && arupBedFile == null) {
 			throw new IllegalArgumentException(TRANSCRIPTS_FROM_ARUPBED
 					+ " set true but no ArupBEDFile passed as input");
 		}
+		
 
 		//only load and use preferred nms if not using nms from arupbed
 		String nmDefs = this.getAttribute(NM_DEFS);

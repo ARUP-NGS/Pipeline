@@ -79,7 +79,27 @@ public class ArupBEDFile extends BEDFile {
 					}
 				}
 
-				ARUPBedInterval intervalInfo = new ARUPBedInterval(toks[4], transcripts, Integer.parseInt(toks[5]));
+				String[] untrimmedGenes = toks[4].split("\\|");
+				String[] genes = new String[untrimmedGenes.length];
+				for (int i = 0; i < untrimmedGenes.length; i++) {
+					genes[i] = untrimmedGenes[i].trim();
+					if (genes[i].length() < 1) {
+					throw new IllegalArgumentException("ARUP BED file gene name appears to be blank in 5th column for line \n" 
+							+ line + "\n" + "in bed file " + this.file.getName());
+					}
+				}
+
+				String[] untrimmedExons = toks[5].split("\\|");
+				String[] exons = new String[untrimmedExons.length];
+				for (int i = 0; i < untrimmedExons.length; i++) {
+					if (untrimmedExons[i].trim().length() < 1) {
+					throw new IllegalArgumentException("ARUP BED file gene name appears to be blank in 5th column for line \n" 
+							+ line + "\n" + "in bed file " + this.file.getName());
+					}
+					else exons[i] = untrimmedExons[i].trim();
+				}
+
+				ARUPBedIntervalInfo intervalInfo = new ARUPBedIntervalInfo(genes, transcripts, exons);
 				
 				Interval interval = new Interval(begin, end, intervalInfo);
 
@@ -103,15 +123,16 @@ public class ArupBEDFile extends BEDFile {
 	 * @author brendan
 	 *
 	 */
-	public class ARUPBedInterval {
-		public final String gene;
+	public class ARUPBedIntervalInfo {
+
+		public final String[] genes;
 		public final String[] transcripts;
-		public final int exonNum;
+		public final String[] exons;
 		
-		public ARUPBedInterval(String gene, String[] transcripts, int exonNum) {
-			this.gene = gene;
+		public ARUPBedIntervalInfo(String[] genes, String[] transcripts, String[] exons) {
+			this.genes = genes;
 			this.transcripts = transcripts;
-			this.exonNum = exonNum;
+			this.exons = exons;
 		}
 	}
 	
@@ -143,11 +164,12 @@ public class ArupBEDFile extends BEDFile {
 			String gene = toks[5];
 			String exonNum = toks[6];
 			
+			/*
 			if (tx.length()>0 && !(tx.startsWith("NM_") || tx.startsWith("NR_") || tx.startsWith("XM_"))) {
 				ok = false;
 				break;
 			}
-					
+			
 			if (exonNum.length()>0) {
 				try {
 					int ex = Integer.parseInt(exonNum);
@@ -156,6 +178,19 @@ public class ArupBEDFile extends BEDFile {
 					break;
 				}
 			}
+			*/
+			
+			// Use less restrictive versions of above till ArupBedFile format finalized
+			if (tx.length()==0) {
+				ok = false;
+				break;
+			}
+					
+			if (exonNum.length()==0) {
+				ok = false;
+				break;
+			}
+
 			linesTested++;
 			line = reader.readLine();
 		}

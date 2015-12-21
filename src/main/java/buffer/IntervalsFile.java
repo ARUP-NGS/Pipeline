@@ -247,8 +247,6 @@ public abstract class IntervalsFile extends FileBuffer implements HasIntervals {
 			int indexBegin = Collections.binarySearch(cInts, qIntervalBegin, intComp);
 			int indexEnd = Collections.binarySearch(cInts, qIntervalEnd, intComp);
 			if (indexBegin >= 0 || indexEnd >= 0) {
-				//System.out.println("Interval " + cInts.get(indexBegin) + " starts same spot as either interval " + qInterval.begin + ", " + qInterval.end);
-				//System.out.println("True - indexBegin>0 or indexEnd>0");
 				//An interval starts with one the query interval begin or end
 				return true;
 			}
@@ -324,43 +322,37 @@ public abstract class IntervalsFile extends FileBuffer implements HasIntervals {
 		int[] intersects = {-1, -1}; //default -1 indicates no intervals intersect with query
 		int keyIndexBegin = -indexBegin-1 -1;
 		int keyIndexEnd = -indexEnd-1 -1;
-		int firstIntersect;
-		int lastIntersect;
-		//boolean beginIntersects;
-		//boolean endIntersects;
+		int firstIntersect; //first possible intersect
+		int lastIntersect; //last possible intersect
 
-		if (keyIndexBegin < 0 && keyIndexEnd < 0) {
-			//query range before first interval
-			return intersects; // returns {-1,-1}
-		}
 
 		if (indexBegin >= 0) {
 			//An interval starts with the query begin
-			//beginIntersects = true;
 			firstIntersect = indexBegin;
+		} else if (keyIndexBegin < 0) {
+			//query start before first interval
+			firstIntersect = 0;
 		} else if (qIntervalBegin.begin <= cInts.get(keyIndexBegin).end) {
 			//query begin in one of the intervals
-			//beginIntersects = true;
 			firstIntersect = keyIndexBegin;
 		} else {
 			//query begin between intervals
-			//beginIntersects = false;
-			//first possible index will bet the next interval to the right
+			//first possible index will be the next interval to the right
 			firstIntersect = keyIndexBegin + 1;
 		}
 			
 		if (indexEnd >= 0) {
 			//An interval starts with the query end
-			//endIntersects = true;
 			lastIntersect = indexEnd;
+		} else if (keyIndexEnd < 0) {
+			//query end before first interval
+			lastIntersect = -1; //no intersect possible
 		} else if (qIntervalEnd.end <= cInts.get(keyIndexEnd).end) {
 			//query end in one of the intervals
-			//endIntersects = true;
 			lastIntersect = keyIndexEnd;
 		} else {
 			//query end between intervals
-			//endIntersects = false;
-			//last possible index will bet this interval (which begins to the left)
+			//last possible index will be this interval (which begins to the left)
 			lastIntersect = keyIndexEnd;
 		}
 		
@@ -390,7 +382,7 @@ public abstract class IntervalsFile extends FileBuffer implements HasIntervals {
 	public ArrayList<Integer> nearest(String contig, Interval qInterval, boolean warn) {
 		List<Interval> cInts = intervals.get(contig);
 		Interval qIntervalBegin = new Interval(qInterval.begin, qInterval.begin);
-		Interval qIntervalEnd = new Interval(qInterval.end - 1, qInterval.end - 1);
+		Interval qIntervalEnd = new Interval(qInterval.end, qInterval.end);
 		int indexBegin;
 		int indexEnd;
 		ArrayList<Integer> nearest = new ArrayList<Integer>();
@@ -410,7 +402,7 @@ public abstract class IntervalsFile extends FileBuffer implements HasIntervals {
 				//query does not intersect any of the intervals (returns -1s)
 				//we need to find nearest
 				// in order of nearer then farther
-				nearest = nearestCalc(cInts, qIntervalBegin, qIntervalEnd, indexBegin, indexEnd);
+				nearest = nearestCalc(contig, cInts, qIntervalBegin, qIntervalEnd, indexBegin, indexEnd);
 				return nearest;
 			} else { // make nearest list from all of the intersected intervals (from left to right)
 				for (int i=0; i < intersects.length; i++) {
@@ -423,7 +415,7 @@ public abstract class IntervalsFile extends FileBuffer implements HasIntervals {
 		}
 	}
 	
-	private ArrayList<Integer> nearestCalc(List<Interval> cInts, Interval qIntervalBegin, Interval qIntervalEnd, int indexBegin, int indexEnd) {
+	private ArrayList<Integer> nearestCalc(String contig, List<Interval> cInts, Interval qIntervalBegin, Interval qIntervalEnd, int indexBegin, int indexEnd) {
 		//WARNING: Assumes you already checked and there are no intersects!
 		int keyIndexBegin = -indexBegin-1 -1;
 		int keyIndexEnd = -indexEnd-1 -1;
@@ -435,12 +427,14 @@ public abstract class IntervalsFile extends FileBuffer implements HasIntervals {
 		if (indexBegin >= 0) {
 			//An interval starts with the query begin
 			//beginIntersects = true!;
-			throw new IllegalArgumentException("No intersections allowed for this method");
+			throw new IllegalArgumentException("No intersections allowed for this method, but the query " + contig + ":" + 
+					qIntervalBegin.begin + "-" + qIntervalEnd.end + " is at the start of an interval");
 		}
 		if (indexEnd >= 0) {
 			//An interval starts with the query end
 			//endIntersects = true!;
-			throw new IllegalArgumentException("No intersections allowed for this method");
+			throw new IllegalArgumentException("No intersections allowed for this method, but the query " + contig + ":" + 
+					qIntervalBegin.begin + "-" + qIntervalEnd.end + " is at the end of an interval");
 		}
 		if (keyIndexBegin < 0 || keyIndexEnd < 0) {
 			//query before first interval (assumes no intersect)
@@ -449,22 +443,29 @@ public abstract class IntervalsFile extends FileBuffer implements HasIntervals {
 			return nearest;
 		}
 		if (keyIndexBegin >= (cInts.size() - 1) || keyIndexEnd >= (cInts.size() - 1)) {
-			//query begin after last interval (assumes no intersect)
+			//query begin or query end after last interval (assumes no intersect)
 			//just set nearest to last interval
 			nearest.add(cInts.size() - 1);
 			return nearest;
 		}
 
-		beginDistance = qIntervalBegin.begin - cInts.get(keyIndexBegin).end;
-		if (beginDistance < 0) {
-			//query must intersect an interval
-			throw new IllegalArgumentException("No intersections allowed for this method");
-		}
 
-		endDistance = Math.abs(cInts.get(keyIndexEnd + 1).begin - qIntervalEnd.end);
+		//Now assume that query must be between two intervals (assumes no intersect)
+		Interval intervalToLeft = cInts.get(keyIndexBegin);
+		beginDistance = qIntervalBegin.begin - intervalToLeft.end;
+		if (beginDistance < 0) {
+			//query must overlap an interval
+			throw new IllegalArgumentException("No intersections allowed for this method, but the query " + contig + ":" + 
+					qIntervalBegin.begin + "-" + qIntervalEnd.end + " begin appears to overlap with the end of an interval " +
+					contig + ":" + cInts.get(keyIndexBegin).begin + "-" + cInts.get(keyIndexBegin).end);
+		}
+		Interval intervalToRight = cInts.get(keyIndexEnd + 1);
+		endDistance = intervalToRight.begin - qIntervalEnd.end;
 		if (endDistance < 0) {
 			//query must intersect an interval
-			throw new IllegalArgumentException("No intersections allowed for this method");
+			throw new IllegalArgumentException("No intersections allowed for this method, but the query " + contig + ":" + 
+					qIntervalBegin.begin + "-" + qIntervalEnd.end + " end appears to overlap with the begin of an interval " +
+					contig + ":" + cInts.get(keyIndexBegin).begin + "-" + cInts.get(keyIndexBegin).end);
 		}
 
 		if (beginDistance <= endDistance) {
