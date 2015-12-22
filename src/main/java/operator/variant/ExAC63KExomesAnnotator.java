@@ -42,6 +42,23 @@ public class ExAC63KExomesAnnotator extends AbstractTabixAnnotator {
 		return true;
 	}
 	
+	private boolean safeSetCalcFreq(VariantRec var, String  propertyKey, String alleleCount, String alleleNumber) {
+		if (alleleCount==null || alleleNumber==null) {
+			return false;
+		}
+		
+		try {
+			Double freq = Double.parseDouble(alleleCount)/Double.parseDouble(alleleNumber);
+			if(!freq.equals(Double.NaN)) {
+				var.addProperty(propertyKey, freq);
+			}
+		} catch (NumberFormatException nfe) {
+			//Don't worry about it, just don't set the property
+			return false;
+		}
+		
+		return true;
+	}
 	/**
 	 * Parses several frequency-based annotations from the given string and 
 	 * converts them to annotations (properties, actually) on the variant
@@ -52,84 +69,86 @@ public class ExAC63KExomesAnnotator extends AbstractTabixAnnotator {
 	@Override
 	protected boolean addAnnotationsFromString(VariantRec var, String str, int altIndex) {
 		String[] toks = str.split("\t");
-				
 		//The 7th column is the info column, which looks a little like AF=0.23;AF_AMR=0.123;AF_EUR=0.456...
 		String[] infoToks = toks[7].split(";");
-		String overallFreqStr = valueForKey(infoToks, "AF");
-		if (overallFreqStr != null) {
-			Double freq = Double.parseDouble(overallFreqStr);
-			var.addProperty(VariantRec.EXOMES_63K_FREQ, freq);
-		}
-		
-		//Total number of chromosomes assessed
-		Double numCalledAlleles = Double.parseDouble(valueForKey(infoToks, "AN"));
 	
-		//Total number of samples, apparently, with genotype 1/1, so two alleles for each one
-		
-		safeParseAndSetProperty(var, VariantRec.EXOMES_63K_HOM_FREQ, valueForKey(infoToks, "AC_Hom"), numCalledAlleles/2.0);
-		safeParseAndSetProperty(var, VariantRec.EXOMES_63K_HOM_COUNT, valueForKey(infoToks, "AC_Hom"), 1.0);
-		
-		//Total number of samples with genotype 0/1, so one allele for each
-		safeParseAndSetProperty(var, VariantRec.EXOMES_63K_HET_FREQ, valueForKey(infoToks, "AC_Het"), numCalledAlleles);
+		String overallAlleleCount = valueForKey(infoToks, "AC_Adj");
+		String overallAlleleNumber = valueForKey(infoToks, "AN_Adj");
 
+		//Overall
+		safeParseAndSetProperty(var, VariantRec.EXAC63K_OVERALL_ALLELE_COUNT, overallAlleleCount, 1.0);
+		safeParseAndSetProperty(var, VariantRec.EXAC63K_OVERALL_ALLELE_NUMBER, overallAlleleNumber, 1.0);
+		safeParseAndSetProperty(var, VariantRec.EXAC63K_OVERALL_HOM_COUNT, valueForKey(infoToks, "AC_Hom"), 1.0);
+		safeSetCalcFreq(var, VariantRec.EXAC63K_OVERALL_ALLELE_FREQ, overallAlleleCount, overallAlleleNumber);
 		
 		
-		Double numCalledAFR = Double.parseDouble(valueForKey(infoToks, "AN_AFR"));
-		safeParseAndSetProperty(var, VariantRec.EXOMES_63K_AFR_FREQ, valueForKey(infoToks, "AC_AFR"), numCalledAFR);
-		safeParseAndSetProperty(var, VariantRec.EXOMES_63K_AFR_HOM, valueForKey(infoToks, "Hom_AFR"), numCalledAFR);
-		safeParseAndSetProperty(var, VariantRec.EXOMES_63K_AFR_HET, valueForKey(infoToks, "Het_AFR"), numCalledAFR);
-				
+		/*
+			String alleleCountKey  = "AC_" + pop;
+			String alleleNumberKey = "AN_" + pop;
+			String homCountKey     = "Hom_" + pop;
+		 */
 		
+		//African
+		String africanAlleleCount = valueForKey(infoToks, "AC_AFR");
+		String africanAlleleNumber = valueForKey(infoToks, "AN_AFR");
+		safeParseAndSetProperty(var, VariantRec.EXAC63K_AFRICAN_ALLELE_COUNT, africanAlleleCount, 1.0);
+		safeParseAndSetProperty(var, VariantRec.EXAC63K_AFRICAN_ALLELE_NUMBER, africanAlleleNumber, 1.0);
+		safeParseAndSetProperty(var, VariantRec.EXAC63K_AFRICAN_HOM_COUNT, valueForKey(infoToks, "Hom_AFR"), 1.0);
+		safeSetCalcFreq(var, VariantRec.EXAC63K_AFRICAN_ALLELE_FREQ, africanAlleleCount, africanAlleleNumber);
+
+
 		//American
-		
-		Double numCalledAMR = Double.parseDouble(valueForKey(infoToks, "AN_AMR"));
-		safeParseAndSetProperty(var, VariantRec.EXOMES_63K_AMR_FREQ, valueForKey(infoToks, "AC_AMR"), numCalledAMR);
-		safeParseAndSetProperty(var, VariantRec.EXOMES_63K_AMR_HOM, valueForKey(infoToks, "Hom_AMR"), numCalledAMR);
-		safeParseAndSetProperty(var, VariantRec.EXOMES_63K_AMR_HET, valueForKey(infoToks, "Het_AMR"), numCalledAMR);
-		
-		
-		
+		String americanAlleleCount = valueForKey(infoToks, "AC_AMR");
+		String americanAlleleNumber = valueForKey(infoToks, "AN_AMR");
+		safeParseAndSetProperty(var, VariantRec.EXAC63K_AMERICAN_ALLELE_COUNT, americanAlleleCount, 1.0);
+		safeParseAndSetProperty(var, VariantRec.EXAC63K_AMERICAN_ALLELE_NUMBER, americanAlleleNumber, 1.0);
+		safeParseAndSetProperty(var, VariantRec.EXAC63K_AMERICAN_HOM_COUNT, valueForKey(infoToks, "Hom_AMR"), 1.0);
+		safeSetCalcFreq(var, VariantRec.EXAC63K_AMERICAN_ALLELE_FREQ, americanAlleleCount, americanAlleleNumber);
+
+
 		//East Asian
-		
-		Double numCalledEAS = Double.parseDouble(valueForKey(infoToks, "AN_EAS"));
-		safeParseAndSetProperty(var, VariantRec.EXOMES_63K_EAS_FREQ, valueForKey(infoToks, "AC_EAS"), numCalledEAS);
-		safeParseAndSetProperty(var, VariantRec.EXOMES_63K_EAS_HOM, valueForKey(infoToks, "Hom_EAS"), numCalledEAS);
-		safeParseAndSetProperty(var, VariantRec.EXOMES_63K_EAS_HET, valueForKey(infoToks, "Het_EAS"), numCalledEAS);
-		
-		
-		
+		String eastAsianAlleleCount = valueForKey(infoToks, "AC_EAS");
+		String eastAsianAlleleNumber = valueForKey(infoToks, "AN_EAS");
+		safeParseAndSetProperty(var, VariantRec.EXAC63K_EASTASIAN_ALLELE_COUNT, eastAsianAlleleCount, 1.0);
+		safeParseAndSetProperty(var, VariantRec.EXAC63K_EASTASIAN_ALLELE_NUMBER, eastAsianAlleleNumber, 1.0);
+		safeParseAndSetProperty(var, VariantRec.EXAC63K_EASTASIAN_HOM_COUNT, valueForKey(infoToks, "Hom_EAS"), 1.0);
+		safeSetCalcFreq(var, VariantRec.EXAC63K_EASTASIAN_ALLELE_FREQ, eastAsianAlleleCount, eastAsianAlleleNumber);
+
+
 		//Finnish
-		
-		Double numCalledFIN = Double.parseDouble(valueForKey(infoToks, "AN_FIN"));
-		safeParseAndSetProperty(var, VariantRec.EXOMES_63K_FIN_FREQ, valueForKey(infoToks, "AC_FIN"), numCalledFIN);
-		safeParseAndSetProperty(var, VariantRec.EXOMES_63K_FIN_HOM, valueForKey(infoToks, "Hom_FIN"), numCalledFIN);
-		safeParseAndSetProperty(var, VariantRec.EXOMES_63K_FIN_HET, valueForKey(infoToks, "Het_FIN"), numCalledFIN);
-		
-		
+		String finnishAlleleCount = valueForKey(infoToks, "AC_FIN");
+		String finnishAlleleNumber = valueForKey(infoToks, "AN_FIN");
+		safeParseAndSetProperty(var, VariantRec.EXAC63K_FINNISH_ALLELE_COUNT, finnishAlleleCount, 1.0);
+		safeParseAndSetProperty(var, VariantRec.EXAC63K_FINNISH_ALLELE_NUMBER, finnishAlleleNumber, 1.0);
+		safeParseAndSetProperty(var, VariantRec.EXAC63K_FINNISH_HOM_COUNT, valueForKey(infoToks, "Hom_FIN"), 1.0);
+		safeSetCalcFreq(var, VariantRec.EXAC63K_FINNISH_ALLELE_FREQ, finnishAlleleCount, finnishAlleleNumber);
+
+
 		//Non-Finnish Europeans
-		
-		Double numCalledNFE = Double.parseDouble(valueForKey(infoToks, "AN_NFE"));
-		safeParseAndSetProperty(var, VariantRec.EXOMES_63K_NFE_FREQ, valueForKey(infoToks, "AC_NFE"), numCalledNFE);
-		safeParseAndSetProperty(var, VariantRec.EXOMES_63K_NFE_HOM, valueForKey(infoToks, "Hom_NFE"), numCalledNFE);
-		safeParseAndSetProperty(var, VariantRec.EXOMES_63K_NFE_HET, valueForKey(infoToks, "Het_NFE"), numCalledNFE);
-		
-		
-		//Other populations
-		
-		Double numCalledOTH = Double.parseDouble(valueForKey(infoToks, "AN_OTH"));
-		safeParseAndSetProperty(var, VariantRec.EXOMES_63K_OTH_FREQ, valueForKey(infoToks, "AC_OTH"), numCalledOTH);
-		safeParseAndSetProperty(var, VariantRec.EXOMES_63K_OTH_HOM, valueForKey(infoToks, "Hom_OTH"), numCalledOTH);
-		safeParseAndSetProperty(var, VariantRec.EXOMES_63K_OTH_HET, valueForKey(infoToks, "Het_OTH"), numCalledOTH);
-		
-		
+		String europeanAlleleCount = valueForKey(infoToks, "AC_NFE");
+		String europeanAlleleNumber = valueForKey(infoToks, "AN_NFE");
+		safeParseAndSetProperty(var, VariantRec.EXAC63K_EUROPEAN_ALLELE_COUNT, europeanAlleleCount, 1.0);
+		safeParseAndSetProperty(var, VariantRec.EXAC63K_EUROPEAN_ALLELE_NUMBER, europeanAlleleNumber, 1.0);
+		safeParseAndSetProperty(var, VariantRec.EXAC63K_EUROPEAN_HOM_COUNT, valueForKey(infoToks, "Hom_NFE"), 1.0);
+		safeSetCalcFreq(var, VariantRec.EXAC63K_EUROPEAN_ALLELE_FREQ, europeanAlleleCount, europeanAlleleNumber);
+
+
 		//South Asian
-		Double numCalledSAS = Double.parseDouble(valueForKey(infoToks, "AN_SAS"));
-		safeParseAndSetProperty(var, VariantRec.EXOMES_63K_SAS_FREQ, valueForKey(infoToks, "AC_SAS"), numCalledSAS);
-		safeParseAndSetProperty(var, VariantRec.EXOMES_63K_SAS_HOM, valueForKey(infoToks, "Hom_SAS"), numCalledSAS);
-		safeParseAndSetProperty(var, VariantRec.EXOMES_63K_SAS_HET, valueForKey(infoToks, "Het_SAS"), numCalledSAS);
-		
-		
-		//Compute 'overall' het / hom frequency
+		String southAsianAlleleCount = valueForKey(infoToks, "AC_SAS");
+		String southAsianAlleleNumber = valueForKey(infoToks, "AN_SAS");
+		safeParseAndSetProperty(var, VariantRec.EXAC63K_SOUTHASIAN_ALLELE_COUNT, southAsianAlleleCount, 1.0);
+		safeParseAndSetProperty(var, VariantRec.EXAC63K_SOUTHASIAN_ALLELE_NUMBER, southAsianAlleleNumber, 1.0);
+		safeParseAndSetProperty(var, VariantRec.EXAC63K_SOUTHASIAN_HOM_COUNT, valueForKey(infoToks, "Hom_SAS"), 1.0);
+		safeSetCalcFreq(var, VariantRec.EXAC63K_SOUTHASIAN_ALLELE_FREQ, southAsianAlleleCount, southAsianAlleleNumber);
+
+
+		//Other populations
+		String otherAlleleCount = valueForKey(infoToks, "AC_OTH");
+		String otherAlleleNumber = valueForKey(infoToks, "AN_OTH");
+		safeParseAndSetProperty(var, VariantRec.EXAC63K_OTHER_ALLELE_COUNT, otherAlleleCount, 1.0);
+		safeParseAndSetProperty(var, VariantRec.EXAC63K_OTHER_ALLELE_NUMBER, otherAlleleNumber, 1.0);
+		safeParseAndSetProperty(var, VariantRec.EXAC63K_OTHER_HOM_COUNT, valueForKey(infoToks, "Hom_OTH"), 1.0);
+		safeSetCalcFreq(var, VariantRec.EXAC63K_OTHER_ALLELE_FREQ, otherAlleleCount, otherAlleleNumber);
 		
 		return true;
 	}
