@@ -68,10 +68,49 @@ public class VarViewerWriter extends VariantPoolWriter {
 			 VariantRec.COSMIC_ID,
 			 VariantRec.COSMIC_COUNT,
 			 VariantRec.UK10K_ALLELE_FREQ,
-			 VariantRec.EXOMES_63K_FREQ,
-			 VariantRec.EXOMES_63K_HET_FREQ,
-			 VariantRec.EXOMES_63K_HOM_FREQ,
-			 VariantRec.EXOMES_63K_HOM_COUNT,
+			 //=========================================================
+			 //Exac columns, 32 of them. 4 for overall, and 4 for each of the 7 populations.
+			 VariantRec.EXAC63K_OVERALL_ALLELE_COUNT,
+			 VariantRec.EXAC63K_OVERALL_ALLELE_NUMBER,
+			 VariantRec.EXAC63K_OVERALL_HOM_COUNT,
+			 VariantRec.EXAC63K_OVERALL_ALLELE_FREQ,
+			//African
+			 VariantRec.EXAC63K_AFRICAN_ALLELE_COUNT,
+			 VariantRec.EXAC63K_AFRICAN_ALLELE_NUMBER,
+			 VariantRec.EXAC63K_AFRICAN_HOM_COUNT,
+			 VariantRec.EXAC63K_AFRICAN_ALLELE_FREQ,
+			 //American
+			 VariantRec.EXAC63K_AMERICAN_ALLELE_COUNT,
+			 VariantRec.EXAC63K_AMERICAN_ALLELE_NUMBER,
+			 VariantRec.EXAC63K_AMERICAN_HOM_COUNT,
+			 VariantRec.EXAC63K_AMERICAN_ALLELE_FREQ,
+			 //East Asian
+			 VariantRec.EXAC63K_EASTASIAN_ALLELE_COUNT,
+			 VariantRec.EXAC63K_EASTASIAN_ALLELE_NUMBER,
+			 VariantRec.EXAC63K_EASTASIAN_HOM_COUNT,
+			 VariantRec.EXAC63K_EASTASIAN_ALLELE_FREQ,
+			 //Finnish
+			 VariantRec.EXAC63K_FINNISH_ALLELE_COUNT,
+			 VariantRec.EXAC63K_FINNISH_ALLELE_NUMBER,
+			 VariantRec.EXAC63K_FINNISH_HOM_COUNT,
+			 VariantRec.EXAC63K_FINNISH_ALLELE_FREQ,
+			 //Non-Finnish Europeans
+			 VariantRec.EXAC63K_EUROPEAN_ALLELE_COUNT,
+			 VariantRec.EXAC63K_EUROPEAN_ALLELE_NUMBER,
+			 VariantRec.EXAC63K_EUROPEAN_HOM_COUNT,
+			 VariantRec.EXAC63K_EUROPEAN_ALLELE_FREQ,
+			 //South Asian
+			 VariantRec.EXAC63K_SOUTHASIAN_ALLELE_COUNT,
+			 VariantRec.EXAC63K_SOUTHASIAN_ALLELE_NUMBER,
+			 VariantRec.EXAC63K_SOUTHASIAN_HOM_COUNT,
+			 VariantRec.EXAC63K_SOUTHASIAN_ALLELE_FREQ,
+			 //Other populations
+			 VariantRec.EXAC63K_OTHER_ALLELE_COUNT,
+			 VariantRec.EXAC63K_OTHER_ALLELE_NUMBER,
+			 VariantRec.EXAC63K_OTHER_HOM_COUNT,
+			 VariantRec.EXAC63K_OTHER_ALLELE_FREQ,
+			 //=========================================================
+			 
 			 VariantRec.MITOMAP_FREQ,
 			 VariantRec.MITOMAP_ALLELE_ID,
 			 VariantRec.MITOMAP_DIS_CODING,
