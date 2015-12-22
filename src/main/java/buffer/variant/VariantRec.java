@@ -935,5 +935,14 @@ public class VariantRec {
 	public static final String EXAC63K_OTHER_HOM_COUNT = "exac63k.other.hom.count";
 	public static final String EXAC63K_OTHER_ALLELE_FREQ = "exac63k.other.allele.freq";
 	
+	//Hemi
+	public static final String EXAC63K_OVERALL_HEMI_COUNT = "exac63k.overall.hemi.count";
+	public static final String EXAC63K_AFRICAN_HEMI_COUNT = "exac63k.african.hemi.count";
+	public static final String EXAC63K_AMERICAN_HEMI_COUNT = "exac63k.american.hemi.count";
+	public static final String EXAC63K_EASTASIAN_HEMI_COUNT = "exac63k.eastasian.hemi.count";
+	public static final String EXAC63K_FINNISH_HEMI_COUNT = "exac63k.finnish.hemi.count";
+	public static final String EXAC63K_EUROPEAN_HEMI_COUNT = "exac63k.european.hemi.count";
+	public static final String EXAC63K_SOUTHASIAN_HEMI_COUNT = "exac63k.southasian.hemi.count";
+	public static final String EXAC63K_OTHER_HEMI_COUNT = "exac63k.other.hemi.count";
 }
 
