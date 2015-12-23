@@ -109,7 +109,16 @@ public class VarViewerWriter extends VariantPoolWriter {
 			 VariantRec.EXAC63K_OTHER_ALLELE_NUMBER,
 			 VariantRec.EXAC63K_OTHER_HOM_COUNT,
 			 VariantRec.EXAC63K_OTHER_ALLELE_FREQ,
-			 //=========================================================
+			//Hemi
+			VariantRec.EXAC63K_OVERALL_HEMI_COUNT,
+			VariantRec.EXAC63K_AFRICAN_HEMI_COUNT,
+			VariantRec.EXAC63K_AMERICAN_HEMI_COUNT,
+			VariantRec.EXAC63K_EASTASIAN_HEMI_COUNT,
+			VariantRec.EXAC63K_FINNISH_HEMI_COUNT,
+			VariantRec.EXAC63K_EUROPEAN_HEMI_COUNT,
+			VariantRec.EXAC63K_SOUTHASIAN_HEMI_COUNT,
+			VariantRec.EXAC63K_OTHER_HEMI_COUNT, 
+			//=========================================================
 			 
 			 VariantRec.MITOMAP_FREQ,
 			 VariantRec.MITOMAP_ALLELE_ID,
