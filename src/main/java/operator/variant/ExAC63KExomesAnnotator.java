@@ -1,7 +1,10 @@
 package operator.variant;
 
-import operator.OperationFailedException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
 import buffer.variant.VariantRec;
+import operator.OperationFailedException;
 
 /**
  * Provides several 63K Exomes-based annotations from
@@ -75,6 +78,10 @@ public class ExAC63KExomesAnnotator extends AbstractTabixAnnotator {
 		String overallAlleleCount = valueForKeyAtIndex(infoToks, "AC_Adj", altIndex);
 		String overallAlleleNumber = valueForKey(infoToks, "AN_Adj");
 
+		Path p = Paths.get(searchForAttribute(EXAC_63K_PATH));
+		String exacVersion = p.getFileName().toString().replace(".vcf.gz", "");
+		System.out.println(exacVersion);
+		var.addAnnotation(VariantRec.EXAC63K_VERSION, exacVersion);
 		//Overall
 		safeParseAndSetProperty(var, VariantRec.EXAC63K_OVERALL_ALLELE_COUNT, overallAlleleCount, 1.0);
 		safeParseAndSetProperty(var, VariantRec.EXAC63K_OVERALL_ALLELE_NUMBER, overallAlleleNumber, 1.0);
@@ -90,13 +97,13 @@ public class ExAC63KExomesAnnotator extends AbstractTabixAnnotator {
 		safeSetCalcFreq(var, VariantRec.EXAC63K_AFRICAN_ALLELE_FREQ, africanAlleleCount, africanAlleleNumber);
 
 
-		//American
-		String americanAlleleCount = valueForKeyAtIndex(infoToks, "AC_AMR", altIndex);
-		String americanAlleleNumber = valueForKey(infoToks, "AN_AMR");
-		safeParseAndSetProperty(var, VariantRec.EXAC63K_AMERICAN_ALLELE_COUNT, americanAlleleCount, 1.0);
-		safeParseAndSetProperty(var, VariantRec.EXAC63K_AMERICAN_ALLELE_NUMBER, americanAlleleNumber, 1.0);
-		safeParseAndSetProperty(var, VariantRec.EXAC63K_AMERICAN_HOM_COUNT, valueForKeyAtIndex(infoToks, "Hom_AMR", altIndex), 1.0);
-		safeSetCalcFreq(var, VariantRec.EXAC63K_AMERICAN_ALLELE_FREQ, americanAlleleCount, americanAlleleNumber);
+		//Latino
+		String latinoAlleleCount = valueForKeyAtIndex(infoToks, "AC_AMR", altIndex);
+		String latinoAlleleNumber = valueForKey(infoToks, "AN_AMR");
+		safeParseAndSetProperty(var, VariantRec.EXAC63K_LATINO_ALLELE_COUNT, latinoAlleleCount, 1.0);
+		safeParseAndSetProperty(var, VariantRec.EXAC63K_LATINO_ALLELE_NUMBER, latinoAlleleNumber, 1.0);
+		safeParseAndSetProperty(var, VariantRec.EXAC63K_LATINO_HOM_COUNT, valueForKeyAtIndex(infoToks, "Hom_AMR", altIndex), 1.0);
+		safeSetCalcFreq(var, VariantRec.EXAC63K_LATINO_ALLELE_FREQ, latinoAlleleCount, latinoAlleleNumber);
 
 
 		//East Asian
@@ -108,22 +115,23 @@ public class ExAC63KExomesAnnotator extends AbstractTabixAnnotator {
 		safeSetCalcFreq(var, VariantRec.EXAC63K_EASTASIAN_ALLELE_FREQ, eastAsianAlleleCount, eastAsianAlleleNumber);
 
 
+
 		//Finnish
 		String finnishAlleleCount = valueForKeyAtIndex(infoToks, "AC_FIN", altIndex);
 		String finnishAlleleNumber = valueForKey(infoToks, "AN_FIN");
-		safeParseAndSetProperty(var, VariantRec.EXAC63K_FINNISH_ALLELE_COUNT, finnishAlleleCount, 1.0);
-		safeParseAndSetProperty(var, VariantRec.EXAC63K_FINNISH_ALLELE_NUMBER, finnishAlleleNumber, 1.0);
-		safeParseAndSetProperty(var, VariantRec.EXAC63K_FINNISH_HOM_COUNT, valueForKeyAtIndex(infoToks, "Hom_FIN", altIndex), 1.0);
-		safeSetCalcFreq(var, VariantRec.EXAC63K_FINNISH_ALLELE_FREQ, finnishAlleleCount, finnishAlleleNumber);
-
-
+		safeParseAndSetProperty(var, VariantRec.EXAC63K_EUR_FINNISH_ALLELE_COUNT, finnishAlleleCount, 1.0);
+		safeParseAndSetProperty(var, VariantRec.EXAC63K_EUR_FINNISH_ALLELE_NUMBER, finnishAlleleNumber, 1.0);
+		safeParseAndSetProperty(var, VariantRec.EXAC63K_EUR_FINNISH_HOM_COUNT, valueForKeyAtIndex(infoToks, "Hom_FIN", altIndex), 1.0);
+		safeSetCalcFreq(var, VariantRec.EXAC63K_EUR_FINNISH_ALLELE_FREQ, finnishAlleleCount, finnishAlleleNumber);
+	
+	
 		//Non-Finnish Europeans
 		String europeanAlleleCount = valueForKeyAtIndex(infoToks, "AC_NFE", altIndex);
 		String europeanAlleleNumber = valueForKey(infoToks, "AN_NFE");
-		safeParseAndSetProperty(var, VariantRec.EXAC63K_EUROPEAN_ALLELE_COUNT, europeanAlleleCount, 1.0);
-		safeParseAndSetProperty(var, VariantRec.EXAC63K_EUROPEAN_ALLELE_NUMBER, europeanAlleleNumber, 1.0);
-		safeParseAndSetProperty(var, VariantRec.EXAC63K_EUROPEAN_HOM_COUNT, valueForKeyAtIndex(infoToks, "Hom_NFE", altIndex), 1.0);
-		safeSetCalcFreq(var, VariantRec.EXAC63K_EUROPEAN_ALLELE_FREQ, europeanAlleleCount, europeanAlleleNumber);
+		safeParseAndSetProperty(var, VariantRec.EXAC63K_EUR_NONFINNISH_ALLELE_COUNT, europeanAlleleCount, 1.0);
+		safeParseAndSetProperty(var, VariantRec.EXAC63K_EUR_NONFINNISH_ALLELE_NUMBER, europeanAlleleNumber, 1.0);
+		safeParseAndSetProperty(var, VariantRec.EXAC63K_EUR_NONFINNISH_HOM_COUNT, valueForKeyAtIndex(infoToks, "Hom_NFE", altIndex), 1.0);
+		safeSetCalcFreq(var, VariantRec.EXAC63K_EUR_NONFINNISH_ALLELE_FREQ, europeanAlleleCount, europeanAlleleNumber);
 
 
 		//South Asian
@@ -149,10 +157,10 @@ public class ExAC63KExomesAnnotator extends AbstractTabixAnnotator {
 			
 			//populations
 			safeParseAndSetProperty(var, VariantRec.EXAC63K_AFRICAN_HEMI_COUNT, valueForKeyAtIndex(infoToks, "Hemi_AFR", altIndex), 1.0);
-			safeParseAndSetProperty(var, VariantRec.EXAC63K_AMERICAN_HEMI_COUNT, valueForKeyAtIndex(infoToks, "Hemi_AMR", altIndex), 1.0);
+			safeParseAndSetProperty(var, VariantRec.EXAC63K_LATINO_HEMI_COUNT, valueForKeyAtIndex(infoToks, "Hemi_AMR", altIndex), 1.0);
 			safeParseAndSetProperty(var, VariantRec.EXAC63K_EASTASIAN_HEMI_COUNT, valueForKeyAtIndex(infoToks, "Hemi_EAS", altIndex), 1.0);
-			safeParseAndSetProperty(var, VariantRec.EXAC63K_FINNISH_HEMI_COUNT, valueForKeyAtIndex(infoToks, "Hemi_FIN", altIndex), 1.0);
-			safeParseAndSetProperty(var, VariantRec.EXAC63K_EUROPEAN_HEMI_COUNT, valueForKeyAtIndex(infoToks, "Hemi_NFE", altIndex), 1.0);
+			safeParseAndSetProperty(var, VariantRec.EXAC63K_EUR_FINNISH_HEMI_COUNT, valueForKeyAtIndex(infoToks, "Hemi_FIN", altIndex), 1.0);
+			safeParseAndSetProperty(var, VariantRec.EXAC63K_EUR_NONFINNISH_HEMI_COUNT, valueForKeyAtIndex(infoToks, "Hemi_NFE", altIndex), 1.0);
 			safeParseAndSetProperty(var, VariantRec.EXAC63K_SOUTHASIAN_HEMI_COUNT, valueForKeyAtIndex(infoToks, "Hemi_SAS", altIndex), 1.0);
 			safeParseAndSetProperty(var, VariantRec.EXAC63K_OTHER_HEMI_COUNT, valueForKeyAtIndex(infoToks, "Hemi_OTH", altIndex), 1.0);
 		}

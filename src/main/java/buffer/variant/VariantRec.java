@@ -880,11 +880,14 @@ public class VariantRec {
 	public static final String VAR_FREQ = "Var.Freq";
 
 	//ExAC annotations
+	public static final String EXAC63K_VERSION = "exac63k.version";
+	
 	//overall
 	public static final String EXAC63K_OVERALL_ALLELE_COUNT = "exac63k.overall.allele.count";
 	public static final String EXAC63K_OVERALL_ALLELE_NUMBER = "exac63k.overall.allele.number";
 	public static final String EXAC63K_OVERALL_HOM_COUNT = "exac63k.overall.hom.count";
 	public static final String EXAC63K_OVERALL_ALLELE_FREQ = "exac63k.overall.allele.freq";
+	public static final String EXAC63K_OVERALL_HEMI_COUNT = "exac63k.overall.hemi.count";
 	
 	
 	//African
@@ -892,13 +895,15 @@ public class VariantRec {
 	public static final String EXAC63K_AFRICAN_ALLELE_NUMBER = "exac63k.african.allele.number";
 	public static final String EXAC63K_AFRICAN_HOM_COUNT = "exac63k.african.hom.count";
 	public static final String EXAC63K_AFRICAN_ALLELE_FREQ = "exac63k.african.allele.freq";
+	public static final String EXAC63K_AFRICAN_HEMI_COUNT = "exac63k.african.hemi.count";
 
 
-	//American
-	public static final String EXAC63K_AMERICAN_ALLELE_COUNT = "exac63k.american.allele.count";
-	public static final String EXAC63K_AMERICAN_ALLELE_NUMBER = "exac63k.american.allele.number";
-	public static final String EXAC63K_AMERICAN_HOM_COUNT = "exac63k.american.hom.count";
-	public static final String EXAC63K_AMERICAN_ALLELE_FREQ = "exac63k.american.allele.freq";
+	//Latino
+	public static final String EXAC63K_LATINO_ALLELE_COUNT = "exac63k.latino.allele.count";
+	public static final String EXAC63K_LATINO_ALLELE_NUMBER = "exac63k.latino.allele.number";
+	public static final String EXAC63K_LATINO_HOM_COUNT = "exac63k.latino.hom.count";
+	public static final String EXAC63K_LATINO_ALLELE_FREQ = "exac63k.latino.allele.freq";
+	public static final String EXAC63K_LATINO_HEMI_COUNT = "exac63k.latino.hemi.count";
 
 
 	//East Asian
@@ -906,20 +911,23 @@ public class VariantRec {
 	public static final String EXAC63K_EASTASIAN_ALLELE_NUMBER = "exac63k.eastasian.allele.number";
 	public static final String EXAC63K_EASTASIAN_HOM_COUNT = "exac63k.eastasian.hom.count";
 	public static final String EXAC63K_EASTASIAN_ALLELE_FREQ = "exac63k.eastasian.allele.freq";
+	public static final String EXAC63K_EASTASIAN_HEMI_COUNT = "exac63k.eastasian.hemi.count";
 
 
 	//Finnish
-	public static final String EXAC63K_FINNISH_ALLELE_COUNT = "exac63k.finnish.allele.count";
-	public static final String EXAC63K_FINNISH_ALLELE_NUMBER = "exac63k.finnish.allele.number";
-	public static final String EXAC63K_FINNISH_HOM_COUNT = "exac63k.finnish.hom.count";
-	public static final String EXAC63K_FINNISH_ALLELE_FREQ = "exac63k.finnish.allele.freq";
+	public static final String EXAC63K_EUR_FINNISH_ALLELE_COUNT = "exac63k.eur-finnish.allele.count";
+	public static final String EXAC63K_EUR_FINNISH_ALLELE_NUMBER = "exac63k.eur-finnish.allele.number";
+	public static final String EXAC63K_EUR_FINNISH_HOM_COUNT = "exac63k.eur-finnish.hom.count";
+	public static final String EXAC63K_EUR_FINNISH_ALLELE_FREQ = "exac63k.eur-finnish.allele.freq";
+	public static final String EXAC63K_EUR_FINNISH_HEMI_COUNT = "exac63k.eur-finnish.hemi.count";
 
 
 	//Non-Finnish Europeans
-	public static final String EXAC63K_EUROPEAN_ALLELE_COUNT = "exac63k.european.allele.count";
-	public static final String EXAC63K_EUROPEAN_ALLELE_NUMBER = "exac63k.european.allele.number";
-	public static final String EXAC63K_EUROPEAN_HOM_COUNT = "exac63k.european.hom.count";
-	public static final String EXAC63K_EUROPEAN_ALLELE_FREQ = "exac63k.european.allele.freq";
+	public static final String EXAC63K_EUR_NONFINNISH_ALLELE_COUNT = "exac63k.eur-nonfinnish.allele.count";
+	public static final String EXAC63K_EUR_NONFINNISH_ALLELE_NUMBER = "exac63k.eur-nonfinnish.allele.number";
+	public static final String EXAC63K_EUR_NONFINNISH_HOM_COUNT = "exac63k.eur-nonfinnish.hom.count";
+	public static final String EXAC63K_EUR_NONFINNISH_ALLELE_FREQ = "exac63k.eur-nonfinnish.allele.freq";
+	public static final String EXAC63K_EUR_NONFINNISH_HEMI_COUNT = "exac63k.eur-nonfinnish.hemi.count";
 
 
 	//South Asian
@@ -927,6 +935,7 @@ public class VariantRec {
 	public static final String EXAC63K_SOUTHASIAN_ALLELE_NUMBER = "exac63k.southasian.allele.number";
 	public static final String EXAC63K_SOUTHASIAN_HOM_COUNT = "exac63k.southasian.hom.count";
 	public static final String EXAC63K_SOUTHASIAN_ALLELE_FREQ = "exac63k.southasian.allele.freq";
+	public static final String EXAC63K_SOUTHASIAN_HEMI_COUNT = "exac63k.southasian.hemi.count";
 
 
 	//Other populations
@@ -934,15 +943,7 @@ public class VariantRec {
 	public static final String EXAC63K_OTHER_ALLELE_NUMBER = "exac63k.other.allele.number";
 	public static final String EXAC63K_OTHER_HOM_COUNT = "exac63k.other.hom.count";
 	public static final String EXAC63K_OTHER_ALLELE_FREQ = "exac63k.other.allele.freq";
-	
-	//Hemi
-	public static final String EXAC63K_OVERALL_HEMI_COUNT = "exac63k.overall.hemi.count";
-	public static final String EXAC63K_AFRICAN_HEMI_COUNT = "exac63k.african.hemi.count";
-	public static final String EXAC63K_AMERICAN_HEMI_COUNT = "exac63k.american.hemi.count";
-	public static final String EXAC63K_EASTASIAN_HEMI_COUNT = "exac63k.eastasian.hemi.count";
-	public static final String EXAC63K_FINNISH_HEMI_COUNT = "exac63k.finnish.hemi.count";
-	public static final String EXAC63K_EUROPEAN_HEMI_COUNT = "exac63k.european.hemi.count";
-	public static final String EXAC63K_SOUTHASIAN_HEMI_COUNT = "exac63k.southasian.hemi.count";
 	public static final String EXAC63K_OTHER_HEMI_COUNT = "exac63k.other.hemi.count";
+
 }
 

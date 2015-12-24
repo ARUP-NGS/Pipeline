@@ -87,10 +87,10 @@ public class TestExAC63KExomesAnnotator extends TestCase {
 			Assert.assertEquals(var.getProperty(VariantRec.EXAC63K_SOUTHASIAN_ALLELE_FREQ), 0.1352, 0.001);
 			
 			//Non-Finnish Europeans
-			Assert.assertTrue(var.getProperty(VariantRec.EXAC63K_EUROPEAN_ALLELE_COUNT).equals(Double.valueOf(266)));
-			Assert.assertTrue(var.getProperty(VariantRec.EXAC63K_EUROPEAN_ALLELE_NUMBER).equals(Double.valueOf(2974)));
-			Assert.assertTrue(var.getProperty(VariantRec.EXAC63K_EUROPEAN_HOM_COUNT).equals(Double.valueOf(0)));
-			Assert.assertEquals(var.getProperty(VariantRec.EXAC63K_EUROPEAN_ALLELE_FREQ), 0.08944, 0.001);
+			Assert.assertTrue(var.getProperty(VariantRec.EXAC63K_EUR_NONFINNISH_ALLELE_COUNT).equals(Double.valueOf(266)));
+			Assert.assertTrue(var.getProperty(VariantRec.EXAC63K_EUR_NONFINNISH_ALLELE_NUMBER).equals(Double.valueOf(2974)));
+			Assert.assertTrue(var.getProperty(VariantRec.EXAC63K_EUR_NONFINNISH_HOM_COUNT).equals(Double.valueOf(0)));
+			Assert.assertEquals(var.getProperty(VariantRec.EXAC63K_EUR_NONFINNISH_ALLELE_FREQ), 0.08944, 0.001);
 			
 			//Other populations
 			Assert.assertTrue(var.getProperty(VariantRec.EXAC63K_OTHER_ALLELE_COUNT).equals(Double.valueOf(4)));
@@ -105,10 +105,10 @@ public class TestExAC63KExomesAnnotator extends TestCase {
 			Assert.assertEquals(var.getProperty(VariantRec.EXAC63K_EASTASIAN_ALLELE_FREQ), 0.06716, 0.001);
 
 			//Latino/American
-			Assert.assertTrue(var.getProperty(VariantRec.EXAC63K_AMERICAN_ALLELE_COUNT).equals(Double.valueOf(15)));
-			Assert.assertTrue(var.getProperty(VariantRec.EXAC63K_AMERICAN_ALLELE_NUMBER).equals(Double.valueOf(278)));
-			Assert.assertTrue(var.getProperty(VariantRec.EXAC63K_AMERICAN_HOM_COUNT).equals(Double.valueOf(0)));
-			Assert.assertEquals(var.getProperty(VariantRec.EXAC63K_AMERICAN_ALLELE_FREQ), 0.05396, 0.001);
+			Assert.assertTrue(var.getProperty(VariantRec.EXAC63K_LATINO_ALLELE_COUNT).equals(Double.valueOf(15)));
+			Assert.assertTrue(var.getProperty(VariantRec.EXAC63K_LATINO_ALLELE_NUMBER).equals(Double.valueOf(278)));
+			Assert.assertTrue(var.getProperty(VariantRec.EXAC63K_LATINO_HOM_COUNT).equals(Double.valueOf(0)));
+			Assert.assertEquals(var.getProperty(VariantRec.EXAC63K_LATINO_ALLELE_FREQ), 0.05396, 0.001);
 			
 			//African
 			Assert.assertTrue(var.getProperty(VariantRec.EXAC63K_AFRICAN_ALLELE_COUNT).equals(Double.valueOf(30)));
@@ -117,10 +117,10 @@ public class TestExAC63KExomesAnnotator extends TestCase {
 			Assert.assertEquals(var.getProperty(VariantRec.EXAC63K_AFRICAN_ALLELE_FREQ), 0.0303, 0.001);
 			
 			//Finnish
-			Assert.assertTrue(var.getProperty(VariantRec.EXAC63K_FINNISH_ALLELE_COUNT).equals(Double.valueOf(3)));
-			Assert.assertTrue(var.getProperty(VariantRec.EXAC63K_FINNISH_ALLELE_NUMBER).equals(Double.valueOf(110)));
-			Assert.assertTrue(var.getProperty(VariantRec.EXAC63K_FINNISH_HOM_COUNT).equals(Double.valueOf(0)));
-			Assert.assertEquals(var.getProperty(VariantRec.EXAC63K_FINNISH_ALLELE_FREQ), 0.02727, 0.001);
+			Assert.assertTrue(var.getProperty(VariantRec.EXAC63K_EUR_FINNISH_ALLELE_COUNT).equals(Double.valueOf(3)));
+			Assert.assertTrue(var.getProperty(VariantRec.EXAC63K_EUR_FINNISH_ALLELE_NUMBER).equals(Double.valueOf(110)));
+			Assert.assertTrue(var.getProperty(VariantRec.EXAC63K_EUR_FINNISH_HOM_COUNT).equals(Double.valueOf(0)));
+			Assert.assertEquals(var.getProperty(VariantRec.EXAC63K_EUR_FINNISH_ALLELE_FREQ), 0.02727, 0.001);
 			
 		} catch (Exception ex) {
 			thrown = true;
@@ -152,10 +152,10 @@ public class TestExAC63KExomesAnnotator extends TestCase {
 			Assert.assertEquals(var2A1.getProperty(VariantRec.EXAC63K_SOUTHASIAN_ALLELE_FREQ), 0.05108, 0.001);
 
 			//Non-Finnish Europeans 442 	65406 	54 	0.006758
-			Assert.assertTrue(var2A1.getProperty(VariantRec.EXAC63K_EUROPEAN_ALLELE_COUNT).equals(Double.valueOf(442)));
-			Assert.assertTrue(var2A1.getProperty(VariantRec.EXAC63K_EUROPEAN_ALLELE_NUMBER).equals(Double.valueOf(65406)));
-			Assert.assertTrue(var2A1.getProperty(VariantRec.EXAC63K_EUROPEAN_HOM_COUNT).equals(Double.valueOf(54)));
-			Assert.assertEquals(var2A1.getProperty(VariantRec.EXAC63K_EUROPEAN_ALLELE_FREQ), 0.006758, 0.001);
+			Assert.assertTrue(var2A1.getProperty(VariantRec.EXAC63K_EUR_NONFINNISH_ALLELE_COUNT).equals(Double.valueOf(442)));
+			Assert.assertTrue(var2A1.getProperty(VariantRec.EXAC63K_EUR_NONFINNISH_ALLELE_NUMBER).equals(Double.valueOf(65406)));
+			Assert.assertTrue(var2A1.getProperty(VariantRec.EXAC63K_EUR_NONFINNISH_HOM_COUNT).equals(Double.valueOf(54)));
+			Assert.assertEquals(var2A1.getProperty(VariantRec.EXAC63K_EUR_NONFINNISH_ALLELE_FREQ), 0.006758, 0.001);
 
 			//Other populations 12 	872 	3 	0.01376
 			Assert.assertTrue(var2A1.getProperty(VariantRec.EXAC63K_OTHER_ALLELE_COUNT).equals(Double.valueOf(12)));
@@ -170,10 +170,10 @@ public class TestExAC63KExomesAnnotator extends TestCase {
 			Assert.assertEquals(var2A1.getProperty(VariantRec.EXAC63K_EASTASIAN_ALLELE_FREQ), 0.04625, 0.001);
 
 			//Latino/American  	157 	11082 	17 	0.01417
-			Assert.assertTrue(var2A1.getProperty(VariantRec.EXAC63K_AMERICAN_ALLELE_COUNT).equals(Double.valueOf(157)));
-			Assert.assertTrue(var2A1.getProperty(VariantRec.EXAC63K_AMERICAN_ALLELE_NUMBER).equals(Double.valueOf(11082)));
-			Assert.assertTrue(var2A1.getProperty(VariantRec.EXAC63K_AMERICAN_HOM_COUNT).equals(Double.valueOf(17)));
-			Assert.assertEquals(var2A1.getProperty(VariantRec.EXAC63K_AMERICAN_ALLELE_FREQ), 0.01417, 0.001);
+			Assert.assertTrue(var2A1.getProperty(VariantRec.EXAC63K_LATINO_ALLELE_COUNT).equals(Double.valueOf(157)));
+			Assert.assertTrue(var2A1.getProperty(VariantRec.EXAC63K_LATINO_ALLELE_NUMBER).equals(Double.valueOf(11082)));
+			Assert.assertTrue(var2A1.getProperty(VariantRec.EXAC63K_LATINO_HOM_COUNT).equals(Double.valueOf(17)));
+			Assert.assertEquals(var2A1.getProperty(VariantRec.EXAC63K_LATINO_ALLELE_FREQ), 0.01417, 0.001);
 
 			//African
 			Assert.assertTrue(var2A1.getProperty(VariantRec.EXAC63K_AFRICAN_ALLELE_COUNT).equals(Double.valueOf(1254)));
@@ -182,10 +182,10 @@ public class TestExAC63KExomesAnnotator extends TestCase {
 			Assert.assertEquals(var2A1.getProperty(VariantRec.EXAC63K_AFRICAN_ALLELE_FREQ), 0.1468, 0.001);
 
 			//Finnish 54 	6360 	8 	0.008491
-			Assert.assertTrue(var2A1.getProperty(VariantRec.EXAC63K_FINNISH_ALLELE_COUNT).equals(Double.valueOf(54)));
-			Assert.assertTrue(var2A1.getProperty(VariantRec.EXAC63K_FINNISH_ALLELE_NUMBER).equals(Double.valueOf(6360)));
-			Assert.assertTrue(var2A1.getProperty(VariantRec.EXAC63K_FINNISH_HOM_COUNT).equals(Double.valueOf(8)));
-			Assert.assertEquals(var2A1.getProperty(VariantRec.EXAC63K_FINNISH_ALLELE_FREQ), 0.008491, 0.001);
+			Assert.assertTrue(var2A1.getProperty(VariantRec.EXAC63K_EUR_FINNISH_ALLELE_COUNT).equals(Double.valueOf(54)));
+			Assert.assertTrue(var2A1.getProperty(VariantRec.EXAC63K_EUR_FINNISH_ALLELE_NUMBER).equals(Double.valueOf(6360)));
+			Assert.assertTrue(var2A1.getProperty(VariantRec.EXAC63K_EUR_FINNISH_HOM_COUNT).equals(Double.valueOf(8)));
+			Assert.assertEquals(var2A1.getProperty(VariantRec.EXAC63K_EUR_FINNISH_ALLELE_FREQ), 0.008491, 0.001);
 			
 			
 			//------------------ var2.A2 -----------------------------------------
@@ -206,10 +206,10 @@ public class TestExAC63KExomesAnnotator extends TestCase {
 			Assert.assertEquals(var2A2.getProperty(VariantRec.EXAC63K_SOUTHASIAN_ALLELE_FREQ), 0.0082, 0.001);
 
 			//Non-Finnish Europeans 32 	65406 	0 	0.0004893
-			Assert.assertTrue(var2A2.getProperty(VariantRec.EXAC63K_EUROPEAN_ALLELE_COUNT).equals(Double.valueOf(32)));
-			Assert.assertTrue(var2A2.getProperty(VariantRec.EXAC63K_EUROPEAN_ALLELE_NUMBER).equals(Double.valueOf(65406)));
-			Assert.assertTrue(var2A2.getProperty(VariantRec.EXAC63K_EUROPEAN_HOM_COUNT).equals(Double.valueOf(0)));
-			Assert.assertEquals(var2A2.getProperty(VariantRec.EXAC63K_EUROPEAN_ALLELE_FREQ), 0.0004893, 0.001);
+			Assert.assertTrue(var2A2.getProperty(VariantRec.EXAC63K_EUR_NONFINNISH_ALLELE_COUNT).equals(Double.valueOf(32)));
+			Assert.assertTrue(var2A2.getProperty(VariantRec.EXAC63K_EUR_NONFINNISH_ALLELE_NUMBER).equals(Double.valueOf(65406)));
+			Assert.assertTrue(var2A2.getProperty(VariantRec.EXAC63K_EUR_NONFINNISH_HOM_COUNT).equals(Double.valueOf(0)));
+			Assert.assertEquals(var2A2.getProperty(VariantRec.EXAC63K_EUR_NONFINNISH_ALLELE_FREQ), 0.0004893, 0.001);
 
 			//Other populations  	0 	872 	0 	0
 			Assert.assertTrue(var2A2.getProperty(VariantRec.EXAC63K_OTHER_ALLELE_COUNT).equals(Double.valueOf(0)));
@@ -224,10 +224,10 @@ public class TestExAC63KExomesAnnotator extends TestCase {
 			Assert.assertEquals(var2A2.getProperty(VariantRec.EXAC63K_EASTASIAN_ALLELE_FREQ), 0.001367, 0.001);
 
 			//Latino/American  	 	34 	11082 	1 	0.003068
-			Assert.assertTrue(var2A2.getProperty(VariantRec.EXAC63K_AMERICAN_ALLELE_COUNT).equals(Double.valueOf(34)));
-			Assert.assertTrue(var2A2.getProperty(VariantRec.EXAC63K_AMERICAN_ALLELE_NUMBER).equals(Double.valueOf(11082)));
-			Assert.assertTrue(var2A2.getProperty(VariantRec.EXAC63K_AMERICAN_HOM_COUNT).equals(Double.valueOf(1)));
-			Assert.assertEquals(var2A2.getProperty(VariantRec.EXAC63K_AMERICAN_ALLELE_FREQ), 0.003068, 0.001);
+			Assert.assertTrue(var2A2.getProperty(VariantRec.EXAC63K_LATINO_ALLELE_COUNT).equals(Double.valueOf(34)));
+			Assert.assertTrue(var2A2.getProperty(VariantRec.EXAC63K_LATINO_ALLELE_NUMBER).equals(Double.valueOf(11082)));
+			Assert.assertTrue(var2A2.getProperty(VariantRec.EXAC63K_LATINO_HOM_COUNT).equals(Double.valueOf(1)));
+			Assert.assertEquals(var2A2.getProperty(VariantRec.EXAC63K_LATINO_ALLELE_FREQ), 0.003068, 0.001);
 
 			//African 52 	8544 	0 	0.006086
 			Assert.assertTrue(var2A2.getProperty(VariantRec.EXAC63K_AFRICAN_ALLELE_COUNT).equals(Double.valueOf(52)));
@@ -236,10 +236,10 @@ public class TestExAC63KExomesAnnotator extends TestCase {
 			Assert.assertEquals(var2A2.getProperty(VariantRec.EXAC63K_AFRICAN_ALLELE_FREQ), 0.006086, 0.001);
 
 			//Finnish 0 	6360 	0 	0
-			Assert.assertTrue(var2A2.getProperty(VariantRec.EXAC63K_FINNISH_ALLELE_COUNT).equals(Double.valueOf(0)));
-			Assert.assertTrue(var2A2.getProperty(VariantRec.EXAC63K_FINNISH_ALLELE_NUMBER).equals(Double.valueOf(6360)));
-			Assert.assertTrue(var2A2.getProperty(VariantRec.EXAC63K_FINNISH_HOM_COUNT).equals(Double.valueOf(0)));
-			Assert.assertEquals(var2A2.getProperty(VariantRec.EXAC63K_FINNISH_ALLELE_FREQ), 0, 0.001);
+			Assert.assertTrue(var2A2.getProperty(VariantRec.EXAC63K_EUR_FINNISH_ALLELE_COUNT).equals(Double.valueOf(0)));
+			Assert.assertTrue(var2A2.getProperty(VariantRec.EXAC63K_EUR_FINNISH_ALLELE_NUMBER).equals(Double.valueOf(6360)));
+			Assert.assertTrue(var2A2.getProperty(VariantRec.EXAC63K_EUR_FINNISH_HOM_COUNT).equals(Double.valueOf(0)));
+			Assert.assertEquals(var2A2.getProperty(VariantRec.EXAC63K_EUR_FINNISH_ALLELE_FREQ), 0, 0.001);
 			
 		} catch (Exception ex) {
 			thrown = true;
@@ -270,10 +270,10 @@ public class TestExAC63KExomesAnnotator extends TestCase {
 			Assert.assertEquals(var.getProperty(VariantRec.EXAC63K_SOUTHASIAN_ALLELE_FREQ), 0.01049, 0.001);
 
 			//Non-Finnish Europeans 3380 	47933 	79 	1207 	0.07052
-			Assert.assertTrue(var.getProperty(VariantRec.EXAC63K_EUROPEAN_ALLELE_COUNT).equals(Double.valueOf(3380)));
-			Assert.assertTrue(var.getProperty(VariantRec.EXAC63K_EUROPEAN_ALLELE_NUMBER).equals(Double.valueOf(47933)));
-			Assert.assertTrue(var.getProperty(VariantRec.EXAC63K_EUROPEAN_HOM_COUNT).equals(Double.valueOf(79)));
-			Assert.assertEquals(var.getProperty(VariantRec.EXAC63K_EUROPEAN_ALLELE_FREQ), 0.07052, 0.001);
+			Assert.assertTrue(var.getProperty(VariantRec.EXAC63K_EUR_NONFINNISH_ALLELE_COUNT).equals(Double.valueOf(3380)));
+			Assert.assertTrue(var.getProperty(VariantRec.EXAC63K_EUR_NONFINNISH_ALLELE_NUMBER).equals(Double.valueOf(47933)));
+			Assert.assertTrue(var.getProperty(VariantRec.EXAC63K_EUR_NONFINNISH_HOM_COUNT).equals(Double.valueOf(79)));
+			Assert.assertEquals(var.getProperty(VariantRec.EXAC63K_EUR_NONFINNISH_ALLELE_FREQ), 0.07052, 0.001);
 
 			//Other populations  	26 	632 	0 	7 	0.04114
 			Assert.assertTrue(var.getProperty(VariantRec.EXAC63K_OTHER_ALLELE_COUNT).equals(Double.valueOf(26)));
@@ -288,10 +288,10 @@ public class TestExAC63KExomesAnnotator extends TestCase {
 			Assert.assertEquals(var.getProperty(VariantRec.EXAC63K_EASTASIAN_ALLELE_FREQ), 0, 0.001);
 
 			//Latino/American  	 	144 	9307 	3 	33 	0.01547
-			Assert.assertTrue(var.getProperty(VariantRec.EXAC63K_AMERICAN_ALLELE_COUNT).equals(Double.valueOf(144)));
-			Assert.assertTrue(var.getProperty(VariantRec.EXAC63K_AMERICAN_ALLELE_NUMBER).equals(Double.valueOf(9307)));
-			Assert.assertTrue(var.getProperty(VariantRec.EXAC63K_AMERICAN_HOM_COUNT).equals(Double.valueOf(3)));
-			Assert.assertEquals(var.getProperty(VariantRec.EXAC63K_AMERICAN_ALLELE_FREQ), 0.01547, 0.001);
+			Assert.assertTrue(var.getProperty(VariantRec.EXAC63K_LATINO_ALLELE_COUNT).equals(Double.valueOf(144)));
+			Assert.assertTrue(var.getProperty(VariantRec.EXAC63K_LATINO_ALLELE_NUMBER).equals(Double.valueOf(9307)));
+			Assert.assertTrue(var.getProperty(VariantRec.EXAC63K_LATINO_HOM_COUNT).equals(Double.valueOf(3)));
+			Assert.assertEquals(var.getProperty(VariantRec.EXAC63K_LATINO_ALLELE_FREQ), 0.01547, 0.001);
 
 			//African  	78 	8509 	0 	13 	0.009167
 			Assert.assertTrue(var.getProperty(VariantRec.EXAC63K_AFRICAN_ALLELE_COUNT).equals(Double.valueOf(78)));
@@ -300,20 +300,20 @@ public class TestExAC63KExomesAnnotator extends TestCase {
 			Assert.assertEquals(var.getProperty(VariantRec.EXAC63K_AFRICAN_ALLELE_FREQ), 0.009167, 0.001);
 
 			//Finnish 440 	4521 	11 	188 	0.09732
-			Assert.assertTrue(var.getProperty(VariantRec.EXAC63K_FINNISH_ALLELE_COUNT).equals(Double.valueOf(440)));
-			Assert.assertTrue(var.getProperty(VariantRec.EXAC63K_FINNISH_ALLELE_NUMBER).equals(Double.valueOf(4521)));
-			Assert.assertTrue(var.getProperty(VariantRec.EXAC63K_FINNISH_HOM_COUNT).equals(Double.valueOf(11)));
-			Assert.assertEquals(var.getProperty(VariantRec.EXAC63K_FINNISH_ALLELE_FREQ), 0.09732, 0.001);
+			Assert.assertTrue(var.getProperty(VariantRec.EXAC63K_EUR_FINNISH_ALLELE_COUNT).equals(Double.valueOf(440)));
+			Assert.assertTrue(var.getProperty(VariantRec.EXAC63K_EUR_FINNISH_ALLELE_NUMBER).equals(Double.valueOf(4521)));
+			Assert.assertTrue(var.getProperty(VariantRec.EXAC63K_EUR_FINNISH_HOM_COUNT).equals(Double.valueOf(11)));
+			Assert.assertEquals(var.getProperty(VariantRec.EXAC63K_EUR_FINNISH_ALLELE_FREQ), 0.09732, 0.001);
 
 			//X specific checks
 			Assert.assertTrue(var.getProperty(VariantRec.EXAC63K_OVERALL_HEMI_COUNT).equals(Double.valueOf(1520)));
 			Assert.assertTrue(var.getProperty(VariantRec.EXAC63K_SOUTHASIAN_HEMI_COUNT).equals(Double.valueOf(72)));
-			Assert.assertTrue(var.getProperty(VariantRec.EXAC63K_EUROPEAN_HEMI_COUNT).equals(Double.valueOf(1207)));
+			Assert.assertTrue(var.getProperty(VariantRec.EXAC63K_EUR_NONFINNISH_HEMI_COUNT).equals(Double.valueOf(1207)));
 			Assert.assertTrue(var.getProperty(VariantRec.EXAC63K_OTHER_HEMI_COUNT).equals(Double.valueOf(7)));
 			Assert.assertTrue(var.getProperty(VariantRec.EXAC63K_EASTASIAN_HEMI_COUNT).equals(Double.valueOf(0)));
-			Assert.assertTrue(var.getProperty(VariantRec.EXAC63K_AMERICAN_HEMI_COUNT).equals(Double.valueOf(33)));
+			Assert.assertTrue(var.getProperty(VariantRec.EXAC63K_LATINO_HEMI_COUNT).equals(Double.valueOf(33)));
 			Assert.assertTrue(var.getProperty(VariantRec.EXAC63K_AFRICAN_HEMI_COUNT).equals(Double.valueOf(13)));
-			Assert.assertTrue(var.getProperty(VariantRec.EXAC63K_FINNISH_HEMI_COUNT).equals(Double.valueOf(188)));
+			Assert.assertTrue(var.getProperty(VariantRec.EXAC63K_EUR_FINNISH_HEMI_COUNT).equals(Double.valueOf(188)));
 			
 		}  catch (Exception ex) {
 			thrown = true;
@@ -345,10 +345,10 @@ public class TestExAC63KExomesAnnotator extends TestCase {
 			Assert.assertEquals(varA1.getProperty(VariantRec.EXAC63K_SOUTHASIAN_ALLELE_FREQ), 0, 0.001);
 
 			//Non-Finnish Europeans 0 	46005 	0 	0 	0
-			Assert.assertTrue(varA1.getProperty(VariantRec.EXAC63K_EUROPEAN_ALLELE_COUNT).equals(Double.valueOf(0)));
-			Assert.assertTrue(varA1.getProperty(VariantRec.EXAC63K_EUROPEAN_ALLELE_NUMBER).equals(Double.valueOf(46005)));
-			Assert.assertTrue(varA1.getProperty(VariantRec.EXAC63K_EUROPEAN_HOM_COUNT).equals(Double.valueOf(0)));
-			Assert.assertEquals(varA1.getProperty(VariantRec.EXAC63K_EUROPEAN_ALLELE_FREQ), 0, 0.001);
+			Assert.assertTrue(varA1.getProperty(VariantRec.EXAC63K_EUR_NONFINNISH_ALLELE_COUNT).equals(Double.valueOf(0)));
+			Assert.assertTrue(varA1.getProperty(VariantRec.EXAC63K_EUR_NONFINNISH_ALLELE_NUMBER).equals(Double.valueOf(46005)));
+			Assert.assertTrue(varA1.getProperty(VariantRec.EXAC63K_EUR_NONFINNISH_HOM_COUNT).equals(Double.valueOf(0)));
+			Assert.assertEquals(varA1.getProperty(VariantRec.EXAC63K_EUR_NONFINNISH_ALLELE_FREQ), 0, 0.001);
 
 			//Other populations  	0 	595 	0 	0 	0
 			Assert.assertTrue(varA1.getProperty(VariantRec.EXAC63K_OTHER_ALLELE_COUNT).equals(Double.valueOf(0)));
@@ -363,10 +363,10 @@ public class TestExAC63KExomesAnnotator extends TestCase {
 			Assert.assertEquals(varA1.getProperty(VariantRec.EXAC63K_EASTASIAN_ALLELE_FREQ), 0, 0.001);
 
 			//Latino/American  	 	3 	9028 	0 	1 	0.0003323
-			Assert.assertTrue(varA1.getProperty(VariantRec.EXAC63K_AMERICAN_ALLELE_COUNT).equals(Double.valueOf(3)));
-			Assert.assertTrue(varA1.getProperty(VariantRec.EXAC63K_AMERICAN_ALLELE_NUMBER).equals(Double.valueOf(9028)));
-			Assert.assertTrue(varA1.getProperty(VariantRec.EXAC63K_AMERICAN_HOM_COUNT).equals(Double.valueOf(0)));
-			Assert.assertEquals(varA1.getProperty(VariantRec.EXAC63K_AMERICAN_ALLELE_FREQ), 0.0003323, 0.001);
+			Assert.assertTrue(varA1.getProperty(VariantRec.EXAC63K_LATINO_ALLELE_COUNT).equals(Double.valueOf(3)));
+			Assert.assertTrue(varA1.getProperty(VariantRec.EXAC63K_LATINO_ALLELE_NUMBER).equals(Double.valueOf(9028)));
+			Assert.assertTrue(varA1.getProperty(VariantRec.EXAC63K_LATINO_HOM_COUNT).equals(Double.valueOf(0)));
+			Assert.assertEquals(varA1.getProperty(VariantRec.EXAC63K_LATINO_ALLELE_FREQ), 0.0003323, 0.001);
 
 			//African  	114 	8328 	2 	14 	0.01369
 			Assert.assertTrue(varA1.getProperty(VariantRec.EXAC63K_AFRICAN_ALLELE_COUNT).equals(Double.valueOf(114)));
@@ -375,20 +375,20 @@ public class TestExAC63KExomesAnnotator extends TestCase {
 			Assert.assertEquals(varA1.getProperty(VariantRec.EXAC63K_AFRICAN_ALLELE_FREQ), 0.01369, 0.001);
 
 			//Finnish 0 	4328 	0 	0 	0
-			Assert.assertTrue(varA1.getProperty(VariantRec.EXAC63K_FINNISH_ALLELE_COUNT).equals(Double.valueOf(0)));
-			Assert.assertTrue(varA1.getProperty(VariantRec.EXAC63K_FINNISH_ALLELE_NUMBER).equals(Double.valueOf(4328)));
-			Assert.assertTrue(varA1.getProperty(VariantRec.EXAC63K_FINNISH_HOM_COUNT).equals(Double.valueOf(0)));
-			Assert.assertEquals(varA1.getProperty(VariantRec.EXAC63K_FINNISH_ALLELE_FREQ), 0, 0.001);
+			Assert.assertTrue(varA1.getProperty(VariantRec.EXAC63K_EUR_FINNISH_ALLELE_COUNT).equals(Double.valueOf(0)));
+			Assert.assertTrue(varA1.getProperty(VariantRec.EXAC63K_EUR_FINNISH_ALLELE_NUMBER).equals(Double.valueOf(4328)));
+			Assert.assertTrue(varA1.getProperty(VariantRec.EXAC63K_EUR_FINNISH_HOM_COUNT).equals(Double.valueOf(0)));
+			Assert.assertEquals(varA1.getProperty(VariantRec.EXAC63K_EUR_FINNISH_ALLELE_FREQ), 0, 0.001);
 
 			//X specific checks
 			Assert.assertTrue(varA1.getProperty(VariantRec.EXAC63K_OVERALL_HEMI_COUNT).equals(Double.valueOf(15)));
 			Assert.assertTrue(varA1.getProperty(VariantRec.EXAC63K_SOUTHASIAN_HEMI_COUNT).equals(Double.valueOf(0)));
-			Assert.assertTrue(varA1.getProperty(VariantRec.EXAC63K_EUROPEAN_HEMI_COUNT).equals(Double.valueOf(0)));
+			Assert.assertTrue(varA1.getProperty(VariantRec.EXAC63K_EUR_NONFINNISH_HEMI_COUNT).equals(Double.valueOf(0)));
 			Assert.assertTrue(varA1.getProperty(VariantRec.EXAC63K_OTHER_HEMI_COUNT).equals(Double.valueOf(0)));
 			Assert.assertTrue(varA1.getProperty(VariantRec.EXAC63K_EASTASIAN_HEMI_COUNT).equals(Double.valueOf(0)));
-			Assert.assertTrue(varA1.getProperty(VariantRec.EXAC63K_AMERICAN_HEMI_COUNT).equals(Double.valueOf(1)));
+			Assert.assertTrue(varA1.getProperty(VariantRec.EXAC63K_LATINO_HEMI_COUNT).equals(Double.valueOf(1)));
 			Assert.assertTrue(varA1.getProperty(VariantRec.EXAC63K_AFRICAN_HEMI_COUNT).equals(Double.valueOf(14)));
-			Assert.assertTrue(varA1.getProperty(VariantRec.EXAC63K_FINNISH_HEMI_COUNT).equals(Double.valueOf(0)));
+			Assert.assertTrue(varA1.getProperty(VariantRec.EXAC63K_EUR_FINNISH_HEMI_COUNT).equals(Double.valueOf(0)));
 
 			
 			//---------- varA2 ---------------------------------------------------
@@ -409,10 +409,10 @@ public class TestExAC63KExomesAnnotator extends TestCase {
 			Assert.assertEquals(varA2.getProperty(VariantRec.EXAC63K_SOUTHASIAN_ALLELE_FREQ), 0, 0.001);
 
 			//Non-Finnish Europeans 5 	46005 	0 	2 	0.0001087
-			Assert.assertTrue(varA2.getProperty(VariantRec.EXAC63K_EUROPEAN_ALLELE_COUNT).equals(Double.valueOf(5)));
-			Assert.assertTrue(varA2.getProperty(VariantRec.EXAC63K_EUROPEAN_ALLELE_NUMBER).equals(Double.valueOf(46005)));
-			Assert.assertTrue(varA2.getProperty(VariantRec.EXAC63K_EUROPEAN_HOM_COUNT).equals(Double.valueOf(0)));
-			Assert.assertEquals(varA2.getProperty(VariantRec.EXAC63K_EUROPEAN_ALLELE_FREQ), 0.0001087, 0.001);
+			Assert.assertTrue(varA2.getProperty(VariantRec.EXAC63K_EUR_NONFINNISH_ALLELE_COUNT).equals(Double.valueOf(5)));
+			Assert.assertTrue(varA2.getProperty(VariantRec.EXAC63K_EUR_NONFINNISH_ALLELE_NUMBER).equals(Double.valueOf(46005)));
+			Assert.assertTrue(varA2.getProperty(VariantRec.EXAC63K_EUR_NONFINNISH_HOM_COUNT).equals(Double.valueOf(0)));
+			Assert.assertEquals(varA2.getProperty(VariantRec.EXAC63K_EUR_NONFINNISH_ALLELE_FREQ), 0.0001087, 0.001);
 
 			//Other populations  	 	0 	595 	0 	0 	0
 			Assert.assertTrue(varA2.getProperty(VariantRec.EXAC63K_OTHER_ALLELE_COUNT).equals(Double.valueOf(0)));
@@ -427,10 +427,10 @@ public class TestExAC63KExomesAnnotator extends TestCase {
 			Assert.assertEquals(varA2.getProperty(VariantRec.EXAC63K_EASTASIAN_ALLELE_FREQ), 0, 0.001);
 
 			//Latino/American  	 	 	0 	9028 	0 	0 	0
-			Assert.assertTrue(varA2.getProperty(VariantRec.EXAC63K_AMERICAN_ALLELE_COUNT).equals(Double.valueOf(0)));
-			Assert.assertTrue(varA2.getProperty(VariantRec.EXAC63K_AMERICAN_ALLELE_NUMBER).equals(Double.valueOf(9028)));
-			Assert.assertTrue(varA2.getProperty(VariantRec.EXAC63K_AMERICAN_HOM_COUNT).equals(Double.valueOf(0)));
-			Assert.assertEquals(varA2.getProperty(VariantRec.EXAC63K_AMERICAN_ALLELE_FREQ), 0.0003323, 0.001);
+			Assert.assertTrue(varA2.getProperty(VariantRec.EXAC63K_LATINO_ALLELE_COUNT).equals(Double.valueOf(0)));
+			Assert.assertTrue(varA2.getProperty(VariantRec.EXAC63K_LATINO_ALLELE_NUMBER).equals(Double.valueOf(9028)));
+			Assert.assertTrue(varA2.getProperty(VariantRec.EXAC63K_LATINO_HOM_COUNT).equals(Double.valueOf(0)));
+			Assert.assertEquals(varA2.getProperty(VariantRec.EXAC63K_LATINO_ALLELE_FREQ), 0.0003323, 0.001);
 
 			//African  	0 	8328 	0 	0 	0
 			Assert.assertTrue(varA2.getProperty(VariantRec.EXAC63K_AFRICAN_ALLELE_COUNT).equals(Double.valueOf(0)));
@@ -439,20 +439,20 @@ public class TestExAC63KExomesAnnotator extends TestCase {
 			Assert.assertEquals(varA2.getProperty(VariantRec.EXAC63K_AFRICAN_ALLELE_FREQ), 0, 0.001);
 
 			//Finnish 0 	4328 	0 	0 	0
-			Assert.assertTrue(varA2.getProperty(VariantRec.EXAC63K_FINNISH_ALLELE_COUNT).equals(Double.valueOf(0)));
-			Assert.assertTrue(varA2.getProperty(VariantRec.EXAC63K_FINNISH_ALLELE_NUMBER).equals(Double.valueOf(4328)));
-			Assert.assertTrue(varA2.getProperty(VariantRec.EXAC63K_FINNISH_HOM_COUNT).equals(Double.valueOf(0)));
-			Assert.assertEquals(varA2.getProperty(VariantRec.EXAC63K_FINNISH_ALLELE_FREQ), 0, 0.001);
+			Assert.assertTrue(varA2.getProperty(VariantRec.EXAC63K_EUR_FINNISH_ALLELE_COUNT).equals(Double.valueOf(0)));
+			Assert.assertTrue(varA2.getProperty(VariantRec.EXAC63K_EUR_FINNISH_ALLELE_NUMBER).equals(Double.valueOf(4328)));
+			Assert.assertTrue(varA2.getProperty(VariantRec.EXAC63K_EUR_FINNISH_HOM_COUNT).equals(Double.valueOf(0)));
+			Assert.assertEquals(varA2.getProperty(VariantRec.EXAC63K_EUR_FINNISH_ALLELE_FREQ), 0, 0.001);
 
 			//X specific checks
 			Assert.assertTrue(varA2.getProperty(VariantRec.EXAC63K_OVERALL_HEMI_COUNT).equals(Double.valueOf(2)));
 			Assert.assertTrue(varA2.getProperty(VariantRec.EXAC63K_SOUTHASIAN_HEMI_COUNT).equals(Double.valueOf(0)));
-			Assert.assertTrue(varA2.getProperty(VariantRec.EXAC63K_EUROPEAN_HEMI_COUNT).equals(Double.valueOf(2)));
+			Assert.assertTrue(varA2.getProperty(VariantRec.EXAC63K_EUR_NONFINNISH_HEMI_COUNT).equals(Double.valueOf(2)));
 			Assert.assertTrue(varA2.getProperty(VariantRec.EXAC63K_OTHER_HEMI_COUNT).equals(Double.valueOf(0)));
 			Assert.assertTrue(varA2.getProperty(VariantRec.EXAC63K_EASTASIAN_HEMI_COUNT).equals(Double.valueOf(0)));
-			Assert.assertTrue(varA2.getProperty(VariantRec.EXAC63K_AMERICAN_HEMI_COUNT).equals(Double.valueOf(0)));
+			Assert.assertTrue(varA2.getProperty(VariantRec.EXAC63K_LATINO_HEMI_COUNT).equals(Double.valueOf(0)));
 			Assert.assertTrue(varA2.getProperty(VariantRec.EXAC63K_AFRICAN_HEMI_COUNT).equals(Double.valueOf(0)));
-			Assert.assertTrue(varA2.getProperty(VariantRec.EXAC63K_FINNISH_HEMI_COUNT).equals(Double.valueOf(0)));
+			Assert.assertTrue(varA2.getProperty(VariantRec.EXAC63K_EUR_FINNISH_HEMI_COUNT).equals(Double.valueOf(0)));
 
 			
 		}  catch (Exception ex) {
@@ -464,4 +464,3 @@ public class TestExAC63KExomesAnnotator extends TestCase {
 	}
 	
 }
-
