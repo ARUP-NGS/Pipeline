@@ -40,7 +40,7 @@ public class TestExAC63KExomesAnnotator extends TestCase {
 				System.out.println("Using default toy test resources.");
 				
 				pplVCF = new Pipeline(inputVCFTemplate, propertiesFile);
-				pplVCF.setProperty("63k.db.path", "src/test/java/testvcfs/ExAC.3.test.vcf.gz");
+				pplVCF.setProperty("63k.db.path", "src/test/java/testvcfs/ExAC.3.test.sites.vep.vcf.gz");
 			}
 			
 			pplVCF.initializePipeline();

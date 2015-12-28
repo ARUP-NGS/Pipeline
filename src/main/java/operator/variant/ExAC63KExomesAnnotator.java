@@ -79,8 +79,7 @@ public class ExAC63KExomesAnnotator extends AbstractTabixAnnotator {
 		String overallAlleleNumber = valueForKey(infoToks, "AN_Adj");
 
 		Path p = Paths.get(searchForAttribute(EXAC_63K_PATH));
-		String exacVersion = p.getFileName().toString().replace(".vcf.gz", "");
-		System.out.println(exacVersion);
+		String exacVersion = p.getFileName().toString().replace(".sites.vep.vcf.gz", "");
 		var.addAnnotation(VariantRec.EXAC63K_VERSION, exacVersion);
 		//Overall
 		safeParseAndSetProperty(var, VariantRec.EXAC63K_OVERALL_ALLELE_COUNT, overallAlleleCount, 1.0);
