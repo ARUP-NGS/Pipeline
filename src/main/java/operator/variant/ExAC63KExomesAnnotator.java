@@ -1,7 +1,10 @@
 package operator.variant;
 
-import operator.OperationFailedException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
 import buffer.variant.VariantRec;
+import operator.OperationFailedException;
 
 /**
  * Provides several 63K Exomes-based annotations from
@@ -42,6 +45,23 @@ public class ExAC63KExomesAnnotator extends AbstractTabixAnnotator {
 		return true;
 	}
 	
+	private boolean safeSetCalcFreq(VariantRec var, String  propertyKey, String alleleCount, String alleleNumber) {
+		if (alleleCount==null || alleleNumber==null) {
+			return false;
+		}
+		
+		try {
+			Double freq = Double.parseDouble(alleleCount)/Double.parseDouble(alleleNumber);
+			if(!freq.equals(Double.NaN)) {
+				var.addProperty(propertyKey, freq);
+			}
+		} catch (NumberFormatException nfe) {
+			//Don't worry about it, just don't set the property
+			return false;
+		}
+		
+		return true;
+	}
 	/**
 	 * Parses several frequency-based annotations from the given string and 
 	 * converts them to annotations (properties, actually) on the variant
@@ -52,84 +72,97 @@ public class ExAC63KExomesAnnotator extends AbstractTabixAnnotator {
 	@Override
 	protected boolean addAnnotationsFromString(VariantRec var, String str, int altIndex) {
 		String[] toks = str.split("\t");
-				
 		//The 7th column is the info column, which looks a little like AF=0.23;AF_AMR=0.123;AF_EUR=0.456...
 		String[] infoToks = toks[7].split(";");
-		String overallFreqStr = valueForKey(infoToks, "AF");
-		if (overallFreqStr != null) {
-			Double freq = Double.parseDouble(overallFreqStr);
-			var.addProperty(VariantRec.EXOMES_63K_FREQ, freq);
-		}
-		
-		//Total number of chromosomes assessed
-		Double numCalledAlleles = Double.parseDouble(valueForKey(infoToks, "AN"));
 	
-		//Total number of samples, apparently, with genotype 1/1, so two alleles for each one
-		
-		safeParseAndSetProperty(var, VariantRec.EXOMES_63K_HOM_FREQ, valueForKey(infoToks, "AC_Hom"), numCalledAlleles/2.0);
-		safeParseAndSetProperty(var, VariantRec.EXOMES_63K_HOM_COUNT, valueForKey(infoToks, "AC_Hom"), 1.0);
-		
-		//Total number of samples with genotype 0/1, so one allele for each
-		safeParseAndSetProperty(var, VariantRec.EXOMES_63K_HET_FREQ, valueForKey(infoToks, "AC_Het"), numCalledAlleles);
+		String overallAlleleCount = valueForKeyAtIndex(infoToks, "AC_Adj", altIndex);
+		String overallAlleleNumber = valueForKey(infoToks, "AN_Adj");
 
+		Path p = Paths.get(searchForAttribute(EXAC_63K_PATH));
+		String exacVersion = p.getFileName().toString().replace(".sites.vep.vcf.gz", "");
+		var.addAnnotation(VariantRec.EXAC63K_VERSION, exacVersion);
+		//Overall
+		safeParseAndSetProperty(var, VariantRec.EXAC63K_OVERALL_ALLELE_COUNT, overallAlleleCount, 1.0);
+		safeParseAndSetProperty(var, VariantRec.EXAC63K_OVERALL_ALLELE_NUMBER, overallAlleleNumber, 1.0);
+		safeParseAndSetProperty(var, VariantRec.EXAC63K_OVERALL_HOM_COUNT, valueForKeyAtIndex(infoToks, "AC_Hom", altIndex), 1.0);
+		safeSetCalcFreq(var, VariantRec.EXAC63K_OVERALL_ALLELE_FREQ, overallAlleleCount, overallAlleleNumber);
 		
-		
-		Double numCalledAFR = Double.parseDouble(valueForKey(infoToks, "AN_AFR"));
-		safeParseAndSetProperty(var, VariantRec.EXOMES_63K_AFR_FREQ, valueForKey(infoToks, "AC_AFR"), numCalledAFR);
-		safeParseAndSetProperty(var, VariantRec.EXOMES_63K_AFR_HOM, valueForKey(infoToks, "Hom_AFR"), numCalledAFR);
-		safeParseAndSetProperty(var, VariantRec.EXOMES_63K_AFR_HET, valueForKey(infoToks, "Het_AFR"), numCalledAFR);
-				
-		
-		//American
-		
-		Double numCalledAMR = Double.parseDouble(valueForKey(infoToks, "AN_AMR"));
-		safeParseAndSetProperty(var, VariantRec.EXOMES_63K_AMR_FREQ, valueForKey(infoToks, "AC_AMR"), numCalledAMR);
-		safeParseAndSetProperty(var, VariantRec.EXOMES_63K_AMR_HOM, valueForKey(infoToks, "Hom_AMR"), numCalledAMR);
-		safeParseAndSetProperty(var, VariantRec.EXOMES_63K_AMR_HET, valueForKey(infoToks, "Het_AMR"), numCalledAMR);
-		
-		
-		
+		//African
+		String africanAlleleCount = valueForKeyAtIndex(infoToks, "AC_AFR", altIndex);
+		String africanAlleleNumber = valueForKey(infoToks, "AN_AFR");
+		safeParseAndSetProperty(var, VariantRec.EXAC63K_AFRICAN_ALLELE_COUNT, africanAlleleCount, 1.0);
+		safeParseAndSetProperty(var, VariantRec.EXAC63K_AFRICAN_ALLELE_NUMBER, africanAlleleNumber, 1.0);
+		safeParseAndSetProperty(var, VariantRec.EXAC63K_AFRICAN_HOM_COUNT, valueForKeyAtIndex(infoToks, "Hom_AFR", altIndex), 1.0);
+		safeSetCalcFreq(var, VariantRec.EXAC63K_AFRICAN_ALLELE_FREQ, africanAlleleCount, africanAlleleNumber);
+
+
+		//Latino
+		String latinoAlleleCount = valueForKeyAtIndex(infoToks, "AC_AMR", altIndex);
+		String latinoAlleleNumber = valueForKey(infoToks, "AN_AMR");
+		safeParseAndSetProperty(var, VariantRec.EXAC63K_LATINO_ALLELE_COUNT, latinoAlleleCount, 1.0);
+		safeParseAndSetProperty(var, VariantRec.EXAC63K_LATINO_ALLELE_NUMBER, latinoAlleleNumber, 1.0);
+		safeParseAndSetProperty(var, VariantRec.EXAC63K_LATINO_HOM_COUNT, valueForKeyAtIndex(infoToks, "Hom_AMR", altIndex), 1.0);
+		safeSetCalcFreq(var, VariantRec.EXAC63K_LATINO_ALLELE_FREQ, latinoAlleleCount, latinoAlleleNumber);
+
+
 		//East Asian
-		
-		Double numCalledEAS = Double.parseDouble(valueForKey(infoToks, "AN_EAS"));
-		safeParseAndSetProperty(var, VariantRec.EXOMES_63K_EAS_FREQ, valueForKey(infoToks, "AC_EAS"), numCalledEAS);
-		safeParseAndSetProperty(var, VariantRec.EXOMES_63K_EAS_HOM, valueForKey(infoToks, "Hom_EAS"), numCalledEAS);
-		safeParseAndSetProperty(var, VariantRec.EXOMES_63K_EAS_HET, valueForKey(infoToks, "Het_EAS"), numCalledEAS);
-		
-		
-		
+		String eastAsianAlleleCount = valueForKeyAtIndex(infoToks, "AC_EAS", altIndex);
+		String eastAsianAlleleNumber = valueForKey(infoToks, "AN_EAS");
+		safeParseAndSetProperty(var, VariantRec.EXAC63K_EASTASIAN_ALLELE_COUNT, eastAsianAlleleCount, 1.0);
+		safeParseAndSetProperty(var, VariantRec.EXAC63K_EASTASIAN_ALLELE_NUMBER, eastAsianAlleleNumber, 1.0);
+		safeParseAndSetProperty(var, VariantRec.EXAC63K_EASTASIAN_HOM_COUNT, valueForKeyAtIndex(infoToks, "Hom_EAS", altIndex), 1.0);
+		safeSetCalcFreq(var, VariantRec.EXAC63K_EASTASIAN_ALLELE_FREQ, eastAsianAlleleCount, eastAsianAlleleNumber);
+
+
+
 		//Finnish
-		
-		Double numCalledFIN = Double.parseDouble(valueForKey(infoToks, "AN_FIN"));
-		safeParseAndSetProperty(var, VariantRec.EXOMES_63K_FIN_FREQ, valueForKey(infoToks, "AC_FIN"), numCalledFIN);
-		safeParseAndSetProperty(var, VariantRec.EXOMES_63K_FIN_HOM, valueForKey(infoToks, "Hom_FIN"), numCalledFIN);
-		safeParseAndSetProperty(var, VariantRec.EXOMES_63K_FIN_HET, valueForKey(infoToks, "Het_FIN"), numCalledFIN);
-		
-		
+		String finnishAlleleCount = valueForKeyAtIndex(infoToks, "AC_FIN", altIndex);
+		String finnishAlleleNumber = valueForKey(infoToks, "AN_FIN");
+		safeParseAndSetProperty(var, VariantRec.EXAC63K_EUR_FINNISH_ALLELE_COUNT, finnishAlleleCount, 1.0);
+		safeParseAndSetProperty(var, VariantRec.EXAC63K_EUR_FINNISH_ALLELE_NUMBER, finnishAlleleNumber, 1.0);
+		safeParseAndSetProperty(var, VariantRec.EXAC63K_EUR_FINNISH_HOM_COUNT, valueForKeyAtIndex(infoToks, "Hom_FIN", altIndex), 1.0);
+		safeSetCalcFreq(var, VariantRec.EXAC63K_EUR_FINNISH_ALLELE_FREQ, finnishAlleleCount, finnishAlleleNumber);
+	
+	
 		//Non-Finnish Europeans
-		
-		Double numCalledNFE = Double.parseDouble(valueForKey(infoToks, "AN_NFE"));
-		safeParseAndSetProperty(var, VariantRec.EXOMES_63K_NFE_FREQ, valueForKey(infoToks, "AC_NFE"), numCalledNFE);
-		safeParseAndSetProperty(var, VariantRec.EXOMES_63K_NFE_HOM, valueForKey(infoToks, "Hom_NFE"), numCalledNFE);
-		safeParseAndSetProperty(var, VariantRec.EXOMES_63K_NFE_HET, valueForKey(infoToks, "Het_NFE"), numCalledNFE);
-		
-		
-		//Other populations
-		
-		Double numCalledOTH = Double.parseDouble(valueForKey(infoToks, "AN_OTH"));
-		safeParseAndSetProperty(var, VariantRec.EXOMES_63K_OTH_FREQ, valueForKey(infoToks, "AC_OTH"), numCalledOTH);
-		safeParseAndSetProperty(var, VariantRec.EXOMES_63K_OTH_HOM, valueForKey(infoToks, "Hom_OTH"), numCalledOTH);
-		safeParseAndSetProperty(var, VariantRec.EXOMES_63K_OTH_HET, valueForKey(infoToks, "Het_OTH"), numCalledOTH);
-		
-		
+		String europeanAlleleCount = valueForKeyAtIndex(infoToks, "AC_NFE", altIndex);
+		String europeanAlleleNumber = valueForKey(infoToks, "AN_NFE");
+		safeParseAndSetProperty(var, VariantRec.EXAC63K_EUR_NONFINNISH_ALLELE_COUNT, europeanAlleleCount, 1.0);
+		safeParseAndSetProperty(var, VariantRec.EXAC63K_EUR_NONFINNISH_ALLELE_NUMBER, europeanAlleleNumber, 1.0);
+		safeParseAndSetProperty(var, VariantRec.EXAC63K_EUR_NONFINNISH_HOM_COUNT, valueForKeyAtIndex(infoToks, "Hom_NFE", altIndex), 1.0);
+		safeSetCalcFreq(var, VariantRec.EXAC63K_EUR_NONFINNISH_ALLELE_FREQ, europeanAlleleCount, europeanAlleleNumber);
+
+
 		//South Asian
-		Double numCalledSAS = Double.parseDouble(valueForKey(infoToks, "AN_SAS"));
-		safeParseAndSetProperty(var, VariantRec.EXOMES_63K_SAS_FREQ, valueForKey(infoToks, "AC_SAS"), numCalledSAS);
-		safeParseAndSetProperty(var, VariantRec.EXOMES_63K_SAS_HOM, valueForKey(infoToks, "Hom_SAS"), numCalledSAS);
-		safeParseAndSetProperty(var, VariantRec.EXOMES_63K_SAS_HET, valueForKey(infoToks, "Het_SAS"), numCalledSAS);
+		String southAsianAlleleCount = valueForKeyAtIndex(infoToks, "AC_SAS", altIndex);
+		String southAsianAlleleNumber = valueForKey(infoToks, "AN_SAS");
+		safeParseAndSetProperty(var, VariantRec.EXAC63K_SOUTHASIAN_ALLELE_COUNT, southAsianAlleleCount, 1.0);
+		safeParseAndSetProperty(var, VariantRec.EXAC63K_SOUTHASIAN_ALLELE_NUMBER, southAsianAlleleNumber, 1.0);
+		safeParseAndSetProperty(var, VariantRec.EXAC63K_SOUTHASIAN_HOM_COUNT, valueForKeyAtIndex(infoToks, "Hom_SAS", altIndex), 1.0);
+		safeSetCalcFreq(var, VariantRec.EXAC63K_SOUTHASIAN_ALLELE_FREQ, southAsianAlleleCount, southAsianAlleleNumber);
+
+
+		//Other populations
+		String otherAlleleCount = valueForKeyAtIndex(infoToks, "AC_OTH", altIndex);
+		String otherAlleleNumber = valueForKey(infoToks, "AN_OTH");
+		safeParseAndSetProperty(var, VariantRec.EXAC63K_OTHER_ALLELE_COUNT, otherAlleleCount, 1.0);
+		safeParseAndSetProperty(var, VariantRec.EXAC63K_OTHER_ALLELE_NUMBER, otherAlleleNumber, 1.0);
+		safeParseAndSetProperty(var, VariantRec.EXAC63K_OTHER_HOM_COUNT, valueForKeyAtIndex(infoToks, "Hom_OTH", altIndex), 1.0);
+		safeSetCalcFreq(var, VariantRec.EXAC63K_OTHER_ALLELE_FREQ, otherAlleleCount, otherAlleleNumber);
 		
-		
-		//Compute 'overall' het / hom frequency
+		//We should also check if it is on the X chrom, and add hemi info..
+		if (str.contains("AC_Hemi")) { //Has hemi info.
+			safeParseAndSetProperty(var, VariantRec.EXAC63K_OVERALL_HEMI_COUNT, valueForKeyAtIndex(infoToks, "AC_Hemi", altIndex), 1.0);
+			
+			//populations
+			safeParseAndSetProperty(var, VariantRec.EXAC63K_AFRICAN_HEMI_COUNT, valueForKeyAtIndex(infoToks, "Hemi_AFR", altIndex), 1.0);
+			safeParseAndSetProperty(var, VariantRec.EXAC63K_LATINO_HEMI_COUNT, valueForKeyAtIndex(infoToks, "Hemi_AMR", altIndex), 1.0);
+			safeParseAndSetProperty(var, VariantRec.EXAC63K_EASTASIAN_HEMI_COUNT, valueForKeyAtIndex(infoToks, "Hemi_EAS", altIndex), 1.0);
+			safeParseAndSetProperty(var, VariantRec.EXAC63K_EUR_FINNISH_HEMI_COUNT, valueForKeyAtIndex(infoToks, "Hemi_FIN", altIndex), 1.0);
+			safeParseAndSetProperty(var, VariantRec.EXAC63K_EUR_NONFINNISH_HEMI_COUNT, valueForKeyAtIndex(infoToks, "Hemi_NFE", altIndex), 1.0);
+			safeParseAndSetProperty(var, VariantRec.EXAC63K_SOUTHASIAN_HEMI_COUNT, valueForKeyAtIndex(infoToks, "Hemi_SAS", altIndex), 1.0);
+			safeParseAndSetProperty(var, VariantRec.EXAC63K_OTHER_HEMI_COUNT, valueForKeyAtIndex(infoToks, "Hemi_OTH", altIndex), 1.0);
+		}
 		
 		return true;
 	}
@@ -150,5 +183,21 @@ public class ExAC63KExomesAnnotator extends AbstractTabixAnnotator {
 		return null;
 	}
 
+	/**
+	 * Given a list of INFO tokens (like AF=52, GT=67, AD=1324 ...), pull the one 
+	 * with the key given (e.g. AD), extract the value, and return it as a string.  
+	 * @param toks
+	 * @param key
+	 * @return
+	 */
+	private static String valueForKeyAtIndex(String[] toks, String key, int index) {
+		for(int i=0; i<toks.length; i++) {
+			if (toks[i].startsWith(key)) {
+				String token = toks[i].replace(key, "").replace("=", "").replace(";", "").trim();
+				return token.split(",")[index];
+			}
+		}
+		return null;
+	}
 	
 }

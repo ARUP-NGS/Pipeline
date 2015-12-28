@@ -94,11 +94,6 @@ public abstract class AbstractTabixAnnotator extends Annotator {
 		String[] toks = vcfLine.split("\t");
 		String[] alts = toks[4].split(",");
 		
-		/* This is a temporary fix to break out of attempting to annotate using multi-alt reference variants. */
-		if (alts.length > 1) { // This will fail on all multi-alts but will continue if we only have one alt to work with.
-			return -1;
-		}
-		
 		for(int i=0; i<alts.length; i++) {
 			VariantRec queryResultVar = new VariantRec(toks[0], Integer.parseInt(toks[1]), Integer.parseInt(toks[1])+toks[3].length(), toks[3], alts[i]);
 			queryResultVar = VCFParser.normalizeVariant(queryResultVar);

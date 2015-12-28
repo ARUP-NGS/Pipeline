@@ -51,21 +51,7 @@ public class JSONVarsGenerator extends VariantPoolWriter {
 	//A list of annotation keys that we DONT WANT included with typical 
 	//output
 	private static List<String> DEFAULT_EXCLUDED_KEYS = Arrays.asList(new String[]{
-			VariantRec.EXOMES_63K_AFR_HET,
-			VariantRec.EXOMES_63K_AFR_HOM,
-			VariantRec.EXOMES_63K_AMR_HET,
-			VariantRec.EXOMES_63K_AMR_HOM,
-			VariantRec.EXOMES_63K_EAS_HET,
-			VariantRec.EXOMES_63K_EAS_HOM,
-			VariantRec.EXOMES_63K_FIN_HET,
-			VariantRec.EXOMES_63K_FIN_HOM,
-			VariantRec.EXOMES_63K_NFE_HET,
-			VariantRec.EXOMES_63K_NFE_HOM,
-			VariantRec.EXOMES_63K_OTH_HET,
-			VariantRec.EXOMES_63K_OTH_HOM,
-			VariantRec.EXOMES_63K_SAS_HET,
-			VariantRec.EXOMES_63K_SAS_HOM,
-			VariantRec.EXOMES_63K_HET_FREQ
+			//VariantRec.EXOMES_63K_AFR_HET, //Left to show how to exclude keys.
 			});
 	
 	

@@ -11,8 +11,8 @@
 	<variants />
 </VariantPool>
 
-<GeneAnnotate class="operator.variant.ExAC63KExomesAnnotator">
+<ExACAnnotator class="operator.variant.ExAC63KExomesAnnotator">
  <VariantPool />
-</GeneAnnotate>
+</ExACAnnotator>
 
 </Pipeline>
