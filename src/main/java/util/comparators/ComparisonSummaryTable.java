@@ -18,6 +18,7 @@ public class ComparisonSummaryTable {
 	List<List<String> > rowData = new ArrayList<List<String> >();
 	List<String> colNames;
 	String comparisonType = "";
+	String comparisonName = "";
 	Map<String, List<VariantRec>> failedVariants = new LinkedHashMap<String, List<VariantRec>>(); //Keep track of variants to display for a given analysis comparison.
 
 	
@@ -40,15 +41,6 @@ public class ComparisonSummaryTable {
 			throw new IllegalArgumentException("Incorrect number of columns, got " + row.size() + ", but should be " + String.valueOf(colNames.size() + 1));
 		} else {
 			rowData.add(row);
-		}
-	}
-	
-	public void printSummaryTable() {
-		System.out.println("");
-		this.printSummaryInColumns(this.comparisonType, colNames.get(0), colNames.get(1));
-		this.printSummaryInColumns("==============","===","==============");
-		for(List<String> row : rowData) {
-			this.printSummaryInColumns(row.get(0), row.get(1), row.get(2));
 		}
 	}
 	
@@ -75,6 +67,15 @@ public class ComparisonSummaryTable {
 	
 	public void printInColumns(String name, String f1, String f2, String f3) {
 		System.out.printf("%-40.40s %-40.40s %-40.40s %-60.60s%n", name+":", f1, f2, f3);
+	}
+	
+	public void printSummaryTable() {
+		System.out.println("");
+		this.printSummaryInColumns(this.comparisonType, colNames.get(0), colNames.get(1));
+		this.printSummaryInColumns("==============","===","==============");
+		for(List<String> row : rowData) {
+			this.printSummaryInColumns(row.get(0), row.get(1), row.get(2));
+		}
 	}
 	
 	public void printSummaryInColumns(String name, String sevNum, String sevMap) {

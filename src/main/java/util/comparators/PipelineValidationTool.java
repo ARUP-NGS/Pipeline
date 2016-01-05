@@ -151,10 +151,10 @@ public class PipelineValidationTool {
 						if( Arrays.equals(rd1Fastqs, rd2Fastqs) ) {
 							List<ReviewDirectory> rds = new ArrayList<ReviewDirectory>();
 							//Make sure the older run RD gets put in the first column as our truth set.
-							if(Long.valueOf(rd1.getSampleManifest().getTime()) < Long.valueOf(rd2.getSampleManifest().getTime())) {
+							if(Long.valueOf(rd1.getSampleManifest().getTime()) < Long.valueOf(rd2.getSampleManifest().getTime())) { //rd1 is the older truth set.
 								rds.add(rd1);
 								rds.add(rd2);
-							} else {
+							} else { //rd1 is newer and as such is the test set.
 								rds.add(rd2);
 								rds.add(rd1);
 							}
@@ -185,7 +185,9 @@ public class PipelineValidationTool {
 				crd.compare();
 				crds.add(crd);
 				//Now collect relevant summary information from our comparator class.
+				System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\n");
 				System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+
 			} catch (IOException | ManifestParseException | JSONException ex) {
 				System.out.println("Error with comparison for RDs: " + entry.getValue().get(0).getSourceDirPath() + " and " + entry.getValue().get(1).getSourceDirPath());
 				ex.printStackTrace();

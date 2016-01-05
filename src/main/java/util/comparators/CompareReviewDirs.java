@@ -37,7 +37,7 @@ public class CompareReviewDirs extends IOOperator {
 
 	private LinkedHashMap<String, Object> finalJSONOutput = new LinkedHashMap<String, Object>();
 	
-	private Logger logger = Logger.getLogger(Pipeline.primaryLoggerName);
+	//private Logger logger = Logger.getLogger(Pipeline.primaryLoggerName);
 	
 	private ReviewDirectory rd1 = null;
 	private ReviewDirectory rd2 = null;
@@ -89,8 +89,8 @@ public class CompareReviewDirs extends IOOperator {
 	}
 	
 	public void compare() throws IOException, JSONException {
-		logger.info("Begin Review Directory Comparison.");
-		
+		//logger.info("Begin Review Directory Comparison.");
+		System.out.println(rd1.getSampleName() + "-" + rd2.getSampleName());
 		//Compare Manifest information
 		manifestSummaryComparator = new ManifestSummaryComparator(rd1, rd2, "Summary Information Comparison");
 		manifestSummaryComparator.performOperation();
