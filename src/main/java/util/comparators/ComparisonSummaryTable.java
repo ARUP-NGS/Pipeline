@@ -53,11 +53,12 @@ public class ComparisonSummaryTable {
 			this.printInColumns(analysisTypeKey, row.get(1), row.get(2), row.get(3));
 			List<VariantRec> listOfVariants = failedVariants.get(analysisTypeKey);
 			if (listOfVariants != null && listOfVariants.size() > 0) {
-				System.out.println("\t==================================================================================");
+				System.out.println("\t===================================================================================================");
+				System.out.println("\t||" + listOfVariants.get(0).getSimpleHeader() + "\t||");
 			    for (VariantRec rec : listOfVariants) {
-			    	System.out.println("\t||"+rec.toBasicString() + "\t||");
+			    	System.out.println("\t||"+rec.toSimpleString() + "\t||");
 			    }
-				System.out.println("\t==================================================================================");
+				System.out.println("\t===================================================================================================");
 			} else {
 			    // No such key
 				continue;
@@ -71,14 +72,14 @@ public class ComparisonSummaryTable {
 	
 	public void printSummaryTable() {
 		System.out.println("");
-		this.printSummaryInColumns(this.comparisonType, colNames.get(0), colNames.get(1));
-		this.printSummaryInColumns("==============","===","==============");
+		this.printSummaryInColumns(this.comparisonType, colNames.get(0));
+		this.printSummaryInColumns("==============","==============");
 		for(List<String> row : rowData) {
-			this.printSummaryInColumns(row.get(0), row.get(1), row.get(2));
+			this.printSummaryInColumns(row.get(0), row.get(1));
 		}
 	}
 	
-	public void printSummaryInColumns(String name, String sevNum, String sevMap) {
-		System.out.printf("%-70.70s %-5.5s %-200.200s%n", (String) name+":", sevNum, sevMap);
+	public void printSummaryInColumns(String name, String sevMap) {
+		System.out.printf("%-100.100s %-200.200s%n", (String) name+":", sevMap);
 	}
 }

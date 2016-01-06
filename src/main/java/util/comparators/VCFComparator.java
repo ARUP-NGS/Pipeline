@@ -62,7 +62,6 @@ public class VCFComparator extends Comparator {
 		VariantPool vp1Sub2 = vp1.subtract(vp2);
 		VariantPool vp2Sub1 = vp2.subtract(vp1);
 
-		
 		String varSNPS = String.valueOf(vp1Sub2.countSNPs() + vp2Sub1.countSNPs());
 		String varINS = String.valueOf(vp1Sub2.countInsertions() + vp2Sub1.countInsertions());
 		String varDEL = String.valueOf(vp1Sub2.countDeletions() + vp2Sub1.countDeletions());

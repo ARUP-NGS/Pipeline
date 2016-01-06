@@ -217,7 +217,7 @@ public class PipelineValidationTool {
 		
 		for (Severity sev: Severity.values()) {
 			if (!sev.toString().equals("EXACT")) {
-				ComparisonSummaryTable st = new ComparisonSummaryTable(sev.toString(), Arrays.asList("#", "Type", ""));
+				ComparisonSummaryTable st = new ComparisonSummaryTable(sev.toString(), Arrays.asList("Types", ""));
 				LinkedHashMap<String, Object> sevJSON = new LinkedHashMap<String, Object>();
 
 				for (Map.Entry<String, DiscordanceSummary> entry : valSummary.entrySet()) {
@@ -229,16 +229,16 @@ public class PipelineValidationTool {
 					
 					int sum = disSum.getSeveritySummary(sev).size();
 					//if (sum > 0) {
-					String sevNum = String.valueOf(sum);
-					newRow.add(sevNum);
+					//String sevNum = String.valueOf(sum);
+					//newRow.add(sevNum);
 					
 					String sevMap = disSum.getSeveritySummary(sev).toString();
 					newRow.add(sevMap);
 					newRow.add("");
 					
-					String[] summaryArray = {sevNum, sevMap};
+					//String[] summaryArray = {sevNum, sevMap};
 					//validationSummary.put(comparisonName, summaryArray);
-					sevJSON.put(comparisonName, summaryArray);
+					sevJSON.put(comparisonName, sevMap);
 					st.addRow(newRow);
 					//}				
 				}
