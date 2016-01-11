@@ -21,7 +21,7 @@ import operator.OperationFailedException;
 public class ExAC63KExomesAnnotator extends AbstractTabixAnnotator {
 
 	public static final String EXAC_63K_PATH = "63k.db.path";
-		
+	
 	@Override
 	protected String getPathToTabixedFile() {
 		return searchForAttribute(EXAC_63K_PATH);
@@ -53,7 +53,8 @@ public class ExAC63KExomesAnnotator extends AbstractTabixAnnotator {
 		try {
 			Double freq = Double.parseDouble(alleleCount)/Double.parseDouble(alleleNumber);
 			if(!freq.equals(Double.NaN)) {
-				var.addProperty(propertyKey, freq);
+				Double finalFreq = Math.round( freq * 1000.0 ) / 1000.0;
+				var.addProperty(propertyKey, finalFreq);
 			}
 		} catch (NumberFormatException nfe) {
 			//Don't worry about it, just don't set the property
@@ -81,6 +82,17 @@ public class ExAC63KExomesAnnotator extends AbstractTabixAnnotator {
 		Path p = Paths.get(searchForAttribute(EXAC_63K_PATH));
 		String exacVersion = p.getFileName().toString().replace(".sites.vep.vcf.gz", "");
 		var.addAnnotation(VariantRec.EXAC63K_VERSION, exacVersion);
+		
+		//exomes63K.al.freq.het, exomes63K.al.freq.hom
+		//AC_Het / total counts (AC_Adj/2)
+		String totalSamples = String.valueOf( Double.parseDouble(overallAlleleNumber)/2.0 );
+		
+		
+		safeSetCalcFreq(var, VariantRec.EXAC63K_OVERALL_FREQ_HET, valueForKeyAtIndex(infoToks, "AC_Het", altIndex), totalSamples);
+		
+		//AC_Hom / total counts (AC_Adj/2)
+		safeSetCalcFreq(var, VariantRec.EXAC63K_OVERALL_FREQ_HOM, valueForKeyAtIndex(infoToks, "AC_Hom", altIndex), totalSamples);
+
 		//Overall
 		safeParseAndSetProperty(var, VariantRec.EXAC63K_OVERALL_ALLELE_COUNT, overallAlleleCount, 1.0);
 		safeParseAndSetProperty(var, VariantRec.EXAC63K_OVERALL_ALLELE_NUMBER, overallAlleleNumber, 1.0);
@@ -152,6 +164,8 @@ public class ExAC63KExomesAnnotator extends AbstractTabixAnnotator {
 		
 		//We should also check if it is on the X chrom, and add hemi info..
 		if (str.contains("AC_Hemi")) { //Has hemi info.
+			safeSetCalcFreq(var, VariantRec.EXAC63K_OVERALL_FREQ_HEMI, valueForKeyAtIndex(infoToks, "AC_Hemi", altIndex), totalSamples);
+			
 			safeParseAndSetProperty(var, VariantRec.EXAC63K_OVERALL_HEMI_COUNT, valueForKeyAtIndex(infoToks, "AC_Hemi", altIndex), 1.0);
 			
 			//populations
