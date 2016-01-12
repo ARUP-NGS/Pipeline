@@ -84,14 +84,12 @@ public class ExAC63KExomesAnnotator extends AbstractTabixAnnotator {
 		var.addAnnotation(VariantRec.EXAC63K_VERSION, exacVersion);
 		
 		//exomes63K.al.freq.het, exomes63K.al.freq.hom
-		//AC_Het / total counts (AC_Adj/2)
-		String totalSamples = String.valueOf( Double.parseDouble(overallAlleleNumber)/2.0 );
+		//AC_Het / totalAlleles
+		safeSetCalcFreq(var, VariantRec.EXAC63K_OVERALL_FREQ_HET, valueForKeyAtIndex(infoToks, "AC_Het", altIndex), overallAlleleNumber);
 		
-		
-		safeSetCalcFreq(var, VariantRec.EXAC63K_OVERALL_FREQ_HET, valueForKeyAtIndex(infoToks, "AC_Het", altIndex), totalSamples);
-		
-		//AC_Hom / total counts (AC_Adj/2)
-		safeSetCalcFreq(var, VariantRec.EXAC63K_OVERALL_FREQ_HOM, valueForKeyAtIndex(infoToks, "AC_Hom", altIndex), totalSamples);
+		//AC_Hom * 2 / totalAlleles
+		String homAlleleNum = String.valueOf(Double.valueOf(valueForKeyAtIndex(infoToks, "AC_Hom", altIndex)) * 2.0 );
+		safeSetCalcFreq(var, VariantRec.EXAC63K_OVERALL_FREQ_HOM, homAlleleNum, overallAlleleNumber);
 
 		//Overall
 		safeParseAndSetProperty(var, VariantRec.EXAC63K_OVERALL_ALLELE_COUNT, overallAlleleCount, 1.0);
@@ -164,7 +162,7 @@ public class ExAC63KExomesAnnotator extends AbstractTabixAnnotator {
 		
 		//We should also check if it is on the X chrom, and add hemi info..
 		if (str.contains("AC_Hemi")) { //Has hemi info.
-			safeSetCalcFreq(var, VariantRec.EXAC63K_OVERALL_FREQ_HEMI, valueForKeyAtIndex(infoToks, "AC_Hemi", altIndex), totalSamples);
+			safeSetCalcFreq(var, VariantRec.EXAC63K_OVERALL_FREQ_HEMI, valueForKeyAtIndex(infoToks, "AC_Hemi", altIndex), overallAlleleNumber);
 			
 			safeParseAndSetProperty(var, VariantRec.EXAC63K_OVERALL_HEMI_COUNT, valueForKeyAtIndex(infoToks, "AC_Hemi", altIndex), 1.0);
 			
