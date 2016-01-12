@@ -53,7 +53,7 @@ public class ExAC63KExomesAnnotator extends AbstractTabixAnnotator {
 		try {
 			Double freq = Double.parseDouble(alleleCount)/Double.parseDouble(alleleNumber);
 			if(!freq.equals(Double.NaN)) {
-				Double finalFreq = Math.round( freq * 1000.0 ) / 1000.0;
+				Double finalFreq = Math.round( freq * 10000.0 ) / 10000.0;
 				var.addProperty(propertyKey, finalFreq);
 			}
 		} catch (NumberFormatException nfe) {
