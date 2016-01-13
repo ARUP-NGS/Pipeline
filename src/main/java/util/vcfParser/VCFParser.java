@@ -131,7 +131,7 @@ public class VCFParser implements VariantLineReader {
 		}
 		
 		//Infer creator from source= field in the header. Accepted creators: FreeBayes (freeBayes*), ion torrent (*Torrent*), Real Time Genomics (RTG*), Complete Genomics (CGAPipeline*) 
-		//EXCEPT for GATK, which looks for UnifiedGenotyper= or GATKCommandLine= fields
+		//EXCEPT for GATK, which looks for UnifiedGenotyper=, GATKCommandLine=, or GATKCommandLine.HaplotypeCaller= fields
 		creator =  headerProperties.get("source");
 		if (creator != null) {
 			if (creator.startsWith("SelectVariants")) {
@@ -146,6 +146,8 @@ public class VCFParser implements VariantLineReader {
 		} else {
 			if ((headerProperties.containsKey("UnifiedGenotyper")) || (headerProperties.containsKey("GATKCommandLine"))) {
 				creator = "GATK / UnifiedGenotyper";
+			} else if (headerProperties.containsKey("GATKCommandLine.HaplotypeCaller"))  {
+				creator = "GATK / HaplotypeCaller";
 			} else {
 				if (failIfNoSource) {
 					throw new IOException(NO_SOURCE_WARNING_MESSAGE);

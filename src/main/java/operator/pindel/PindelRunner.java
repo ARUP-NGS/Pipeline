@@ -208,7 +208,7 @@ public class PindelRunner extends IOOperator {
 		private double computeMeanCoverageForRegion(BAMFile bam, String chr, int start, int end) throws IOException {
 			BasicIntervalContainer intervals = new BasicIntervalContainer();
 			intervals.addInterval(chr,  start,  end, null);
-			CoverageCalculator covCalc = new CoverageCalculator(bam.getFile(), intervals);
+			CoverageCalculator covCalc = new CoverageCalculator(bam.getFile(), intervals, false);
 			covCalc.setThreadCount(1);
 			int[] depthHistogram;
 			try {

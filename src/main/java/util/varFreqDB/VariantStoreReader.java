@@ -4,9 +4,17 @@ import java.util.Queue;
 
 import util.varFreqDB.ComputeVarFreqs.SampleInfo;
 
+/**
+ * These just provide a Runnable for reading VCFs into VariantPools for a sampleInfo object. For exomes
+ * this can take a long time, so it's nice to do a bunch of these in parallel  
+ * @author brendan
+ *
+ */
 public class VariantStoreReader implements Runnable {
 	final SampleInfo info;
-	final Queue<SampleInfo> finishedQueue;
+	
+	//When the pool is done being read, the sampleInfo object that contains it is pushed onto this Queue. Queue MUST be concurrent-safe!
+	final Queue<SampleInfo> finishedQueue; 
 	Exception ex = null;
 	
 	public VariantStoreReader(SampleInfo info, Queue<SampleInfo> queue) {
@@ -18,7 +26,7 @@ public class VariantStoreReader implements Runnable {
 	public void run() {
 		System.err.println("Reading pool for " + info.source.getName());
 		try {
-			info.getPool();
+			info.getPool(); //Loads the vcf file into memory, that's it.
 			boolean added = finishedQueue.offer(info);
 			while(! added) {
 				System.err.println("Queue at capacity, variant pool reading thread for " + info.source.getName() + " is sleeping");

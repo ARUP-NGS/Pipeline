@@ -45,8 +45,11 @@ public class QCtoJSON extends Operator {
 
 	public static final String NM_DEFS = "nm.Definitions";
 	public static final String STRICT_NMS = "strict.nm";
-	
+	public static final String MIN_LENGTH = "min.length";
+	public static final int DEFAULT_MIN_LENGTH = 2;
 	private Map<String, String> nms = null;
+	
+	private int minNoCallLength = DEFAULT_MIN_LENGTH;
 	
 	DOCMetrics rawCoverageMetrics = null;
 	DOCMetrics finalCoverageMetrics = null;
@@ -198,7 +201,7 @@ public class QCtoJSON extends Operator {
 					
 					if (toks.length > 3 && (! toks[3].equals("CALLABLE"))) {
 						JSONObject region = new JSONObject();
-						noCallIntervals++;
+						
 						try {
 							String contig = toks[0];
 							long startPos = Long.parseLong(toks[1]);
@@ -206,6 +209,11 @@ public class QCtoJSON extends Operator {
 							long length = endPos - startPos;
 							double cov = -1;
 							
+							if (length < minNoCallLength) {
+								line = reader.readLine();
+								continue;
+							}
+						
 							
 							String cause = toks[3];
 							cause = cause.toLowerCase();
@@ -226,7 +234,10 @@ public class QCtoJSON extends Operator {
 							if (length > 1 && (featureStr.contains("exon"))) {
 								regions.add(Arrays.asList(new String[]{"chr" + toks[0] + ":" + toks[1] + " - " + toks[2], "" + length, cause, featureStr}) );
 							}
+							
+							
 							noCallPositions += length;
+							noCallIntervals++;
 							
 							region.put("gene", featureStr);
 							region.put("size", length);
@@ -382,6 +393,10 @@ public class QCtoJSON extends Operator {
 			throw new IllegalArgumentException("Preferred NM files are missing:  "+ nmDefs);
 		}
 		
+		String minLength = this.getAttribute(MIN_LENGTH);
+		if (minLength != null) {
+			this.minNoCallLength = Integer.parseInt(minLength);
+		}
 		
 		
 		for(int i=0; i<children.getLength(); i++) {

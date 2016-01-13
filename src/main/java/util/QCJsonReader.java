@@ -574,35 +574,36 @@ private static void performMonthlyQA(List<String> paths, PrintStream out, Analys
 	 * @param out
 	 * @param converter
 	 */
-	public static void performEmit(String metric, List<String> paths, PrintStream out) {
+	public static void performEmit(String metrics, List<String> paths, PrintStream out) {
 		for(String path : paths) {
+			out.print(path + "\t");
 			try {
-				JSONObject obj = toJSONObj(path);
-				
-				String[] mPath = metric.split(":");
-				boolean lastIsArray = false;
-				try {
-					Integer index = Integer.parseInt(mPath[mPath.length-1]);
-					lastIsArray = true;
-					for(int i=0; i<mPath.length-2; i++){
-						obj = obj.getJSONObject(mPath[i]);
-					}
-					JSONArray array = obj.getJSONArray(mPath[mPath.length-2]);
-					out.println(path + ":\t" + array.get(index).toString());
-				} catch (NumberFormatException ex) {
-					//No big deal, just not an array index
-				}
-				
-				if (!lastIsArray) {
-					for(int i=0; i<mPath.length-1; i++){
-						obj = obj.getJSONObject(mPath[i]);
+				for(String metric : metrics.split(",")) {
+					JSONObject obj = toJSONObj(path);
+
+					String[] mPath = metric.split(":");
+					boolean lastIsArray = false;
+					try {
+						Integer index = Integer.parseInt(mPath[mPath.length-1]);
+						lastIsArray = true;
+						for(int i=0; i<mPath.length-2; i++){
+							obj = obj.getJSONObject(mPath[i]);
+						}
+						JSONArray array = obj.getJSONArray(mPath[mPath.length-2]);
+						out.print(array.get(index).toString() + "\t");
+					} catch (NumberFormatException ex) {
+						//No big deal, just not an array index
 					}
 
-					out.println(path + ":\t" + obj.get(mPath[mPath.length-1]).toString());
+					if (!lastIsArray) {
+						for(int i=0; i<mPath.length-1; i++){
+							obj = obj.getJSONObject(mPath[i]);
+						}
+
+						out.print(obj.get(mPath[mPath.length-1]).toString() + "\t");
+					}
 				}
-				
-				
-				
+				out.println();
 				
 			} catch (IOException e) {
 				// TODO Auto-generated catch block

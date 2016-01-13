@@ -1,0 +1,12 @@
+<Pipeline>
+
+    <VariantPool class="buffer.variant.VariantPool">
+        <InputVCF />
+    </VariantPool>
+
+
+    <ESPAnnotator class="operator.variant.ESP6500Annotator">
+        <VariantPool />
+    </ESPAnnotator>
+
+</Pipeline>

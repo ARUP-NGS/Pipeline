@@ -11,7 +11,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import util.Interval;
 import util.coverage.CoverageCalculator.IntervalCovSummary;
 import util.reviewDir.ManifestParseException;
 import util.reviewDir.ReviewDirectory;
@@ -29,6 +28,7 @@ public class CovCalcApp {
 	static class CovRunner implements Runnable {
 		
 		private File inputBam;
+		private boolean countTemplates = false; //If true, count inferred templates, not reads 
 		private IntervalsFile intervals;
 		private Exception ex = null;
 		private List<IntervalCovSummary> sampleResults;
@@ -37,23 +37,20 @@ public class CovCalcApp {
 		private double grandMeanDepth = -1; //Mean depth across all intervals, used for normalization
 
 		
-		public CovRunner(File inputBAM, IntervalsFile intervals, boolean normalizeDepths) {
+		public CovRunner(File inputBAM, IntervalsFile intervals, boolean normalizeDepths, boolean countTemplates) {
 			this.inputBam = inputBAM;
 			this.intervals = intervals;
 			this.normalizeDepths = normalizeDepths;
+			this.countTemplates = countTemplates;
 		}
 		
-		public CovRunner(File inputBAM, IntervalsFile intervals) {
-			this(inputBAM, intervals, false);
-		}
-
 
 		@Override
 		public void run() {
 			CoverageCalculator covCalc;
 			try {
 				System.err.println("Beginning execution for "+ inputBam.getName());
-				covCalc = new CoverageCalculator(inputBam, intervals, minMQ);
+				covCalc = new CoverageCalculator(inputBam, intervals, minMQ, countTemplates);
 				sampleResults = covCalc.computeCoverageByInterval();
 				
 				double totalExtent = 0;
@@ -125,15 +122,17 @@ public class CovCalcApp {
 		String format = DEFAULT_FORMAT;
 		
 		if (args.length==0 || args[0].startsWith("-h")) {
-			System.err.println("Coverage Calculator utility, v0.03");
+			System.err.println("Coverage Calculator utility, v0.04");
 			System.err.println("\n Usage: java -jar [bed file] [bam file] [more bam files...] [-t/--threads numThreads] [-f/--format outputFormat] [-m/--minMQ minimumMappingQuality].");
 			System.err.println("If -t/--threads flag is used, it overrides the default number of threads " + DEFAULT_THREADS + ".");
 			System.err.println("-m/--minMQ sets a minimum mapping quality for read inclusion in coverage calculations.");
+			System.err.println("-c Count inferred number of templates spanning each region, not reads");
 			System.err.println("Setting -f/--format to 'bed', overrides the default format used (interval).");
 			System.err.println("\n Emits mean depth of coverage for all intervals in BED file to output.");
 			return;
 		}
 		boolean normalizeDepths = false;
+		boolean countTemplates = false;
 		for(int i = 0; i < args.length; i++) {
 			if (args[i].startsWith("-norm") || args[i].startsWith("--norm")) {
 				normalizeDepths = true;
@@ -145,8 +144,12 @@ public class CovCalcApp {
 					System.err.println("Number of threads set to " + threads + ", overriding default value of " + DEFAULT_THREADS + ".");
 				}
 				catch(NumberFormatException e){
-				System.err.println("Could not correctly parse number of threads from --threads argument " + args[i] + ". Switching back to default value of " + threads + ".");
+					System.err.println("Could not correctly parse number of threads from --threads argument " + args[i] + ". Switching back to default value of " + threads + ".");
 				}
+			}
+			if (args[i].equals("-c")) {
+				System.err.println("Counting inferred templates, not reads");
+				countTemplates = true;
 			}
 			if(args[i].startsWith("--format") || args[i].equals("-f")){
 				i++;
@@ -169,16 +172,7 @@ public class CovCalcApp {
 				minMQ = Integer.parseInt(args[i]);
 			}
 		}
-		/*
-		for(int i = 0; i < args.length; i++){
-			try {
-				threads = Integer.parseInt(args[i]);
-			}
-			catch(NumberFormatException e){
-				//
-			}
-		}
-		*/
+		
 		
 		ThreadPoolExecutor pool = (ThreadPoolExecutor) Executors.newFixedThreadPool(threads);
 		
@@ -211,7 +205,7 @@ public class CovCalcApp {
 			
 			File inputBam = findBAM(args[i]);
 			if (inputBam != null) {
-				CovRunner runner = new CovRunner(inputBam, intervals);
+				CovRunner runner = new CovRunner(inputBam, intervals, normalizeDepths, countTemplates);
 				runners.add(runner);
 				pool.submit(runner);
 			} else {

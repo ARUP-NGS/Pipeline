@@ -36,7 +36,11 @@ public class BamWindow {
 	
 	private String currentContig = null;
 	private int currentPos = -1; //In reference coordinates
-	final LinkedList<MappedRead> records = new LinkedList<MappedRead>();
+	private boolean ignoreDups = true;
+	
+	final LinkedList<MappedRead> records = new LinkedList<MappedRead>(); //List of records mapping to currentPos
+	final LinkedList<MappedTemplate> templates = new LinkedList<MappedTemplate>(); //List of 'templates' overlapping current pos
+	
 	private Map<String, Integer> contigMap = null;
 	private SAMSequenceDictionary sequenceDict = null;
 	private int minMQ = 0;
@@ -79,6 +83,30 @@ public class BamWindow {
 		//number of records on current position
 		return records.size();
 	}
+	
+	/**
+	 * Return an approximate number of templates (the things that get sequenced to produce reads) 
+	 * that map to this location. It's not always possible to do this accurately since sometimes reads
+	 * are mapped incorrectly, but we can probably do it OK most of the time when both reads in a pair
+	 * are mapped unambiguously.  
+	 * 
+	 * @return Approx number of templates overlapping the current position
+	 */
+	public int templateCount() {
+		return templates.size();
+		
+	}
+	
+	/**
+	 * Emit some debugging info to stdout
+	 */
+	public void emitTemplates() {
+		System.out.println("Position : " + currentPos + " ... "  + templates.size() + " overlapping templates:");
+		for(MappedTemplate tmpl : templates) {
+			System.out.println("\t" + tmpl.toString() + ", aln start: " + tmpl.firstRead.getRecord().getAlignmentStart() + " - " + tmpl.firstRead.getRecord().getAlignmentEnd());
+		}
+	}
+	
 	
 	/**
 	 * Return the mean inferred insertion size of all records in this window
@@ -126,10 +154,11 @@ public class BamWindow {
 	/**
 	 * Advance the current position by the given number of bases
 	 * @param bases
+	 * @returns false if the window is empty and there are no more bases to read
 	 */
 	public boolean advanceBy(int bases) {
 		int newTarget = currentPos + bases;
-		if (! hasMoreReadsInCurrentContig()) {
+		if (! hasMoreReadsInCurrentContig() && records.isEmpty()) {
 			if (DEBUG)
 				System.out.println("No more reads in contig : " + currentContig);
 			return false;
@@ -156,6 +185,10 @@ public class BamWindow {
 	 */
 	public boolean hasMoreReadsInCurrentContig() {
 		return nextRecord != null && nextRecord.getReferenceName().equals(currentContig);
+	}
+	
+	public boolean hasReadsOverlapping(int pos) {
+		return (!records.isEmpty()) && (pos >= records.getFirst().readAlignmentStart && pos<records.getLast().read.getAlignmentEnd());
 	}
 	
 	/**
@@ -261,7 +294,13 @@ public class BamWindow {
 		nextRecord = recordIt.hasNext() 
 				? recordIt.next()
 				: null;
-		
+		//Skip records with mapping quality < minMQ
+		while(nextRecord != null && (nextRecord.getMappingQuality() < minMQ)) {
+			nextRecord = recordIt.hasNext()
+							? recordIt.next()
+							: null;
+		}
+				
 		if (nextRecord != null)
 			currentContig = contig;
 		else {
@@ -296,6 +335,36 @@ public class BamWindow {
 		return records.getLast();
 	}
 	
+	private MappedTemplate inferTemplateFromRead(SAMRecord read) {
+		
+		if (ignoreDups && read.getDuplicateReadFlag()) { 
+			return null;
+		}
+		
+		int readStart = read.getAlignmentStart();
+		int readEnd = read.getAlignmentEnd();
+		
+		int mateStart = read.getMateAlignmentStart();
+		int mateEnd = read.getMateAlignmentStart() + read.getReadLength();
+		
+		
+		if (!read.getProperPairFlag()
+				|| (read.getMateUnmappedFlag()) 
+				|| (read.getReferenceIndex() != read.getMateReferenceIndex())) {
+			mateStart = readStart;
+			mateEnd = readEnd;
+		}
+		
+		int templateStart = Math.min(readStart, mateStart);
+		int templateEnd = Math.max(readEnd, mateEnd);
+		
+		if (templateStart == read.getAlignmentStart()) {
+			return new MappedTemplate(templateStart, templateEnd, new MappedRead(read));
+		}
+		
+		return null;
+	}
+
 	/**
 	 * Push new records onto the queue. Unmapped reads and reads with unmapped mates are skipped.
 	 */
@@ -305,14 +374,26 @@ public class BamWindow {
 
 		records.add(new MappedRead(nextRecord));
 		
+		//Add the MappedTemplate
+		MappedTemplate templ=  inferTemplateFromRead(nextRecord);
+		
+		
+		if (templ != null) {
+			templates.add(templ);
+		}
+		
 		//Find next suitable record
 		nextRecord = recordIt.hasNext() 
 				? recordIt.next()
 				: null;
 		
-		
-		//Automagically skip unmapped reads and reads with unmapped mates
-		while(nextRecord != null && (nextRecord.getMappingQuality() < minMQ)) {
+		if (nextRecord != null && nextRecord.getDuplicateReadFlag()) {
+			System.out.println("Read " + nextRecord.getReadName() + " is a dup");
+		}
+		//Automagically skip reads with mapping quality less than minMQ or duplicates
+		while(nextRecord != null 
+				&& ((nextRecord.getMappingQuality() < minMQ)
+				   || (ignoreDups && nextRecord.getDuplicateReadFlag()))) {
 			nextRecord = recordIt.hasNext()
 					? recordIt.next()
 					: null;
@@ -324,26 +405,39 @@ public class BamWindow {
 	 * Remove from queue those reads whose right edge is less than the current pos
 	 */
 	private void shrinkTrailingEdge() {
-		if (records.isEmpty()) {
-			return;
-		}
-		
-		Iterator<MappedRead> it = records.iterator();
-		
-		MappedRead read = it.next();
-		while(it.hasNext()) {
+		if (!records.isEmpty()) {
+			Iterator<MappedRead> it = records.iterator();
+			MappedRead read = it.next();
+			while(it.hasNext()) {
+				if (read.getRecord().getAlignmentEnd() < currentPos) {
+					it.remove();
+				}
+
+				read = it.next();
+				if (read.getRecord().getAlignmentEnd() > (currentPos+20)) {
+					break;
+				}
+			}
 			if (read.getRecord().getAlignmentEnd() < currentPos) {
 				it.remove();
 			}
-
-			read = it.next();
-			if (read.getRecord().getAlignmentEnd() > (currentPos+20)) {
-				break;
-			}
 		}
+		
+		//Ditto for templates
+		if (!templates.isEmpty()) {
+			Iterator<MappedTemplate> mit = templates.iterator();
 
-		if (read.getRecord().getAlignmentEnd() < currentPos) {
-			it.remove();
+			MappedTemplate templ = mit.next();
+			while(mit.hasNext()) {
+				if (templ.end < currentPos) {
+					mit.remove();
+				}
+
+				templ = mit.next();
+			}
+			if (templ.end < currentPos) {
+				mit.remove();
+			}
 		}
 
 	}
