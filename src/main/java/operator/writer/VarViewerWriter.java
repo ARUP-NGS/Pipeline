@@ -72,6 +72,11 @@ public class VarViewerWriter extends VariantPoolWriter {
 			//Exac columns, 32 of them. 4 for overall, and 4 for each of the 7 populations.
 			VariantRec.EXAC63K_VERSION,
 			
+			VariantRec.EXAC63K_OVERALL_FREQ_HET,
+			VariantRec.EXAC63K_OVERALL_FREQ_HOM,
+			VariantRec.EXAC63K_OVERALL_FREQ_HEMI,
+			
+			
 			VariantRec.EXAC63K_OVERALL_ALLELE_COUNT,
 			VariantRec.EXAC63K_OVERALL_ALLELE_NUMBER,
 			VariantRec.EXAC63K_OVERALL_HEMI_COUNT,

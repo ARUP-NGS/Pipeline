@@ -879,6 +879,12 @@ public class VariantRec {
 	//added for IonTorrentParser
 	public static final String VAR_FREQ = "Var.Freq";
 
+	
+	
+	public static final String EXAC63K_OVERALL_FREQ_HET = "exomes63K.al.freq.het";
+	public static final String EXAC63K_OVERALL_FREQ_HOM = "exomes63K.al.freq.hom";
+	public static final String EXAC63K_OVERALL_FREQ_HEMI = "exomes63K.al.freq.hemi";
+
 	//ExAC annotations
 	public static final String EXAC63K_VERSION = "exac63k.version";
 	
