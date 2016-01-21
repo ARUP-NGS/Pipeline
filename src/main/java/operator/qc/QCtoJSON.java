@@ -330,7 +330,7 @@ public class QCtoJSON extends Operator {
 		VariantPool novels= new VariantPool();
 		for(String contig : vp.getContigs()) {
 			for(VariantRec var : vp.getVariantsForContig(contig)) {
-				System.out.println("var: "+var.getContig()+" "+var.getStart()+" "+var.getRef()+" "+var.getAlt());
+				//System.out.println("var: "+var.getContig()+" "+var.getStart()+" "+var.getRef()+" "+var.getAlt());
 				Double tgpFreq = var.getProperty(VariantRec.POP_FREQUENCY);
 				Double espFreq = var.getProperty(VariantRec.EXOMES_FREQ);
 				Double mmFreq = var.getProperty(VariantRec.MITOMAP_FREQ);//for MDNA tests
