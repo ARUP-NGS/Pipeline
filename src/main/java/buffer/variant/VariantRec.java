@@ -882,7 +882,10 @@ public class VariantRec {
 	//ExAC annotations
 	public static final String EXAC63K_VERSION = "exac63k.version";
 	
+	
 	//overall
+	public static final String EXAC63K_OVERALL_HET_HOM = "exac63K.overall.het.hom";
+
 	public static final String EXAC63K_OVERALL_FREQ_HET = "exac63K.overall.het.freq";
 	public static final String EXAC63K_OVERALL_FREQ_HOM = "exac63K.overall.hom.freq";
 	public static final String EXAC63K_OVERALL_FREQ_HEMI = "exac63K.overall.hemi.freq";
