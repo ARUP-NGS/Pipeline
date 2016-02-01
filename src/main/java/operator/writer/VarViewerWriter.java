@@ -74,8 +74,8 @@ public class VarViewerWriter extends VariantPoolWriter {
 			
 			VariantRec.EXAC63K_OVERALL_FREQ_HET,
 			VariantRec.EXAC63K_OVERALL_FREQ_HOM,
+			VariantRec.EXAC63K_OVERALL_HET_HOM,
 			VariantRec.EXAC63K_OVERALL_FREQ_HEMI,
-			
 			
 			VariantRec.EXAC63K_OVERALL_ALLELE_COUNT,
 			VariantRec.EXAC63K_OVERALL_ALLELE_NUMBER,
