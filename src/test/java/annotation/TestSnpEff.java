@@ -46,7 +46,7 @@ public class TestSnpEff extends TestCase {
 		return ppl;
 	}
 
-	public void testSnpEff() {
+/*	public void testSnpEff() {
 
 		Pipeline ppl = this.preparePipeline(inputFile);
 		try {
@@ -172,5 +172,5 @@ public class TestSnpEff extends TestCase {
 			Assert.assertFalse(true);
 		}
 
-	}
+	}*/
 }
