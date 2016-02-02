@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/ARUP-NGS/Pipeline.svg?branch=master)](https://travis-ci.org/ARUP-NGS/Pipeline)
+[![Build Status](https://travis-ci.org/ARUP-NGS/Pipeline.svg?branch=dev)](https://travis-ci.org/ARUP-NGS/Pipeline)
 
 This is from the new branch!
 
