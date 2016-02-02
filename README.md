@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/ARUP-NGS/Pipeline.svg?branch=master)](https://travis-ci.org/ARUP-NGS/Pipeline)
+
 This is from the new branch!
 
 Pipeline is a tool to chain together and execute various modular operations described by an .xml file. Elements in the input file are converted into Java objects, and objects can refer to other objects created in the same file. While in principle Pipeline can be used to chain together operations of any sort, it is currently designed to link together frequently-performed bioinformatics tasks, such as aligning sequence data to a reference and calling variants. 
