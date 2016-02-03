@@ -56,7 +56,6 @@ class QCJSONComparator extends Comparator {
 		JSONObject varmetrics1 = new JSONObject(json1.get("variant.metrics").toString());
 		JSONObject varmetrics2 = new JSONObject(json2.get("variant.metrics").toString());
 		this.compareVariantMetrics(varmetrics1, varmetrics2);
-		
 	}
 	
 	private void compareBAMMetrics(JSONObject bam1, JSONObject  bam2) {

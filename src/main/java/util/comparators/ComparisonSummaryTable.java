@@ -19,7 +19,7 @@ public class ComparisonSummaryTable {
 	List<String> colNames;
 	String comparisonType = "";
 	String comparisonName = "";
-	Map<String, List<VariantRec>> failedVariants = new LinkedHashMap<String, List<VariantRec>>(); //Keep track of variants to display for a given analysis comparison.
+	Map<String, String> failedVariants = new LinkedHashMap<String, String>(); //Keep track of variants to display for a given analysis comparison.
 
 	
 	public ComparisonSummaryTable(String comparison, List<String> colNames) {
@@ -51,13 +51,10 @@ public class ComparisonSummaryTable {
 		for(List<String> row : rowData) {
 			String analysisTypeKey = row.get(0);
 			this.printInColumns(analysisTypeKey, row.get(1), row.get(2), row.get(3));
-			List<VariantRec> listOfVariants = failedVariants.get(analysisTypeKey);
-			if (listOfVariants != null && listOfVariants.size() > 0) {
+			if (failedVariants.get(analysisTypeKey) != null && !failedVariants.get(analysisTypeKey).isEmpty()) {
 				System.out.println("\t===================================================================================================");
-				System.out.println("\t||" + listOfVariants.get(0).getSimpleHeader() + "\t||");
-			    for (VariantRec rec : listOfVariants) {
-			    	System.out.println("\t||"+rec.toSimpleString() + "\t||");
-			    }
+				System.out.println("\t" + VariantRec.getSimpleHeader());
+				System.out.println(failedVariants.get(analysisTypeKey));
 				System.out.println("\t===================================================================================================");
 			} else {
 			    // No such key

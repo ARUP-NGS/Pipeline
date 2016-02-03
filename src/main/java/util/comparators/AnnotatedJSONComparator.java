@@ -39,10 +39,10 @@ public class AnnotatedJSONComparator extends Comparator  {
 	}
 
 
+	//ADD ALL NEW ANNOTATIONS TO COMPARE TO THIS MAP.
 	private static final Map<String, annotationType> annotationsToCompare;
 	static {
 		LinkedHashMap<String, annotationType> aMap = new LinkedHashMap<String, annotationType>();
-		//ADD ALL NEW ANNOTATIONS TO COMPARE HERE.
 		aMap.put(VariantRec.GENE_NAME, annotationType.SIMPLE);
 		aMap.put(VariantRec.NM_NUMBER, annotationType.SIMPLE);
 		aMap.put(VariantRec.RSNUM, annotationType.SIMPLE);
@@ -51,6 +51,7 @@ public class AnnotatedJSONComparator extends Comparator  {
 
 		aMap.put(VariantRec.POP_FREQUENCY, annotationType.FREQ);
 		aMap.put(VariantRec.EXOMES_63K_FREQ, annotationType.FREQ);
+		aMap.put(VariantRec.EXOMES_FREQ, annotationType.FREQ);
 		aMap.put(VariantRec.ARUP_FREQ, annotationType.FREQ);
 
 		aMap.put(VariantRec.CDOT, annotationType.COMPLEX);
@@ -73,6 +74,7 @@ public class AnnotatedJSONComparator extends Comparator  {
 			droppedAnnos.put(annotation, 0);
 			gainedAnnos.put(annotation, 0);
 			discordanceTally.put(annotation, 0);
+			this.summaryTable.failedVariants.put(annotation, "");
 		}
 	}
 	
@@ -80,7 +82,7 @@ public class AnnotatedJSONComparator extends Comparator  {
 
 		for (Map.Entry<String, Integer> entry : discordanceTally.entrySet()) {
 			String key     = entry.getKey();
-			Integer changed  = entry.getValue();
+			Integer changed= entry.getValue();
 			//this.compareNumberNotes(value.doubleValue(), this.numberOfVarComparisons.doubleValue(), false, key));
 			String jsonKey = key + ".discordance";
 			String rowName = "\"" + key + "\" discordance";
@@ -134,7 +136,7 @@ public class AnnotatedJSONComparator extends Comparator  {
 				}				
 			}
 		}
-		System.out.println("Sample contains " + String.valueOf(nonIntronicVariants) + "/" + String.valueOf(super.annotationsCompared) + " non intronic or up/down stream variants.");
+		System.out.println("Sample contains " + String.valueOf(nonIntronicVariants) + "/" + String.valueOf(super.annotationsCompared) + " non intronic, intragenic, up/down stream.");
 		//this.summaryTable.setColNames(Arrays.asList("Dropped | Gained","Changed (out of " + String.valueOf(super.annotationsCompared) + ")","Notes"));
 		this.summaryTable.setColNames(Arrays.asList("Dropped | Gained","Changed" + String.valueOf(""),"Notes"));
 

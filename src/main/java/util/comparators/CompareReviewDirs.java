@@ -6,11 +6,9 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
 
 import json.JSONException;
 import operator.IOOperator;
-import pipeline.Pipeline;
 import util.reviewDir.ManifestParseException;
 import util.reviewDir.ReviewDirectory;
 

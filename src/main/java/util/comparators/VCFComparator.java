@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.Arrays;
 
 import buffer.variant.VariantPool;
+import buffer.variant.VariantRec;
 import json.JSONException;
 import util.comparators.CompareReviewDirs.ComparisonType;
 import util.reviewDir.ReviewDirectory;
@@ -75,8 +76,13 @@ public class VCFComparator extends Comparator {
 		
 		//varTypeNotes.toString()
 		this.addNewEntry("unique.variants", "Unique variants", String.valueOf(vp1Sub2.size()), String.valueOf(vp2Sub1.size()), ComparisonType.VARIANTS);
-		this.summaryTable.failedVariants.put("Unique variants", vp1Sub2.toList());
-		this.summaryTable.failedVariants.get("Unique variants").addAll(vp2Sub1.toList());
+		vp1Sub2.addAll(vp2Sub1);
+		StringBuilder sb = new StringBuilder();
+		for (VariantRec rec : vp1Sub2.toList()) {
+			sb.append("\t" + rec.toSimpleString() + "\n");
+		}		
+		this.summaryTable.failedVariants.put("Unique variants", sb.toString());
+	
 	}
 
 	void intersectVariantPools() {
