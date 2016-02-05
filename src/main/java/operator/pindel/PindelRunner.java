@@ -78,7 +78,7 @@ public class PindelRunner extends IOOperator {
 
 		
 		
-		int filterThreshold = 15; // probably should be an attribute
+		int filterThreshold = 6; // probably should be an attribute
 		String filterString = properties.get(FILTERTHRESHOLD);
 		if (filterString != null) {
 			filterThreshold = Integer.parseInt(filterString);
