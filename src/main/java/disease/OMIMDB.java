@@ -141,9 +141,6 @@ public class OMIMDB {
 				entries.add(entry);
 				entryCount++;
 			}
-			else {
-				System.out.println("Skipping entry " + diseaseStr + ", could not parse phenotype id");
-			}
 			line = reader.readLine();
 		}
 		reader.close();

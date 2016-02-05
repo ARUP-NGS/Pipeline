@@ -62,13 +62,9 @@
                 <configuration>
                     <!-- that's the default value, you don't have to set it -->
                     <prefix>git</prefix>
-
                     <dateFormat>dd.MM.yyyy '@' HH:mm:ss z</dateFormat>
-
                     <verbose>false</verbose>
-
                     <useNativeGit>false</useNativeGit>
-
                     <dotGitDirectory>${project.basedir}/.git</dotGitDirectory>
 
                     <!-- ALTERNATE SETUP - GENERATE FILE -->
@@ -107,7 +103,7 @@
 
                     <gitDescribe>
                         <!-- don't generate the describe property -->
-                        <skip>false</skip>
+                        <skip>true</skip>
                         <!-- if no tag was found "near" this commit, just print the commit's id instead, 
                             helpful when you always expect this field to be not-empty -->
                         <always>false</always>

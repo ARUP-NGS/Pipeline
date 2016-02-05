@@ -34,29 +34,29 @@ public class TGPTabixAnnotator extends AbstractTabixAnnotator {
 	 */
 	protected boolean addAnnotationsFromString(VariantRec var, String str, int altIndex) {
 		String[] toks = str.split("\t");
-				
+		
 		//The 7th column is the info column, which looks a little like AF=0.23;AF_AMR=0.123;AF_EUR=0.456...
 		String[] infoToks = toks[7].split(";");
-		String overallFreqStr = valueForKey(infoToks, "AF");
+		String overallFreqStr = valueForKeyAtIndex(infoToks, "AF", altIndex);
 		if (overallFreqStr != null) {
 			Double freq = Double.parseDouble(overallFreqStr);
 			var.addProperty(VariantRec.POP_FREQUENCY, freq);
 		}
 		
 		
-		String freqStr = valueForKey(infoToks, "AMR_AF");
+		String freqStr = valueForKeyAtIndex(infoToks, "AMR_AF", altIndex);
 		if (freqStr != null) {
 			Double freq = Double.parseDouble(freqStr);
 			var.addProperty(VariantRec.AMR_FREQUENCY, freq);
 		}
 		
-		String afrFreqStr = valueForKey(infoToks, "AFR_AF");
+		String afrFreqStr = valueForKeyAtIndex(infoToks, "AFR_AF", altIndex);
 		if (afrFreqStr != null) {
 			Double freq = Double.parseDouble(afrFreqStr);
 			var.addProperty(VariantRec.AFR_FREQUENCY, freq);
 		}
 		
-		String eurFreqStr = valueForKey(infoToks, "EUR_AF");
+		String eurFreqStr = valueForKeyAtIndex(infoToks, "EUR_AF", altIndex);
 		if (eurFreqStr != null) {
 			Double freq = Double.parseDouble(eurFreqStr);
 			var.addProperty(VariantRec.EUR_FREQUENCY, freq);
@@ -75,6 +75,23 @@ public class TGPTabixAnnotator extends AbstractTabixAnnotator {
 		for(int i=0; i<toks.length; i++) {
 			if (toks[i].startsWith(key)) {
 				return toks[i].replace(key, "").replace("=", "").replace(";", "").trim();
+			}
+		}
+		return null;
+	}
+	
+	/**
+	 * Given a list of INFO tokens (like AF=52, GT=67, AD=1324 ...), pull the one 
+	 * with the key given (e.g. AD), extract the value, and return it as a string.  
+	 * @param toks
+	 * @param key
+	 * @return
+	 */
+	private static String valueForKeyAtIndex(String[] toks, String key, int index) {
+		for(int i=0; i<toks.length; i++) {
+			if (toks[i].startsWith(key)) {
+				String token = toks[i].replace(key, "").replace("=", "").replace(";", "").trim();
+				return token.split(",")[index];
 			}
 		}
 		return null;
