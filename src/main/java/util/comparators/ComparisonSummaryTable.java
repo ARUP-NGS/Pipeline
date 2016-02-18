@@ -51,6 +51,7 @@ public class ComparisonSummaryTable {
 		for(List<String> row : rowData) {
 			String analysisTypeKey = row.get(0);
 			this.printInColumns(analysisTypeKey, row.get(1), row.get(2), row.get(3));
+			//Here lets check if we should be printing some example variants.
 			if (failedVariants.get(analysisTypeKey) != null && !failedVariants.get(analysisTypeKey).isEmpty()) {
 				System.out.println("\t===================================================================================================");
 				System.out.println("\t" + VariantRec.getSimpleHeader());

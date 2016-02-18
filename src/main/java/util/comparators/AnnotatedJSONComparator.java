@@ -38,7 +38,6 @@ public class AnnotatedJSONComparator extends Comparator  {
 		SIMPLE, FREQ, COMPLEX
 	}
 
-
 	//ADD ALL NEW ANNOTATIONS TO COMPARE TO THIS MAP.
 	private static final Map<String, annotationType> annotationsToCompare;
 	static {
@@ -52,14 +51,13 @@ public class AnnotatedJSONComparator extends Comparator  {
 		aMap.put(VariantRec.POP_FREQUENCY, annotationType.FREQ);
 		aMap.put(VariantRec.EXOMES_63K_FREQ, annotationType.FREQ);
 		aMap.put(VariantRec.EXOMES_FREQ, annotationType.FREQ);
+		aMap.put(VariantRec.EXOMES_HOM_FREQ, annotationType.FREQ);
 		aMap.put(VariantRec.ARUP_FREQ, annotationType.FREQ);
 
 		aMap.put(VariantRec.CDOT, annotationType.COMPLEX);
 		aMap.put(VariantRec.PDOT, annotationType.COMPLEX);
 		annotationsToCompare = Collections.unmodifiableMap(aMap);
 	}
-
-
 
 	public AnnotatedJSONComparator() {
 	}
