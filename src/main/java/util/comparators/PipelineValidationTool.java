@@ -97,7 +97,8 @@ public class PipelineValidationTool {
 		
 		Map<String, List<ReviewDirectory>> comparisonMap = prepareComparisons(path1, path2);
 		List<CompareReviewDirs> crds = performComparisons(comparisonMap);
-		summarizeComparison(crds, outFileName);
+		JSONObject js = summarizeComparison(crds, outFileName);
+		writeJSONToFile(js, outFileName);
 	}
 	
 	/** Given two paths to directories of review directories this will match up RDs with the same fastq and put in a map.
@@ -196,11 +197,11 @@ public class PipelineValidationTool {
 		return crds;
 	}
 	
-	/** Given a list of CompareReviewDirs objects this will loop through each one and summarize their results and produce a summary JSON String.
+	/** Given a list of CompareReviewDirs objects this will loop through each one and summarize their results to stdout and produce a summary JSON String.
 	 * @param crds
 	 * @param outFileName
 	 */
-	private static void summarizeComparison(List<CompareReviewDirs> crds, String outFileName) {
+	private static JSONObject summarizeComparison(List<CompareReviewDirs> crds, String outFileName) {
 		LinkedHashMap<String, Object> validationSummary = new LinkedHashMap<String, Object>();
 		//validationSummary.put("severity.key", getNames(Severity.class));
 		System.out.println("\n\n+++++++++++++++++++++++++");
@@ -216,7 +217,7 @@ public class PipelineValidationTool {
 		}
 		
 		for (Severity sev: Severity.values()) {
-			if (!sev.toString().equals("EXACT")) {
+			if (!sev.toString().equals("EXACT")) { //Don't put in EXACT matches.
 				ComparisonSummaryTable st = new ComparisonSummaryTable(sev.toString(), Arrays.asList("Types", ""));
 				LinkedHashMap<String, Object> sevJSON = new LinkedHashMap<String, Object>();
 
@@ -247,8 +248,7 @@ public class PipelineValidationTool {
 			}
 		}
 		validationJSON.put("validation", validationSummary);
-		
-		writeJSONToFile(new JSONObject(validationJSON), outFileName);
+		return new JSONObject(validationJSON);
 	}
 	
 	private static void writeJSONToFile(JSONObject json, String outFileName) {

@@ -23,6 +23,7 @@ import util.reviewDir.ReviewDirectory;
 	Pop.freq
 	Exac.freq
 	HGMD hit
+	//Additional annotations can be added to the annotationsToCompare object.
  * @author kevin
  */
 public class AnnotatedJSONComparator extends Comparator  {
@@ -83,7 +84,7 @@ public class AnnotatedJSONComparator extends Comparator  {
 			Integer changed= entry.getValue();
 			//this.compareNumberNotes(value.doubleValue(), this.numberOfVarComparisons.doubleValue(), false, key));
 			String jsonKey = key + ".discordance";
-			String rowName = "\"" + key + "\" discordance";
+			String rowName = key;
 			String dropped = String.valueOf(droppedAnnos.get(key));
 			String gained  = String.valueOf(gainedAnnos.get(key));
 
@@ -160,18 +161,24 @@ public class AnnotatedJSONComparator extends Comparator  {
 
 		if (v1AnnotationExists && !v2AnnotationExists) { //Dropped an annotation
 			droppedAnnos.put(annotation, droppedAnnos.get(annotation) + 1);
+			if (this.droppedAnnos.get(annotation) < 5) {
+				this.summaryTable.droppedVariants.put(annotation, this.summaryTable.droppedVariants.get(annotation) + "\n\t" + this.annotationCompareString(var1, var2, annotation));
+			}
 		} else if (!v1AnnotationExists && v2AnnotationExists) { //gained an annotation
 			gainedAnnos.put(annotation, gainedAnnos.get(annotation) + 1);
 		} else if (v1AnnotationExists && v2AnnotationExists) {
 			if (!v1Annotation.equals(v2Annotation)) {
 				this.discordanceTally.put(annotation, discordanceTally.get(annotation) + 1);
+				if (this.discordanceTally.get(annotation) < 5) {
+					this.summaryTable.failedVariants.put(annotation, this.summaryTable.failedVariants.get(annotation) + "\n\t" + this.annotationCompareString(var1, var2, annotation));
+				}
 			}
 		} else {
 			//throw new NullPointerException();
 			//both null
 		}
 	}
-
+	
 	/** Comparing two frequencies, where there might be slight differences (pop freq, exac Freq, ARUP freq)
 	 * @param var1
 	 * @param var2
@@ -192,11 +199,17 @@ public class AnnotatedJSONComparator extends Comparator  {
 
 		if (v1AnnotationExists && !v2AnnotationExists) { //Dropped an annotation
 			droppedAnnos.put(annotation, droppedAnnos.get(annotation) + 1);
+			if (this.droppedAnnos.get(annotation) < 5) {
+				this.summaryTable.droppedVariants.put(annotation, this.summaryTable.droppedVariants.get(annotation) + "\n\t" + this.annotationCompareString(var1, var2, annotation));
+			}
 		} else if (!v1AnnotationExists && v2AnnotationExists) { //gained an annotation
 			gainedAnnos.put(annotation, gainedAnnos.get(annotation) + 1);
 		} else if (v1AnnotationExists && v2AnnotationExists) {
-			if (v1Annotation != v2Annotation) {
+			if (Math.abs(v1Annotation-v2Annotation) > 0.00001) {
 				this.discordanceTally.put(annotation, discordanceTally.get(annotation) + 1);
+				if (this.discordanceTally.get(annotation) < 5) {
+					this.summaryTable.failedVariants.put(annotation, this.summaryTable.failedVariants.get(annotation) + "\n\t" + this.annotationCompareString(var1, var2, annotation));
+				}
 			}
 		} else {
 			//throw new NullPointerException();
@@ -213,5 +226,31 @@ public class AnnotatedJSONComparator extends Comparator  {
 		//Trying to use the comparator already written.
 		//Just use a simple string comparison for now.. Only useful for comparing apples to apples (same annotators).
 		compareSimpleAnnotations(var1, var2, annotation);
+	}
+	
+	/** Function taking two variants and an annotation and producing a small summary string comparing the two. This allows for a quick view of how different the annotations are.
+	 * @param var1
+	 * @param var2
+	 * @param annotation
+	 * @return
+	 */
+	private String annotationCompareString(VariantRec var1, VariantRec var2, String annotation) {
+		StringBuilder compareString = new StringBuilder();
+		
+		compareString.append(var1.getContig());
+		compareString.append("|");
+		compareString.append(var2.getContig());
+		compareString.append("\t");
+		
+		compareString.append(var1.getStart());
+		compareString.append("|");
+		compareString.append(var2.getStart());
+		compareString.append("\t");
+		
+		compareString.append(var1.getPropertyOrAnnotation(annotation));
+		compareString.append("|");
+		compareString.append(var2.getPropertyOrAnnotation(annotation));
+		
+		return compareString.toString();
 	}
 }

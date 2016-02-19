@@ -129,22 +129,16 @@ public abstract class Comparator {
 				return "";
 			case ANNOTATIONS:
 				Double dropped = Double.valueOf(s1.split(" | ")[0]);
-				Double gained = Double.valueOf(s1.split(" | ")[2]);
-				Double changed = Double.valueOf(s2);
+				//Double changed = Double.valueOf(s2);
 				
-				//If we dropped more than 5% of annotations should we flag a major change?
-				Double diffChanged = Math.abs(changed - this.annotationsCompared);
-				Double diffDropped = Math.abs(changed - this.annotationsCompared);
-				if (changed == 0.0  || dropped == 0.0) {
-					diffPercent = 0.0;
-				} else {
-					diffPercent = diffChanged/this.annotationsCompared;
-				}
-				if (diffPercent >= 0.1) {
+				//If we dropped 5% of annotations we flag a major change.
+				
+				Double droppedPercent = dropped / this.annotationsCompared;
+				if (droppedPercent >= 0.05) {
 					severity = Severity.MAJOR;
-				} else if (0.1 > diffPercent && diffPercent > 0.0) {
+				} else if (0.05 > droppedPercent && droppedPercent > 0.0) {
 					severity = Severity.MINOR;
-				} else if (diffPercent == 0.0 ){
+				} else if (droppedPercent == 0.0 ){
 					severity = Severity.EXACT;
 					//return ""; //Lets just leave the notes blank if its equal
 				} else {
@@ -152,8 +146,8 @@ public abstract class Comparator {
 				}
 				discordanceSummary.addNewDiscordance(severity, compareKey);
 				
-				return createNote(severity, diffChanged, diffPercent);
-				
+				return createNote(severity, dropped, droppedPercent);
+				//return "";
 			case VARIANTS:
 				//If both are not 0 then this is a major change.
 				Integer uniqueVars1 = Integer.valueOf(s1);
@@ -166,9 +160,9 @@ public abstract class Comparator {
 				return "["+severity.toString()+"]";
 			case TWOPERCENTS: // Assume two numbers are percentages.
 				diffPercent = Math.abs(Double.valueOf(s1) - Double.valueOf(s2));
-				if (diffPercent >= 0.1) {
+				if (diffPercent >= 10) {
 					severity = Severity.MAJOR;
-				} else if (0.1 > diffPercent && diffPercent > 0.0) {
+				} else if (10 > diffPercent && diffPercent > 0.0) {
 					severity = Severity.MINOR;
 				} else if (diffPercent == 0.0 ){
 					severity = Severity.EXACT;
@@ -216,9 +210,9 @@ public abstract class Comparator {
 				} else {
 					diffPercent = diff/n2;
 				}
-				if (diffPercent >= 0.1) {
+				if (diffPercent >= 0.3) {
 					severity = Severity.MAJOR;
-				} else if (0.1 > diffPercent && diffPercent > 0.0) {
+				} else if (0.3 > diffPercent && diffPercent > 0.0) {
 					severity = Severity.MINOR;
 				} else if (diffPercent == 0.0 ){
 					severity = Severity.EXACT;
