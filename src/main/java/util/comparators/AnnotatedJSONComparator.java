@@ -48,13 +48,21 @@ public class AnnotatedJSONComparator extends Comparator  {
 		aMap.put(VariantRec.RSNUM, annotationType.SIMPLE);
 		aMap.put(VariantRec.HGMD_HIT, annotationType.SIMPLE);
 		aMap.put(VariantRec.HGMD_INFO, annotationType.SIMPLE);
+		aMap.put(VariantRec.MITOMAP_ALLELE_ID, annotationType.SIMPLE);
+		aMap.put(VariantRec.MITOMAP_DIS_CODING, annotationType.SIMPLE);
+		aMap.put(VariantRec.MITOMAP_HETEROPLASMY, annotationType.SIMPLE);
+		aMap.put(VariantRec.COSMIC_COUNT, annotationType.SIMPLE);
+		aMap.put(VariantRec.COSMIC_ID, annotationType.SIMPLE);
 
 		aMap.put(VariantRec.POP_FREQUENCY, annotationType.FREQ);
 		aMap.put(VariantRec.EXOMES_63K_FREQ, annotationType.FREQ);
 		aMap.put(VariantRec.EXOMES_FREQ, annotationType.FREQ);
 		aMap.put(VariantRec.EXOMES_HOM_FREQ, annotationType.FREQ);
 		aMap.put(VariantRec.ARUP_FREQ, annotationType.FREQ);
-
+		aMap.put(VariantRec.ARUP_FREQ, annotationType.FREQ);
+		aMap.put(VariantRec.MITOMAP_FREQ, annotationType.FREQ);
+		
+		
 		aMap.put(VariantRec.CDOT, annotationType.COMPLEX);
 		aMap.put(VariantRec.PDOT, annotationType.COMPLEX);
 		annotationsToCompare = Collections.unmodifiableMap(aMap);

@@ -82,7 +82,11 @@ public class ComparisonSummaryTable {
 			//Here lets check if we should be printing some example variants.
 			if (failedVariants.get(analysisTypeKey) != null && !failedVariants.get(analysisTypeKey).isEmpty()) {
 				System.out.println("\t==== Discrepant ====");
-				System.out.println("\t" + "Contig" + "\t\t" + "Start" + "\t\t" + analysisTypeKey);
+				if ( analysisTypeKey.equals("Unique variants")) {
+					System.out.println("\t"+VariantRec.getSimpleHeader());
+				} else {
+					System.out.println("\t" + "Contig" + "\t\t" + "Start" + "\t\t" + analysisTypeKey);
+				}
 				failedVariants.get(analysisTypeKey).split(System.getProperty("line.separator"));
 				System.out.println("\t" + failedVariants.get(analysisTypeKey).trim());
 				System.out.println("\t------------------------------------------------");
