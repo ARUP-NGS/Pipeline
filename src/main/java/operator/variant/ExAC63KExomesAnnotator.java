@@ -2,7 +2,11 @@ package operator.variant;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+
 import org.w3c.dom.NodeList;
+
 import buffer.variant.VariantRec;
 import operator.OperationFailedException;
 
@@ -111,6 +115,22 @@ public class ExAC63KExomesAnnotator extends AbstractTabixAnnotator {
 		safeParseAndSetProperty(var, VariantRec.EXAC63K_OVERALL_ALLELE_NUMBER, overallAlleleNumber, 1.0);
 		safeParseAndSetProperty(var, VariantRec.EXAC63K_OVERALL_HOM_COUNT, valueForKeyAtIndex(infoToks, "AC_Hom", altIndex), 1.0);
 		safeSetCalcFreq(var, VariantRec.EXAC63K_OVERALL_ALLELE_FREQ, overallAlleleCount, overallAlleleNumber);
+		
+		//This is a combination of the het and hom freq columns. Usually is calculated on NGS.Web side, but makes more sense to do it here.
+		try {
+		  StringBuilder hetHomString = new StringBuilder();
+		  NumberFormat formatter = new DecimalFormat("#0.000");
+		  
+		  hetHomString.append("Het: ");
+		  hetHomString.append(formatter.format(var.getProperty(VariantRec.EXAC63K_OVERALL_FREQ_HET)) );
+		  hetHomString.append(" ");
+		  hetHomString.append("Hom: ");
+		  hetHomString.append(formatter.format(var.getProperty(VariantRec.EXAC63K_OVERALL_FREQ_HOM)) );
+		  
+		  var.addAnnotation(VariantRec.EXAC63K_OVERALL_HET_HOM, hetHomString.toString());
+		} catch(Exception e) { // Something went wrong, don't annotate
+		  
+		}
 		
 		//add breakdowns?
 		if (justLoadOverall == false) {
