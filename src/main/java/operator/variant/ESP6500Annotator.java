@@ -36,7 +36,6 @@ public class ESP6500Annotator extends AbstractTabixAnnotator {
 	protected boolean addAnnotationsFromString(VariantRec var, String dbline, int altIndex) {
 		String[] toks = dbline.split("\t");
 		String[] infoToks = toks[7].split(";");
-		System.out.println(var.toSimpleString());
 		Double totOverall = 0.0;
 		Double homOverall = 0.0;
 
