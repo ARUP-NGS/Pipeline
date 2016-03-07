@@ -15,6 +15,7 @@ public class ESP6500Annotator extends AbstractTabixAnnotator {
 
 	public static final String ESP_PATH = "esp.path";
 	private boolean hasHaploidObservations = false;
+	private boolean isYChromVariant        = false;
 	String[] GTSStringArray = null;
 
 	@Override
@@ -22,46 +23,95 @@ public class ESP6500Annotator extends AbstractTabixAnnotator {
 		return searchForAttribute(ESP_PATH);
 	}
 
+	private boolean hasHaploidCalls() {
+		for(int j = 0; j < GTSStringArray.length; j++) {
+			if (GTSStringArray[j].length() == 1) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	
 	protected boolean addAnnotationsFromString(VariantRec var, String dbline, int altIndex) {
 		String[] toks = dbline.split("\t");
 		String[] infoToks = toks[7].split(";");
-
+		System.out.println(var.toSimpleString());
 		Double totOverall = 0.0;
 		Double homOverall = 0.0;
 
 		int homRefIndex = -1;
 		int hetIndex = -1;
 		int homAltIndex = -1;
+		
+		
+		int haploidRefIndex = -1;		
+		int happloidHetIndex = -1;
+		
 		//Start by getting the indexes of our allele combinations of interest. We will use these indexes to pull the freqs from EA_GTC etc.
 		for(int i=0; i<infoToks.length; i++) {
 			String tok = infoToks[i];
 			if (tok.startsWith("GTS")) {
+				String homRefString = null;
+				String hetString    = null;
+				String homAltString = null;
+				
+				String haploidRefString = null;
+				String haploidAltString = null;
+				
 				tok = tok.replace("GTS=", "");
 				GTSStringArray = tok.split(",");
-				//We just want to grab the index we are looking for.
-				if (tok.contains("R")) { //Indels only do this.
-					String altString = "A" + String.valueOf(altIndex+1); //Base 1 ie A1 in DB, but altindex is 0 based.
-					homRefIndex = getGTSIndex(GTSStringArray, "RR");
-					hetIndex = getGTSIndex(GTSStringArray, altString+"R"); // i.e. A1R
-					homAltIndex = getGTSIndex(GTSStringArray, altString+altString); // i.e. A1A1
-				} else { //Otherwise it is a SNP.
-					//Need to handle X chrom SNPs which could look like this (Note GTS field):
-					// X	154158158	rs371159191	T	C	.	PASS	DBSNP=dbSNP_138;EA_AC=1,6726;AA_AC=0,3835;TAC=1,10561;
-					//MAF=0.0149,0.0,0.0095;GTS=CC,CT,C,TT,T;EA_GTC=0,0,1,2428,1870;AA_GTC=0,0,0,1632,571;GTC=0,0,1,4060,2441;
-					homRefIndex = getGTSIndex(GTSStringArray, var.getRef() + var.getRef());
-					hetIndex = getGTSIndex(GTSStringArray, var.getAlt() + var.getRef());
-					homAltIndex = getGTSIndex(GTSStringArray, var.getAlt() + var.getAlt());
-					for(int j = 0; j < GTSStringArray.length; j++) {
-						if (GTSStringArray[j].length() == 1) {
-							hasHaploidObservations = true; //We observe a single variant called, this should only be in X chrom for ESP6500.
-							break;
-						}
-					}
+				
+				if (var.getContig().equals("Y")) { //Y Chrom.
+					isYChromVariant = true;
+				} else {
+					//Grab the indexes for the homref, het, and homalt.
+					homRefString = var.getRef() + var.getRef();
+					hetString    = var.getAlt() + var.getRef();
+					homAltString = var.getAlt() + var.getAlt();
 				}
+				
+				if (tok.contains("R")) { //Overwrite strings because indels are special.
+					String altString = "A" + String.valueOf(altIndex+1); //Base 1 ie A1 in DB, but altindex is 0 based.
+					if (isYChromVariant) {
+						haploidRefString = "R";
+						haploidAltString = altString;
+					} else {
+						homRefString = "RR";
+						hetString = altString+"R"; // i.e. A1R
+						homAltString = altString+altString; // i.e. A1A1
+					}
+					
+				} else if (hasHaploidCalls()) { //X or Y variant
+					//Need to handle X chrom SNPs which could look like this (See GTS field):
+					// X	154158158	rs371159191	T	C	.	PASS	DBSNP=dbSNP_138;EA_AC=1,6726;AA_AC=0,3835;TAC=1,10561;
+					//MAF=0.0149,0.0,0.0095;
+					//GTS=CC,CT,C,TT,T;
+					//EA_GTC=0,0,1,2428,1870;AA_GTC=0,0,0,1632,571;GTC=0,0,1,4060,2441;
+					
+					// Y       14898094        rs13305774      A       G       .       PASS    DBSNP=dbSNP_121;EA_AC=1190,682;AA_AC=124,447;TAC=1314,1129;
+					//MAF=36.4316,21.7163,46.2137;
+					//GTS=G,A;
+					//EA_GTC=1190,682;AA_GTC=124,447;GTC=1314,1129;DP=43;GL=USP9Y;CP=0.0;CG=1.7;AA=A;CA=.;EXOME_CHIP=no;GWAS_PUBMED=.;FG=NM_004654.3:intron;HGVS_CDNA_VAR=NM_004654.3:c.3152-43A>G;HGVS_PROTEIN_VAR=.;CDS_SIZES=NM_004654.3:7668;GS=.;PH=.;EA_AGE=.;AA_AGE=.
+
+					
+					hasHaploidObservations = true; //We observe a single variant called, this is only X or Y.
+					haploidRefString = var.getRef();
+					haploidAltString = var.getAlt();
+				}
+				
+				//Collect the indexes.
+				haploidRefIndex  = getGTSIndex(GTSStringArray, haploidRefString);
+				happloidHetIndex = getGTSIndex(GTSStringArray, haploidAltString);
+				
+				homRefIndex = getGTSIndex(GTSStringArray, homRefString);
+				hetIndex    = getGTSIndex(GTSStringArray, hetString);
+				homAltIndex = getGTSIndex(GTSStringArray, homAltString);
+				
 				break;
 			}
 		}
-
+		
 		for(int i=0; i<infoToks.length; i++) {
 			String tok = infoToks[i];
 			if (tok.startsWith("MAF=")) {
@@ -84,13 +134,23 @@ public class ESP6500Annotator extends AbstractTabixAnnotator {
 				tok = tok.replace("EA_GTC=", "");
 				String[] vals = tok.split(",");
 				try {
-					int total = getTotalCounts(vals, hasHaploidObservations);
-					Double homRef = Double.parseDouble(vals[homRefIndex]);
-					Double het = Double.parseDouble(vals[hetIndex]);
-					Double homAlt = Double.parseDouble(vals[homAltIndex]);
+					int total = getTotalCounts(vals);
+					Double homRef;
+					Double het;
+					Double homAlt;
+
+					if (isYChromVariant) {
+						homRef = Double.parseDouble(vals[haploidRefIndex]);
+						homAlt = Double.parseDouble(vals[happloidHetIndex]);	
+					} else {
+						homRef = Double.parseDouble(vals[homRefIndex]);
+						het = Double.parseDouble(vals[hetIndex]);
+						homAlt = Double.parseDouble(vals[homAltIndex]);
+						
+						var.addProperty(VariantRec.EXOMES_EA_HET, het/total);
+					}
 
 					var.addProperty(VariantRec.EXOMES_EA_HOMREF, homRef / total);
-					var.addProperty(VariantRec.EXOMES_EA_HET, het/total);
 					var.addProperty(VariantRec.EXOMES_EA_HOMALT, homAlt/ total);
 					totOverall += total;
 					homOverall += homAlt;
@@ -104,13 +164,24 @@ public class ESP6500Annotator extends AbstractTabixAnnotator {
 				tok = tok.replace("AA_GTC=", "");
 				String[] vals = tok.split(",");
 				try {
-					int total = getTotalCounts(vals, hasHaploidObservations);
-					Double homRef = Double.parseDouble(vals[homRefIndex]);
-					Double het = Double.parseDouble(vals[hetIndex]);
-					Double homAlt = Double.parseDouble(vals[homAltIndex]);
+					int total = getTotalCounts(vals);
+					
+					Double homRef;
+					Double het;
+					Double homAlt;
+
+					if (isYChromVariant) {
+						homRef = Double.parseDouble(vals[haploidRefIndex]);
+						homAlt = Double.parseDouble(vals[happloidHetIndex]);	
+					} else {
+						homRef = Double.parseDouble(vals[homRefIndex]);
+						het = Double.parseDouble(vals[hetIndex]);
+						homAlt = Double.parseDouble(vals[homAltIndex]);
+						
+						var.addProperty(VariantRec.EXOMES_AA_HET, het/total);
+					}
 
 					var.addProperty(VariantRec.EXOMES_AA_HOMREF, homRef / total);
-					var.addProperty(VariantRec.EXOMES_AA_HET, het/total);
 					var.addProperty(VariantRec.EXOMES_AA_HOMALT, homAlt/ total);
 					totOverall += total;
 					homOverall += homAlt;
@@ -137,14 +208,10 @@ public class ESP6500Annotator extends AbstractTabixAnnotator {
 	 * @param infoField
 	 * @return sum
 	 */
-	private int getTotalCounts(String[] infoField, boolean hasHaploidObservations) {
+	private int getTotalCounts(String[] infoField) {
 		int sum = 0;
 		for(int i =0; i < infoField.length; i++) {
-			if (!hasHaploidObservations) {
-				sum += Integer.valueOf(infoField[i]);
-			} else if (hasHaploidObservations && GTSStringArray[i].length() !=1) { //Only consider non haploid calls in the freq calc.
-				sum += Integer.valueOf(infoField[i]);
-			}
+			sum += Integer.valueOf(infoField[i]);
 		}
 		return sum;
 	}
