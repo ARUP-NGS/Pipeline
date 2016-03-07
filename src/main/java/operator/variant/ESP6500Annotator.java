@@ -46,7 +46,7 @@ public class ESP6500Annotator extends AbstractTabixAnnotator {
 		
 		
 		int haploidRefIndex = -1;		
-		int happloidHetIndex = -1;
+		int haploidAltIndex = -1;
 		
 		//Start by getting the indexes of our allele combinations of interest. We will use these indexes to pull the freqs from EA_GTC etc.
 		for(int i=0; i<infoToks.length; i++) {
@@ -102,7 +102,7 @@ public class ESP6500Annotator extends AbstractTabixAnnotator {
 				
 				//Collect the indexes.
 				haploidRefIndex  = getGTSIndex(GTSStringArray, haploidRefString);
-				happloidHetIndex = getGTSIndex(GTSStringArray, haploidAltString);
+				haploidAltIndex = getGTSIndex(GTSStringArray, haploidAltString);
 				
 				homRefIndex = getGTSIndex(GTSStringArray, homRefString);
 				hetIndex    = getGTSIndex(GTSStringArray, hetString);
@@ -141,12 +141,16 @@ public class ESP6500Annotator extends AbstractTabixAnnotator {
 
 					if (isYChromVariant) {
 						homRef = Double.parseDouble(vals[haploidRefIndex]);
-						homAlt = Double.parseDouble(vals[happloidHetIndex]);	
+						homAlt = Double.parseDouble(vals[haploidAltIndex]);	
 					} else {
 						homRef = Double.parseDouble(vals[homRefIndex]);
-						het = Double.parseDouble(vals[hetIndex]);
 						homAlt = Double.parseDouble(vals[homAltIndex]);
+						if (hasHaploidObservations) {
+							homRef = homRef + Double.parseDouble(vals[haploidRefIndex]);
+							homAlt = homAlt + Double.parseDouble(vals[haploidAltIndex]);
+						}
 						
+						het = Double.parseDouble(vals[hetIndex]);
 						var.addProperty(VariantRec.EXOMES_EA_HET, het/total);
 					}
 
@@ -172,12 +176,16 @@ public class ESP6500Annotator extends AbstractTabixAnnotator {
 
 					if (isYChromVariant) {
 						homRef = Double.parseDouble(vals[haploidRefIndex]);
-						homAlt = Double.parseDouble(vals[happloidHetIndex]);	
+						homAlt = Double.parseDouble(vals[haploidAltIndex]);	
 					} else {
 						homRef = Double.parseDouble(vals[homRefIndex]);
-						het = Double.parseDouble(vals[hetIndex]);
 						homAlt = Double.parseDouble(vals[homAltIndex]);
+						if (hasHaploidObservations) {
+							homRef = homRef + Double.parseDouble(vals[haploidRefIndex]);
+							homAlt = homAlt + Double.parseDouble(vals[haploidAltIndex]);
+						}
 						
+						het = Double.parseDouble(vals[hetIndex]);
 						var.addProperty(VariantRec.EXOMES_AA_HET, het/total);
 					}
 
