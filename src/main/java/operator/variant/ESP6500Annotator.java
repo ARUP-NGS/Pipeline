@@ -38,15 +38,13 @@ public class ESP6500Annotator extends AbstractTabixAnnotator {
 		String[] infoToks = toks[7].split(";");
 		Double totOverall = 0.0;
 		Double homOverall = 0.0;
-
+		isYChromVariant = false;
+		hasHaploidObservations = false;
 		int homRefIndex = -1;
 		int hetIndex = -1;
 		int homAltIndex = -1;
-		
-		
 		int haploidRefIndex = -1;		
 		int haploidAltIndex = -1;
-		
 		//Start by getting the indexes of our allele combinations of interest. We will use these indexes to pull the freqs from EA_GTC etc.
 		for(int i=0; i<infoToks.length; i++) {
 			String tok = infoToks[i];
@@ -60,43 +58,36 @@ public class ESP6500Annotator extends AbstractTabixAnnotator {
 				
 				tok = tok.replace("GTS=", "");
 				GTSStringArray = tok.split(",");
+
 				
 				if (var.getContig().equals("Y")) { //Y Chrom.
 					isYChromVariant = true;
-				} else {
-					//Grab the indexes for the homref, het, and homalt.
-					homRefString = var.getRef() + var.getRef();
-					hetString    = var.getAlt() + var.getRef();
-					homAltString = var.getAlt() + var.getAlt();
 				}
+				hasHaploidObservations = hasHaploidCalls();
 				
-				if (tok.contains("R")) { //Overwrite strings because indels are special.
+				if (tok.contains("R")) { //Indel
 					String altString = "A" + String.valueOf(altIndex+1); //Base 1 ie A1 in DB, but altindex is 0 based.
-					if (isYChromVariant) {
+					if (hasHaploidObservations) { //Y or X PAR.
 						haploidRefString = "R";
 						haploidAltString = altString;
-					} else {
+					}
+					
+					if (!isYChromVariant) {
 						homRefString = "RR";
 						hetString = altString+"R"; // i.e. A1R
 						homAltString = altString+altString; // i.e. A1A1
 					}
-					
-				} else if (hasHaploidCalls()) { //X or Y variant
-					//Need to handle X chrom SNPs which could look like this (See GTS field):
-					// X	154158158	rs371159191	T	C	.	PASS	DBSNP=dbSNP_138;EA_AC=1,6726;AA_AC=0,3835;TAC=1,10561;
-					//MAF=0.0149,0.0,0.0095;
-					//GTS=CC,CT,C,TT,T;
-					//EA_GTC=0,0,1,2428,1870;AA_GTC=0,0,0,1632,571;GTC=0,0,1,4060,2441;
-					
-					// Y       14898094        rs13305774      A       G       .       PASS    DBSNP=dbSNP_121;EA_AC=1190,682;AA_AC=124,447;TAC=1314,1129;
-					//MAF=36.4316,21.7163,46.2137;
-					//GTS=G,A;
-					//EA_GTC=1190,682;AA_GTC=124,447;GTC=1314,1129;DP=43;GL=USP9Y;CP=0.0;CG=1.7;AA=A;CA=.;EXOME_CHIP=no;GWAS_PUBMED=.;FG=NM_004654.3:intron;HGVS_CDNA_VAR=NM_004654.3:c.3152-43A>G;HGVS_PROTEIN_VAR=.;CDS_SIZES=NM_004654.3:7668;GS=.;PH=.;EA_AGE=.;AA_AGE=.
-
-					
-					hasHaploidObservations = true; //We observe a single variant called, this is only X or Y.
-					haploidRefString = var.getRef();
-					haploidAltString = var.getAlt();
+				} else { //Not an indel!
+					if (hasHaploidObservations) { //Y or X PAR.
+						haploidRefString = var.getRef();
+						haploidAltString = var.getAlt();
+					} 
+					if (!isYChromVariant) {
+						//Grab the indexes for the homref, het, and homalt.
+						homRefString = var.getRef() + var.getRef();
+						hetString    = var.getAlt() + var.getRef();
+						homAltString = var.getAlt() + var.getAlt();
+					}
 				}
 				
 				//Collect the indexes.
@@ -132,15 +123,15 @@ public class ESP6500Annotator extends AbstractTabixAnnotator {
 			if (tok.startsWith("EA_GTC=")) {
 				tok = tok.replace("EA_GTC=", "");
 				String[] vals = tok.split(",");
+				Double homRef;
+				Double het;
+				Double homAlt;
 				try {
 					int total = getTotalCounts(vals);
-					Double homRef;
-					Double het;
-					Double homAlt;
 
 					if (isYChromVariant) {
 						homRef = Double.parseDouble(vals[haploidRefIndex]);
-						homAlt = Double.parseDouble(vals[haploidAltIndex]);	
+						homAlt = Double.parseDouble(vals[haploidAltIndex]);
 					} else {
 						homRef = Double.parseDouble(vals[homRefIndex]);
 						homAlt = Double.parseDouble(vals[homAltIndex]);
@@ -157,9 +148,13 @@ public class ESP6500Annotator extends AbstractTabixAnnotator {
 					var.addProperty(VariantRec.EXOMES_EA_HOMALT, homAlt/ total);
 					totOverall += total;
 					homOverall += homAlt;
-				}
-				catch(NumberFormatException ex) {
+					
+				} catch(NumberFormatException ex) {
 					//Don't worry about it, no annotation though
+				} catch( Exception e) {
+					if(hasHaploidObservations && haploidRefIndex < 0 || haploidAltIndex < 0) {
+						System.out.println("Variant in DB missing either haploidRefIndex or haploidAltIndex: " + dbline);
+					}
 				}
 			}
 
@@ -195,6 +190,8 @@ public class ESP6500Annotator extends AbstractTabixAnnotator {
 				}
 				catch(NumberFormatException ex) {
 					//Don't worry about it, no annotation though
+				} catch( Exception e) {
+					
 				}
 			}
 		}
