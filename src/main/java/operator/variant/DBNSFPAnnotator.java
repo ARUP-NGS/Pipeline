@@ -1,6 +1,10 @@
 package operator.variant;
 
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.regex.Pattern;
 
 import com.sun.org.apache.xpath.internal.SourceTree;
 import operator.OperationFailedException;
@@ -22,14 +26,14 @@ import buffer.variant.VariantRec;
  * #tail to remove the header
  * <p/>
  * <p/>
- * 0 chr
- * 1 pos(1-based)
+ * 0 chr          B38!
+ * 1 pos(1-based) B38!
  * 2 ref
  * 3 alt
  * 4 aaref
  * 5 aaalt
  * 6 rs_dbSNP142
- * 7 hg19_chr
+ * 7 hg19_chr     Actual its using just #'s so B37, not chr
  * 8 hg19_pos(1-based)
  * 9 hg18_chr
  * 10 hg18_pos(1-based)
@@ -158,7 +162,46 @@ import buffer.variant.VariantRec;
  *
  * @author Keith Simmon
  * @date April 13th 2015
+ * 
+Mods by Nix, 17 March 2016
+# big headache something is breaking, processing with individual steps works.
+
+# downloaded the zip archive
+wget ftp://dbnsfp:dbnsfp@dbnsfp.softgenetics.com/dbNSFPv3.1a.zip
+
+# uncompressed
+unzip dbNSFPv3.1a.zip 
+
+# sort each independently
+for x in *_variant.chr* 
+do
+echo $x
+sort -k8,8 -k9,9 --numeric -T . $x | grep -v ^# > $x".sorted"
+
+# modifying chr22, chr6, and chr11 to pull off b37 coordinates with diff chromosomes and appropriately append
+cat dbNSFP3.1a_variant.chr6.sorted | awk '{if($8!=6)print;}' > notChr6
+cat dbNSFP3.1a_variant.chr6.sorted | awk '{if($8==6)print;}' > chr6
+
+# only three cases where there were variants that shifted chromosome
+cat notChr6_append2ChrY >> dbNSFP3.1a_variant.chrY.sorted 
+cat notChr17_append2Chr11 >> dbNSFP3.1a_variant.chr11.sorted 
+cat notChr22_append2Chr14 >> dbNSFP3.1a_variant.chr14.sorted 
+
+# re sort these
+for x in dbNSFP3.1a_variant.chrY.sorted dbNSFP3.1a_variant.chr11.sorted dbNSFP3.1a_variant.chr14.sorted
+do
+echo $x
+sort -k8,8 -k9,9 --numeric -T . $x  > $x".resorted"
+done
+
+# gzip
+cat dbNSFP3.1a_variant.chr1.sorted dbNSFP3.1a_variant.chr2.sorted dbNSFP3.1a_variant.chr3.sorted dbNSFP3.1a_variant.chr4.sorted dbNSFP3.1a_variant.chr5.sorted chr6 dbNSFP3.1a_variant.chr7.sorted dbNSFP3.1a_variant.chr8.sorted dbNSFP3.1a_variant.chr9.sorted dbNSFP3.1a_variant.chr10.sorted dbNSFP3.1a_variant.chr11.sorted.resorted dbNSFP3.1a_variant.chr12.sorted dbNSFP3.1a_variant.chr13.sorted dbNSFP3.1a_variant.chr14.sorted.resorted dbNSFP3.1a_variant.chr15.sorted dbNSFP3.1a_variant.chr16.sorted chr17 dbNSFP3.1a_variant.chr18.sorted dbNSFP3.1a_variant.chr19.sorted dbNSFP3.1a_variant.chr20.sorted dbNSFP3.1a_variant.chr21.sorted chr22 dbNSFP3.1a_variant.chrM.sorted dbNSFP3.1a_variant.chrX.sorted dbNSFP3.1a_variant.chrY.sorted.resorted \
+| ~/Ref/Apps/HTSlib/1.3/bin/bgzip > dbNSFPv3.1a.b37.gz
+
+# tab index it but use the hg19/ b37 columns, first column is 1 not zero
+~/Ref/Apps/HTSlib/1.3/bin/tabix -s 8 -b 9 -e 9 dbNSFPv3.1a.b37.gz
  */
+
 public class DBNSFPAnnotator extends AbstractTabixAnnotator {
 
     private boolean initialized = false;
@@ -166,7 +209,24 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
 
     public static final String DBNSFP_PATH = "dbnsfp.path";
     public static final String DBNSFP_VERSION = "dbnsfp.version";
+    public static final Pattern TAB = Pattern.compile("\\t");
     protected String dbsnfpVersion = null;
+    
+    private int sift_score_col;
+    private int polyphen_score_col;
+    private int Polyphen2_hvar_score_col;
+    private int lrt_score_column;
+    private int mt_score_column;
+    private int ma_score_column;
+    private int gerp_nr_score_column;
+    private int gerp_score_column;
+    private int phylop_score_column;
+    private int siphy_score_column;
+    private int b37Chr_column;
+    private int b37Pos_column;
+    private int b37Ref_column;
+    private int b37Alt_column;
+    
 
     @Override
     protected String getPathToTabixedFile() {
@@ -190,15 +250,10 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
      * @return column index
      */
     private int getSiftColumn(String dbsnfpVersion) {
-        if (dbsnfpVersion.equals("3.0")) {
-            return 23;
-        } else if (dbsnfpVersion.equals("2.9")) {
-            return 26;
-        } else if (dbsnfpVersion.equals("2.0")) {
-            return 21;
-        } else {
-            return -1;
-        }
+        if (dbsnfpVersion.equals("3.0") || dbsnfpVersion.equals("3.1a")) return 23;
+        if (dbsnfpVersion.equals("2.9")) return 26;
+        if (dbsnfpVersion.equals("2.0")) return 21;
+        return -1;
     }
 
     /**
@@ -208,17 +263,12 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
      * @return column index
      */
     private int getPolyphenScoreColumn(String dbsnfpVersion) {
-        if (dbsnfpVersion.equals("3.0")) {
-            return 29;
-        } else if (dbsnfpVersion.equals("2.9")) {
-            return 29;
-        } else if (dbsnfpVersion.equals("2.0")) {
-            return 22;
-        } else {
-            return -1;
-        }
+        if (dbsnfpVersion.equals("3.0") || dbsnfpVersion.equals("3.1a")) return 29;
+        if (dbsnfpVersion.equals("2.9")) return 29;
+        if (dbsnfpVersion.equals("2.0")) return 22;
+        return -1;
     }
-
+    
     /**
      * Returns the Polyphen2_HVAR_score column index for a specific dbNSFP DB
      *
@@ -226,17 +276,11 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
      * @return column index
      */
     private int getPolyphenScoreHVARColumn(String dbsnfpVersion) {
-        if (dbsnfpVersion.equals("3.0")) {
-            return 32;
-        } else if (dbsnfpVersion.equals("2.9")) {
-            return 32;
-        } else if (dbsnfpVersion.equals("2.0")) {
-            return 24;
-        } else {
-            return -1;
-        }
+        if (dbsnfpVersion.equals("3.0") || dbsnfpVersion.equals("3.1a")) return 32;
+        if (dbsnfpVersion.equals("2.9")) return 32;
+        if (dbsnfpVersion.equals("2.0")) return 24;
+        return -1;
     }
-
 
     /**
      * Returns the LRT_score column index for a specific dbNSFP DB
@@ -245,15 +289,10 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
      * @return column index
      */
     private int getLRTScoreColumn(String dbsnfpVersion) {
-        if (dbsnfpVersion.equals("3.0")) {
-            return 35;
-        } else if (dbsnfpVersion.equals("2.9")) {
-            return 35;
-        } else if (dbsnfpVersion.equals("2.0")) {
-            return 26;
-        } else {
-            return -1;
-        }
+        if (dbsnfpVersion.equals("3.0") || dbsnfpVersion.equals("3.1a")) return 35;
+        if (dbsnfpVersion.equals("2.9")) return 35;
+        if (dbsnfpVersion.equals("2.0")) return 26;
+        return -1;
     }
 
     /**
@@ -263,16 +302,10 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
      * @return column index
      */
     private int getMTScoreColumn(String dbsnfpVersion) {
-        if (dbsnfpVersion.equals("3.0")) {
-            return 39;
-        } else if (dbsnfpVersion.equals("2.9")) {
-            return 38;
-        }
-        if (dbsnfpVersion.equals("2.0")) {
-            return 28;
-        } else {
-            return -1;
-        }
+        if (dbsnfpVersion.equals("3.0") || dbsnfpVersion.equals("3.1a")) return 39;
+        if (dbsnfpVersion.equals("2.9")) return 38;
+        if (dbsnfpVersion.equals("2.0")) return 28;
+        return -1;
     }
 
     /**
@@ -282,15 +315,10 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
      * @return column index
      */
     private int getMAScoreColumn(String dbsnfpVersion) {
-        if (dbsnfpVersion.equals("3.0")) {
-            return 46;
-        } else if (dbsnfpVersion.equals("2.9")) {
-            return 41;
-        } else if (dbsnfpVersion.equals("2.0")) {
-            return 30;
-        } else {
-            return -1;
-        }
+        if (dbsnfpVersion.equals("3.0") || dbsnfpVersion.equals("3.1a")) return 46;
+        if (dbsnfpVersion.equals("2.9")) return 41;
+        if (dbsnfpVersion.equals("2.0")) return 30;
+        return -1;
     }
 
     /**
@@ -300,35 +328,27 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
      * @return column index
      */
     private int getGerpNRColumn(String dbsnfpVersion) {
-        if (dbsnfpVersion.equals("3.0")) {
-            return 62;
-        } else if (dbsnfpVersion.equals("2.9")) {
-            return 62;
-        } else if (dbsnfpVersion.equals("2.0")) {
-            return 32;
-        } else {
-            return -1;
-        }
+    	if (dbsnfpVersion.equals("3.1a")) return 87;
+    	if (dbsnfpVersion.equals("3.0")) return 62;
+        if (dbsnfpVersion.equals("2.9")) return 62;
+        if (dbsnfpVersion.equals("2.0")) return 32;
+        return -1;
     }
 
     /**
-     * Returns the GERP column index for a specific dbNSFP DB
+     * Returns the GERP_RS column index for a specific dbNSFP DB
      *
      * @param dbsnfpVersion
      * @return column index
      */
     private int getGerpColumn(String dbsnfpVersion) {
-        if (dbsnfpVersion.equals("3.0")) {
-            return 63;
-        } else if (dbsnfpVersion.equals("2.9")) {
-            return 63;
-        } else if (dbsnfpVersion.equals("2.0")) {
-            return 33;
-        } else {
-            return -1;
-        }
+    	if (dbsnfpVersion.equals("3.1a")) return 88;
+        if (dbsnfpVersion.equals("3.0")) return 63;
+        if (dbsnfpVersion.equals("2.9")) return 63;
+        if (dbsnfpVersion.equals("2.0")) return 33;
+        return -1;
+    
     }
-
 
     /**
      * Returns the PhyloP column index for a specific dbNSFP DB
@@ -337,15 +357,12 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
      * @return column index
      */
     private int getPhylopColumn(String dbsnfpVersion) {
-        if (dbsnfpVersion.equals("3.0")) {
-            return 65;
-        } else if (dbsnfpVersion.equals("2.9")) {
-            return 69;
-        } else if (dbsnfpVersion.equals("2.0")) {
-            return 34;
-        } else {
-            return -1;
-        }
+    	if (dbsnfpVersion.equals("3.1a")) return 90;
+        if (dbsnfpVersion.equals("3.0")) return 65;
+        if (dbsnfpVersion.equals("2.9")) return 69;
+        if (dbsnfpVersion.equals("2.0")) return 34;
+        return -1;
+
     }
 
     /**
@@ -355,15 +372,11 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
      * @return column index
      */
     private int getSiphyColumn(String dbsnfpVersion) {
-        if (dbsnfpVersion.equals("3.0")) {
-            return 70;
-        } else if (dbsnfpVersion.equals("2.9")) {
-            return 78;
-        } else if (dbsnfpVersion.equals("2.0")) {
-            return 36;
-        } else {
-            return -1;
-        }
+    	if (dbsnfpVersion.equals("3.1a")) return 99;
+        if (dbsnfpVersion.equals("3.0")) return 70;
+        if (dbsnfpVersion.equals("2.9")) return 78;
+        if (dbsnfpVersion.equals("2.0")) return 36;
+        return -1;
     }
 
 
@@ -394,20 +407,9 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
      */
     @Override
     protected boolean addAnnotationsFromString(VariantRec var, String val, int altIndex) {
+    	String[] toks = TAB.split(val);
 
-        String[] toks = val.split("\t");
-        int sift_score_col = getSiftColumn(dbsnfpVersion);
-        int polyphen_score_col = getPolyphenScoreColumn(dbsnfpVersion);
-        int Polyphen2_hvar_score_col = getPolyphenScoreHVARColumn(dbsnfpVersion);
-        int lrt_score_column = getLRTScoreColumn(dbsnfpVersion);
-        int mt_score_column = getMTScoreColumn(dbsnfpVersion);
-        int ma_score_column = getMAScoreColumn(dbsnfpVersion);
-        int gerp_nr_score_column = getGerpNRColumn(dbsnfpVersion);
-        int gerp_score_column = getGerpColumn(dbsnfpVersion);
-        int phylop_score_column = getPhylopColumn(dbsnfpVersion);
-        int siphy_score_column = getSiphyColumn(dbsnfpVersion);
-
-        //SIFT_SCORE
+        //SIFT_SCORE, takes the lowest
         try {
             if (toks[sift_score_col].contains(";")) {
                 String[] values = toks[sift_score_col].split(";");
@@ -425,11 +427,11 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
                 var.addProperty(VariantRec.SIFT_SCORE, lowest);
             } else {
                 var.addProperty(VariantRec.SIFT_SCORE, Double.parseDouble(toks[sift_score_col]));
-            }
+            }           
         } catch (NumberFormatException ex) {//Thrown if the value in the tabix is not parsable "."
         }
 
-        //Polyphen2_HDIV_score
+        //Polyphen2_HDIV_score, takes the highest
         try {
             if (toks[polyphen_score_col].contains(";")) {
                 String[] values = toks[polyphen_score_col].split(";");
@@ -449,7 +451,7 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
         } catch (NumberFormatException ex) {
         }
 
-        //POLYPHEN_HVAR_SCORE
+        //POLYPHEN_HVAR_SCORE, takes the highest
         try {
             if (toks[Polyphen2_hvar_score_col].contains(";")) {
                 String[] values = toks[Polyphen2_hvar_score_col].split(";");
@@ -469,13 +471,13 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
         } catch (NumberFormatException ex) {
         }
 
-        //LRT SCORE
+        //LRT SCORE, just adds
         try {
-            var.addProperty(VariantRec.LRT_SCORE, Double.parseDouble(toks[lrt_score_column]));
+            var.addProperty(VariantRec.LRT_SCORE, Double.parseDouble(toks[lrt_score_column])); 
         } catch (NumberFormatException ex) {
         }
 
-        //MT_SCORE
+        //MT_SCORE, takes the highest
         try {
             if (toks[mt_score_column].contains(";")) {
                 String[] values = toks[mt_score_column].split(";");
@@ -495,7 +497,7 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
         } catch (NumberFormatException ex) {
         }
 
-        //MA_SCORE
+        //MA_SCORE, takes highest
         try {
             //if multiple values present keep the most damaging value [LARGER]
             if (toks[ma_score_column].contains(";")) {
@@ -516,25 +518,25 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
         } catch (NumberFormatException ex) {
         }
 
-        //GERP_NR_SCORE
+        //GERP_NR_SCORE, just adds
         try {
             var.addProperty(VariantRec.GERP_NR_SCORE, Double.parseDouble(toks[gerp_nr_score_column]));
         } catch (NumberFormatException ex) {
         }
 
-        // GERP_SCORE
+        // GERP_SCORE, just adds
         try {
             var.addProperty(VariantRec.GERP_SCORE, Double.parseDouble(toks[gerp_score_column]));
         } catch (NumberFormatException ex) {
         }
 
-        //PHYLOP_SCORE
+        //PHYLOP_SCORE, just adds
         try {
             var.addProperty(VariantRec.PHYLOP_SCORE, Double.parseDouble(toks[phylop_score_column]));
         } catch (NumberFormatException ex) {
         }
 
-        //SIPHY_SCORE
+        //SIPHY_SCORE, just adds
         try {
             var.addProperty(VariantRec.SIPHY_SCORE, Double.parseDouble(toks[siphy_score_column]));
         } catch (NumberFormatException ex) {
@@ -545,42 +547,36 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
     }
 
 
+
     /**
      * Overrides the abstractTabixAnnotator method because the database is not in standard VCF format.
-     *
+     * 
      * @param varToAnnotate
      * @throws OperationFailedException
      */
     @Override
     public void annotateVariant(VariantRec varToAnnotate) throws OperationFailedException {
 
-
-        if (!initialized) {
-            throw new OperationFailedException("Failed to initialize", this);
-        }
-
-        if (reader == null) {
-            throw new OperationFailedException("Tabix reader not initialized", this);
-        }
+        if (!initialized) throw new OperationFailedException("Failed to initialize", this);
+        if (reader == null) throw new OperationFailedException("Tabix reader not initialized", this);
 
         String contig = varToAnnotate.getContig();
         Integer pos = varToAnnotate.getStart();
         String queryStr = contig + ":" + (pos) + "-" + (pos);
-
+        
         try {
             //Perform the lookup
             TabixReader.Iterator iter = reader.query(queryStr);
-
             if (iter != null) {
+            	
                 try {
                     String val = iter.next();
-
                     while (val != null) {
                         String[] toks = val.split("\t"); //length of the array 16
-
-
                         // call the constructer and set variants
-                        VariantRec queryResultVar = new VariantRec(toks[0], Integer.parseInt(toks[1]), Integer.parseInt(toks[1]), toks[2], toks[3]);
+                        //VariantRec queryResultVar = new VariantRec(toks[0], Integer.parseInt(toks[1]), Integer.parseInt(toks[1]), toks[2], toks[3]);
+                        VariantRec queryResultVar = new VariantRec(toks[b37Chr_column], Integer.parseInt(toks[b37Pos_column]), Integer.parseInt(toks[b37Pos_column]), toks[b37Ref_column], toks[b37Alt_column]);
+
                         //Important: Normalize the record so that it will match the
                         //variants in the variant pool that we want to annotate
                         queryResultVar = VCFParser.normalizeVariant(queryResultVar);
@@ -597,12 +593,9 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
                                     && queryResultVar.getAlt().equals(varToAnnotate.getAllAlts()[i])) {
                                 //Everything looks good, so go ahead and annotate
                                 boolean ok = addAnnotationsFromString(varToAnnotate, val, i);
-
-                                if (ok)
-                                    break;
+                                if (ok) break;
                             }
                         }
-
                         val = iter.next();
                     }
                 } catch (IOException e) {
@@ -620,19 +613,42 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
     public void initialize(NodeList children) {
         super.initialize(children);
 
-        dbsnfpVersion = this.getAttribute(DBNSFP_VERSION);
-        if (dbsnfpVersion == null) {
-            dbsnfpVersion = "2.9";
-        } else {
+        dbsnfpVersion = getAttribute(DBNSFP_VERSION);
+        if (dbsnfpVersion == null) dbsnfpVersion= getPipelineProperty (DBNSFP_VERSION);
 
-            if (dbsnfpVersion.equals("2.0")) {
-                //supported DB
-            } else if (dbsnfpVersion.equals("2.9")) {
-                //supported DB
-            } else if (dbsnfpVersion.equals("3.0")) {
-                //supported DB
-            }
+        //I'm going to force a declaration of what version they are using, Nix
+        if (dbsnfpVersion == null) throw new IllegalArgumentException ("Failed to parse your "+DBNSFP_VERSION +". Please include it in your pipeline properties xml file.");
+        else if (dbsnfpVersion.equals("2.0") == false && dbsnfpVersion.equals("2.9") == false && dbsnfpVersion.equals("3.0") == false && dbsnfpVersion.equals("3.1a") == false){
+        	throw new IllegalArgumentException ("Only the 2.0, 2.9, 3.0, 3.1a versions of "+DBNSFP_VERSION +" are supported");
         }
+        
+        //set column indexes, bad way of doing this!
+        sift_score_col = getSiftColumn(dbsnfpVersion);
+        polyphen_score_col = getPolyphenScoreColumn(dbsnfpVersion);
+        Polyphen2_hvar_score_col = getPolyphenScoreHVARColumn(dbsnfpVersion);
+        lrt_score_column = getLRTScoreColumn(dbsnfpVersion);
+        mt_score_column = getMTScoreColumn(dbsnfpVersion);
+        ma_score_column = getMAScoreColumn(dbsnfpVersion);
+        gerp_nr_score_column = getGerpNRColumn(dbsnfpVersion);
+        gerp_score_column = getGerpColumn(dbsnfpVersion);
+        phylop_score_column = getPhylopColumn(dbsnfpVersion);
+        siphy_score_column = getSiphyColumn(dbsnfpVersion);
+        
+        //set indexes for the correct columns in a dbnsfp line, first is 0.
+        if (dbsnfpVersion.equals("3.1a")){
+            b37Chr_column =7;
+            b37Pos_column =8;
+            b37Ref_column =2;
+            b37Alt_column =3;
+        }
+        //everything else default to:
+        else {
+            b37Chr_column =0;
+            b37Pos_column =1;
+            b37Ref_column =2;
+            b37Alt_column =3;
+        }
+        
 
     }
 }
