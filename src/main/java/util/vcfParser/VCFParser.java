@@ -428,6 +428,10 @@ public class VCFParser implements VariantLineReader {
 		var.addProperty(VariantRec.VCF_POS, (double) pos);
 		var.addAnnotation(VariantRec.VCF_REF, ref);
 		var.addAnnotation(VariantRec.VCF_ALT, alt);
+		
+		//if FILTER isn't (e.g. empty, pass, or .) add it
+		String filter = getFilter();
+		if (filter.length() > 1 && filter.toUpperCase().equals("PASS") == false) var.addAnnotation(VariantRec.VCF_FILTER, filter);
 		 
 		// Get certain values
 		Integer depth = getDepth();
@@ -732,7 +736,20 @@ public class VCFParser implements VariantLineReader {
 		} else {
 			return "?";
 		}
-	}	
+	}
+	
+	/**
+	 * Variant filter, anything but "." or "PASS" indicates a problem with the variant
+	 * @author nix
+	 * @return
+	 */
+	public String getFilter() {
+		if (currentLineToks != null) {
+			return currentLineToks[6];
+		} else {
+			return "";
+		}		
+	}
 	
 	/**
 	 * String array of reference & all alternate sequences for variant

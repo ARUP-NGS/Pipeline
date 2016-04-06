@@ -757,6 +757,7 @@ public class VariantRec {
 	public static final String VCF_POS = "vcf.position";
 	public static final String VCF_REF = "vcf.ref";
 	public static final String VCF_ALT = "vcf.variant";
+	public static final String VCF_FILTER = "vcf.filter";
 	public static final String EFFECT_PREDICTION = "effect.prediction";
 	public static final String EFFECT_PREDICTION2 = "effect.prediction2";
 	public static final String POP_FREQUENCY = "pop.freq";
