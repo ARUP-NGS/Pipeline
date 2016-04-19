@@ -83,7 +83,13 @@ public class PipelineValidationTool {
 			
 			writeJSONToFile(new JSONObject(crd.getFinalJSONOutput()), outFileName);
 			
-		} catch (IOException | ManifestParseException | JSONException e) {
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (ManifestParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -189,9 +195,17 @@ public class PipelineValidationTool {
 				System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\n");
 				System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
 
-			} catch (IOException | ManifestParseException | JSONException ex) {
+			} catch (IOException ex) {
 				System.out.println("Error with comparison for RDs: " + entry.getValue().get(0).getSourceDirPath() + " and " + entry.getValue().get(1).getSourceDirPath());
 				ex.printStackTrace();
+			} catch (ManifestParseException e) {
+				// TODO Auto-generated catch block
+				System.out.println("Error with comparison for RDs: " + entry.getValue().get(0).getSourceDirPath() + " and " + entry.getValue().get(1).getSourceDirPath());
+				e.printStackTrace();
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				System.out.println("Error with comparison for RDs: " + entry.getValue().get(0).getSourceDirPath() + " and " + entry.getValue().get(1).getSourceDirPath());
+				e.printStackTrace();
 			}
 		}
 		return crds;
@@ -252,7 +266,8 @@ public class PipelineValidationTool {
 	}
 	
 	private static void writeJSONToFile(JSONObject json, String outFileName) {
-		try (FileWriter file = new FileWriter(outFileName + ".json")) {
+		try {
+			FileWriter file = new FileWriter(outFileName + ".json");
 			file.write(json.toString());
 			System.out.println("\nSuccessfully Copied JSON Object to File: " + outFileName + ".json");
 		} catch (IOException e1) {
