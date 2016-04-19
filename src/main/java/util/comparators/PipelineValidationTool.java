@@ -132,8 +132,11 @@ public class PipelineValidationTool {
 						ReviewDirectory newRD = new ReviewDirectory(f.getAbsolutePath());
 						RDs1.add(newRD);
 						reviewDirPathMap.put(newRD, f.getAbsolutePath());
-					} catch (IOException | ManifestParseException ex) {
+					} catch (IOException ex) {
 						ex.printStackTrace();
+					} catch (ManifestParseException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
 					}
 				}
 
@@ -142,8 +145,11 @@ public class PipelineValidationTool {
 						ReviewDirectory newRD = new ReviewDirectory(f.getAbsolutePath());
 						RDs2.add(newRD);
 						reviewDirPathMap.put(newRD, f.getAbsolutePath());
-					} catch (IOException | ManifestParseException ex) {
+					} catch (IOException ex) {
 						ex.printStackTrace();
+					} catch (ManifestParseException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
 					}
 				}
 				
@@ -239,7 +245,7 @@ public class PipelineValidationTool {
 					String comparisonName = entry.getKey();
 					DiscordanceSummary disSum = entry.getValue();
 					
-					List<String> newRow = new ArrayList<>();
+					List<String> newRow = new ArrayList<String>();
 					newRow.add(comparisonName);
 					
 					int sum = disSum.getSeveritySummary(sev).size();
