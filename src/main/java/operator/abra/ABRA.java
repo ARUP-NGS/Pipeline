@@ -45,14 +45,23 @@ public class ABRA extends IOOperator {
 
 	@Override
 	public void performOperation() throws OperationFailedException, IOException {
+
+
 		Logger.getLogger(Pipeline.primaryLoggerName).info(
 				"Abra is about to run.");
-		FileBuffer refBuf = this.getInputBufferForClass(ReferenceFile.class);
-		FileBuffer outBAM = this.getOutputBufferForClass(BAMFile.class);
-		FileBuffer inBAM = this.getInputBufferForClass(BAMFile.class);
+		//FileBuffer refBuf = this.getInputBufferForClass(ReferenceFile.class);
+		ReferenceFile refBuf = (ReferenceFile) this.getInputBufferForClass(ReferenceFile.class);
+		//FileBuffer outBAM = this.getOutputBufferForClass(BAMFile.class);
+		FileBuffer outBAM = getOutputBufferForClass(BAMFile.class);
+		//FileBuffer inBAM = this.getInputBufferForClass(BAMFile.class);
+		FileBuffer inBAM = getInputBufferForClass(BAMFile.class);
 		FileBuffer bed = this.getInputBufferForClass(BEDFile.class);
 		String bedPath = bed.getAbsolutePath();
 		String ref = refBuf.getAbsolutePath();
+		String inBAMpath=inBAM.getAbsolutePath();
+		String outBAMpath=outBAM.getAbsolutePath();
+		
+	
 		if (ref == null) {
 			throw new OperationFailedException("Reference file is null", this);
 		}
@@ -84,18 +93,18 @@ public class ABRA extends IOOperator {
 		bedReader.close();
 
 
-		runAbra((ReferenceFile)refBuf, (BAMFile)inBAM, bedPath, (BAMFile)outBAM, this.getPipelineOwner().getThreadCount(),  extraOpts );		
+		//runAbra((ReferenceFile)refBuf, (BAMFile)inBAM, bedPath, (BAMFile)outBAM, this.getPipelineOwner().getThreadCount(),  extraOpts );
+		runAbra(ref, inBAMpath, bedPath, outBAMpath, this.getPipelineOwner().getThreadCount(),  extraOpts );	
 		return;
 	}
 
-	protected void runAbra(ReferenceFile ref, BAMFile inBAM, String bedPath, BAMFile outBAM, int threads, String extraOpts) throws OperationFailedException {
+	protected void runAbra(String refPath, String inBAMpath, String bedPath, String outBAMpath, int threads, String extraOpts) throws OperationFailedException {
 		String tempDirName = this.getProjectHome() + "abra.tmp."	+ (int) Math.round((1e9) * Math.random());
-		
 		String command = "java -jar " + abraPath + 
-				" --in " + inBAM.getAbsolutePath() + 
-				" --ref " + ref + 
+				" --in " + inBAMpath + 
+				" --ref " + refPath + 
 				" --targets " + bedPath +
-				" --out " + outBAM.getAbsolutePath() +
+				" --out " + outBAMpath +
 				" --working " + tempDirName +
 				" --threads " + threads + " " + extraOpts;
 		Logger.getLogger(Pipeline.primaryLoggerName).info(
