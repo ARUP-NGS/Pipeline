@@ -26,6 +26,11 @@ public class SampleManifest {
 	public static final String QC_JSON = "QC.JSON";
 	public static final String LOG = "LOG";
 	public static final String INPUT = "INPUT";
+			
+	//Sample manifest fields.
+	public static final String CAPTURE = "capture";
+	public static final String PIPELINE_VERSION = "pipeline.version";
+	public static final String TIME = "current.time";
 	
 	protected Map<String, String> manifest = null;
 	protected Map<String, File> files = null;
@@ -49,16 +54,16 @@ public class SampleManifest {
 		return new File( getSourceFile().getAbsolutePath() + "/" + MANIFEST_FILENAME);
 	}
 	
-	public String getProperty(String key) {
-		return manifest.get(key);
-	}
-	
 	public Date getCompletionDate() {
 		if (! manifest.containsKey(CURRENT_TIME)) {
 			return null;
 		} 
 		long millis = Long.parseLong( manifest.get(CURRENT_TIME) );
 		return new Date(millis);
+	}
+	
+	public String getProperty(String key) {
+		return manifest.get(key);
 	}
 	
 	public boolean hasProperty(String key) {
@@ -105,4 +110,14 @@ public class SampleManifest {
 		return files.get(ANNOTATED_VARS);
 	}
 	
+	public String getPipelineVersion() {
+		return manifest.get(PIPELINE_VERSION);
+	}
+	
+	public String getTime() {
+		return manifest.get(TIME);
+	}
+	public String getCapture() {
+		return manifest.get(CAPTURE);
+	}
 }

@@ -1,4 +1,4 @@
-package util.Comparators;
+package util.comparators.old;
 
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
