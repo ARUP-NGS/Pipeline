@@ -487,6 +487,15 @@ public class VariantRec {
 		if (varDepth != null)
 			varDepthStr = varDepth + "";
 		
+/*		String badreg = getAnnotation("bad.region");
+		if (badreg == null) {
+			badreg = "NA";
+		} else if (badreg.equals("-")) {
+			badreg = "F";
+		} else if (badreg.equals("TRUE")) {
+			badreg = "T";
+		}*/
+		
 		return contig + "\t" + start + "\t" + end + "\t" + getRef() + "\t" + getAlt() + "\t" + getQuality() + "\t" + depthStr + "\t" + het + "\t" + gqStr + "\t" + varDepthStr;  
 	}
 	
@@ -750,7 +759,6 @@ public class VariantRec {
 		}
 		
 	}
-	
 	
 	//A few oft-used property / annotation keys
 	public static final String GENOTYPE = "genotype";

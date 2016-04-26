@@ -697,6 +697,28 @@ public class VariantPool extends Operator implements VariantStore {
 	}
 	
 	/**
+	 * Return a new variant pool that is this pool subtract the vars B pool.
+	 * Note that variants are not cloned - they are the UNIQUE variants from this pool
+	 * @param varsB
+	 * @return
+	 */
+	public VariantPool subtract(VariantPool varsB) {
+		VariantPool subtract = new VariantPool();
+		int count = 0;
+		for(String contig : getContigs()) {
+			for(VariantRec rec : getVariantsForContig(contig)) {
+				count++;
+				VariantRec recB = varsB.findRecordNoWarn(rec.getContig(), rec.getStart()); //We want null values meaning the variant isnt in the other pool.
+				if (recB == null) {
+					subtract.addRecord(rec);
+				}
+			}
+		}
+		return subtract;
+	}
+	
+	
+	/**
 	 * Adjusts all indel variants in the following manner: Any indel that begins and ends with the same
 	 * base, the first base is moved to the last position and 1 is subtracted from the start and end position
 	 * So		: 117  - ACGTA

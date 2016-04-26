@@ -2,4 +2,8 @@
 bin/*
 /bin
 /target
-src/main/resources
+.classpath
+.project
+.settings/
+src/main/resources/
+varutils.test.out

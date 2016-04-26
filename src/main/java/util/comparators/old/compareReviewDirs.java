@@ -1,4 +1,4 @@
-package util.Comparators;
+package util.comparators.old;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -17,9 +17,9 @@ import operator.IOOperator;
 import operator.OperationFailedException;
 import operator.variant.CompareVCF;
 import util.CompressGZIP;
-import util.QCJsonReader;
-import util.Comparators.CompareAnnotationCSVs;
-import util.Comparators.CompareQCMetrics;
+import util.ReviewDirTool;
+import util.comparators.old.CompareAnnotationCSVs;
+import util.comparators.old.CompareQCMetrics;
 import pipeline.Pipeline;
 
 /*
@@ -32,6 +32,7 @@ public class compareReviewDirs extends IOOperator {
 	public static final String csvKey = "annotated.vars";
 	public static final String qcKey = "qc.json";
 	public static final String vcfKey = "vcf.file";
+	
 	@Override
 	public void performOperation() throws OperationFailedException,
 			JSONException, IOException {
@@ -64,9 +65,9 @@ public class compareReviewDirs extends IOOperator {
 		// Create "File"s for the vcf files.VCF1reader
 		// Modification: Grab file locations from Sample Manifest.
 		File manifestFile1 = new File(revDirLoc1 + "/sampleManifest.txt");
-		Map<String, String> smHash1 = QCJsonReader.readManifest(manifestFile1);
+		Map<String, String> smHash1 = ReviewDirTool.readManifest(manifestFile1);
 		File manifestFile2 = new File(revDirLoc2 + "/sampleManifest.txt");
-		Map<String, String> smHash2 = QCJsonReader.readManifest(manifestFile2);
+		Map<String, String> smHash2 = ReviewDirTool.readManifest(manifestFile2);
 		
 		// Compare VCF Files
 		LinkedHashMap<String, Object> compareStats = null;
