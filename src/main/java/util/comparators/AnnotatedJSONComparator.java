@@ -55,7 +55,7 @@ public class AnnotatedJSONComparator extends Comparator  {
 		aMap.put(VariantRec.COSMIC_ID, annotationType.SIMPLE);
 
 		aMap.put(VariantRec.POP_FREQUENCY, annotationType.FREQ);
-		aMap.put(VariantRec.EXOMES_63K_FREQ, annotationType.FREQ);
+		aMap.put(VariantRec.EXAC63K_OVERALL_FREQ_HET, annotationType.FREQ);
 		aMap.put(VariantRec.EXOMES_FREQ, annotationType.FREQ);
 		aMap.put(VariantRec.EXOMES_HOM_FREQ, annotationType.FREQ);
 		aMap.put(VariantRec.ARUP_FREQ, annotationType.FREQ);
