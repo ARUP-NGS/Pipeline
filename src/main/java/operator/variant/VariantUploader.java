@@ -76,8 +76,14 @@ public class VariantUploader extends Operator {
 				else {
 					count = 2;		
 				}
-				double varFreq = r.getProperty(VariantRec.VAR_DEPTH) / r.getProperty(VariantRec.DEPTH);
-				row.put("AlleleFrequency", varFreq);
+				
+				if (r.getProperty(VariantRec.VAR_DEPTH) == null || r.getProperty(VariantRec.DEPTH) == null) {
+					row.put("AlleleFrequency", -99.9);
+				} else {
+					double varFreq = r.getProperty(VariantRec.VAR_DEPTH) / r.getProperty(VariantRec.DEPTH);
+					row.put("AlleleFrequency", varFreq);
+				}
+
 				row.put("AlleleCount", count);
 				list.put(row);
 			}
