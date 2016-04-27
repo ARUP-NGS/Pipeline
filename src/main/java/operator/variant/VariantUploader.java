@@ -61,7 +61,8 @@ public class VariantUploader extends Operator {
 			json.put("sample.id", sampleId);
 			json.put("accession", accession);
 			json.put("result", resultDTA);
-		
+			logger.info("Variants with missing depths.");
+			logger.info(VariantRec.getSimpleHeader());
 			JSONArray list = new JSONArray();
 			for(VariantRec r: vars) {
 				JSONObject row = new JSONObject();
@@ -78,7 +79,8 @@ public class VariantUploader extends Operator {
 				}
 				
 				if (r.getProperty(VariantRec.VAR_DEPTH) == null || r.getProperty(VariantRec.DEPTH) == null) {
-					row.put("AlleleFrequency", -99.9);
+					logger.info(r.toSimpleString());
+					row.put("AlleleFrequency", 0.0);
 				} else {
 					double varFreq = r.getProperty(VariantRec.VAR_DEPTH) / r.getProperty(VariantRec.DEPTH);
 					row.put("AlleleFrequency", varFreq);
@@ -88,9 +90,7 @@ public class VariantUploader extends Operator {
 				list.put(row);
 			}
 			
-			json.put("variant.list", list);
-			//System.out.println("\n\n" + json + "\n\n");
-			
+			json.put("variant.list", list);			
 			
 			boolean gzip = false;
 			String gZipStr = getAttribute(GZIP);
@@ -98,8 +98,6 @@ public class VariantUploader extends Operator {
 				gzip = Boolean.parseBoolean( gZipStr );
 			}
 			String result = HttpUtils.HttpPostJSON(uploadURL, json, gzip);
-
-  					
 			
 			logger.info("Uploading " + vars.size() + " variants to " + uploadURL);
 
