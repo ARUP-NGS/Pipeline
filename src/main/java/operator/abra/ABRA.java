@@ -61,6 +61,7 @@ public class ABRA extends IOOperator {
 		String inBAMpath=inBAM.getAbsolutePath();
 		String outBAMpath=outBAM.getAbsolutePath();
 		
+		
 	
 		if (ref == null) {
 			throw new OperationFailedException("Reference file is null", this);
@@ -75,25 +76,26 @@ public class ABRA extends IOOperator {
 		}
 		
 		//Check the bed file to make sure it has only three columns
-		FileInputStream bedReader = new FileInputStream(bed.getAbsolutePath());
+		FileInputStream bedReader = new FileInputStream(bedPath);
 		Scanner bedscanner = new Scanner(bedReader);
 		if(bedscanner.nextLine().trim().split("\t").length > 3){
 			Logger.getLogger(Pipeline.primaryLoggerName).info("Bed file incorrectly formatted.");
-			String CleanBedCommand = "cut -f1-3 " + bed.getAbsolutePath();
-			String tmpBed = bed.getAbsolutePath().substring(bed.getAbsolutePath().lastIndexOf("/")) + String.valueOf((Math.round((1e9) * Math.random())));
+			String CleanBedCommand = "cut -f1-3 " + bedPath;
+			String tmpBed = bedPath.substring(bedPath.lastIndexOf("/")+1) + String.valueOf((Math.round((1e9) * Math.random())));
 			executeCommandCaptureOutput(CleanBedCommand, new File(tmpBed));
 			String SortBedCommand = "sort -k1,1 -k2,2n " + tmpBed;
-			String tmpBed2 = bed.getAbsolutePath().substring(bed.getAbsolutePath().lastIndexOf("/")) + String.valueOf((Math.round((1e9) * Math.random())));
+
+			String tmpBed2 = bed.getAbsolutePath().substring(bed.getAbsolutePath().lastIndexOf("/")+1) + String.valueOf((Math.round((1e9) * Math.random())));
 			executeCommandCaptureOutput(SortBedCommand, new File(tmpBed2));
 			executeCommand("mv " + tmpBed2 + " " + tmpBed);
 			bedPath = tmpBed;
+
+
 			Logger.getLogger(Pipeline.primaryLoggerName).info("New correctly-formatted bed file at location: " + bedPath);
 		}
 		bedscanner.close();
 		bedReader.close();
 
-
-		//runAbra((ReferenceFile)refBuf, (BAMFile)inBAM, bedPath, (BAMFile)outBAM, this.getPipelineOwner().getThreadCount(),  extraOpts );
 		runAbra(ref, inBAMpath, bedPath, outBAMpath, this.getPipelineOwner().getThreadCount(),  extraOpts );	
 		return;
 	}
