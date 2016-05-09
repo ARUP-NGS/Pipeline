@@ -4,7 +4,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import util.QCJsonReader;
+import util.ReviewDirTool;
 
 /**
  * Just a thin wrapper for the qcJsonReader that we use to 
@@ -26,7 +26,7 @@ public class PrereviewDataGenerator {
 			
 		}
 		
-		QCJsonReader.performQCList(paths, System.out, new AnalysisTypeConverter());
+		ReviewDirTool.performQCList(paths, System.out, new AnalysisTypeConverter());
 		
 		
 	}
