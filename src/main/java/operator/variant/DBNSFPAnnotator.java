@@ -614,8 +614,11 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
         super.initialize(children);
 
         dbsnfpVersion = getAttribute(DBNSFP_VERSION);
-        if (dbsnfpVersion == null) dbsnfpVersion= getPipelineProperty (DBNSFP_VERSION);
-
+        if (dbsnfpVersion == null) {
+        	dbsnfpVersion= getPipelineProperty (DBNSFP_VERSION);
+        } else {
+            dbsnfpVersion="2.9";
+        }
         //I'm going to force a declaration of what version they are using, Nix
         if (dbsnfpVersion == null) throw new IllegalArgumentException ("Failed to parse your "+DBNSFP_VERSION +". Please include it in your pipeline properties xml file.");
         else if (dbsnfpVersion.equals("2.0") == false && dbsnfpVersion.equals("2.9") == false && dbsnfpVersion.equals("3.0") == false && dbsnfpVersion.equals("3.1a") == false){
