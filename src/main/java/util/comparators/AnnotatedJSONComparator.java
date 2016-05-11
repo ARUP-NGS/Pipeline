@@ -53,7 +53,21 @@ public class AnnotatedJSONComparator extends Comparator  {
 		aMap.put(VariantRec.MITOMAP_HETEROPLASMY, annotationType.SIMPLE);
 		aMap.put(VariantRec.COSMIC_COUNT, annotationType.SIMPLE);
 		aMap.put(VariantRec.COSMIC_ID, annotationType.SIMPLE);
-
+		
+		//dbnsfp
+		aMap.put(VariantRec.SIFT_SCORE, annotationType.SIMPLE);
+		aMap.put(VariantRec.POLYPHEN_SCORE, annotationType.SIMPLE);
+		aMap.put(VariantRec.POLYPHEN_HVAR_SCORE, annotationType.SIMPLE);
+		aMap.put(VariantRec.LRT_SCORE, annotationType.SIMPLE);
+		aMap.put(VariantRec.MT_SCORE, annotationType.SIMPLE);
+		aMap.put(VariantRec.MA_SCORE, annotationType.SIMPLE);
+		aMap.put(VariantRec.GERP_NR_SCORE, annotationType.SIMPLE);
+		aMap.put(VariantRec.GERP_SCORE, annotationType.SIMPLE);
+		aMap.put(VariantRec.PHYLOP_SCORE, annotationType.SIMPLE);
+		aMap.put(VariantRec.SIPHY_SCORE, annotationType.SIMPLE);
+		aMap.put(VariantRec.PHYLOP_SCORE, annotationType.SIMPLE);
+		
+		
 		aMap.put(VariantRec.POP_FREQUENCY, annotationType.FREQ);
 		aMap.put(VariantRec.EXAC63K_OVERALL_FREQ_HET, annotationType.FREQ);
 		aMap.put(VariantRec.EXOMES_FREQ, annotationType.FREQ);
