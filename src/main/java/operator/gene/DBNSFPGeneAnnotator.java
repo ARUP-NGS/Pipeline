@@ -35,6 +35,7 @@ public class DBNSFPGeneAnnotator extends AbstractGeneAnnotator {
 		if (db == null) {
 			Logger.getLogger(Pipeline.primaryLoggerName).info("dbNSFP-gene looking to use file: " + dbFile.getAbsolutePath());
 			try {
+				if (dbFile.getName().contains("2.0")) dbsnfpVersion = "2.0";
 				//support for 2.0, or 3.1a
 				if (dbsnfpVersion == null) db = DBNSFPGene.getDB(dbFile);
 				else db = new DBNSFPGene( dbFile, dbsnfpVersion);
