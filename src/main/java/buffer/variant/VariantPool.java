@@ -1032,6 +1032,7 @@ public class VariantPool extends Operator implements VariantStore {
 		return passing;
 	}
 	
+	
 	/**
 	 * Returns a list of all variants that are in are in the given BED file 
 	 * @param bedFile
