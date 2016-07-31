@@ -341,6 +341,7 @@ public class SnpEffGeneAnnotate extends Annotator {
 
 			} else {
 				var.addAnnotation(VariantRec.NON_PREFERRED_TRANSCRIPT, "true");
+				//Modified exception text Jul-29-16 by Jacob Durtschi: To allow non-ARUP BED transcript annotations 
 				throw new OperationFailedException("It appears that snpEff did not give any annotations for the variant in region: " + var.getContig() + ":" + var.getStart(), this);
 			}
 
