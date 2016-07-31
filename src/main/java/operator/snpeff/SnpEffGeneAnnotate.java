@@ -271,19 +271,19 @@ public class SnpEffGeneAnnotate extends Annotator {
 			//Added Jul-29-16 by Jacob Durtschi: To allow non-ARUP BED transcript annotations 
 			//If no annotations were available for the ARUP BED transcripts,
 			//Just add the top ranking annotations
-			if (annoResults.size() !> 0) {
-				//Get the top three ranked annotations (or fewer if not 3)
+			if (annoResults.size() <= 0) {
+				//Get the top three ranked annotations (or fewer if 3 not available)
 				int annosToGet = 3;
-				if infoList.size() < 3 {
-					anosToGet = infoList.size();
+				if (infoList.size() < 3) {
+					annosToGet = infoList.size();
 				}
-				for (int j = 0; j < annosToGet; i++) {
+				for (int j = 0; j < annosToGet; j++) {
 					//Find top rank
 					int topRank = -1;
-					int topIndex = null;
-					int topHit = null;
-					for (int i = 0: i < infoList.size()) {
-						SnpEffInfo infoi = infolist.get(i);
+					int topIndex = -1;
+					SnpEffInfo topHit = null;
+					for (int i = 0; i < infoList.size(); i++) {
+						SnpEffInfo infoi = infoList.get(i);
 						int ranki = calculateRank(infoi.changeType);
 						int indexi = i;
 						if (ranki > topRank) {
@@ -292,21 +292,21 @@ public class SnpEffGeneAnnotate extends Annotator {
 							topHit = infoi;
 						}
 					}
-				}
-				//if we found an info
-				//flesh the info out and add it to the annoResults list
-				if (topHit != null) {
-					
-					SnpEffInfo infoForAnno = new SnpEffInfo();
-					infoForAnno.exon = topHit.exon;
-					infoForAnno.transcript = topHit.transcript;
-					infoForAnno.changeType = topHit.changeType;
-					infoForAnno.gene = topHit.gene;
-					loadBestCPDot(infoForAnno, infoList);
-					annoResults.add(infoForAnno);
-					annoResults.add(topHit);
-					//lastly, remove this annotation from the list before the next loop
-					infoList.remove(topIndex)
+					//if we found an info
+					//flesh the info out and add it to the annoResults list
+					if (topHit != null) {
+
+						SnpEffInfo infoForAnno = new SnpEffInfo();
+						infoForAnno.exon = topHit.exon;
+						infoForAnno.transcript = topHit.transcript;
+						infoForAnno.changeType = topHit.changeType;
+						infoForAnno.gene = topHit.gene;
+						loadBestCPDot(infoForAnno, infoList);
+						annoResults.add(infoForAnno);
+						annoResults.add(topHit);
+						//lastly, remove this annotation from the list before the next loop
+						infoList.remove(topIndex);
+					}
 				}
 			}
 
