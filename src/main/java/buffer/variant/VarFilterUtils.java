@@ -101,7 +101,7 @@ public class VarFilterUtils {
 		@Override
 		public boolean passes(VariantRec rec) {
 			String filter = rec.getAnnotation(VariantRec.VCF_FILTER);
-			if ( filter != null ) {
+			if ( filter != null  && !filter.equals("LowQual") ) {
 				return true;
 			} else {
 				return false;
