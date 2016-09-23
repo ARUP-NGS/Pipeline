@@ -115,10 +115,10 @@ public class SnpEffGeneAnnotate extends Annotator {
 		//	} 
 		//}
 
-		//Next, run snpeff using the input file we just made
+		//Next, run snpeff using the input file we just made (--formatEff tag used for v4.0 output standards while running v4.2)
 		String command = javaHome + " -Xmx16g -jar " + snpEffDir + "/snpEff.jar -c " + snpEffDir + 
 				"/snpEff.config " + snpEffGenome + " -hgvs -nostats -ud " + updownStreamLength + 
-				" -spliceSiteSize " + spliceSiteSize + " " + input.getAbsolutePath();
+				" -spliceSiteSize " + spliceSiteSize + " -formatEff" + " " + input.getAbsolutePath();
 		//Removed Jul-29-16 by Jacob Durtschi: To allow non-ARUP BED transcript annotations 
 		// add additional -onlyTr option if we are using transcripts from an ARUP BED file
 		//if (trsFromArupBed) {
