@@ -1,7 +1,7 @@
 /**
  * 
  */
-package util.Comparators;
+package util.comparators.old;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;

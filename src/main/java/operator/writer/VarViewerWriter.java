@@ -9,6 +9,9 @@ import java.util.Arrays;
 import java.util.List;
 
 import operator.variant.VariantPoolWriter;
+
+import org.w3c.dom.NodeList;
+
 import buffer.variant.VariantRec;
 
 /**
@@ -17,6 +20,8 @@ import buffer.variant.VariantRec;
  *
  */
 public class VarViewerWriter extends VariantPoolWriter {
+
+	public static final String ANNOTATION_KEYS = "anno.keys";
 
 	public final static List<String> keys = new ArrayList<String>( Arrays.asList(new String[]{
 			VariantRec.GENOTYPE,
@@ -75,7 +80,7 @@ public class VarViewerWriter extends VariantPoolWriter {
 			VariantRec.EXAC63K_OVERALL_FREQ_HET,
 			VariantRec.EXAC63K_OVERALL_FREQ_HOM,
 			VariantRec.EXAC63K_OVERALL_FREQ_HEMI,
-			
+			VariantRec.EXAC63K_OVERALL_HET_HOM,
 			
 			VariantRec.EXAC63K_OVERALL_ALLELE_COUNT,
 			VariantRec.EXAC63K_OVERALL_ALLELE_NUMBER,
@@ -160,6 +165,8 @@ public class VarViewerWriter extends VariantPoolWriter {
 			Gene.OMIM_INHERITANCE,
 			Gene.HGMD_INFO}));
 
+	private List<String> additionalAnnotations = new ArrayList<String>();  
+	 
 	@Override
 	public void writeHeader(PrintStream outputStream) {
 		StringBuilder builder = new StringBuilder();
@@ -168,6 +175,10 @@ public class VarViewerWriter extends VariantPoolWriter {
 			builder.append("\t " + keys.get(i));
 		}
 
+        for(int i=0; i<additionalAnnotations.size(); i++) {
+        	builder.append("\t " + additionalAnnotations.get(i));
+        }
+        
 		for(int i=0; i<geneKeys.size(); i++) {
 			builder.append("\t " + geneKeys.get(i));
 		}
@@ -193,6 +204,11 @@ public class VarViewerWriter extends VariantPoolWriter {
 			builder.append("\t" + val);
 		}
 
+        for(int i=0; i<additionalAnnotations.size(); i++) {
+        	String val = rec.getPropertyOrAnnotation(additionalAnnotations.get(i)).trim();
+        	builder.append("\t" + val);
+        }   
+        
 		for(int i=0; i<geneKeys.size(); i++) {
 			Gene g = rec.getGene();
 			if (g == null) {
@@ -222,5 +238,15 @@ public class VarViewerWriter extends VariantPoolWriter {
 	public void writeFooter(PrintStream outputStream) throws IOException {
 		// TODO Auto-generated method stub
 	}
+	
+	public void initialize(NodeList children) {                                               
+		super.initialize(children);
 
+		String moreAnnos = this.getAttribute(ANNOTATION_KEYS);
+		if (moreAnnos != null) {
+			for(String tok : moreAnnos.split(",")) {
+				additionalAnnotations.add(tok.trim());
+			}
+		}
+	}
 }

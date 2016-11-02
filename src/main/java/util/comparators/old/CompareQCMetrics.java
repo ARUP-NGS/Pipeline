@@ -1,4 +1,4 @@
-package util.Comparators;
+package util.comparators.old;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -18,7 +18,7 @@ import operator.IOOperator;
 import operator.OperationFailedException;
 import pipeline.Pipeline;
 import util.CompressGZIP;
-import util.QCJsonReader;
+import util.ReviewDirTool;
 import buffer.FileBuffer;
 import buffer.JSONBuffer;
 
@@ -80,8 +80,8 @@ public class CompareQCMetrics extends IOOperator {
 		Logger logger = Logger.getLogger(Pipeline.primaryLoggerName);
 		System.out.println("JSON Filename 1 is " + jsonFile1);
 		System.out.println("JSON Filename 2 is " + jsonFile2);
-		JSONObject JSON1 = QCJsonReader.toJSONObj(jsonFile1);
-		JSONObject JSON2 = QCJsonReader.toJSONObj(jsonFile2);
+		JSONObject JSON1 = ReviewDirTool.toJSONObj(jsonFile1);
+		JSONObject JSON2 = ReviewDirTool.toJSONObj(jsonFile2);
 
 		LinkedHashMap<String, Object> JSON1HM = toMap(JSON1);
 		LinkedHashMap<String, Object> JSON2HM = toMap(JSON2);

@@ -139,14 +139,14 @@ public class TestESP6500 extends TestCase {
 			Assert.assertEquals(0.0, var1.getProperty(VariantRec.EXOMES_FREQ_AA), 0.0000001);
 			Assert.assertEquals(0.0095/100, var1.getProperty(VariantRec.EXOMES_FREQ), 0.0000001);
 
-			Assert.assertEquals((2428.0/(2428.0)), var1.getProperty(VariantRec.EXOMES_EA_HOMREF), 0.0001);
+			Assert.assertEquals((4298.0/(4299.0)), var1.getProperty(VariantRec.EXOMES_EA_HOMREF), 0.0001);
 			Assert.assertEquals(0.0, var1.getProperty(VariantRec.EXOMES_EA_HET), 0.0001);
-			Assert.assertEquals(0.0, var1.getProperty(VariantRec.EXOMES_EA_HOMALT), 0.0001);
+			Assert.assertEquals((1.0/(4299.0)), var1.getProperty(VariantRec.EXOMES_EA_HOMALT), 0.0001);
 
-			Assert.assertEquals((1632.0/(1632.0)), var1.getProperty(VariantRec.EXOMES_AA_HOMREF), 0.0001);
+			Assert.assertEquals((2203.0/(2203.0)), var1.getProperty(VariantRec.EXOMES_AA_HOMREF), 0.0001);
 			Assert.assertEquals(0.0, var1.getProperty(VariantRec.EXOMES_AA_HET), 0.0001);
 			Assert.assertEquals(0.0, var1.getProperty(VariantRec.EXOMES_AA_HOMALT), 0.0001);
-			Assert.assertEquals(0.0, var1.getProperty(VariantRec.EXOMES_HOM_FREQ), 0.0001);
+			Assert.assertEquals((1.0/(4299.0)), var1.getProperty(VariantRec.EXOMES_HOM_FREQ), 0.0001);
 
 		} catch (Exception ex) {
 			thrown = true;

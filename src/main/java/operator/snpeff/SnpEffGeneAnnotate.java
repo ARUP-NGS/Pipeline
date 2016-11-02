@@ -101,27 +101,29 @@ public class SnpEffGeneAnnotate extends Annotator {
 			e.printStackTrace();
 		}
 
+		//Removed Jul-29-16 by Jacob Durtschi: To allow non-ARUP BED transcript annotations 
 		//Next, make file of unique set of transcripts. Only these transcripts will be used by snpEff (-onlyTr option)
 		//(only if we are using nms from an ARUP BED file)
-		String onlyTr = null;
-		if (trsFromArupBed) {
-			onlyTr = this.getProjectHome() + "/snpeff_onlyTr.txt";
-			try {
-				onlyTrBuild(onlyTr, arupBedFile);
-			} catch (OperationFailedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} 
-		}
+		//String onlyTr = null;
+		//if (trsFromArupBed) {
+		//	onlyTr = this.getProjectHome() + "/snpeff_onlyTr.txt";
+		//	try {
+		//		onlyTrBuild(onlyTr, arupBedFile);
+		//	} catch (OperationFailedException e) {
+		//		// TODO Auto-generated catch block
+		//		e.printStackTrace();
+		//	} 
+		//}
 
-		//Next, run snpeff using the input file we just made
+		//Next, run snpeff using the input file we just made (--formatEff tag used for v4.0 output standards while running v4.2)
 		String command = javaHome + " -Xmx16g -jar " + snpEffDir + "/snpEff.jar -c " + snpEffDir + 
 				"/snpEff.config " + snpEffGenome + " -hgvs -nostats -ud " + updownStreamLength + 
-				" -spliceSiteSize " + spliceSiteSize + " " + input.getAbsolutePath();
+				" -spliceSiteSize " + spliceSiteSize + " -formatEff" + " " + input.getAbsolutePath();
+		//Removed Jul-29-16 by Jacob Durtschi: To allow non-ARUP BED transcript annotations 
 		// add additional -onlyTr option if we are using transcripts from an ARUP BED file
-		if (trsFromArupBed) {
-			command = command + " -onlyTr " + onlyTr;
-		}
+		//if (trsFromArupBed) {
+		//	command = command + " -onlyTr " + onlyTr;
+		//}
 		Logger.getLogger(Pipeline.primaryLoggerName).info("Executing command: " + command);
 		try {
 			executeCommandCaptureOutput(command, outputFile);
@@ -264,9 +266,50 @@ public class SnpEffGeneAnnotate extends Annotator {
 					annoResults.add(infoForAnno);
 					annoResults.add(topHit);
 				}
-
 			}
-			
+
+			//Added Jul-29-16 by Jacob Durtschi: To allow non-ARUP BED transcript annotations 
+			//If no annotations were available for the ARUP BED transcripts,
+			//Just add the top ranking annotations
+			if (annoResults.size() <= 0) {
+				//Get the top three ranked annotations (or fewer if 3 not available)
+				int annosToGet = 3;
+				if (infoList.size() < 3) {
+					annosToGet = infoList.size();
+				}
+				for (int j = 0; j < annosToGet; j++) {
+					//Find top rank
+					int topRank = -1;
+					int topIndex = -1;
+					SnpEffInfo topHit = null;
+					for (int i = 0; i < infoList.size(); i++) {
+						SnpEffInfo infoi = infoList.get(i);
+						int ranki = calculateRank(infoi.changeType);
+						int indexi = i;
+						if (ranki > topRank) {
+							topRank = ranki;
+							topIndex = indexi;
+							topHit = infoi;
+						}
+					}
+					//if we found an info
+					//flesh the info out and add it to the annoResults list
+					if (topHit != null) {
+
+						SnpEffInfo infoForAnno = new SnpEffInfo();
+						infoForAnno.exon = topHit.exon;
+						infoForAnno.transcript = topHit.transcript;
+						infoForAnno.changeType = topHit.changeType;
+						infoForAnno.gene = topHit.gene;
+						loadBestCPDot(infoForAnno, infoList);
+						annoResults.add(infoForAnno);
+						annoResults.add(topHit);
+						//lastly, remove this annotation from the list before the next loop
+						infoList.remove(topIndex);
+					}
+				}
+			}
+
 			//TODO Currently only annotating with top 3 ranked info, add additional annotations for lower ranked annotations
 			//if no matching infos found, throw error for now
 			//(or just choose next best info?????)
@@ -298,7 +341,8 @@ public class SnpEffGeneAnnotate extends Annotator {
 
 			} else {
 				var.addAnnotation(VariantRec.NON_PREFERRED_TRANSCRIPT, "true");
-				throw new OperationFailedException("No ArupBedFile transcript found in snpEff variant region: " + var.getContig() + ":" + var.getStart(), this);
+				//Modified exception text Jul-29-16 by Jacob Durtschi: To allow non-ARUP BED transcript annotations 
+				throw new OperationFailedException("It appears that snpEff did not give any annotations for the variant in region: " + var.getContig() + ":" + var.getStart(), this);
 			}
 
 		} else {
@@ -562,39 +606,40 @@ public class SnpEffGeneAnnotate extends Annotator {
 		return infos;
 	}
 	
+	//Removed Jul-29-16 by Jacob Durtschi: To allow non-ARUP BED transcript annotations 
 	//build temp file of transcripts to be used by snpEff exclusively
-	private void onlyTrBuild(String onlyTr, ArupBEDFile arupBedFile) throws OperationFailedException {
+	//private void onlyTrBuild(String onlyTr, ArupBEDFile arupBedFile) throws OperationFailedException {
 
-		//make unique list of transcripts from bed file by doing a line by line look at transcript column (4)
-		LinkedHashSet<String> trs = new LinkedHashSet<String>();
+	//	//make unique list of transcripts from bed file by doing a line by line look at transcript column (4)
+	//	LinkedHashSet<String> trs = new LinkedHashSet<String>();
 
-		for (String contig : arupBedFile.getContigs()) {
-			for (Interval inter : arupBedFile.getIntervalsForContig(contig)) {
-				if (inter.getInfo() instanceof ARUPBedIntervalInfo) {
-					for (String tr : ((ARUPBedIntervalInfo) inter.getInfo()).transcripts) {
-						trs.add(tr);
-						//System.out.println("another tr is: " + contig + ":" + inter.begin + "-" + tr);
-					}
-					
-				} else {
-					throw new OperationFailedException("ArupBEDFile Interval object has malformed info property", this);
-				}
-			}
-		}
+	//	for (String contig : arupBedFile.getContigs()) {
+	//		for (Interval inter : arupBedFile.getIntervalsForContig(contig)) {
+	//			if (inter.getInfo() instanceof ARUPBedIntervalInfo) {
+	//				for (String tr : ((ARUPBedIntervalInfo) inter.getInfo()).transcripts) {
+	//					trs.add(tr);
+	//					//System.out.println("another tr is: " + contig + ":" + inter.begin + "-" + tr);
+	//				}
+	//				
+	//			} else {
+	//				throw new OperationFailedException("ArupBEDFile Interval object has malformed info property", this);
+	//			}
+	//		}
+	//	}
 
-		File trFile = new File(onlyTr);
-		BufferedWriter writer;
-		try {
-			writer = new BufferedWriter(new FileWriter(trFile));
-			for (String tr : trs) {
-				writer.write(tr + "\n");
-			}
-			writer.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-			throw new OperationFailedException("Could not write temp trFile for SnpEff. " + e, this);
-		}
-	}
+	//	File trFile = new File(onlyTr);
+	//	BufferedWriter writer;
+	//	try {
+	//		writer = new BufferedWriter(new FileWriter(trFile));
+	//		for (String tr : trs) {
+	//			writer.write(tr + "\n");
+	//		}
+	//		writer.close();
+	//	} catch (IOException e) {
+	//		e.printStackTrace();
+	//		throw new OperationFailedException("Could not write temp trFile for SnpEff. " + e, this);
+	//	}
+	//}
 
 	
 	@Override

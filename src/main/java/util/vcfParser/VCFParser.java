@@ -90,11 +90,24 @@ public class VCFParser implements VariantLineReader {
 		annotators.add(anno);
 	}
 	
+	/*
+	public static void main (String[] args){
+		System.out.println("Launching internal");
+		File vcf = new File ("/Users/DavidNix/Desktop/DelmeMerging/merged.vcf");
+		try {
+			VCFParser p = new VCFParser(vcf);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}*/
+	
 	/**
 	 * Read the header of the file, including the list of samples, but do not parse any variants
 	 * @throws IOException 
 	 */
 	public void parseHeader() throws IOException {
+		
 		if (source == null) {
 			throw new IllegalStateException("Source file has not been set, cannot parse header");
 		}
@@ -133,26 +146,22 @@ public class VCFParser implements VariantLineReader {
 		//Infer creator from source= field in the header. Accepted creators: FreeBayes (freeBayes*), ion torrent (*Torrent*), Real Time Genomics (RTG*), Complete Genomics (CGAPipeline*) 
 		//EXCEPT for GATK, which looks for UnifiedGenotyper=, GATKCommandLine=, or GATKCommandLine.HaplotypeCaller= fields
 		creator =  headerProperties.get("source");
+
 		if (creator != null) {
-			if (creator.startsWith("SelectVariants")) {
-				creator = "GATK / UnifiedGenotyper";
-			} else if (creator.startsWith("CGAPipeline")) {
-				creator = "CompleteGenomics";				
-			} else if (!(creator.startsWith("freeBayes")) && !(creator.contains("Torrent")) && !(creator.startsWith("RTG")) && !(creator.startsWith("CGAPipeline"))) {
+			
+			if (creator.startsWith("SelectVariants")) creator = "GATK / UnifiedGenotyper";
+			else if (creator.startsWith("CGAPipeline")) creator = "CompleteGenomics";	
+			else if (creator.equals("lofreq_scalpel_USeqMerged")) creator = "lofreq_scalpel_USeqMerged";
+			else if (!(creator.startsWith("freeBayes")) && !(creator.contains("Torrent")) && !(creator.startsWith("RTG")) && !(creator.startsWith("CGAPipeline"))) {
 				if (failIfNoSource) {
-					throw new IOException("Cannot determine variant caller that generated VCF. Header property '##source' must be start with 'freeBayes' or 'CGAPipeline' or contain 'Torrent' or 'RTG' or 'SelectVariants'.");
+					throw new IOException("Cannot determine which variant caller generated the VCF. Header property '##source' must be start with 'freeBayes' or 'CGAPipeline' or contain 'Torrent' or 'RTG' or 'SelectVariants' or 'lofreq_scalpel_USeqMerged' .");
 				}
 			}
 		} else {
-			if ((headerProperties.containsKey("UnifiedGenotyper")) || (headerProperties.containsKey("GATKCommandLine"))) {
-				creator = "GATK / UnifiedGenotyper";
-			} else if (headerProperties.containsKey("GATKCommandLine.HaplotypeCaller"))  {
-				creator = "GATK / HaplotypeCaller";
-			} else {
-				if (failIfNoSource) {
-					throw new IOException(NO_SOURCE_WARNING_MESSAGE);
-				}
-			}
+			if ((headerProperties.containsKey("UnifiedGenotyper")) || (headerProperties.containsKey("GATKCommandLine"))) creator = "GATK / UnifiedGenotyper";
+			else if (headerProperties.containsKey("GATKCommandLine.HaplotypeCaller")) creator = "GATK / HaplotypeCaller";
+			else if (headerProperties.containsKey("USeqMergedLofreqScalpel")) creator = "USeqMergedLofreqScalpel";
+			else if (failIfNoSource) throw new IOException(NO_SOURCE_WARNING_MESSAGE);
 		}
 	}
 	
@@ -419,6 +428,10 @@ public class VCFParser implements VariantLineReader {
 		var.addProperty(VariantRec.VCF_POS, (double) pos);
 		var.addAnnotation(VariantRec.VCF_REF, ref);
 		var.addAnnotation(VariantRec.VCF_ALT, alt);
+		
+		//if FILTER isn't (e.g. empty, pass, or .) add it
+		String filter = getFilter();
+		if (filter.length() > 1 && filter.toUpperCase().equals("PASS") == false) var.addAnnotation(VariantRec.VCF_FILTER, filter);
 		 
 		// Get certain values
 		Integer depth = getDepth();
@@ -723,7 +736,20 @@ public class VCFParser implements VariantLineReader {
 		} else {
 			return "?";
 		}
-	}	
+	}
+	
+	/**
+	 * Variant filter, anything but "." or "PASS" indicates a problem with the variant
+	 * @author nix
+	 * @return
+	 */
+	public String getFilter() {
+		if (currentLineToks != null) {
+			return currentLineToks[6];
+		} else {
+			return "";
+		}		
+	}
 	
 	/**
 	 * String array of reference & all alternate sequences for variant
@@ -755,6 +781,7 @@ public class VCFParser implements VariantLineReader {
 		if (creator.contains("Torrent")){
 			AnnoStr = "FDP"; //Flow evaluator metrics reflect the corrected base calls based on model of ref, alt called by FreeBayes, & original base call	
 		} else {
+			//good for lofreq_scalpel_USeqMerged
 			AnnoStr = "DP";
 		}
 		String depthStr = getSampleMetricsStr(AnnoStr);
@@ -771,11 +798,12 @@ public class VCFParser implements VariantLineReader {
 	
 	/**
 	 * Alternate allele count, identified by "AD" (GATK) or "AO" (FreeBayes) or 
-	 * "FAO" (IonTorrent), specified for the particular ALT
-	 * @author elainegee
+	 * "FAO" (IonTorrent), need to calulate it for lofreq_scalpel, specified for the particular ALT
+	 * @author elainegee, nix
 	 * @return
 	 */
 	public Integer getVariantDepth(){
+		Integer vardp = null;
 		String annoStr = null;
 		Integer annoIdx = null;
 		if (creator.startsWith("freeBayes")){
@@ -787,6 +815,15 @@ public class VCFParser implements VariantLineReader {
 		} else if (creator.startsWith("RTG") || creator.equals("CompleteGenomics")) { //RTG variant caller or Complete Genomics
 			annoStr = "AD";
 			annoIdx = altIndex; //AD does not contain depth for REF
+		}else if (creator.equals("lofreq_scalpel_USeqMerged")){
+			//get total depth
+			Integer readDept = this.getDepth();
+			double dp = readDept.doubleValue();
+			//get allele freq
+			String alleleFreq = getSampleMetricsStr("AF");
+			double af = convertStr2Double(alleleFreq);
+			double ad = af * dp;
+			return new Integer(  (int)Math.round(ad)  );
 		} else {
 			annoStr = "AD";
 			annoIdx = altIndex + 1; //AD contains depth for REF
@@ -803,8 +840,7 @@ public class VCFParser implements VariantLineReader {
 			return null;
 		}
 		String[] varDepthToks = varDepthStr.split(",");
-		Integer vardp = convertStr2Int(varDepthToks[annoIdx]);
-
+		vardp = convertStr2Int(varDepthToks[annoIdx]);
 		return vardp;				
 	}
 	
