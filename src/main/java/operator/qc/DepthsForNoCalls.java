@@ -30,6 +30,7 @@ import buffer.ReferenceFile;
 public class DepthsForNoCalls extends IOOperator {
 
 	public static final String JVM_ARGS="jvmargs";
+        public static final String GATK_XMX="gatk_xmx";
 	protected String defaultGATKPath = "~/GenomeAnalysisTK/GenomeAnalysisTK.jar";
 	protected String gatkPath = defaultGATKPath;
 	
@@ -37,6 +38,8 @@ public class DepthsForNoCalls extends IOOperator {
 	private ReferenceFile reference = null;
 	private BAMFile inputBAM = null;
 	private CSVFile noCallDepths = null;
+
+        private String gatk_xmx = "8G";
 	
 	@Override
 	public boolean requiresReference() {
@@ -78,7 +81,7 @@ public class DepthsForNoCalls extends IOOperator {
 			}
 			
 				//Now run DepthOfCoverageWalker on the BED
-				String command = "java -Xmx8g " + jvmARGStr + " -jar " + gatkPath;
+				String command = "java " + "-Xmx" + this.gatk_xmx + " " + jvmARGStr + " -jar " + gatkPath;
 				command = command + " -R " + reference.getAbsolutePath() + 
 						" -I " + inputBAM.getAbsolutePath() + 
 						" -T DepthOfCoverage" +
@@ -166,6 +169,11 @@ public class DepthsForNoCalls extends IOOperator {
 	
 	public void initialize(NodeList children) {
 		super.initialize(children);
+
+                String strXmx = this.getAttribute(GATK_XMX);
+                if (strXmx != null) {
+                    this.gatk_xmx = strXmx;
+                } 
 		
 		FileBuffer noCallCSV = getInputBufferForClass(CSVFile.class);
 		if (noCallCSV == null) {
