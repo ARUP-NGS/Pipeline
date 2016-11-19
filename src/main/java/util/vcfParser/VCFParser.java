@@ -90,17 +90,6 @@ public class VCFParser implements VariantLineReader {
 		annotators.add(anno);
 	}
 	
-	/*
-	public static void main (String[] args){
-		System.out.println("Launching internal");
-		File vcf = new File ("/Users/DavidNix/Desktop/DelmeMerging/merged.vcf");
-		try {
-			VCFParser p = new VCFParser(vcf);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}*/
 	
 	/**
 	 * Read the header of the file, including the list of samples, but do not parse any variants
@@ -117,7 +106,7 @@ public class VCFParser implements VariantLineReader {
 
 		String line = reader.readLine();
 		while(line != null && (line.startsWith("##") || line.trim().length()==0)) {
-			if (line.startsWith("##INFO") || line.startsWith("##FORMAT")) {
+			if (line.startsWith("##ALT") || line.startsWith("##INFO") || line.startsWith("##FORMAT")) {
 				HeaderEntry entry = parseHeaderItem(line);
 				headerItems.put(entry.id, entry);
 			}
@@ -143,7 +132,9 @@ public class VCFParser implements VariantLineReader {
 			sampleIndexes.put(toks[i].trim(), i-9);
 		}
 		
-		//Infer creator from source= field in the header. Accepted creators: FreeBayes (freeBayes*), ion torrent (*Torrent*), Real Time Genomics (RTG*), Complete Genomics (CGAPipeline*) 
+		//Infer creator from source= field in the header. Accepted creators: FreeBayes (freeBayes*), 
+		//ion torrent (*Torrent*), Real Time Genomics (RTG*), Complete Genomics (CGAPipeline*),
+		//Merged LoFreq/Scalpel/Manta output
 		//EXCEPT for GATK, which looks for UnifiedGenotyper=, GATKCommandLine=, or GATKCommandLine.HaplotypeCaller= fields
 		creator =  headerProperties.get("source");
 
@@ -151,6 +142,7 @@ public class VCFParser implements VariantLineReader {
 			
 			if (creator.startsWith("SelectVariants")) creator = "GATK / UnifiedGenotyper";
 			else if (creator.startsWith("CGAPipeline")) creator = "CompleteGenomics";	
+			else if (creator.equals("lofreq_scalpel_manta")) creator = "Lofreq/Scalpel/Manta";
 			else if (creator.equals("lofreq_scalpel_USeqMerged")) creator = "lofreq_scalpel_USeqMerged";
 			else if (!(creator.startsWith("freeBayes")) && !(creator.contains("Torrent")) && !(creator.startsWith("RTG")) && !(creator.startsWith("CGAPipeline"))) {
 				if (failIfNoSource) {
@@ -182,7 +174,8 @@ public class VCFParser implements VariantLineReader {
 	}
 	
 	/**
-	 * A string representing the creator of this VCF, usually "GATK / UnifiedGenotyper", "FreeBayes", etc. 
+	 * A string representing the creator of this VCF, usually "GATK / UnifiedGenotyper", 
+	 * "FreeBayes", etc. 
 	 * @return
 	 */
 	public String getCreator() {
@@ -209,23 +202,27 @@ public class VCFParser implements VariantLineReader {
 	
 	private HeaderEntry parseHeaderItem(String line) {
 		HeaderEntry entry = new HeaderEntry();
+		if (line.startsWith("##ALT=")) {
+			entry.entryType = EntryType.ALT;
+			line = line.replace("##ALT=<", "ALT,").replace(">", "");
+		}
 		if (line.startsWith("##INFO=")) {
 			entry.entryType = EntryType.INFO;
-			line = line.replace("##INFO=<", "").replace(">", "");
+			line = line.replace("##INFO=<", "INFO,").replace(">", "");
 		}
 		if (line.startsWith("##FORMAT=")) {
 			entry.entryType = EntryType.FORMAT;
-			line = line.replace("##FORMAT=<", "").replace(">", "");
+			line = line.replace("##FORMAT=<", "FORMAT,").replace(">", "");
 		}
 		
 		String[] toks = line.split(",");
-		for(int i=0; i<toks.length; i++) {
+		for(int i=1; i<toks.length; i++) {
 			
 			if (toks[i].startsWith("ID=")) {
-				entry.id = toks[i].replace("ID=", "");
+				entry.id = toks[0] + "_" +  toks[i].replace("ID=", "");
 			}
 			if (toks[i].startsWith("Number=")) {
-				entry.number = toks[i].replace("Number=", "");
+				entry.number =toks[i].replace("Number=", "");
 			}
 			if (toks[i].startsWith("Type=")) {
 				entry.type = toks[i].replace("Type=", "");
@@ -481,7 +478,7 @@ public class VCFParser implements VariantLineReader {
 	}
 	
 	public enum EntryType {
-		FORMAT, INFO
+		FORMAT, INFO, ALT
 	}
 	
 	/**
