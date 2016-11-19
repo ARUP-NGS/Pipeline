@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.logging.Logger;
 
+import json.JSONArray;
+import json.JSONObject;
 import operator.OperationFailedException;
 import operator.Operator;
 import operator.StringPipeHandler;
@@ -114,7 +116,19 @@ public abstract class Annotator extends Operator {
 			var.addAnnotation(key, existing + "; " + value);
 		}
 	}
-
+	protected static void appendAnnotationJSON(VariantRec var, String key, JSONArray masterlist){
+		JSONArray existing = var.getjsonProperty(key);
+		if (existing == null || existing.length()==0) {
+			var.addAnnotationJSON(key, masterlist);
+			//System.out.println("INSIDE IF"+value.toString());
+		}
+	//	else {
+			//var.addAnnotation(key, existing + "; " + value);
+			//System.out.println("INSIDE ELSE"+value.toString());
+			//var.addAnnotationJSON(key, masterlist);//comma to force json format for snpeff all annotations update -CHRISK
+		//	System.out.println("INSIDE ELSE"+var.toString());
+		//}
+	}
 	
 	/**
 	 * This method is called prior to annotation of the variants. It's a no-op by default,
