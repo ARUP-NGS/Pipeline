@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
 
+import json.JSONArray;
+import json.JSONObject;
 import util.smallMap.SmallMap;
 import util.vcfParser.VCFParser.GTType;
 
@@ -30,6 +32,7 @@ public class VariantRec {
 	protected GTType zygosity;
 	protected Map<String, Double> props = new SmallMap<String, Double>(); 
 	protected Map<String, String> annotations = new SmallMap<String, String>(); 
+	protected Map<String,JSONArray> jsonobj = new SmallMap<String, JSONArray>();
 
 	Gene gene;
 	
@@ -88,6 +91,10 @@ public class VariantRec {
 	
 	public synchronized void addAnnotation(String key, String anno) {
 		annotations.put(key, anno);
+	}
+	
+	public synchronized void addAnnotationJSON(String key, JSONArray masterlist) {
+		jsonobj.put(key, masterlist);
 	}
 	
 	public void setQuality(Double quality) {
@@ -287,6 +294,10 @@ public class VariantRec {
 		return props.get(key);
 	}
 	
+	public JSONArray getjsonProperty(String key){
+		return jsonobj.put(key, null);
+	}
+	
 	/**
 	 * Returns the property associated with the given key, but if there
 	 * is no such property, returns the annotation with the given key, and
@@ -306,6 +317,10 @@ public class VariantRec {
 		String anno = getAnnotation(key);
 		if (anno != null)
 			return anno;
+		
+		JSONArray json = getjsonProperty(key);
+		if (json != null)
+			return "" + json;
 		
 		return "-";
 	}
@@ -413,11 +428,11 @@ public class VariantRec {
 	 * @return
 	 */
 	public String toBasicString() {
-
+/**	
 		String gene = getAnnotation(VariantRec.GENE_NAME);
 		if (gene == null)
 			gene = "-";
-		
+	
 		String variantType = "-";
 		String vType = getAnnotation(VariantRec.VARIANT_TYPE);
 		if (vType != null)
@@ -427,7 +442,7 @@ public class VariantRec {
 		String exType = getAnnotation(VariantRec.EXON_FUNCTION);
 		if (exType != null)
 			exFunc = exType;
-		
+**/			
 		String het = "het";
 		if (getZygosity() == GTType.HOM) {
 			het = "hom";
@@ -436,8 +451,9 @@ public class VariantRec {
 		} else if (getZygosity() == GTType.UNKNOWN){
 			het = "unknown";
 		}
-		
-		return contig + "\t" + start + "\t" + end + "\t" + GT + "\t" + gene + "\t" + variantType + "\t" + exFunc + "\t" + het ;  
+	
+		//return contig + "\t" + start + "\t" + end + "\t" + GT + "\t" + gene + "\t" + variantType + "\t" + exFunc + "\t" + het ;  
+		return contig + "\t" + start + "\t" + end + "\t" + GT + "\t" + het ;  
 	}
 	
 	/**
@@ -894,7 +910,8 @@ public class VariantRec {
 	public static final String EXAC63K_OVERALL_FREQ_HOM = "exac63K.overall.hom.freq";
 	public static final String EXAC63K_OVERALL_FREQ_HEMI = "exac63K.overall.hemi.freq";
 	public static final String EXAC63K_OVERALL_HET_HOM   = "exac63K.overall.het.hom";
-	
+	public static final String BAD_REGION = "bad.region";
+	public static final String LOW_COMPLEX_REGION = "low.complex";
 	
 	//ExAC annotations
 	public static final String EXAC63K_VERSION = "exac63K.version";
@@ -961,6 +978,9 @@ public class VariantRec {
 	public static final String EXAC63K_OTHER_HOM_COUNT = "exac63K.other.hom.count";
 	public static final String EXAC63K_OTHER_ALLELE_FREQ = "exac63K.other.allele.freq";
 	public static final String EXAC63K_OTHER_HEMI_COUNT = "exac63K.other.hemi.count";
+	
+//CHRISK
+public static final String SNPEFF_ALL = "snpeff.all";
 
 }
 
