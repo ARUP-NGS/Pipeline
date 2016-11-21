@@ -132,7 +132,6 @@ public class VCFParser implements VariantLineReader {
 			sampleIndexes.put(toks[i].trim(), i-9);
 		}
 		
-		//Infer creator from source= field in the header. Accepted creators: FreeBayes (freeBayes*), 
 		//ion torrent (*Torrent*), Real Time Genomics (RTG*), Complete Genomics (CGAPipeline*),
 		//Merged LoFreq/Scalpel/Manta output
 		//EXCEPT for GATK, which looks for UnifiedGenotyper=, GATKCommandLine=, or GATKCommandLine.HaplotypeCaller= fields
@@ -142,7 +141,7 @@ public class VCFParser implements VariantLineReader {
 			
 			if (creator.startsWith("SelectVariants")) creator = "GATK / UnifiedGenotyper";
 			else if (creator.startsWith("CGAPipeline")) creator = "CompleteGenomics";	
-			else if (creator.equals("lofreq_scalpel_manta")) creator = "Lofreq/Scalpel/Manta";
+			else if (creator.equals("lofreq_scalpel_manta")) creator = "lofreq_scalpel_manta";
 			else if (creator.equals("lofreq_scalpel_USeqMerged")) creator = "lofreq_scalpel_USeqMerged";
 			else if (!(creator.startsWith("freeBayes")) && !(creator.contains("Torrent")) && !(creator.startsWith("RTG")) && !(creator.startsWith("CGAPipeline"))) {
 				if (failIfNoSource) {
@@ -441,9 +440,9 @@ public class VCFParser implements VariantLineReader {
 			var.addProperty(VariantRec.VAR_DEPTH, new Double(altDepth));
 		}
 
-		Double genotypeQuality = getGenotypeQuality();
+		String genotypeQuality = getGenotypeQuality();
 		if (genotypeQuality != null) {
-			var.addProperty(VariantRec.GENOTYPE_QUALITY, genotypeQuality);
+			var.addAnnotation(VariantRec.GENOTYPE_QUALITY, genotypeQuality);
 		}
 		
 		Double vqsrScore = getVQSR();
@@ -460,8 +459,6 @@ public class VCFParser implements VariantLineReader {
 		if (rpScore != null){
 			var.addProperty(VariantRec.RP_SCORE, rpScore);
 		}
-		
-		//@author elainegee stop
 		
 		//Iterator over all annotators and cause them to annotator if need be
 		for(VCFMetricsAnnotator vcfAnnotator : annotators) {
@@ -774,22 +771,52 @@ public class VCFParser implements VariantLineReader {
 	 */
 	public Integer getDepth(){
 		//Get DP from sampleMetrics dictionary
+		int dp = -1;
 		String AnnoStr = null;
+		int[] AnnoIdx = null;
 		if (creator.contains("Torrent")){
 			AnnoStr = "FDP"; //Flow evaluator metrics reflect the corrected base calls based on model of ref, alt called by FreeBayes, & original base call	
+			AnnoIdx = new int[]{0};
+		} else if (creator.contains("lofreq_scalpel_manta")) {
+			if (getSampleMetricsStr("set").equals("lofreq")) {
+				AnnoStr = "DP4";
+				AnnoIdx = new int[]{0,1,2,3};
+			} else if (getSampleMetricsStr("set").equals("scalpel")) {
+				AnnoStr = "DP";
+				AnnoIdx = new int[]{0};
+			} else if (getSampleMetricsStr("set").equals("manta")) {
+				String pairedStr = getSampleMetricsStr("PR");
+				String splitStr = getSampleMetricsStr("SR");
+				String[] pairedDepthToks = {"0","0"};
+				String[] splitDepthToks = {"0","0"};
+				
+				if (pairedStr != null) {
+					pairedDepthToks = pairedStr.split(",");
+				}
+				if (splitStr != null) {
+					splitDepthToks = splitStr.split(",");
+				} 
+				
+				dp = convertStr2Int(pairedDepthToks[0]) + convertStr2Int(pairedDepthToks[1]) +
+					 convertStr2Int(splitDepthToks[0]) + convertStr2Int(splitDepthToks[1]);
+				return dp;
+			} else {
+				throw new IllegalStateException("ERROR: VCF malformed! Merged Lofreq/Scalpel/Manta VCF contains a 'set' key of "
+						+ getSampleMetricsStr("set") + ", which is not defined. 'set' must be 'lofreq', 'scalpel', or 'manta'.");
+			}
 		} else {
 			//good for lofreq_scalpel_USeqMerged
 			AnnoStr = "DP";
+			AnnoIdx = new int[]{0};
 		}
 		String depthStr = getSampleMetricsStr(AnnoStr);
-		Integer dp = convertStr2Int(depthStr);
-		
-		//Added to handle cases where the FDP is not present in the vcf file. It will default to -1.0 without this condition
-		if(dp<0 || dp.equals(null)){
-			AnnoStr="DP";
-			depthStr = getSampleMetricsStr(AnnoStr);
-			dp = convertStr2Int(depthStr);
+		if (depthStr == null) {
+			return dp;
 		}
+		String[] DepthToks = depthStr.split(",");
+		dp = 0;
+		for (int i : AnnoIdx)
+			dp += convertStr2Int(DepthToks[i]);
 		return dp;				
 	}
 	
@@ -800,19 +827,53 @@ public class VCFParser implements VariantLineReader {
 	 * @return
 	 */
 	public Integer getVariantDepth(){
-		Integer vardp = null;
+		int vardp = -1;
 		String annoStr = null;
-		Integer annoIdx = null;
+		int[] annoIdx = null;
 		if (creator.startsWith("freeBayes")){
 			annoStr = "AO";
-			annoIdx = altIndex; //AO doesn't contain depth for REF, which is stored in RO
+			annoIdx = new int[]{altIndex}; //AO doesn't contain depth for REF, which is stored in RO
 		} else if (creator.startsWith("Torrent")){
 			annoStr = "FAO";
-			annoIdx = altIndex; //FAO only contains infor for alternate allele
+			annoIdx = new int[]{altIndex}; //FAO only contains infor for alternate allele
 		} else if (creator.startsWith("RTG") || creator.equals("CompleteGenomics")) { //RTG variant caller or Complete Genomics
 			annoStr = "AD";
-			annoIdx = altIndex; //AD does not contain depth for REF
-		}else if (creator.equals("lofreq_scalpel_USeqMerged")){
+			annoIdx = new int[]{altIndex}; //AD does not contain depth for REF
+		} else if (creator.equals("lofreq_scalpel_manta")){
+			if (getSampleMetricsStr("set").equals("lofreq")) {
+				annoStr = "DP4";
+				annoIdx = new int[]{2,3};
+			} else if (getSampleMetricsStr("set").equals("scalpel")) {
+				annoStr = "AD";
+				annoIdx = new int[]{1};
+			} else if (getSampleMetricsStr("set").equals("manta")) {
+				String pairedStr = getSampleMetricsStr("PR");
+				String splitStr = getSampleMetricsStr("SR");
+				
+				String[] pairedDepthToks = null;
+				String[] splitDepthToks = null;
+				
+				if (pairedStr != null) {
+					pairedDepthToks = pairedStr.split(",");
+				}
+				if (splitStr != null) {
+					splitDepthToks = splitStr.split(",");
+				} 
+				
+				if (pairedStr != null &&  splitStr != null) {		
+					vardp = convertStr2Int(pairedDepthToks[altIndex+1]) + 
+							convertStr2Int(splitDepthToks[altIndex+1]);
+				} else if (pairedStr != null &&  splitStr == null) {
+					vardp = convertStr2Int(pairedDepthToks[altIndex+1]);
+				} else if (pairedStr == null &&  splitStr != null) {
+					vardp = convertStr2Int(splitDepthToks[altIndex+1]);
+				}
+				return vardp;
+			} else {
+				throw new IllegalStateException("ERROR: VCF malformed! Merged Lofreq/Scalpel/Manta VCF contains a 'set' key of "
+						+ getSampleMetricsStr("set") + ", which is not defined. 'set' must be 'lofreq', 'scalpel', or 'manta'.");
+			}
+		} else if (creator.equals("lofreq_scalpel_USeqMerged")){
 			//get total depth
 			Integer readDept = this.getDepth();
 			double dp = readDept.doubleValue();
@@ -823,7 +884,7 @@ public class VCFParser implements VariantLineReader {
 			return new Integer(  (int)Math.round(ad)  );
 		} else {
 			annoStr = "AD";
-			annoIdx = altIndex + 1; //AD contains depth for REF
+			annoIdx = new int[]{altIndex + 1}; //AD contains depth for REF
 		}
 		//Get alternate allele count from sampleMetrics dictionary	
 		String varDepthStr = getSampleMetricsStr(annoStr);
@@ -837,7 +898,9 @@ public class VCFParser implements VariantLineReader {
 			return null;
 		}
 		String[] varDepthToks = varDepthStr.split(",");
-		vardp = convertStr2Int(varDepthToks[annoIdx]);
+		vardp = 0;
+		for (int i : annoIdx)
+			vardp += convertStr2Int(varDepthToks[i]);
 		return vardp;				
 	}
 	
@@ -846,11 +909,20 @@ public class VCFParser implements VariantLineReader {
 	 * @author elainegee
 	 * @return
 	 */
-	public Double getGenotypeQuality(){
-		//Get GQ from sampleMetrics dictionary
-		String genoQualStr = getSampleMetricsStr("GQ");
-		Double gq = convertStr2Double(genoQualStr);
-		return gq;	
+	public String getGenotypeQuality() {
+		String genoQualStr=null;
+		if (creator.equals("lofreq_scalpel_manta")) {
+			if (sampleMetrics.containsKey("IMPRECISE")) {
+				genoQualStr = "IMPRECISE";
+			} else {
+				genoQualStr = ".";
+			}
+		} else {
+			//Get GQ from sampleMetrics dictionary
+			genoQualStr = getSampleMetricsStr("GQ");
+			//Double gq = convertStr2Double(genoQualStr);
+		}
+		return genoQualStr;	
 	}
 
 	/**
@@ -875,6 +947,8 @@ public class VCFParser implements VariantLineReader {
 		String annoStr = null;
 		if (creator.contains("Torrent")){
 			annoStr = "STB";
+		} else if (creator.equals("lofreq_scalpel_manta")) { 
+			annoStr = "SB";
 		} else {
 			annoStr = "FS";
 		}
@@ -1052,6 +1126,9 @@ public class VCFParser implements VariantLineReader {
 	 * @return
 	 */
 	public boolean isPhased() {
+		if (getSampleMetricsStr("GT") == null) {
+			return false;
+		}
 		//Get GT from sampleMetrics dictionary
 		try {
 			String delim = getGTDelimitor();
