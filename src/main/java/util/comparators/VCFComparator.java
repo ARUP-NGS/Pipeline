@@ -1,10 +1,14 @@
 package util.comparators;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 
 import buffer.variant.VariantPool;
 import buffer.variant.VariantRec;
+import buffer.variant.VarFilterUtils;
 import json.JSONException;
 import util.comparators.CompareReviewDirs.ComparisonType;
 import util.reviewDir.ReviewDirectory;
@@ -49,7 +53,16 @@ public class VCFComparator extends Comparator {
 		Double vp2HetPercent = (double) 100*(vp2.countHeteros()/vp2.size());
 		Double vp2AvgQual    = vp2.meanQuality();
 		
+		// Compare classified variants 
+		List<VariantRec> vp1ClassifiedVariants = vp1.filterPool(VarFilterUtils.getfilterFilter());
+		VariantPool classifiedVariant = new VariantPool(vp1ClassifiedVariants);
+		VariantPool testCalledVariant = classifiedVariant.intersect(vp2);
+		String classifiedVariantSize = String.valueOf(classifiedVariant.size());
+ 		String testCalledVariantSize = String.valueOf(testCalledVariant.size());
+		
+		
 		this.addNewEntry("vp.size", "Size of VP", vp1Size, vp2Size, ComparisonType.EXACTNUMBERS);
+		this.addNewEntry("vp.classified.variants", "Classified Variants", classifiedVariantSize, testCalledVariantSize, ComparisonType.EXACTNUMBERS);
 		this.addNewEntry("snps", "SNPs", vp1SNPS, vp2SNPS, ComparisonType.EXACTNUMBERS);
 		this.addNewEntry("insertions", "Insertions", vp1Ins, vp2Ins, ComparisonType.EXACTNUMBERS);
 		this.addNewEntry("deletions", "Deletions", vp1Del, vp2Del, ComparisonType.EXACTNUMBERS);

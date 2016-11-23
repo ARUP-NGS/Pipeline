@@ -81,7 +81,7 @@ public abstract class Comparator {
 	
 	/** Given two strings (most often numbers formated as strings) this function will create a string summarizing the difference between the two numbers.
 	 *  Comparison is based on a given ComparisonType.
-	 *  This funcation is an attempt to localize all comparison logic in one spot.
+	 *  This function is an attempt to localize all comparison logic in one spot.
 	 * @param compareKey
 	 * @param s1
 	 * @param s2

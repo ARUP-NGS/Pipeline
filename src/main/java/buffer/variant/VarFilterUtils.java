@@ -29,6 +29,12 @@ public class VarFilterUtils {
 		return new NonSynFilter();
 	}
 	
+	public static VariantFilter getfilterFilter() {
+		return new filterFilter();
+	}
+	
+	
+
 	static class QualFilter implements VariantFilter {
 
 		final double qual;
@@ -87,6 +93,20 @@ public class VarFilterUtils {
 			return rec.getZygosity() == GTType.HET;
 		}
 		
+	}
+	
+	static class filterFilter implements VariantFilter {
+		final String filterField = "";
+		
+		@Override
+		public boolean passes(VariantRec rec) {
+			String filter = rec.getAnnotation(VariantRec.VCF_FILTER);
+			if ( filter != null  && !filter.equals("LowQual") ) {
+				return true;
+			} else {
+				return false;
+			}
+		}
 	}
 	
 }
