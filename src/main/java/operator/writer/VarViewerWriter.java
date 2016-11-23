@@ -51,10 +51,12 @@ public class VarViewerWriter extends VariantPoolWriter {
 			VariantRec.POLYPHEN_SCORE, 
 			VariantRec.PHYLOP_SCORE, 
 			VariantRec.MT_SCORE,
+			VariantRec.MT_PRED,
 			VariantRec.GERP_SCORE,
 			VariantRec.LRT_SCORE,
 			VariantRec.SIPHY_SCORE,
 			VariantRec.MA_SCORE,
+			VariantRec.MA_PRED,
 			VariantRec.HGMD_HIT,
 			VariantRec.HALOPLEX_PANEL_FREQ,
 			VariantRec.SPLICING_ALL,
@@ -148,7 +150,7 @@ public class VarViewerWriter extends VariantPoolWriter {
 			VariantRec.CLNDBN,
 			//added for snpEff use of arupBedFile
 			//adds up to two additional annotations if multiple transcripts are defined for a bed file region
-			VariantRec.CDOT2,
+/**			VariantRec.CDOT2,
 			VariantRec.PDOT2,
 			VariantRec.EXON_NUMBER2,
 			VariantRec.NM_NUMBER2,
@@ -159,7 +161,7 @@ public class VarViewerWriter extends VariantPoolWriter {
 			VariantRec.EXON_NUMBER3,
 			VariantRec.NM_NUMBER3,
 			VariantRec.GENE_NAME3,
-			VariantRec.VARIANT_TYPE3,
+			VariantRec.VARIANT_TYPE3,**/
 	}));
 
 	public final static List<String> geneKeys = new ArrayList<String>( Arrays.asList(new String[]{

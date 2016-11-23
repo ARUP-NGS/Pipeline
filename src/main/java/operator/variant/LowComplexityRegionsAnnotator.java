@@ -39,9 +39,15 @@ public class LowComplexityRegionsAnnotator extends AbstractRegionAnnotator{
 			Node iChild = children.item(i);
 			if (iChild.getNodeType() == Node.ELEMENT_NODE) {
 				PipelineObject obj = getObjectFromHandler(iChild.getNodeName());
+				if (obj instanceof BEDFile) {
+					this.lowcomplexityintervals = (BEDFile)obj; //remove this if you want to use properties file
+				}
 			}
 		}		
-		String lowcomplexregionsfile = getPipelineProperty("low.complex.region");
+/**
+ * If you want to set the low regions file in the pipeline_properties.xml, use the below code
+ * 		String lowcomplexregionsfile = getPipelineProperty("low.complex.region");
+ 
 		if(lowcomplexregionsfile == null){
 			try {
 				throw new IOException("PipelineProperty 'low.complex.region' not defined.");
@@ -58,6 +64,7 @@ public class LowComplexityRegionsAnnotator extends AbstractRegionAnnotator{
 
 
 	    this.lowcomplexityintervals = (BEDFile) intervals;
+**/
 		if (this.lowcomplexityintervals == null) {
 			throw new IllegalArgumentException("No BED file found");
 		}

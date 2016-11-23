@@ -794,7 +794,9 @@ public class VariantRec {
 	public static final String POLYPHEN_SCORE = "pp.score";
 	public static final String POLYPHEN_HVAR_SCORE = "pp.hvar.score";
 	public static final String MA_SCORE = "mut.assessor.score";
+	public static final String MA_PRED = "mut.assessor.pred";
 	public static final String MT_SCORE = "mt.score";
+	public static final String MT_PRED = "mt.pred";
 	public static final String GERP_NR_SCORE = "gerp.nr.score";
 	public static final String GERP_SCORE = "gerp.score";
 	public static final String SLR_TEST = "slr.score";

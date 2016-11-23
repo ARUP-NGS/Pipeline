@@ -4,14 +4,16 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Arrays;
 import java.util.regex.Pattern;
 
 import com.sun.org.apache.xpath.internal.SourceTree;
+
 import operator.OperationFailedException;
 
 import org.broad.tribble.readers.TabixReader;
-
 import org.w3c.dom.NodeList;
+
 import util.vcfParser.VCFParser;
 import buffer.variant.VariantRec;
 
@@ -217,7 +219,9 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
     private int Polyphen2_hvar_score_col;
     private int lrt_score_column;
     private int mt_score_column;
+    private int mt_pred_column;
     private int ma_score_column;
+    private int ma_pred_column;
     private int gerp_nr_score_column;
     private int gerp_score_column;
     private int phylop_score_column;
@@ -226,6 +230,10 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
     private int b37Pos_column;
     private int b37Ref_column;
     private int b37Alt_column;
+    
+    
+    public static final String MTprediction="";
+    public static final String MAprediction="";
     
 
     @Override
@@ -302,11 +310,18 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
      * @return column index
      */
     private int getMTScoreColumn(String dbsnfpVersion) {
-        if (dbsnfpVersion.equals("3.0") || dbsnfpVersion.equals("3.1a")) return 39;
-        if (dbsnfpVersion.equals("2.9")) return 38;
-        if (dbsnfpVersion.equals("2.0")) return 28;
+        if (dbsnfpVersion.equals("3.0") || dbsnfpVersion.equals("3.1a")) return -1;
+        if (dbsnfpVersion.equals("2.9")) return 39;
+        if (dbsnfpVersion.equals("2.0")) return -1;
         return -1;
     }
+
+    private int getMTPredColumn(String dbsnfpVersion) {
+        if (dbsnfpVersion.equals("3.0") || dbsnfpVersion.equals("3.1a")) return -1;
+        if (dbsnfpVersion.equals("2.9")) return 40;
+        if (dbsnfpVersion.equals("2.0")) return -1;
+        return -1;
+    }    
 
     /**
      * Returns the Mutation_Assessor_score column index for a specific dbNSFP DB
@@ -315,12 +330,18 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
      * @return column index
      */
     private int getMAScoreColumn(String dbsnfpVersion) {
-        if (dbsnfpVersion.equals("3.0") || dbsnfpVersion.equals("3.1a")) return 46;
-        if (dbsnfpVersion.equals("2.9")) return 41;
-        if (dbsnfpVersion.equals("2.0")) return 30;
+        if (dbsnfpVersion.equals("3.0") || dbsnfpVersion.equals("3.1a")) return -1;
+        if (dbsnfpVersion.equals("2.9")) return 42;
+        if (dbsnfpVersion.equals("2.0")) return -1;
         return -1;
-    }
-
+    }   
+    private int getMAPredColumn(String dbsnfpVersion) {
+        if (dbsnfpVersion.equals("3.0") || dbsnfpVersion.equals("3.1a")) return -1;
+        if (dbsnfpVersion.equals("2.9")) return 43;
+        if (dbsnfpVersion.equals("2.0")) return -1;
+        return -1;
+    }    
+//CHRISK
     /**
      * Returns the GERP_NR column index for a specific dbNSFP DB
      *
@@ -476,7 +497,8 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
             var.addProperty(VariantRec.LRT_SCORE, Double.parseDouble(toks[lrt_score_column])); 
         } catch (NumberFormatException ex) {
         }
-
+//CHRISK
+        int mutalyzerindex = 0;
         //MT_SCORE, takes the highest
         try {
             if (toks[mt_score_column].contains(";")) {
@@ -486,6 +508,7 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
                     try {
                         if (Double.parseDouble(i) > highest) {
                             highest = Double.parseDouble(i);
+                            mutalyzerindex = Arrays.asList(values).indexOf(i);//get index of  "highest" 
                         }
                     } catch (NumberFormatException ex) {
                     }
@@ -497,6 +520,31 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
         } catch (NumberFormatException ex) {
         }
 
+        String mt_pred = null;
+        try {
+            if (toks[mt_pred_column].contains(";")) {
+                String[] values = toks[mt_pred_column].split(";");
+                mt_pred = values[mutalyzerindex];
+                var.addAnnotation(VariantRec.MT_PRED, mt_pred);
+                }
+            else{
+            	String abrrvPredColumn = toks[mt_pred_column];
+            	String nonAbrrvPredColumn = "";
+            	if (abrrvPredColumn.equals("A")) {
+            		nonAbrrvPredColumn = "disease_causing_automatic";
+            	} else if(abrrvPredColumn.equals("D")) {
+            		nonAbrrvPredColumn= "disease_causing";
+            	} else if(abrrvPredColumn.equals("N")) {
+            		nonAbrrvPredColumn= "polymorphism";
+            	} else if(abrrvPredColumn.equals("P")) {
+            		nonAbrrvPredColumn= "polymorphism_automatic";
+            	}
+            	var.addAnnotation(VariantRec.MT_PRED, nonAbrrvPredColumn);
+            }
+        } catch (NumberFormatException ex) {
+        }        
+        
+        
         //MA_SCORE, takes highest
         try {
             //if multiple values present keep the most damaging value [LARGER]
@@ -507,6 +555,7 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
                     try {
                         if (Double.parseDouble(i) > highest) {
                             highest = Double.parseDouble(i);
+                            mutalyzerindex = Arrays.asList(values).indexOf(i);
                         }
                     } catch (NumberFormatException ex) {
                     }
@@ -517,6 +566,19 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
             }
         } catch (NumberFormatException ex) {
         }
+        String ma_pred = null;
+        try {
+            if (toks[ma_pred_column].contains(";")) {
+                String[] values = toks[ma_pred_column].split(";");
+                ma_pred = values[mutalyzerindex];
+                var.addAnnotation(VariantRec.MA_PRED, ma_pred);
+                }
+            else{
+            	var.addAnnotation(VariantRec.MA_PRED, toks[ma_pred_column]);
+            }
+        }
+            catch (NumberFormatException ex) {
+        }   
 
         //GERP_NR_SCORE, just adds
         try {
@@ -545,7 +607,6 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
 
         return true;
     }
-
 
 
     /**
@@ -628,6 +689,8 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
         Polyphen2_hvar_score_col = getPolyphenScoreHVARColumn(dbsnfpVersion);
         lrt_score_column = getLRTScoreColumn(dbsnfpVersion);
         mt_score_column = getMTScoreColumn(dbsnfpVersion);
+        mt_pred_column = getMTPredColumn(dbsnfpVersion);
+        ma_pred_column = getMAPredColumn(dbsnfpVersion);
         ma_score_column = getMAScoreColumn(dbsnfpVersion);
         gerp_nr_score_column = getGerpNRColumn(dbsnfpVersion);
         gerp_score_column = getGerpColumn(dbsnfpVersion);
