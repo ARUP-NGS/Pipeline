@@ -41,8 +41,14 @@ public class BadRegionAnnotator extends AbstractRegionAnnotator {
 			Node iChild = children.item(i);
 			if (iChild.getNodeType() == Node.ELEMENT_NODE) {
 				PipelineObject obj = getObjectFromHandler(iChild.getNodeName());
+				if (obj instanceof BEDFile) {
+					this.badIntervals = (BEDFile)obj; //remove this if you want to use properties file
+				}
 			}
-		}		
+		}
+/**
+ * If you want to set the bad regions file in the pipeline_properties.xml, use the below code
+ * 
 		String badregionsfile = getPipelineProperty("bad.region.bed");
 		if(badregionsfile == null){
 			try {
@@ -51,6 +57,7 @@ public class BadRegionAnnotator extends AbstractRegionAnnotator {
 				e.printStackTrace();
 			}
 		}
+
 		IntervalsFile intervals = new BEDFile(new File(badregionsfile));
 		try {
 			intervals.buildIntervalsMap();
@@ -60,6 +67,7 @@ public class BadRegionAnnotator extends AbstractRegionAnnotator {
 
 
 	    this.badIntervals = (BEDFile) intervals;
+**/
 		if (this.badIntervals == null) {
 			throw new IllegalArgumentException("No BED file found");
 		}
