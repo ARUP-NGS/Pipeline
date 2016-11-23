@@ -214,10 +214,11 @@ public class SnpEffGeneAnnotate extends Annotator {
 				             try {
 								snpeffannos.put("cdot",info.cDot);
 								snpeffannos.put("pdot",info.pDot);
-								snpeffannos.put("exon",info.exon);
+								snpeffannos.put("exon.number",info.exon);
 								snpeffannos.put("gene",info.gene);
-								snpeffannos.put("effect", info.changeType);
+								snpeffannos.put("variant.type", info.changeType);
 								snpeffannos.put("warning",info.warning);
+								snpeffannos.put("impact",info.impact);
 								tempstring = info.transcript;
 								if(!mastersnpeffannos.has(tempstring)){
 								    mastersnpeffannos.put(tempstring,snpeffannos);
@@ -353,6 +354,7 @@ public class SnpEffGeneAnnotate extends Annotator {
 			String exonNum = "";
 			String effect = "";
 			String gene = "";
+			String impact = "";
 
 			cdot = bits[9];
 			gene = bits[3];
@@ -361,6 +363,7 @@ public class SnpEffGeneAnnotate extends Annotator {
 			pdot = bits[10];
 			effect = bits[1];
 			warning = bits[15];
+			impact = bits[2];
 			info.cDot = cdot;
 			info.pDot = pdot;
 			info.changeType = effect;
@@ -368,6 +371,7 @@ public class SnpEffGeneAnnotate extends Annotator {
 			info.gene = gene;
 			info.transcript = transcriptID;
 			info.warning = warning;
+			info.impact = impact;
 			infos.add(info);
 		}
 		
@@ -453,6 +457,7 @@ public class SnpEffGeneAnnotate extends Annotator {
 		String transcript;
 		String exon;
 		String warning;
+		String impact;
 	}
 }
 
