@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -301,6 +302,118 @@ public class VCFParser implements VariantLineReader {
 	public static VariantRec normalizeVariant(VariantRec var) {
 		return VCFParser.normalizeVariant(var, true, true);
 	}
+	/**
+	Normalizes the reference & alternate sequences
+	 * @return 
+	*/
+	public static String[][] normalizeRefAlt(Integer pos, String ref, String[] alt, boolean stripInitial, boolean stripTrailing) {
+		//Order important here: Remove trailing bases first! IN cases where there are starting and 
+		//trailing matching bases we want to preserve the start position as much as possible, since 
+		//that is what ends up getting used for future position comparisons. 
+		boolean normalize = false;
+		//Remove trailing characters if they are equal and subtract that many bases from end position
+		if (stripTrailing) {
+			int matches=0;
+			//Normalize only if all alts are the same length
+			Integer altLength = alt[0].length();
+			if (alt.length == 1) {
+				normalize = true;
+			} else {
+				normalize = false;
+				//Normalize only if all alts are the same length
+				for (int i=1; i<alt.length; i++) {
+					if (altLength != alt[i].length()) {
+						break;
+					} else if (i==alt.length) {
+						normalize = true; 
+					}
+					
+				}
+			}
+
+			if (normalize == true) {
+				Integer globalMatches = 0;
+				globalMatches = findNumberOfTrailingMatchingBases(ref, alt[0]);
+				if (alt.length > 1) {
+					for (int i=1; i<alt.length; i++) {
+						while (globalMatches > 0 && i < alt.length) {
+							int currentMatch = findNumberOfTrailingMatchingBases(alt[0], alt[i]);	
+							if (currentMatch > 0 && currentMatch < globalMatches) {
+								globalMatches = currentMatch;
+							}
+						}
+					}
+				}
+				matches = globalMatches;
+			} else {
+				matches = 0;
+			}
+										
+			//Perform normalization
+			if (matches > 0) {	
+				// Trim Ref
+				ref = ref.substring(0, ref.length() - matches); 
+				if (ref.length()==0) {
+					ref = "-";
+				}
+				// Trim Alts 	
+				for (int idx=0; idx < alt.length; idx++) {
+					alt[idx] = alt[idx].substring(0, alt[idx].length() - matches); 
+					if (alt[idx].length() ==0){								
+						alt[idx] = "-";
+					} 
+				}
+			}
+		}
+
+		//Remove initial characters if they are equal and add that many bases to start position
+		//Warning: Indels may no longer be left-aligned after this procedure
+		if (stripInitial && normalize) {
+			Integer globalStartMatches = findNumberOfInitialMatchingBases(ref, alt[0]);
+			for (int n=1; n < alt.length; n++) {
+				int currentStartMatch = findNumberOfInitialMatchingBases(ref, alt[n]);
+				if (currentStartMatch < globalStartMatches) {
+					globalStartMatches = currentStartMatch;
+				}
+			}
+			Integer StartMatchs = globalStartMatches;						
+			if (StartMatchs > 0) {	
+				// Trim Ref
+				ref = ref.substring(StartMatchs);
+				if (ref.length()==0) {
+					ref = "-";
+				}
+				// Trim Alt 			
+				for (int x=0; x < alt.length; x++) {
+					alt[x] = alt[x].substring(StartMatchs); 
+					if (alt[x].length() == 0){								
+						alt[x] = "-";
+					} 
+				}
+
+				//Update start position
+				pos+=StartMatchs;				
+			}
+		}
+		
+		//Update end position
+		String[] end=new String[alt.length];
+		for (int y=0; y < alt.length; y++) {
+			if (alt.equals("-")) {
+				end[y] = Integer.toString(pos);
+			}
+			else {
+				end[y] = Integer.toString(pos + alt[y].length());
+			}
+		}
+		String[] posResults = {Integer.toString(pos)};
+		String[] refResults = {ref};
+		String[][] normData = {posResults, end, refResults, alt};
+		
+		return normData;
+
+
+	}
 	
 	/**
 	 * Returns a new VariantRec that has the pos, ref, and alt converted to a normalized form. This
@@ -311,66 +424,21 @@ public class VCFParser implements VariantLineReader {
 	 * @return
 	 */
 	public static VariantRec normalizeVariant(VariantRec var, boolean stripInitial, boolean stripTrailing) {
+		//Variant rec only holds one alt value
 		String ref = var.getRef();
 		String alt = var.getAlt();
-		int pos = var.getStart();
-		
-		//Order important here: Remove trailing bases first! IN cases where there are starting and 
-		//trailing matching bases we want to preserve the start position as much as possible, since 
-		//that is what ends up getting used for future position comparisons. 
- 		// Create sampleMetrics dictionary containing INFO & FORMAT field data, keyed by annotation
-
-		//Remove trailing characters if they are equal and subtract that many bases from end position
-		if (stripTrailing) {
-			int matches = findNumberOfTrailingMatchingBases(ref, alt);						
-			if (matches > 0) {	
-				// Trim Ref
-				ref = ref.substring(0, ref.length() - matches); 
-				if (ref.length()==0) {
-					ref = "-";
-				}
-				// Trim Alt 			
-				alt = alt.substring(0, alt.length() - matches); 
-				if (alt.length()==0){								
-					alt = "-";
-				} 
-
-			}
-		}
-
-		//Remove initial characters if they are equal and add that many bases to start position
-		//Warning: Indels may no longer be left-aligned after this procedure
-		if (stripInitial) {
-			int matches = findNumberOfInitialMatchingBases(ref, alt);						
-			if (matches > 0) {	
-				// Trim Ref
-				ref = ref.substring(matches);
-				if (ref.length()==0) {
-					ref = "-";
-				}
-				// Trim Alt 			
-				alt = alt.substring(matches); 
-				if (alt.length()==0){								
-					alt = "-";
-				} 
-
-				//Update start position
-				pos+=matches;				
-			}
-		}
-
-		//Update end position
-		Integer end=null;
-		if (alt.equals("-")) {
-			end = pos;
-		}
-		else {
-			end = pos + ref.length();
-		}
-
-
-		VariantRec normalizedVariant = new VariantRec(var.getContig(), pos, end, ref, alt, var.getQuality(), var.getGenotype(), var.getZygosity());
+		String[] altInput = {alt};
+		Integer pos = var.getStart();
+		//Normalize in context of all alts
+		String[][] normData = normalizeRefAlt(pos, ref, altInput, stripInitial, stripTrailing);
+		Integer normPos = Integer.parseInt(normData[0][0]);
+		Integer normEnd = Integer.parseInt(normData[1][0]);
+		String normRef = normData[2][0];
+		String normAlt = normData[3][0];
 		//Don't forget to copy over annotations and properties...
+		// Create sampleMetrics dictionary containing INFO & FORMAT field data, keyed by annotation
+		VariantRec normalizedVariant = new VariantRec(var.getContig(), normPos, normEnd, normRef, normAlt, var.getQuality(), var.getGenotype(), var.getZygosity());
+
 		for(String key : var.getAnnotationKeys()) {
 			normalizedVariant.addAnnotation(key, var.getAnnotation(key));
 		}
@@ -750,13 +818,18 @@ public class VCFParser implements VariantLineReader {
 	 * @author elainegee
 	 * @return
 	 */
-	public String[] getSeqArray() {
+	public String[] getRawSeqArray() {
 		if (currentLineToks != null) {
 			String[] alts = currentLineToks[4].split(",");
 			String[] allseq = new String[alts.length + 1];
-			allseq[0] = currentLineToks[3];
+			//add ref
+			allseq[0] = currentLineToks[3]; 
+		
+			//add alts
 			for (int i=0; i< alts.length; i++) {
-				allseq[i+1] = alts[i];
+				String currentAlt = alts[i];
+				allseq[i+1] = currentAlt;
+
 			}
 			return allseq; 
 		} else {
@@ -979,45 +1052,65 @@ public class VCFParser implements VariantLineReader {
 		//Get GT from sampleMetrics dictionary
 		String genoQualStr = getSampleMetricsStr("GT");
 		// Grab array of ref & alternates
-		String[] sequences = getSeqArray();
+		String[] sequences = getRawSeqArray();
 		
 		if (genoQualStr != null) {		
 			//Grab genotype sequence alleles when there are 2 alleles		
 			String delimRegex = getGTDelimitor();
 			String[] GTToks;
-			if (!delimRegex.equals("")) {
-				//Parse out sequences if available
-				GTToks = genoQualStr.split(delimRegex);
-				String delim;
-				if (delimRegex == "\\|") {
-						delim = "|";
-				} else {
-						delim = delimRegex;								
-				}
+			//Parse out sequences if available
+			GTToks = genoQualStr.split(delimRegex);
+			String delim;
+			if (delimRegex == "\\|") {
+					delim = "|";
+			} else {
+					delim = delimRegex;								
+			}
 			
-				// Get alternate alleles
+			//Throw an error if genotype is for an alt that exceeds the number of alts in VCF line
+			for (int idx=0; idx < GTToks.length; idx++) {
+				if (!GTToks[idx].equals(".")) {
+					if (Integer.parseInt(GTToks[idx]) >= sequences.length) {
+						throw new IllegalStateException("ERROR: VCF malformed! Genotype given as '" + String.valueOf(idx) + 
+								"', but there are only '" + String.valueOf(sequences.length - 1) + "' alternate(s) in the VCF (GT value: '" 
+								+ genoQualStr + "') for chr/pos/ref/alt: " + getContig() + "/" + getPos() + "/" + getRef() + "/" + getAlt());
+					}
+				}
+			}
+			
+			if (!delimRegex.equals("")) {
+				//Normalize alleles (not tracking position, so placeholder value used)
+				String[] InputAlt = Arrays.copyOfRange(sequences, 1, sequences.length);
+				String[][] normData = normalizeRefAlt(0, sequences[0], InputAlt, stripInitialMatchingBases, stripTrailingMatchingBases);
+				//Unpack ref & alt into new String array
+				String[] normSequences = new String[sequences.length];
+				normSequences[0] = normData[2][0];
+				for (int idx=0; idx < sequences.length - 1; idx ++) {
+					normSequences[idx+1] = normData[3][idx]; 
+				}
+
+
+			
+				// Grab diploid alleles
 				String gtAlleles = "";
+				String[] alleles = new String[2];
 				for (int i=0; i < 2; i++) {
 					String currentIdxStr = GTToks[i];
 					if (currentIdxStr.equals(".")) {
 						gtAlleles +=  currentIdxStr;
 					} else {
 						int currentIdx = Integer.parseInt(GTToks[i]);
-						//Throw an error if index exceeds the number of alts in VCF
-						if (currentIdx >= sequences.length) {
-							throw new IllegalStateException("ERROR: VCF malformed! Genotype given as '" + String.valueOf(currentIdx) + 
-									"', but there are only '" + String.valueOf(sequences.length - 1) + "' alternate(s) in the VCF (GT value: '" 
-									+ genoQualStr + "') for chr/pos/ref/alt: " + getContig() + "/" + getPos() + "/" + getRef() + "/" + getAlt());
+						gtAlleles += normSequences[currentIdx];
+						
+						if (i < 1) {
+							gtAlleles += delim;
 						}
-						gtAlleles += sequences[currentIdx];					
-					}
-					if (i == 0) {
-							gtAlleles += delim;					 
-					}								
+					}							
 				}
-				return gtAlleles; 
+				return gtAlleles;
+				
 			} else {
-				//Grab genotype sequence for haplotype chromosomes
+				//Grab genotype sequence for haploid chromosomes
 				if (!genoQualStr.equals(".")) {
 					int currentIdx = Integer.parseInt(genoQualStr);
 					//Throw an error if index exceeds the number of alts in VCF
@@ -1026,7 +1119,8 @@ public class VCFParser implements VariantLineReader {
 								"', but there are only '" + String.valueOf(sequences.length - 1) + "alternates in the VCF (GT value: '" 
 								+ genoQualStr + "'");
 					}
-					return sequences[currentIdx];
+					String gtAlleles =sequences[currentIdx];
+					return gtAlleles;
 				} else {
 					//GT undefined, i.e. "."
 					return genoQualStr;
