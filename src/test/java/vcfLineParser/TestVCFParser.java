@@ -292,6 +292,8 @@ public class TestVCFParser {
 				String alt = var.getAlt();
 				Assert.assertTrue(alt.equals("GTG"));					
 				
+				String gt = parserStrip.getGT();
+				Assert.assertTrue(gt.equals("CTGTG/CTG"));
 				String genotype = var.getGenotype();
 				Assert.assertTrue(genotype.equals("CTGTG/CTG")); //genotype is alt-alt
 				
@@ -708,7 +710,7 @@ public class TestVCFParser {
 				Assert.assertTrue(alt.equals("T"));		
 				
 				String genotype = normLSMparser.getGT();
-				Assert.assertTrue(genotype.equals("TACACAC/T")); //need to trim this
+				Assert.assertTrue(genotype.equals("ACACAC/-")); 
 				
 				GTType hetero = normLSMparser.isHetero();
 				Assert.assertTrue(hetero == GTType.HET);
@@ -741,6 +743,7 @@ public class TestVCFParser {
 				Assert.assertTrue(var.getRef().equals("-"));
 				Assert.assertTrue(var.getAlt().equals("AG"));				
 
+				String data = normLSMparser.getGT();
 				Assert.assertTrue(var.getGenotype().equals("AG/AG")); 
 				
 				GTType hetero = normLSMparser.isHetero();
@@ -797,8 +800,10 @@ public class TestVCFParser {
 				VariantRec var = parserTorr.toVariantRec();
 				var = parserTorr.normalizeVariant(var);
 				
+				Assert.assertTrue(var.getRef().equals("A"));
+				
 				String genotype = parserTorr.getGT();
-				Assert.assertTrue(genotype.equals("G/G"));
+				Assert.assertTrue(genotype.equals("G/G")); 
 				
 				GTType hetero = parserTorr.isHetero();
 				Assert.assertTrue(hetero == GTType.HOM);
@@ -1146,8 +1151,9 @@ public class TestVCFParser {
 				Assert.assertTrue(var.getAnnotation(VariantRec.VCF_REF).equals("CA"));
 				Assert.assertTrue(var.getAnnotation(VariantRec.VCF_ALT).equals("C"));
 
+				Assert.assertTrue(var.getStart() == 2668246);
 				String genotype = parserGT.getGT();
-				Assert.assertTrue(genotype.equals("C/."));
+				Assert.assertTrue(genotype.equals("-/."));
 				
 				GTType hetero = parserGT.isHetero();
 				Assert.assertTrue(hetero == GTType.UNKNOWN);
