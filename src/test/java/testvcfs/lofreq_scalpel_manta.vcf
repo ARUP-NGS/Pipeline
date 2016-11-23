@@ -68,7 +68,7 @@
 ##INFO=<ID=SVTYPE,Number=1,Type=String,Description="Type of structural variant">
 ##INFO=<ID=ZYG,Number=1,Type=String,Description="zygosity">
 ##INFO=<ID=set,Number=1,Type=String,Description="Source VCF for the merged record in CombineVariants">
-##cmdline=/
+##cmdline=XXX
 ##contig=<ID=1,length=249250621,assembly=b37>
 ##contig=<ID=2,length=243199373,assembly=b37>
 ##contig=<ID=3,length=198022430,assembly=b37>
@@ -157,8 +157,8 @@
 ##contig=<ID=hs37d5,length=35477943,assembly=b37>
 ##contig=<ID=chrAdapter,length=6987,assembly=b37>
 ##contig=<ID=chrPhiX_Illumina,length=5386,assembly=b37>
-##fileDate=20161118
-##reference=file:human_g1k_v37_decoy_phiXAdaptr.fasta
+##fileDate=20161122
+##reference=human_g1k_v37_decoy_phiXAdaptr.fasta
 ##source=lofreq_scalpel_manta
 #CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	test_sample
 1	43814864	.	T	C	14915	PASS	AF=0.458603;DP=1546;DP4=485,306,476,273;SB=4;set=lofreq	GT:AF:DP4	0/1:0.458603:485,306,476,273
