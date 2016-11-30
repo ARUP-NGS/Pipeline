@@ -1,6 +1,7 @@
 package annotation;
 
 import java.io.File;
+import java.util.Iterator;
 
 import junit.framework.TestCase;
 import operator.snpeff.SnpEffGeneAnnotate;
@@ -11,6 +12,9 @@ import org.junit.Test;
 import pipeline.Pipeline;
 import buffer.variant.VariantPool;
 import buffer.variant.VariantRec;
+import json.JSONArray;
+import json.JSONException;
+import json.JSONObject;
 
 public class TestSnpEff extends TestCase {
 
@@ -46,13 +50,25 @@ public class TestSnpEff extends TestCase {
 		}	
 		return ppl;
 	}
-
-	@Test
-	public void testDummy() {
-		Assert.assertEquals(0, 0);
+	
+	private static JSONObject findJsonObj(JSONArray jarr, String key) {
+		for(int i=0; i<jarr.length(); i++) {
+			try {
+				JSONObject jobj = (JSONObject) jarr.get(i);
+				if (jobj.has(key)) {
+					return jobj.getJSONObject(key);
+				}
+			} catch (JSONException e) {
+				//ignored
+			}
+			
+		}
+		return null;
 	}
 	
-/*	public void testSnpEff() {
+	
+	
+	public void testSnpEff() {
 
 		Pipeline ppl = this.preparePipeline(inputFile);
 		try {
@@ -70,16 +86,22 @@ public class TestSnpEff extends TestCase {
 
 			VariantRec var = vars.findRecord("20", 31022442, "-", "G");
 			Assert.assertTrue(var != null);
-			Assert.assertTrue(var.getAnnotation(VariantRec.VARIANT_TYPE).contains("frameshift_variant"));
-			Assert.assertTrue(var.getAnnotation(VariantRec.NM_NUMBER).contains("NM_015338"));
-			Assert.assertTrue(var.getAnnotation(VariantRec.GENE_NAME).contains("ASXL1"));
-
+			JSONArray snpeff_annos = var.getjsonProperty(VariantRec.SNPEFF_ALL);
+			JSONObject hit = findJsonObj(snpeff_annos, "NM_015338.5");
+			Assert.assertNotNull(hit);
+			Assert.assertTrue(hit.has(VariantRec.VARIANT_TYPE));
+			Assert.assertTrue(hit.get(VariantRec.VARIANT_TYPE).equals("frameshift_variant"));
+			Assert.assertTrue(hit.get(VariantRec.GENE_NAME).equals("ASXL1"));
+			Assert.assertTrue(hit.get(VariantRec.CDOT).equals("c.1934dupG"));
+			
 			var = vars.findRecord("13", 28602256, "C", "T");
 			Assert.assertTrue(var != null);
-			Assert.assertTrue(var.getAnnotation(VariantRec.VARIANT_TYPE).equalsIgnoreCase("intron_variant"));
-			Assert.assertTrue(var.getAnnotation(VariantRec.GENE_NAME).equalsIgnoreCase("FLT3"));
-			Assert.assertTrue(var.getAnnotation(VariantRec.NM_NUMBER).contains("NM_004119"));
-
+			snpeff_annos = var.getjsonProperty(VariantRec.SNPEFF_ALL);
+			hit = findJsonObj(snpeff_annos, "NM_004119.2");
+			Assert.assertNotNull(hit);
+			Assert.assertTrue(hit.get(VariantRec.VARIANT_TYPE).equals("intron_variant"));
+			Assert.assertTrue(hit.get(VariantRec.GENE_NAME).equals("FLT3"));
+			Assert.assertTrue(hit.get(VariantRec.CDOT).equals("c.2053+59G>A"));
 
 		} catch (Exception ex) {
 			ex.printStackTrace();
@@ -100,46 +122,55 @@ public class TestSnpEff extends TestCase {
 
 			VariantRec var = vars.findRecord("1", 24201919, "T", "C");
 			Assert.assertTrue(var != null); 
-			Assert.assertTrue(var.getAnnotation(VariantRec.VARIANT_TYPE).equalsIgnoreCase("synonymous_variant"));
-			Assert.assertTrue(var.getAnnotation(VariantRec.CDOT).contains("c.189A>G"));
-			Assert.assertTrue(var.getAnnotation(VariantRec.NM_NUMBER).contains("NM_001841"));
-			Assert.assertTrue(var.getAnnotation(VariantRec.GENE_NAME).contains("CNR2"));
+			JSONArray snpeff_annos = var.getjsonProperty(VariantRec.SNPEFF_ALL);
+			JSONObject hit = findJsonObj(snpeff_annos, "NM_001841.2");
+			Assert.assertNotNull(hit);
+			Assert.assertTrue(hit.get(VariantRec.VARIANT_TYPE).equals("synonymous_variant"));
+			Assert.assertTrue(hit.get(VariantRec.GENE_NAME).equals("CNR2"));
+			Assert.assertTrue(hit.get(VariantRec.CDOT).equals("c.189A>G"));
+
 
 			var = vars.findRecord("1", 26582091, "G", "A");
-			Assert.assertTrue(var != null); 
-			Assert.assertTrue(var.getAnnotation(VariantRec.VARIANT_TYPE).equalsIgnoreCase("missense_variant"));
-			Assert.assertTrue(var.getAnnotation(VariantRec.PDOT).contains("p.Ser162Asn"));
-			Assert.assertTrue(var.getAnnotation(VariantRec.CDOT).contains("c.485G>A"));
-			Assert.assertTrue(var.getAnnotation(VariantRec.NM_NUMBER).contains("NM_001281517"));
-			Assert.assertTrue(var.getAnnotation(VariantRec.GENE_NAME).contains("CEP85"));
-
+			Assert.assertTrue(var != null);
+			snpeff_annos = var.getjsonProperty(VariantRec.SNPEFF_ALL);
+			hit = findJsonObj(snpeff_annos, "NM_001281517.1");
+			Assert.assertNotNull(hit);
+			Assert.assertTrue(hit.get(VariantRec.VARIANT_TYPE).equals("missense_variant"));
+			Assert.assertTrue(hit.get(VariantRec.GENE_NAME).equals("CEP85"));
+			Assert.assertTrue(hit.get(VariantRec.CDOT).equals("c.485G>A"));
+			Assert.assertTrue(hit.get(VariantRec.PDOT).equals("p.Ser162Asn"));
 
 			var = vars.findRecord("1", 1900107, "-", "CTC");
 			Assert.assertTrue(var != null); 
-			Assert.assertTrue(var.getAnnotation(VariantRec.VARIANT_TYPE).equalsIgnoreCase("inframe_insertion"));
-			Assert.assertTrue(var.getAnnotation(VariantRec.PDOT).contains("p.Lys404_Lys405insLysGlu"));
-			Assert.assertTrue(var.getAnnotation(VariantRec.CDOT).contains("c.1212_1213insGAG"));
-			Assert.assertTrue(var.getAnnotation(VariantRec.NM_NUMBER).contains("NM_001080484"));
-			Assert.assertTrue(var.getAnnotation(VariantRec.GENE_NAME).contains("KIAA1751"));
+			snpeff_annos = var.getjsonProperty(VariantRec.SNPEFF_ALL);
+			hit = findJsonObj(snpeff_annos, "NM_001304360.1");
+			Assert.assertNotNull(hit);
+			Assert.assertTrue(hit.get(VariantRec.VARIANT_TYPE).equals("inframe_insertion"));
+			Assert.assertTrue(hit.get(VariantRec.GENE_NAME).equals("CFAP74"));
+			Assert.assertTrue(hit.get(VariantRec.CDOT).equals("c.1212_1213insGAG"));
+			Assert.assertTrue(hit.get(VariantRec.PDOT).equals("p.Lys404_Lys405insGlu"));
+			
 
 			var = vars.findRecord("1", 16464673, "G", "A");
-			Assert.assertTrue(var != null); 
-			Assert.assertTrue(var.getAnnotation(VariantRec.VARIANT_TYPE).equalsIgnoreCase("synonymous_variant"));
-			Assert.assertTrue(var.getAnnotation(VariantRec.PDOT).contains("p.Pro329Pro"));
-			Assert.assertTrue(var.getAnnotation(VariantRec.CDOT).contains("c.987C>T"));
-			Assert.assertTrue(var.getAnnotation(VariantRec.NM_NUMBER).contains("NM_004431"));
-			Assert.assertTrue(var.getAnnotation(VariantRec.GENE_NAME).contains("EPHA2"));
+			Assert.assertTrue(var != null);
+			snpeff_annos = var.getjsonProperty(VariantRec.SNPEFF_ALL);
+			hit = findJsonObj(snpeff_annos, "NM_004431.3");
+			Assert.assertNotNull(hit);
+			Assert.assertTrue(hit.get(VariantRec.VARIANT_TYPE).equals("synonymous_variant"));
+			Assert.assertTrue(hit.get(VariantRec.GENE_NAME).equals("EPHA2"));
+			Assert.assertTrue(hit.get(VariantRec.CDOT).equals("c.987C>T"));
+			Assert.assertTrue(hit.get(VariantRec.PDOT).equals("p.Pro329Pro"));
 
 
 			var = vars.findRecord("1", 47280747, "AT", "-");
-			Assert.assertTrue(var != null); 
-			Assert.assertTrue(var.getAnnotation(VariantRec.VARIANT_TYPE).equalsIgnoreCase("frameshift_variant"));
-			String eg=var.getAnnotation(VariantRec.PDOT);
-			Assert.assertTrue(var.getAnnotation(VariantRec.PDOT).contains("p.Asp294fs"));
-			Assert.assertTrue(var.getAnnotation(VariantRec.CDOT).contains("c.881_882delAT"));
-			Assert.assertTrue(var.getAnnotation(VariantRec.NM_NUMBER).contains("NM_000779"));
-			Assert.assertTrue(var.getAnnotation(VariantRec.GENE_NAME).contains("CYP4B1"));
-
+			Assert.assertTrue(var != null);
+			snpeff_annos = var.getjsonProperty(VariantRec.SNPEFF_ALL);
+			hit = findJsonObj(snpeff_annos, "NM_000779.3");
+			Assert.assertNotNull(hit);
+			Assert.assertTrue(hit.get(VariantRec.VARIANT_TYPE).equals("frameshift_variant&splice_region_variant"));
+			Assert.assertTrue(hit.get(VariantRec.GENE_NAME).equals("CYP4B1"));
+			Assert.assertTrue(hit.get(VariantRec.CDOT).equals("c.881_882delAT"));
+			Assert.assertTrue(hit.get(VariantRec.PDOT).equals("p.Asp294fs"));
 
 
 		} catch (Exception ex) {
@@ -163,13 +194,21 @@ public class TestSnpEff extends TestCase {
 
 			VariantRec var = vars.findRecord("18", 48610383, "-", "CGCA");
 			Assert.assertTrue(var != null); 
-			Assert.assertTrue(var.getAnnotation(VariantRec.VARIANT_TYPE).equalsIgnoreCase("3_prime_UTR_variant"));
-			Assert.assertTrue(var.getAnnotation(VariantRec.GENE_NAME).contains("SMAD4"));
+			JSONArray snpeff_annos = var.getjsonProperty(VariantRec.SNPEFF_ALL);
+			JSONObject hit = findJsonObj(snpeff_annos, "NM_005359.5");
+			Assert.assertNotNull(hit);
+			Assert.assertTrue(hit.get(VariantRec.VARIANT_TYPE).equals("3_prime_UTR_variant"));
+			Assert.assertTrue(hit.get(VariantRec.GENE_NAME).equals("SMAD4"));
+
+			
 
 			var = vars.findRecord("18", 48610383, "CACA", "-");
 			Assert.assertTrue(var != null);
-			Assert.assertTrue(var.getAnnotation(VariantRec.VARIANT_TYPE).equalsIgnoreCase("3_prime_UTR_variant"));
-			Assert.assertTrue(var.getAnnotation(VariantRec.GENE_NAME).contains("SMAD4"));
+			snpeff_annos = var.getjsonProperty(VariantRec.SNPEFF_ALL);
+			hit = findJsonObj(snpeff_annos, "NM_005359.5");
+			Assert.assertNotNull(hit);
+			Assert.assertTrue(hit.get(VariantRec.VARIANT_TYPE).equals("3_prime_UTR_variant"));
+			Assert.assertTrue(hit.get(VariantRec.GENE_NAME).equals("SMAD4"));
 
 
 		} catch (Exception ex) {
@@ -178,5 +217,5 @@ public class TestSnpEff extends TestCase {
 			Assert.assertFalse(true);
 		}
 
-	}*/
+	}
 }
