@@ -116,18 +116,23 @@ public abstract class Annotator extends Operator {
 			var.addAnnotation(key, existing + "; " + value);
 		}
 	}
+	
+	/**
+	 * Add the given JSON annotation to the variant using the given key. If a JSON annotation with that key already exists
+	 * then append the array to that object and re-add it. 
+	 * @param var Variant to add annotation to
+	 * @param key Annotation key to use for variant
+	 * @param masterlist JSON object to add
+	 */
 	protected static void appendAnnotationJSON(VariantRec var, String key, JSONArray masterlist){
 		JSONArray existing = var.getjsonProperty(key);
 		if (existing == null || existing.length()==0) {
 			var.addAnnotationJSON(key, masterlist);
-			//System.out.println("INSIDE IF"+value.toString());
 		}
-	//	else {
-			//var.addAnnotation(key, existing + "; " + value);
-			//System.out.println("INSIDE ELSE"+value.toString());
-			//var.addAnnotationJSON(key, masterlist);//comma to force json format for snpeff all annotations update -CHRISK
-		//	System.out.println("INSIDE ELSE"+var.toString());
-		//}
+		else {
+			existing.put(masterlist);
+			var.addAnnotationJSON(key, existing);
+		}
 	}
 	
 	/**

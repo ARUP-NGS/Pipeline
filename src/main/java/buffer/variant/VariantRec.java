@@ -295,7 +295,7 @@ public class VariantRec {
 	}
 	
 	public JSONArray getjsonProperty(String key){
-		return jsonobj.put(key, null);
+		return jsonobj.get(key);
 	}
 	
 	/**

@@ -174,7 +174,7 @@ public class SnpEffGeneAnnotate extends Annotator {
 			try {
 				annotateFromList(var, annoList);
 			} catch (IOException e) {
-				e.printStackTrace();
+				throw new OperationFailedException(e.getMessage(), this);
 			}
 		}
 		
@@ -187,54 +187,39 @@ public class SnpEffGeneAnnotate extends Annotator {
 	 * @throws OperationFailedException
 	 */
 	private void annotateFromList(VariantRec var, List<SnpEffInfo> infoList) throws IOException, OperationFailedException {
-	// inputs are a var and list of associated snpeff annotations
 		if (infoList == null || infoList.size() == 0) {
 			return;
 		}
 
-		    ArrayList<SnpEffInfo> annoResults = new ArrayList<SnpEffInfo>(); //infos for output in decending order of importance
-			SnpEffInfo hit = null;
-			for (SnpEffInfo infoi : infoList) {
-				hit = infoi;
-					SnpEffInfo infoForAnno = new SnpEffInfo();
-					infoForAnno.exon = hit.exon;
-					infoForAnno.transcript = hit.transcript;
-					infoForAnno.changeType = hit.changeType;
-					infoForAnno.gene = hit.gene;
-					annoResults.add(infoForAnno);
-					annoResults.add(hit);
-				
+		JSONArray masterlist = new JSONArray();
+
+		String tempstring="";
+		for (SnpEffInfo info : infoList) {
+			JSONObject snpeffannos = new JSONObject();
+			JSONObject mastersnpeffannos = new JSONObject();
+
+			try {
+				snpeffannos.put("cdot",info.cDot);
+				snpeffannos.put("pdot",info.pDot);
+				snpeffannos.put("exon.number",info.exon);
+				snpeffannos.put("gene",info.gene);
+				snpeffannos.put("variant.type", info.changeType);
+				snpeffannos.put("warning",info.warning);
+				snpeffannos.put("impact",info.impact);
+				tempstring = info.transcript;
+				if(!mastersnpeffannos.has(tempstring)){
+					mastersnpeffannos.put(tempstring,snpeffannos);
+				}
+
+			} catch (JSONException e) {
+				throw new OperationFailedException("JSONException adding variant " + var + " -> " + e.getLocalizedMessage(), this);
 			}
-			JSONArray masterlist = new JSONArray();
-
-            String tempstring="";
-			for (SnpEffInfo info : infoList) {
-				JSONObject snpeffannos = new JSONObject();
-				JSONObject mastersnpeffannos = new JSONObject();
-				             try {
-								snpeffannos.put("cdot",info.cDot);
-								snpeffannos.put("pdot",info.pDot);
-								snpeffannos.put("exon.number",info.exon);
-								snpeffannos.put("gene",info.gene);
-								snpeffannos.put("variant.type", info.changeType);
-								snpeffannos.put("warning",info.warning);
-								snpeffannos.put("impact",info.impact);
-								tempstring = info.transcript;
-								if(!mastersnpeffannos.has(tempstring)){
-								    mastersnpeffannos.put(tempstring,snpeffannos);
-								}
-							} catch (JSONException e) {
-								e.printStackTrace();
-							}
-				            masterlist.put(mastersnpeffannos);//in case an array is needed instead of string rep of json
-				// System.out.println(mastersnpeffannos.toString());
-				 appendAnnotationJSON(var, VariantRec.SNPEFF_ALL, masterlist);
-
-			}
-
-			//Pattern p = Pattern.compile("[\\+\\-\\*]");
-
+			
+			masterlist.put(mastersnpeffannos);//in case an array is needed instead of string rep of json			
 		}
+		
+		appendAnnotationJSON(var, VariantRec.SNPEFF_ALL, masterlist);
+	}
 
 	
 	private static String convertVar(String chr, int pos, String ref, String alt) {
