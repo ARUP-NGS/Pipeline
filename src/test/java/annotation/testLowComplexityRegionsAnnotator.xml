@@ -1,7 +1,7 @@
 
 <Pipeline>
 
-<LowComplexityBed class="buffer.BEDFile" filename="src/test/java/testBEDs/AllRepeats_lt51bp_gt95identity_merged.random1pct.bed" />
+<LowComplexityBed class="buffer.BEDFile" filename="src/test/java/testBEDs/AllRepeats_lt51bp_gt95identity_merged.random1pct.bed.gz" />
 
 <VariantPool class="buffer.variant.VariantPool">
 	<InputVCF />
