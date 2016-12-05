@@ -1,14 +1,19 @@
 package buffer;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Logger;
+import java.util.zip.GZIPInputStream;
 
 import pipeline.Pipeline;
 import util.Interval;
@@ -42,7 +47,25 @@ public class BEDFile extends IntervalsFile {
 	 * @throws IOException 
 	 */
 	public void buildIntervalsMap(boolean stripChr) throws IOException {
-		BufferedReader reader = new BufferedReader(new FileReader(getAbsolutePath()));
+		BufferedReader reader = null;
+
+		if (this.file.getName().endsWith(".gz")) {
+		    FileInputStream fileIs = null;
+		    BufferedInputStream bufferedIs = null;
+		    GZIPInputStream gzipIs = null;
+		    try {
+		    	fileIs = new FileInputStream(getAbsolutePath());
+		        // Even though GZIPInputStream has a buffer it reads individual bytes
+		        // when processing the header, better to add a buffer in-between
+		    	gzipIs = new GZIPInputStream( new BufferedInputStream(fileIs, 65535));
+		    	reader = new BufferedReader(new InputStreamReader(gzipIs));
+		    } catch (IOException e) {
+		      throw new UncheckedIOException(e);
+		    }
+		} else {
+			reader = new BufferedReader(new FileReader(getAbsolutePath()));
+		}
+		
 		String line = reader.readLine();
 		intervals = new HashMap<String, List<Interval>>();
 		while (line != null) {

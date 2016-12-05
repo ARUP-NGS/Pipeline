@@ -1,12 +1,15 @@
 
 <Pipeline>
 
+<BadRegionsBed class="buffer.BEDFile" filename="src/test/java/testBEDs/b37_probBps0.05Pad1bp_v1.0.random1pct.bed" />
+
 <VariantPool class="buffer.variant.VariantPool">
 	<InputVCF />
 </VariantPool> 
 
-<GeneAnnotate class="operator.variant.BadRegionAnnotator">
-	<VariantPool />
-</GeneAnnotate>
+<BadRegionAnnotator class="operator.variant.BadRegionAnnotator">
+	<BadRegionsBed />
+        <VariantPool />
+</BadRegionAnnotator>
 
 </Pipeline>

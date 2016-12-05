@@ -1,8 +1,6 @@
 package operator.variant;
 
-import java.io.File;
-import java.io.IOException;
-
+import util.Interval;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -10,9 +8,10 @@ import pipeline.PipelineObject;
 import buffer.BEDFile;
 import buffer.IntervalsFile;
 import buffer.variant.VariantRec;
+import operator.OperationFailedException;
 
 /**
- * An annotator that flags all variants falling into the BED file with the "bad.region" annotation
+ * An annotator that flags all variants overlapping the BED file with the "bad.region" annotation
  * @author brendan, added into pipeline.jar by chrisk
  *
  */
@@ -73,4 +72,17 @@ public class BadRegionAnnotator extends AbstractRegionAnnotator {
 		}
 }
 
+	@Override
+	public void annotateVariant(VariantRec var) throws OperationFailedException {
+		if (this.badIntervals == null) {
+			throw new OperationFailedException("Intervals were not initialized", this);
+		}
+		
+		if (this.badIntervals.intersects(var.getContig(), new Interval(var.getStart(), var.getEnd()))) {
+			doContainsAnnotation(var);
+		} else {
+			doNotContainsAnnotation(var);
+		}
+		
+	}
 }
