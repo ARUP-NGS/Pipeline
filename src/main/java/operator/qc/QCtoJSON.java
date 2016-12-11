@@ -36,8 +36,11 @@ import buffer.VCFFile;
 import buffer.variant.VariantPool;
 import buffer.variant.VariantRec;
 
+import operator.snpeff.SnpEffBedAnnotate;
+
 /**
  * Writes various QC info bits to a JSON formatted output file
+ * To use SnpEff annotations rather than feature look-up table, add snpeff.genome attribute to template.xml
  * @author brendan
  *
  */
@@ -47,6 +50,9 @@ public class QCtoJSON extends Operator {
 	public static final String STRICT_NMS = "strict.nm";
 	public static final String MIN_LENGTH = "min.length";
 	public static final int DEFAULT_MIN_LENGTH = 2;
+	public static final String SNPEFF_DIR = "snpeff.dir";
+	public static final String SNPEFF_GENOME = "snpeff.genome";
+	public static final String ALT_JAVA_HOME = "alt.java.home";
 	private Map<String, String> nms = null;
 	
 	private int minNoCallLength = DEFAULT_MIN_LENGTH;
@@ -59,7 +65,13 @@ public class QCtoJSON extends Operator {
 	CSVFile noCallCSV = null;
 	BEDFile captureBed = null;
 	TextBuffer jsonFile = null;
+	String snpEffDir = null;
+	String snpEffGenome = null;
+	String javaHome = null;
+	String altJavaHome = null;
 	
+	//If true, call snpEff to annotate regions rather than feature lookup service
+	private boolean snpEff = true;
 	
 	//If true, do not report regions that do not have a preferred NM specified.
 	private boolean strictNM = true;
@@ -124,9 +136,13 @@ public class QCtoJSON extends Operator {
 			e1.printStackTrace();
 		}
 		
+		// Use SnpEff option rather than feature look-up table by adding snpeff.genome attribute to template.xml
 		try {
-			//qcObj.put("nocalls", new JSONObject(noCallsToJSON(noCallCSV)));
-			qcObj.put("nocalls", new JSONObject(noCallsToJSONWithAnnotations(noCallCSV)));
+			if (snpEff) {
+			qcObj.put("nocalls", new JSONObject(noCallsToJSONWithSnpEff(noCallCSV)));
+			} else {
+			qcObj.put("nocalls", new JSONObject(noCallsToJSONWithFeatureLookupTable(noCallCSV)));
+			}
 		} catch (JSONException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
@@ -157,7 +173,7 @@ public class QCtoJSON extends Operator {
 
 	
 	
-	private String noCallsToJSONWithAnnotations(CSVFile noCallCSV) throws JSONException, IOException {	
+	private String noCallsToJSONWithFeatureLookupTable(CSVFile noCallCSV) throws JSONException, IOException {	
 		JSONObject obj = new JSONObject();
 		JSONArray allRegions = new JSONArray();
 		obj.put("regions", allRegions);
@@ -168,6 +184,7 @@ public class QCtoJSON extends Operator {
 		}
 		
 		//Use the feature lookup service to find which features correspond to particular low coverage intervals
+		//If using snpEff, just read in corresponding lines of the two files. (throw error if regions don't match)
 		ExonLookupService featureLookup = null;
 			try {
 				featureLookup = new ExonLookupService();
@@ -264,6 +281,105 @@ public class QCtoJSON extends Operator {
 			return obj.toString();
 	}
 	
+	private String noCallsToJSONWithSnpEff(CSVFile noCallCSV) throws JSONException, IOException {	
+		JSONObject obj = new JSONObject();
+		JSONArray allRegions = new JSONArray();
+		obj.put("regions", allRegions);
+		
+		//check for no calls file
+		if (noCallCSV == null) {
+			obj.put("error", "no no-call file specified");
+			return obj.toString();
+		}
+		
+		//get SnpEff annotations
+		SnpEffBedAnnotate snpeffOp = new SnpEffBedAnnotate();
+		snpeffOp.setJavaHome(javaHome);
+		snpeffOp.setNocallBed(noCallCSV.getAbsolutePath());
+		snpeffOp.setSnpEffDir(snpEffDir);
+		snpeffOp.setSnpEffGenome(snpEffGenome);
+		snpeffOp.runSnpEff();
+		File snpeffOut = snpeffOp.getOutputFile();
+		
+		//Parse snpeff output lines to generate nocall array 
+		//snpeff input and output bed files should match line-by-line
+		BufferedReader reader = new BufferedReader(new FileReader(snpeffOut.getAbsolutePath()));
+		BufferedReader inReader = new BufferedReader(new FileReader(noCallCSV.getAbsolutePath()));
+		String line = reader.readLine();
+		String inLine = inReader.readLine();
+		int noCallIntervals = 0;
+		int noCallPositions = 0;
+		
+		List<List<String>> regions = new ArrayList<List<String>>();
+		
+		while(line != null) {
+			line = line.replace(" ", "\t");
+				String[] toks = line.split("\t");
+				
+				if (toks.length > 3 && (! toks[3].equals("CALLABLE"))) {
+					JSONObject region = new JSONObject();
+					
+					try {
+						String contig = toks[0];
+						long startPos = Long.parseLong(toks[1]);
+						long endPos = Long.parseLong(toks[2]);
+						long length = endPos - startPos;
+						double cov = -1;
+						
+						if (length < minNoCallLength) {
+							line = reader.readLine();
+							continue;
+						}
+					
+						
+						String cause = toks[3];
+						cause = cause.toLowerCase();
+						cause  = ("" + cause.charAt(0)).toUpperCase() + cause.substring(1);
+						if (toks.length > 4) {
+							cov = Double.parseDouble(toks[4]);
+						}
+						
+						Object[] features = new String[]{};
+						if (featureLookup != null) {
+							features = featureLookup.getIntervalObjectsForRange(contig, (int)startPos, (int)endPos);							
+						}
+						List<FeatureDescriptor> fds = new ArrayList<FeatureDescriptor>();
+						for(Object o : features) {
+							fds.add((FeatureDescriptor)o);
+						}
+						String featureStr = ExonLookupService.mergeFeatures(fds);
+						if (length > 1 && (featureStr.contains("exon"))) {
+							regions.add(Arrays.asList(new String[]{"chr" + toks[0] + ":" + toks[1] + " - " + toks[2], "" + length, cause, featureStr}) );
+						}
+						
+						
+						noCallPositions += length;
+						noCallIntervals++;
+						
+						region.put("gene", featureStr);
+						region.put("size", length);
+						region.put("reason", cause);
+						region.put("chr", toks[0]);
+						region.put("start", Integer.parseInt(toks[1]));
+						region.put("end", Integer.parseInt(toks[2]));
+						if (cov > -1) {
+							region.put("mean.coverage", cov);
+						}
+						allRegions.put(region);
+					} catch (NumberFormatException nfe) {
+						//dont stress it
+					}
+			}
+			line = reader.readLine();
+		}
+		
+		reader.close();
+		
+		obj.put("interval.count", noCallIntervals);
+		obj.put("no.call.extent", noCallPositions);
+		
+		return obj.toString();
+	}
 	private String variantPoolToJSON(VariantPool vp) throws JSONException {
 		JSONObject obj = new JSONObject();
 		if (vp == null) {
@@ -385,20 +501,43 @@ public class QCtoJSON extends Operator {
 	@Override
 	public void initialize(NodeList children) {
 		
-		String nmDefs = this.getAttribute(NM_DEFS);
-		try {
-			nms = loadPreferredNMs(nmDefs);
-		} catch (IOException e) {
-			e.printStackTrace();
-			throw new IllegalArgumentException("Preferred NM files are missing:  "+ nmDefs);
-		}
-		
 		String minLength = this.getAttribute(MIN_LENGTH);
 		if (minLength != null) {
 			this.minNoCallLength = Integer.parseInt(minLength);
 		}
-		
-		
+
+		snpEffDir = this.getPipelineProperty(SNPEFF_DIR);
+		if (snpEffDir == null) {
+			snpEffDir = this.getAttribute(SNPEFF_DIR);
+			}
+		snpEffGenome = this.getAttribute(SNPEFF_GENOME);
+		if ((snpEffGenome != null) && (snpEffDir == null) ) {
+			throw new IllegalArgumentException("snpeff genome specified but no snpeff dir specified, "
+					+ "need both or remove snpeff genome attribute from template to bypass snpeff" + SNPEFF_DIR);
+		}
+		if (snpEffGenome == null) {
+			snpEff = false;
+		}
+
+		if (snpEff == true) {
+			altJavaHome = this.getAttribute(ALT_JAVA_HOME);
+			if (altJavaHome == null) {
+				javaHome = "java";
+			}
+			else {
+				javaHome = altJavaHome;
+			}
+		}
+		if (snpEff == false) {
+			String nmDefs = this.getAttribute(NM_DEFS);
+			try {
+				nms = loadPreferredNMs(nmDefs);
+			} catch (IOException e) {
+				e.printStackTrace();
+				throw new IllegalArgumentException("Preferred NM files are missing:  "+ nmDefs);
+			}
+		}
+
 		for(int i=0; i<children.getLength(); i++) {
 			Node iChild = children.item(i);
 			if (iChild.getNodeType() == Node.ELEMENT_NODE) {
