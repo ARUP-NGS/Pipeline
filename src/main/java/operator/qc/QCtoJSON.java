@@ -37,6 +37,9 @@ import buffer.variant.VariantPool;
 import buffer.variant.VariantRec;
 
 import operator.snpeff.SnpEffBedAnnotate;
+import buffer.ArupBEDFile;
+import buffer.ArupBEDFile.ARUPBedIntervalInfo;
+
 
 /**
  * Writes various QC info bits to a JSON formatted output file
@@ -64,6 +67,7 @@ public class QCtoJSON extends Operator {
 	VariantPool variantPool = null;
 	CSVFile noCallCSV = null;
 	BEDFile captureBed = null;
+	ArupBEDFile arupBed = null;
 	TextBuffer jsonFile = null;
 	String snpEffDir = null;
 	String snpEffGenome = null;
@@ -281,7 +285,7 @@ public class QCtoJSON extends Operator {
 			return obj.toString();
 	}
 	
-	private String noCallsToJSONWithSnpEff(CSVFile noCallCSV) throws JSONException, IOException {	
+	private String noCallsToJSONWithSnpEff(CSVFile noCallCSV, ArupBEDFile arupBed) throws JSONException, IOException {	
 		JSONObject obj = new JSONObject();
 		JSONArray allRegions = new JSONArray();
 		obj.put("regions", allRegions);
@@ -289,6 +293,11 @@ public class QCtoJSON extends Operator {
 		//check for no calls file
 		if (noCallCSV == null) {
 			obj.put("error", "no no-call file specified");
+			return obj.toString();
+		}
+		//check for arup bed file (to get transcripts asigned to each roi)
+		if (arupBed == null) {
+			obj.put("error", "no arup bed file specified");
 			return obj.toString();
 		}
 		
@@ -302,19 +311,22 @@ public class QCtoJSON extends Operator {
 		File snpeffOut = snpeffOp.getOutputFile();
 		
 		//Parse snpeff output lines to generate nocall array 
-		//snpeff input and output bed files should match line-by-line
+		//check that snpeff input and output bed files should match line-by-line
 		BufferedReader reader = new BufferedReader(new FileReader(snpeffOut.getAbsolutePath()));
-		BufferedReader inReader = new BufferedReader(new FileReader(noCallCSV.getAbsolutePath()));
 		String line = reader.readLine();
-		String inLine = inReader.readLine();
 		int noCallIntervals = 0;
 		int noCallPositions = 0;
-		
 		List<List<String>> regions = new ArrayList<List<String>>();
 		
-		while(line != null) {
+		while(lIn != null) {
+
 			line = line.replace(" ", "\t");
 				String[] toks = line.split("\t");
+				String[] infos = toks[3].split(";");
+				String cause = infos[0];
+				List<String> annos = new ArrayList<String>();
+				for (int i = 1 ,featureLookup )
+				String[] annos = infos.;
 				
 				if (toks.length > 3 && (! toks[3].equals("CALLABLE"))) {
 					JSONObject region = new JSONObject();
@@ -327,7 +339,7 @@ public class QCtoJSON extends Operator {
 						double cov = -1;
 						
 						if (length < minNoCallLength) {
-							line = reader.readLine();
+							lIn = rIn.readLine();
 							continue;
 						}
 					
@@ -577,6 +589,9 @@ public class QCtoJSON extends Operator {
 				}
 				if (obj instanceof BEDFile) {
 					captureBed = (BEDFile) obj;
+				}
+				if (obj instanceof ArupBEDFile) {
+					arupBed = (ArupBEDFile) obj;
 				}
 				if (obj instanceof CSVFile) {
 					noCallCSV = (CSVFile)obj;
