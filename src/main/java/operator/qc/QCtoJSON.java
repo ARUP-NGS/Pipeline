@@ -26,6 +26,7 @@ import org.w3c.dom.NodeList;
 
 import pipeline.Pipeline;
 import pipeline.PipelineObject;
+import util.Interval;
 import buffer.BAMFile;
 import buffer.BAMMetrics;
 import buffer.BEDFile;
@@ -67,7 +68,7 @@ public class QCtoJSON extends Operator {
 	VariantPool variantPool = null;
 	CSVFile noCallCSV = null;
 	BEDFile captureBed = null;
-	ArupBEDFile arupBed = null;
+	ArupBEDFile arupBED = null;
 	TextBuffer jsonFile = null;
 	String snpEffDir = null;
 	String snpEffGenome = null;
@@ -143,7 +144,7 @@ public class QCtoJSON extends Operator {
 		// Use SnpEff option rather than feature look-up table by adding snpeff.genome attribute to template.xml
 		try {
 			if (snpEff) {
-			qcObj.put("nocalls", new JSONObject(noCallsToJSONWithSnpEff(noCallCSV)));
+			qcObj.put("nocalls", new JSONObject(noCallsToJSONWithSnpEff(noCallCSV, arupBED)));
 			} else {
 			qcObj.put("nocalls", new JSONObject(noCallsToJSONWithFeatureLookupTable(noCallCSV)));
 			}
@@ -285,7 +286,7 @@ public class QCtoJSON extends Operator {
 			return obj.toString();
 	}
 	
-	private String noCallsToJSONWithSnpEff(CSVFile noCallCSV, ArupBEDFile arupBed) throws JSONException, IOException {	
+	private String noCallsToJSONWithSnpEff(CSVFile noCallCSV, ArupBEDFile arupBED) throws JSONException, IOException {	
 		JSONObject obj = new JSONObject();
 		JSONArray allRegions = new JSONArray();
 		obj.put("regions", allRegions);
@@ -295,92 +296,137 @@ public class QCtoJSON extends Operator {
 			obj.put("error", "no no-call file specified");
 			return obj.toString();
 		}
-		//check for arup bed file (to get transcripts asigned to each roi)
-		if (arupBed == null) {
+		//check for arup bed file (to get transcripts assigned to each region)
+		if (arupBED == null) {
 			obj.put("error", "no arup bed file specified");
 			return obj.toString();
 		}
 		
+		//make temp no calls file with any CALLABLE lines removed
+		CSVFile noCallOnlyCSV = makeNoCallBED(noCallCSV);
+		
 		//get SnpEff annotations
 		SnpEffBedAnnotate snpeffOp = new SnpEffBedAnnotate();
 		snpeffOp.setJavaHome(javaHome);
-		snpeffOp.setNocallBed(noCallCSV.getAbsolutePath());
+		snpeffOp.setNocallBed(noCallOnlyCSV.getAbsolutePath());
 		snpeffOp.setSnpEffDir(snpEffDir);
 		snpeffOp.setSnpEffGenome(snpEffGenome);
 		snpeffOp.runSnpEff();
 		File snpeffOut = snpeffOp.getOutputFile();
 		
 		//Parse snpeff output lines to generate nocall array 
-		//check that snpeff input and output bed files should match line-by-line
 		BufferedReader reader = new BufferedReader(new FileReader(snpeffOut.getAbsolutePath()));
 		String line = reader.readLine();
 		int noCallIntervals = 0;
 		int noCallPositions = 0;
-		List<List<String>> regions = new ArrayList<List<String>>();
 		
-		while(lIn != null) {
+		while(line != null) {
+			if (line.startsWith("#")) {
+				line = reader.readLine();
+				continue;
+			}
 
 			line = line.replace(" ", "\t");
-				String[] toks = line.split("\t");
+			String[] toks = line.split("\t");
+			
+			if (toks.length > 3 && (! toks[3].startsWith("CALLABLE"))) {
 				String[] infos = toks[3].split(";");
-				String cause = infos[0];
 				List<String> annos = new ArrayList<String>();
-				for (int i = 1 ,featureLookup )
-				String[] annos = infos.;
+				for (int i = 1 ; i < infos.length ; i++) {
+				    annos.add(infos[i]);
+				}
+
+				JSONObject region = new JSONObject();
 				
-				if (toks.length > 3 && (! toks[3].equals("CALLABLE"))) {
-					JSONObject region = new JSONObject();
+				try {
+					String contig = toks[0];
+					int startPos = Integer.parseInt(toks[1]);
+					int endPos = Integer.parseInt(toks[2]);
+					int length = endPos - startPos;
+					double cov = -1;
 					
-					try {
-						String contig = toks[0];
-						long startPos = Long.parseLong(toks[1]);
-						long endPos = Long.parseLong(toks[2]);
-						long length = endPos - startPos;
-						double cov = -1;
-						
-						if (length < minNoCallLength) {
-							lIn = rIn.readLine();
-							continue;
-						}
-					
-						
-						String cause = toks[3];
-						cause = cause.toLowerCase();
-						cause  = ("" + cause.charAt(0)).toUpperCase() + cause.substring(1);
-						if (toks.length > 4) {
-							cov = Double.parseDouble(toks[4]);
-						}
-						
-						Object[] features = new String[]{};
-						if (featureLookup != null) {
-							features = featureLookup.getIntervalObjectsForRange(contig, (int)startPos, (int)endPos);							
-						}
-						List<FeatureDescriptor> fds = new ArrayList<FeatureDescriptor>();
-						for(Object o : features) {
-							fds.add((FeatureDescriptor)o);
-						}
-						String featureStr = ExonLookupService.mergeFeatures(fds);
-						if (length > 1 && (featureStr.contains("exon"))) {
-							regions.add(Arrays.asList(new String[]{"chr" + toks[0] + ":" + toks[1] + " - " + toks[2], "" + length, cause, featureStr}) );
-						}
-						
-						
-						noCallPositions += length;
-						noCallIntervals++;
-						
-						region.put("gene", featureStr);
-						region.put("size", length);
-						region.put("reason", cause);
-						region.put("chr", toks[0]);
-						region.put("start", Integer.parseInt(toks[1]));
-						region.put("end", Integer.parseInt(toks[2]));
-						if (cov > -1) {
-							region.put("mean.coverage", cov);
-						}
-						allRegions.put(region);
-					} catch (NumberFormatException nfe) {
-						//dont stress it
+					if (length < minNoCallLength) {
+						line = reader.readLine();
+						continue;
 					}
+					
+					String[] causeAndCov = infos[0].split("|");
+					String cause = causeAndCov[0];
+					cause = cause.toLowerCase();
+					cause  = ("" + cause.charAt(0)).toUpperCase() + cause.substring(1);
+					if (causeAndCov.length > 1) {
+						cov = Double.parseDouble(causeAndCov[1]);
+					}
+					
+					// make lists of gene/transcript/feature/feature_number for all snpeff annos longer than 3 
+					// (only if anno list longer than three, which means snpeff found gene intersection)
+					List<String> nmsSnpEff = new ArrayList<String>();
+					List<String> genesSnpEff = new ArrayList<String>();
+					List<String> featuresSnpEff = new ArrayList<String>();
+					List<String> fnumsSnpEff = new ArrayList<String>();
+					for (String anno : annos) {
+						String[] annotoks = anno.split("|");
+						if (annotoks.length > 2) {
+							nmsSnpEff.add(annotoks[2]);
+							genesSnpEff.add(annotoks[4]);
+							String featureTemp = annotoks[0].replace("Exon", "Coding exon");
+							featureTemp = featureTemp.replace("Utr3prime", "3 UTR");
+							featureTemp = featureTemp.replace("Utr5prime", "5 UTR");
+							featuresSnpEff.add(featureTemp);
+							String[] fnumTemp = annotoks[1].split("_");
+							if (featureTemp.endsWith("UTR") || fnumTemp.length < 2) {
+								fnumsSnpEff.add("");
+							} else {
+								fnumsSnpEff.add( " " + fnumTemp[1]);
+							}
+						}
+					}
+					
+					//get all transcripts from the arupBED file for this noCall region
+					//(will be prioritized since the first transcript should be the highest priority)
+					List<String> regionTrs = new ArrayList<String>();
+					Interval inter = new Interval(startPos, endPos);
+					List<Interval> contigIntervals = arupBED.getIntervalsForContig(contig);
+					int[] arupIndexes = arupBED.intersectsWhich(contig, inter);
+					for (Integer idx : arupIndexes) {
+						Interval idxInter = contigIntervals.get(idx);
+						String[] idxTrs = ((ARUPBedIntervalInfo) idxInter.getInfo()).transcripts;
+						for (String tr : idxTrs) {
+								regionTrs.add(tr);
+						}
+					}	
+					
+					//for each noCall region use snpEff annos with first arupbed transcript
+					String primaryTr = regionTrs.get(0);
+					List<String> finalFeatures = new ArrayList<String>();
+					String finalGene = "";
+					
+					for (int i = 0; i < nmsSnpEff.size(); i++) {
+						if (nmsSnpEff.get(i).equals(primaryTr)) {
+							finalGene = genesSnpEff.get(i);
+							finalFeatures.add(featuresSnpEff.get(i) + fnumsSnpEff.get(i));
+						}
+					}
+					String finalFeatureString = String.join(", ", finalFeatures);
+					String finalAnnoString = finalGene + " (" + primaryTr + ") " + finalFeatureString;
+					
+					
+					noCallPositions += length;
+					noCallIntervals++;
+					
+					region.put("gene", finalAnnoString);
+					region.put("size", length);
+					region.put("reason", cause);
+					region.put("chr", toks[0]);
+					region.put("start", Integer.parseInt(toks[1]));
+					region.put("end", Integer.parseInt(toks[2]));
+					if (cov > -1) {
+						region.put("mean.coverage", cov);
+					}
+					allRegions.put(region);
+				} catch (NumberFormatException nfe) {
+					//dont stress it
+				}
 			}
 			line = reader.readLine();
 		}
@@ -590,8 +636,13 @@ public class QCtoJSON extends Operator {
 				if (obj instanceof BEDFile) {
 					captureBed = (BEDFile) obj;
 				}
-				if (obj instanceof ArupBEDFile) {
-					arupBed = (ArupBEDFile) obj;
+				if (obj instanceof ArupBEDFile) { //needed for transcript specific noCall region annotation
+					arupBED = (ArupBEDFile) obj;
+					try {
+						arupBED.buildIntervalsMap(true);
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
 				}
 				if (obj instanceof CSVFile) {
 					noCallCSV = (CSVFile)obj;
@@ -610,7 +661,10 @@ public class QCtoJSON extends Operator {
 		if (finalBAMMetrics == null) {
 			throw new IllegalArgumentException("No final BAM metrics objects specified");
 		}
-	
+		
+		if (snpEff && arupBED == null) {
+			throw new IllegalArgumentException("SnpEff specified (by adding SNPEFF_GENOME attribute), which requires ArupBedFile input");
+		}
 		
 		String strictNMStr = this.getAttribute(STRICT_NMS);
 		if (strictNMStr != null) {
@@ -618,5 +672,39 @@ public class QCtoJSON extends Operator {
 		}
 	}
 
+	/**
+	 * Create a new callable loci BED file with cause|cov in 4th field and NO cause=CALLABLE regions
+	 * @return
+	 * @throws IOException
+	 */
+	private CSVFile makeNoCallBED(CSVFile noCallCSV) throws IOException {
+		String tempBedName = "nocalls.tmp.bed";
+		File tempBedFile = new File( this.getProjectHome() + "/" + tempBedName);
+		BufferedReader reader = new BufferedReader(new FileReader(noCallCSV.getFile()));
+		
+		BufferedWriter writer = new BufferedWriter(new FileWriter(tempBedFile));
+		
+		String line = reader.readLine();
+		while(line != null) {
+			line = line.replace(" ", "\t");
+			String[] toks = line.split("\t");
+			int size = Integer.MAX_VALUE;
+			if (toks.length > 3) {
+				size = Integer.parseInt(toks[2]) - Integer.parseInt(toks[1]);
+			}
+			if (size > 0 && (!line.contains("CALLABLE"))) {
+				if (toks.length > 4) {
+					toks[3] = toks[3] + "|" + toks[4];
+				}
+				writer.write(line + "\n");
+			}
+			line = reader.readLine();
+		}
+		
+		reader.close();
+		writer.close();
+		
+		return new CSVFile(tempBedFile);
+	}
 	
 }
