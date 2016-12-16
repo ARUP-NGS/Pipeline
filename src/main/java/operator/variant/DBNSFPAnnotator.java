@@ -75,9 +75,9 @@ import buffer.variant.VariantRec;
  * 36 LRT_converted_rankscore
  * 37 LRT_pred
  * 38 LRT_Omega
- * 39 MutationTaster_score <------ MT
+ * 39 MutationTaster_score <------ MT this is column 37 in 2.9
  * 40 MutationTaster_converted_rankscore
- * 41 MutationTaster_pred
+ * 41 MutationTaster_pred <------ MT this is column 38 in 2.9
  * 42 MutationTaster_model
  * 43 MutationTaster_AAE
  * 44 Uniprot_id_MutationAssessor
@@ -311,14 +311,14 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
      */
     private int getMTScoreColumn(String dbsnfpVersion) {
         if (dbsnfpVersion.equals("3.0") || dbsnfpVersion.equals("3.1a")) return -1;
-        if (dbsnfpVersion.equals("2.9")) return 39;
+        if (dbsnfpVersion.equals("2.9")) return 38;
         if (dbsnfpVersion.equals("2.0")) return -1;
         return -1;
     }
 
     private int getMTPredColumn(String dbsnfpVersion) {
         if (dbsnfpVersion.equals("3.0") || dbsnfpVersion.equals("3.1a")) return -1;
-        if (dbsnfpVersion.equals("2.9")) return 40;
+        if (dbsnfpVersion.equals("2.9")) return 37;
         if (dbsnfpVersion.equals("2.0")) return -1;
         return -1;
     }    
@@ -331,7 +331,7 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
      */
     private int getMAScoreColumn(String dbsnfpVersion) {
         if (dbsnfpVersion.equals("3.0") || dbsnfpVersion.equals("3.1a")) return -1;
-        if (dbsnfpVersion.equals("2.9")) return 42;
+        if (dbsnfpVersion.equals("2.9")) return 45;//this is the "converted" score of 0-1
         if (dbsnfpVersion.equals("2.0")) return -1;
         return -1;
     }   
@@ -341,7 +341,7 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
         if (dbsnfpVersion.equals("2.0")) return -1;
         return -1;
     }    
-//CHRISK
+
     /**
      * Returns the GERP_NR column index for a specific dbNSFP DB
      *

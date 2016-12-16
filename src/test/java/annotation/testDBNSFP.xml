@@ -4,9 +4,9 @@
         <InputVCF />
     </VariantPool>
 
-    <GeneAnnotate30 class="operator.variant.DBNSFPAnnotator" dbnsfp.version="3.0">
+    <!--GeneAnnotate30 class="operator.variant.DBNSFPAnnotator" dbnsfp.version="3.0">
         <VariantPool />
-    </GeneAnnotate30>
+    </GeneAnnotate30-->
 
     <GeneAnnotate29 class="operator.variant.DBNSFPAnnotator" dbnsfp.version="2.9">
         <VariantPool />
