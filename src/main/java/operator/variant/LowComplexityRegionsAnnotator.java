@@ -1,8 +1,6 @@
 package operator.variant;
 
-import java.io.File;
-import java.io.IOException;
-
+import util.Interval;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -10,6 +8,7 @@ import pipeline.PipelineObject;
 import buffer.BEDFile;
 import buffer.IntervalsFile;
 import buffer.variant.VariantRec;
+import operator.OperationFailedException;
 /**
  * An annotator that flags all variants falling into the BED file with the "low.complex.region" annotation
  * @author chrisk (heavily influenced by bad.regions annotator)
@@ -18,11 +17,11 @@ import buffer.variant.VariantRec;
 public class LowComplexityRegionsAnnotator extends AbstractRegionAnnotator{
 	public static final String LOW_COMPLEX_REGION = "low.complex";
 	
-	BEDFile lowcomplexityintervals = null;
+	BEDFile lowComplexityIntervals = null;
 	
 	@Override
 	protected IntervalsFile getIntervals() {
-		return lowcomplexityintervals;
+		return lowComplexityIntervals;
 	}
 
 	@Override
@@ -40,7 +39,7 @@ public class LowComplexityRegionsAnnotator extends AbstractRegionAnnotator{
 			if (iChild.getNodeType() == Node.ELEMENT_NODE) {
 				PipelineObject obj = getObjectFromHandler(iChild.getNodeName());
 				if (obj instanceof BEDFile) {
-					this.lowcomplexityintervals = (BEDFile)obj; //remove this if you want to use properties file
+					this.lowComplexityIntervals = (BEDFile)obj; //remove this if you want to use properties file
 				}
 			}
 		}		
@@ -65,8 +64,22 @@ public class LowComplexityRegionsAnnotator extends AbstractRegionAnnotator{
 
 	    this.lowcomplexityintervals = (BEDFile) intervals;
 **/
-		if (this.lowcomplexityintervals == null) {
+		if (this.lowComplexityIntervals == null) {
 			throw new IllegalArgumentException("No BED file found");
 		}
 }
+
+	@Override
+	public void annotateVariant(VariantRec var) throws OperationFailedException {
+		if (this.lowComplexityIntervals == null) {
+			throw new OperationFailedException("Intervals were not initialized", this);
+		}
+		
+		if (this.lowComplexityIntervals.intersects(var.getContig(), new Interval(var.getStart(), var.getEnd()))) {
+			doContainsAnnotation(var);
+		} else {
+			doNotContainsAnnotation(var);
+		}
+		
+	}
 }

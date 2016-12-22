@@ -1,0 +1,15 @@
+
+<Pipeline>
+
+<LowComplexityBed class="buffer.BEDFile" filename="src/test/java/testBEDs/AllRepeats_lt51bp_gt95identity_merged.random1pct.bed.gz" />
+
+<VariantPool class="buffer.variant.VariantPool">
+	<InputVCF />
+</VariantPool> 
+
+<LowComplexityRegionsAnnotator class="operator.variant.LowComplexityRegionsAnnotator">
+	<LowComplexityBed />
+        <VariantPool />
+</LowComplexityRegionsAnnotator>
+
+</Pipeline>
