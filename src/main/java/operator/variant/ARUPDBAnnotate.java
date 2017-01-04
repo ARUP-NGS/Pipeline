@@ -46,9 +46,6 @@ public class ARUPDBAnnotate extends Annotator {
 				var.addProperty(VariantRec.ARUP_HOM_COUNT, dbInfo.totHoms);
 				var.addProperty(VariantRec.ARUP_SAMPLE_COUNT, dbInfo.totSamples);
 				var.addAnnotation(VariantRec.ARUP_FREQ_DETAILS, dbInfo.details);
-//				System.out.println(var.getProperty(VariantRec.ARUP_FREQ_DETAILS));
-//				System.out.println(var.getProperty(VariantRec.GENE_NAME));
-				
 			}
 			else {
 				var.addProperty(VariantRec.ARUP_OVERALL_FREQ, 0.0);
