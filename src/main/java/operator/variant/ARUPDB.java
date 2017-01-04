@@ -54,12 +54,8 @@ public class ARUPDB {
 						Integer qPos = Integer.parseInt(toks[1]);
 						String ALT = toks[3];
 						String overall = toks[4];
-//						System.out.println();
-						
 						if (qPos == pos && ALT.equals(alt) && overall.equals("overall")) {
 							//Found one..
-//							System.out.println(toks[5] + "\t" + toks[6] + "\t" + toks[7]);
-							
 							String sampleTotalStr = toks[5];
 							String hetsFoundStr = toks[6];
 							String homsFoundStr = toks[7];
