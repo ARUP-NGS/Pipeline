@@ -1,0 +1,22 @@
+
+<Pipeline>
+<ArupBed class="buffer.ArupBEDFile" filename="src/test/java/qc/testQCtoJSONnoCall.arup.bed" />
+<BedForVars class="buffer.BEDFile" filename="src/test/java/qc/testQCtoJSONnoCall.arup.bed" />
+<NoCallDepths class="buffer.CSVFile" filename="src/test/java/qc/testQCtoJSONnoCall.txt" />
+<rawBamMetrics class="buffer.BAMMetrics" filename="src/test/java/qc/testQCtoJSONnoCall.txt" />
+<finalBamMetrics class="buffer.BAMMetrics" filename="src/test/java/qc/testQCtoJSONnoCall.txt" />
+
+
+<QCtoJSON class="operator.qc.QCtoJSON" snpeff.genome="hg19_arup_August_01_2016">
+ <rawBamMetrics />
+ <finalBamMetrics />
+ <rawdocmetrics />
+ <finaldocmetrics />
+ <BedForVars />
+ <ArupBed />
+ <VariantPool />
+ <NoCallDepths />
+ <QCOutputFile class="buffer.TextBuffer" filename="qc.json" />
+</QCtoJSON>
+
+</Pipeline>

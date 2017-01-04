@@ -11,8 +11,13 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.logging.Logger;
 
 import json.JSONArray;
@@ -21,6 +26,7 @@ import json.JSONObject;
 import operator.OperationFailedException;
 import operator.Operator;
 
+import org.apache.commons.lang3.StringUtils;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -56,6 +62,7 @@ public class QCtoJSON extends Operator {
 	public static final int DEFAULT_MIN_LENGTH = 2;
 	public static final String SNPEFF_DIR = "snpeff.dir";
 	public static final String SNPEFF_GENOME = "snpeff.genome";
+	public static final String SNPEFF_CANON = "snpeff.canon";
 	public static final String ALT_JAVA_HOME = "alt.java.home";
 	private Map<String, String> nms = null;
 	
@@ -77,6 +84,8 @@ public class QCtoJSON extends Operator {
 	
 	//If true, call snpEff to annotate regions rather than feature lookup service
 	private boolean snpEff = true;
+	private boolean snpEffCanon = false;
+	private boolean useArupBED = false;
 	
 	//If true, do not report regions that do not have a preferred NM specified.
 	private boolean strictNM = true;
@@ -144,7 +153,7 @@ public class QCtoJSON extends Operator {
 		// Use SnpEff option rather than feature look-up table by adding snpeff.genome attribute to template.xml
 		try {
 			if (snpEff) {
-			qcObj.put("nocalls", new JSONObject(noCallsToJSONWithSnpEff(noCallCSV, arupBED)));
+					qcObj.put("nocalls", new JSONObject(noCallsToJSONWithSnpEff(noCallCSV, useArupBED)));
 			} else {
 			qcObj.put("nocalls", new JSONObject(noCallsToJSONWithFeatureLookupTable(noCallCSV)));
 			}
@@ -178,7 +187,7 @@ public class QCtoJSON extends Operator {
 
 	
 	
-	private String noCallsToJSONWithFeatureLookupTable(CSVFile noCallCSV) throws JSONException, IOException {	
+	protected String noCallsToJSONWithFeatureLookupTable(CSVFile noCallCSV) throws JSONException, IOException {	
 		JSONObject obj = new JSONObject();
 		JSONArray allRegions = new JSONArray();
 		obj.put("regions", allRegions);
@@ -189,7 +198,6 @@ public class QCtoJSON extends Operator {
 		}
 		
 		//Use the feature lookup service to find which features correspond to particular low coverage intervals
-		//If using snpEff, just read in corresponding lines of the two files. (throw error if regions don't match)
 		ExonLookupService featureLookup = null;
 			try {
 				featureLookup = new ExonLookupService();
@@ -286,7 +294,21 @@ public class QCtoJSON extends Operator {
 			return obj.toString();
 	}
 	
-	private String noCallsToJSONWithSnpEff(CSVFile noCallCSV, ArupBEDFile arupBED) throws JSONException, IOException {	
+	public String noCallsToJSONWithSnpEff(CSVFile noCallCSV, Boolean useArupBED) throws JSONException, IOException {	
+		if (useArupBED) {
+			this.useArupBED = true;
+			return noCallsToJSONWithSnpEff(noCallCSV);
+		} else {
+			this.useArupBED = false;
+			return noCallsToJSONWithSnpEff(noCallCSV);
+		}
+	}
+	public String noCallsToJSONWithSnpEff(CSVFile noCallCSV, ArupBEDFile arupBED) throws JSONException, IOException {	
+		this.arupBED = arupBED;
+		this.useArupBED = true;
+		return noCallsToJSONWithSnpEff(noCallCSV);
+	}
+	public String noCallsToJSONWithSnpEff(CSVFile noCallCSV) throws JSONException, IOException {	
 		JSONObject obj = new JSONObject();
 		JSONArray allRegions = new JSONArray();
 		obj.put("regions", allRegions);
@@ -297,22 +319,24 @@ public class QCtoJSON extends Operator {
 			return obj.toString();
 		}
 		//check for arup bed file (to get transcripts assigned to each region)
-		if (arupBED == null) {
+		if (useArupBED && arupBED == null) {
 			obj.put("error", "no arup bed file specified");
 			return obj.toString();
 		}
 		
-		//make temp no calls file with any CALLABLE lines removed
+		//make temp no calls file with any CALLABLE lines removed and cov value from 5th column added to 4th
 		CSVFile noCallOnlyCSV = makeNoCallBED(noCallCSV);
 		
 		//get SnpEff annotations
+		File snpeffOut = new File(this.getProjectHome() + "/snpeff_output.bed");
 		SnpEffBedAnnotate snpeffOp = new SnpEffBedAnnotate();
+		snpeffOp.setOutputFile(snpeffOut);
 		snpeffOp.setJavaHome(javaHome);
 		snpeffOp.setNocallBed(noCallOnlyCSV.getAbsolutePath());
 		snpeffOp.setSnpEffDir(snpEffDir);
 		snpeffOp.setSnpEffGenome(snpEffGenome);
+		snpeffOp.setCanon(snpEffCanon);
 		snpeffOp.runSnpEff();
-		File snpeffOut = snpeffOp.getOutputFile();
 		
 		//Parse snpeff output lines to generate nocall array 
 		BufferedReader reader = new BufferedReader(new FileReader(snpeffOut.getAbsolutePath()));
@@ -330,102 +354,85 @@ public class QCtoJSON extends Operator {
 			String[] toks = line.split("\t");
 			
 			if (toks.length > 3 && (! toks[3].startsWith("CALLABLE"))) {
-				String[] infos = toks[3].split(";");
-				List<String> annos = new ArrayList<String>();
-				for (int i = 1 ; i < infos.length ; i++) {
-				    annos.add(infos[i]);
-				}
-
-				JSONObject region = new JSONObject();
-				
 				try {
+					//parse the snpEff output bed file line
 					String contig = toks[0];
 					int startPos = Integer.parseInt(toks[1]);
 					int endPos = Integer.parseInt(toks[2]);
 					int length = endPos - startPos;
-					double cov = -1;
-					
 					if (length < minNoCallLength) {
 						line = reader.readLine();
 						continue;
 					}
-					
-					String[] causeAndCov = infos[0].split("|");
+    				String[] infos = toks[3].split(";");
+					String[] causeAndCov = infos[0].split("\\|");
 					String cause = causeAndCov[0];
 					cause = cause.toLowerCase();
 					cause  = ("" + cause.charAt(0)).toUpperCase() + cause.substring(1);
+					double cov = -1.0;
 					if (causeAndCov.length > 1) {
 						cov = Double.parseDouble(causeAndCov[1]);
 					}
+    				int distance = Integer.parseInt(infos[1]);
+					NoCallAnnos annoObj = new NoCallAnnos();
+    				if (distance == 0) {
+    					for (int i = 2 ; i < infos.length ; i++) { //grab all but first 2 elements which are "cause;0;"
+    						annoObj.addAnno(infos[i]);
+    					}
+    				}
 					
-					// make lists of gene/transcript/feature/feature_number for all snpeff annos longer than 3 
-					// (only if anno list longer than three, which means snpeff found gene intersection)
-					List<String> nmsSnpEff = new ArrayList<String>();
-					List<String> genesSnpEff = new ArrayList<String>();
-					List<String> featuresSnpEff = new ArrayList<String>();
-					List<String> fnumsSnpEff = new ArrayList<String>();
-					for (String anno : annos) {
-						String[] annotoks = anno.split("|");
-						if (annotoks.length > 2) {
-							nmsSnpEff.add(annotoks[2]);
-							genesSnpEff.add(annotoks[4]);
-							String featureTemp = annotoks[0].replace("Exon", "Coding exon");
-							featureTemp = featureTemp.replace("Utr3prime", "3 UTR");
-							featureTemp = featureTemp.replace("Utr5prime", "5 UTR");
-							featuresSnpEff.add(featureTemp);
-							String[] fnumTemp = annotoks[1].split("_");
-							if (featureTemp.endsWith("UTR") || fnumTemp.length < 2) {
-								fnumsSnpEff.add("");
-							} else {
-								fnumsSnpEff.add( " " + fnumTemp[1]);
-							}
-						}
-					}
-					
-					//get all transcripts from the arupBED file for this noCall region
+					//if using an ArupBED file
+					//get primary transcripts from the arupBED file for this noCall region
 					//(will be prioritized since the first transcript should be the highest priority)
-					List<String> regionTrs = new ArrayList<String>();
-					Interval inter = new Interval(startPos, endPos);
-					List<Interval> contigIntervals = arupBED.getIntervalsForContig(contig);
-					int[] arupIndexes = arupBED.intersectsWhich(contig, inter);
-					for (Integer idx : arupIndexes) {
-						Interval idxInter = contigIntervals.get(idx);
-						String[] idxTrs = ((ARUPBedIntervalInfo) idxInter.getInfo()).transcripts;
-						for (String tr : idxTrs) {
-								regionTrs.add(tr);
+					String primaryTr = null;
+					if (useArupBED) {
+						Interval inter = new Interval(startPos, endPos);
+						List<Interval> contigIntervals = arupBED.getIntervalsForContig(contig);
+						int[] arupIndexes = arupBED.intersectsWhich(contig, inter);
+						if (arupIndexes.length > 0 && arupIndexes[0] >= 0) {
+							Interval idxInter = contigIntervals.get(arupIndexes[0]);
+							String[] idxTrs = ((ARUPBedIntervalInfo) idxInter.getInfo()).transcripts;
+							primaryTr = idxTrs[0];
 						}
-					}	
-					
-					//for each noCall region use snpEff annos with first arupbed transcript
-					String primaryTr = regionTrs.get(0);
-					List<String> finalFeatures = new ArrayList<String>();
-					String finalGene = "";
-					
-					for (int i = 0; i < nmsSnpEff.size(); i++) {
-						if (nmsSnpEff.get(i).equals(primaryTr)) {
-							finalGene = genesSnpEff.get(i);
-							finalFeatures.add(featuresSnpEff.get(i) + fnumsSnpEff.get(i));
-						}
+					} else {
+						// using tr ranked by most exons, then most introns, then most utrs
+						primaryTr = annoObj.getTopTr();
 					}
-					String finalFeatureString = String.join(", ", finalFeatures);
-					String finalAnnoString = finalGene + " (" + primaryTr + ") " + finalFeatureString;
-					
+
+    				//make sure distance from feature is 0 (i.e., we are touching the feature)
+					//otherwise final annotation is blank ("gene" item in qc.json)
+					String finalAnnoString = "";
+    				JSONObject geneDict = new JSONObject();
+    				if (distance == 0) {
+    					finalAnnoString = annoObj.getTrAnnoString(primaryTr);
+    					List<String> allTrs = annoObj.getAllTrs();
+    					for (String tr : allTrs) {
+    						String otherAnno = annoObj.getTrAnnoString(tr);
+    						if (! otherAnno.equals("")) {
+    							geneDict.put(tr, otherAnno);
+    						}
+    					}
+    				}
 					
 					noCallPositions += length;
 					noCallIntervals++;
-					
+
+					JSONObject region = new JSONObject();
 					region.put("gene", finalAnnoString);
+					region.put("gene.dict", geneDict);
 					region.put("size", length);
 					region.put("reason", cause);
-					region.put("chr", toks[0]);
-					region.put("start", Integer.parseInt(toks[1]));
-					region.put("end", Integer.parseInt(toks[2]));
+					region.put("chr", contig);
+					region.put("start", startPos);
+					region.put("end", endPos);
 					if (cov > -1) {
 						region.put("mean.coverage", cov);
 					}
 					allRegions.put(region);
+
 				} catch (NumberFormatException nfe) {
 					//dont stress it
+					System.out.println("Warning: NumberFormatException occured in QCtoJSON operator");
 				}
 			}
 			line = reader.readLine();
@@ -438,6 +445,7 @@ public class QCtoJSON extends Operator {
 		
 		return obj.toString();
 	}
+
 	private String variantPoolToJSON(VariantPool vp) throws JSONException {
 		JSONObject obj = new JSONObject();
 		if (vp == null) {
@@ -504,7 +512,6 @@ public class QCtoJSON extends Operator {
 		VariantPool novels= new VariantPool();
 		for(String contig : vp.getContigs()) {
 			for(VariantRec var : vp.getVariantsForContig(contig)) {
-				//System.out.println("var: "+var.getContig()+" "+var.getStart()+" "+var.getRef()+" "+var.getAlt());
 				Double tgpFreq = var.getProperty(VariantRec.POP_FREQUENCY);
 				Double espFreq = var.getProperty(VariantRec.EXOMES_FREQ);
 				Double mmFreq = var.getProperty(VariantRec.MITOMAP_FREQ);//for MDNA tests
@@ -576,6 +583,15 @@ public class QCtoJSON extends Operator {
 		if (snpEffGenome == null) {
 			snpEff = false;
 		}
+		if (snpEff == true) {
+			String canonStr = this.getAttribute(SNPEFF_CANON);
+			if (canonStr != null) {
+				canonStr = canonStr.toLowerCase();
+				snpEffCanon = Boolean.parseBoolean(canonStr);
+			}
+
+			
+		}
 
 		if (snpEff == true) {
 			altJavaHome = this.getAttribute(ALT_JAVA_HOME);
@@ -640,6 +656,7 @@ public class QCtoJSON extends Operator {
 					arupBED = (ArupBEDFile) obj;
 					try {
 						arupBED.buildIntervalsMap(true);
+						useArupBED = true;
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
@@ -662,9 +679,9 @@ public class QCtoJSON extends Operator {
 			throw new IllegalArgumentException("No final BAM metrics objects specified");
 		}
 		
-		if (snpEff && arupBED == null) {
-			throw new IllegalArgumentException("SnpEff specified (by adding SNPEFF_GENOME attribute), which requires ArupBedFile input");
-		}
+		//if (snpEff && arupBED == null) {
+		//	throw new IllegalArgumentException("SnpEff specified (by adding SNPEFF_GENOME attribute), which requires ArupBedFile input");
+		//}
 		
 		String strictNMStr = this.getAttribute(STRICT_NMS);
 		if (strictNMStr != null) {
@@ -681,30 +698,210 @@ public class QCtoJSON extends Operator {
 		String tempBedName = "nocalls.tmp.bed";
 		File tempBedFile = new File( this.getProjectHome() + "/" + tempBedName);
 		BufferedReader reader = new BufferedReader(new FileReader(noCallCSV.getFile()));
-		
 		BufferedWriter writer = new BufferedWriter(new FileWriter(tempBedFile));
-		
 		String line = reader.readLine();
 		while(line != null) {
 			line = line.replace(" ", "\t");
 			String[] toks = line.split("\t");
 			int size = Integer.MAX_VALUE;
-			if (toks.length > 3) {
+			if (toks.length > 3 && ! line.startsWith("#")) {
 				size = Integer.parseInt(toks[2]) - Integer.parseInt(toks[1]);
-			}
-			if (size > 0 && (!line.contains("CALLABLE"))) {
-				if (toks.length > 4) {
-					toks[3] = toks[3] + "|" + toks[4];
+				if (size > 0 && (!line.contains("CALLABLE"))) {
+					if (toks.length > 4) {
+						toks[3] = toks[3] + "|" + toks[4];
+					}
+					writer.write(toks[0] + "\t" + toks[1] + "\t" + toks[2] + "\t" + toks[3] + "\n");
 				}
-				writer.write(line + "\n");
 			}
 			line = reader.readLine();
 		}
-		
 		reader.close();
 		writer.close();
 		
 		return new CSVFile(tempBedFile);
 	}
-	
 }
+
+
+class NoCallAnnos {
+	HashMap<String, trsInfo> unsortedAnnos = new HashMap<String, trsInfo>();
+	
+	protected void addAnno(String anno) {
+		String feature = null;
+		String tr = null;
+		String gene = null;
+		String fnum = null;
+		
+		String[] annotoks = anno.split(",");
+		feature = annotoks[0];
+		if (annotoks.length < 6) {
+			if (feature.equals("Cds")) {
+				tr = annotoks[1];
+				gene = annotoks[3];
+				fnum = "";
+			}
+		} else {
+			String regionTemp = annotoks[0];
+			tr = annotoks[2];
+			gene = annotoks[4];
+			String[] featureAndNumTemp = annotoks[1].split("_");
+			String featureTemp = featureAndNumTemp[0];
+			if (regionTemp.equals("Utr5prime")) {
+				featureTemp = "5 UTR";
+			} else if (regionTemp.equals("Utr3prime")) {
+				featureTemp = "3 UTR";
+			}
+			featureTemp = featureTemp.replace("exon", "Coding exon");
+			featureTemp = featureTemp.replace("intron", "Intron");
+			feature = featureTemp;
+			fnum = featureAndNumTemp[1];
+		}
+
+		// if we found a feature that we wanted, add new map item if one with this transcript not already there
+		if (tr != null) {
+			if (! unsortedAnnos.containsKey(tr)) {
+				unsortedAnnos.put(tr, new trsInfo(tr, gene));
+			}
+			// populate the map item
+			unsortedAnnos.get(tr).featuresSnpEff.add(feature);
+			unsortedAnnos.get(tr).fnumsSnpEff.add(fnum);
+			if (feature.equals("Coding exon")) {
+				unsortedAnnos.get(tr).codingExons += 1;
+			} else if (feature.endsWith("UTR")) {
+				unsortedAnnos.get(tr).utrs += 1;
+			} else if (feature.equals("Intron")) {
+				unsortedAnnos.get(tr).introns += 1;
+			} else if (feature.equals("Cds")) {
+				unsortedAnnos.get(tr).cds = true;
+			}	
+		}
+		
+	}
+	
+	protected ArrayList<String> getAllTrs() {
+		return new ArrayList<String>(unsortedAnnos.keySet());
+	}
+	
+	
+	protected String getTopTr() {
+		String topTr = null;
+		List<trsInfo> infos = new ArrayList<trsInfo>(unsortedAnnos.values());
+		Collections.sort(infos);
+		topTr = infos.get(0).getTrSnpEff();
+		return topTr;
+	}
+
+	protected String getTrAnnoString(String tr) {
+		//for each noCall region get snpEff annos that match transcript (tr)
+		// find if any cds in the region
+		// get highest 5utr exon and the lowest 3utr exon
+		// (because if there are any exons in the region, these will be the only exons with both utr and coding exon)
+		if (this.unsortedAnnos.containsKey(tr)) {
+			return this.unsortedAnnos.get(tr).getAnnoString();
+		} else {
+			return "";
+		}
+	}
+
+
+}
+class trsInfo implements Comparable<trsInfo> {
+	
+	// make lists of gene/transcript/feature/feature_number for all snpeff "closest" annos
+	protected List<String> featuresSnpEff = new ArrayList<String>();
+	protected List<String> fnumsSnpEff = new ArrayList<String>();
+	protected String trSnpEff = null;
+	protected String geneSnpEff = null;
+	protected int codingExons = 0;
+	protected int utrs = 0;
+	protected int introns = 0;
+	protected boolean cds = false;
+	
+	public trsInfo(String tr, String gene) {
+		trSnpEff = tr;
+		geneSnpEff = gene;
+	}
+
+	public String getTrSnpEff() {
+		return trSnpEff;
+	}
+	public void setTrSnpEff(String trSnpEff) {
+		this.trSnpEff = trSnpEff;
+	}
+	
+	protected String getAnnoString() {
+		//for each noCall region get snpEff annos that match transcript (tr)
+		// find if any cds in the region
+		// get highest 5utr exon and the lowest 3utr exon
+		// (because if there are any exons in the region, these will be the only exons with both utr and coding exon)
+		int utr5max = -1;
+		int utr3min = Integer.MAX_VALUE;
+		for (int i = 0; i < this.featuresSnpEff.size(); i++) {
+			if (this.featuresSnpEff.get(i).equals("Cds")) {
+				this.cds = true;
+			} else if (this.featuresSnpEff.get(i).equals("5 UTR")) {
+				if (Integer.parseInt(this.fnumsSnpEff.get(i)) > utr5max) {
+					utr5max = Integer.parseInt(this.fnumsSnpEff.get(i));
+				}
+
+			} else if (this.featuresSnpEff.get(i).equals("3 UTR")) {
+				if (Integer.parseInt(this.fnumsSnpEff.get(i)) < utr3min) {
+					utr3min = Integer.parseInt(this.fnumsSnpEff.get(i));
+				}
+			} 
+		}
+
+		// go through all annos again to build feature string ("gene")
+		String finalGene = "";
+		List<String> listFeatures = new ArrayList<String>();
+		for (int i = 0; i < this.featuresSnpEff.size(); i++) {
+			//TODO need to make this only add features based on min/max utr, cds
+			if (this.featuresSnpEff.get(i).equals("Coding exon")) {
+				if (this.cds && Integer.parseInt(this.fnumsSnpEff.get(i)) >= utr5max && Integer.parseInt(this.fnumsSnpEff.get(i)) <= utr3min) {
+					listFeatures.add(this.featuresSnpEff.get(i) + " " + this.fnumsSnpEff.get(i));
+				}
+			} else if (this.featuresSnpEff.get(i).endsWith("UTR")) {
+				listFeatures.add(this.featuresSnpEff.get(i));
+			} else if (this.featuresSnpEff.get(i).equals("Intron")) {
+				listFeatures.add(this.featuresSnpEff.get(i) + " " + this.fnumsSnpEff.get(i));
+			} else if (this.featuresSnpEff.get(i).equals("Cds")) {
+				//do nothing
+			} else {
+				listFeatures.add(this.featuresSnpEff.get(i) + " " + this.fnumsSnpEff.get(i));
+			}
+		}
+		//convert list of features to unique, sorted list
+		TreeSet<String> finalFeatures = new TreeSet<String>(listFeatures);
+		//convert to string
+		String finalFeatureString = "";
+		String finalAnnoString = "";
+		if (finalFeatures.size() > 0) {
+			finalFeatureString = String.join(", ", finalFeatures);
+			finalAnnoString = this.geneSnpEff + " (" + this.trSnpEff + ") " + finalFeatureString;
+		}
+		
+		return finalAnnoString;
+	}
+
+	@Override
+	public int compareTo(trsInfo o) {
+		if (this.codingExons > o.codingExons) {
+			return -1;
+		} else if (this.codingExons < o.codingExons) {
+			return 1;
+		} else if (this.introns > o.introns) {
+			return -1;
+		} else if (this.introns < o.introns) {
+			return 1;
+		} else if (this.utrs > o.utrs) {
+			return -1;
+		} else if (this.utrs < o.utrs) {
+			return 1;
+		} else {
+			return 0;
+		}
+	}
+}
+
+
+
