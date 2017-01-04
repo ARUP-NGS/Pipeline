@@ -31,8 +31,8 @@ public class SnpEffBedAnnotate extends Annotator{
 	protected int updownStreamLength = 0;
 	protected int spliceSiteSize = 0;
 	protected String nocallBed = null;
-	
-	private File outputFile = new File(this.getProjectHome() + "/snpeff_output.bed");
+	protected File outputFile = null;
+	protected Boolean canon = false;
 	
 	
 	// Use setters and getters since this class will be instantiated from another operator
@@ -53,12 +53,20 @@ public class SnpEffBedAnnotate extends Annotator{
 		this.nocallBed = nocallBed;
 	}
 
+	public void setCanon(Boolean canon) {
+		this.canon = canon;
+	}
+
 	public void setUpdownStreamLength(int updownStreamLength) {
 		this.updownStreamLength = updownStreamLength;
 	}
 
 	public void setSpliceSiteSize(int spliceSiteSize) {
 		this.spliceSiteSize = spliceSiteSize;
+	}
+
+	public void setOutputFile(File outputFile) {
+		this.outputFile = outputFile;
 	}
 
 	public File getOutputFile() {
@@ -74,10 +82,16 @@ public class SnpEffBedAnnotate extends Annotator{
 		if (this.snpEffGenome == null) throw new IllegalArgumentException("No snpEff genome specified, use setter");
 		if (this.nocallBed == null) throw new IllegalArgumentException("No nocallBed file specified, use setter");
 		
+		//make string for only canonical transcripts
+		String canonOpt = "";
+		if (canon) {
+			canonOpt = " -canon ";
+		}
+		
 		//make snpEff command line (bed input and bed output options)
-		String command = javaHome + " -Xmx16g -jar " + snpEffDir + "/snpEff.jar -c " + snpEffDir + 
-				"/snpEff.config " + snpEffGenome + " -i bed -o bed -hgvs -nostats -ud " + updownStreamLength + 
-				" -spliceSiteSize " + spliceSiteSize + " " + nocallBed;
+		String command = javaHome + " -Xmx16g -jar " + snpEffDir + "/snpEff.jar closest " + canonOpt +
+				" -bed -ss 0 -spliceRegionExonSize 0 -spliceRegionIntronMax 0 -ud 0 -c " +
+				snpEffDir + "/snpEff.config " + snpEffGenome + " " + nocallBed;
 		
 		//run snpEff
 		Logger.getLogger(Pipeline.primaryLoggerName).info("Executing command: " + command);
@@ -88,74 +102,15 @@ public class SnpEffBedAnnotate extends Annotator{
 		}
 	}
 	
-
-
 	@Override
 	public void annotateVariant(VariantRec var) throws OperationFailedException {
 		
-		/*
-		if (annos == null) {
-			throw new OperationFailedException("Map not initialized", this);
-			
-		}
-		
-		String varStr = convertVar(var);
-		
-		String[] allAlts = varStr.split("\n");
-		
-		//crashes if one of the alts has no annotations
-		for(String alt : allAlts) {
-			List<SnpEffInfo> annoList = annos.get(alt);
-			if (annoList == null) {
-				throw new OperationFailedException("No annotation info found for " + varStr, this);
-			}
-		
-			//use annos from any of the alts to choose highest ranking
-			try {
-				annotateFromList(var, annoList);
-			} catch (IOException e) {
-				throw new OperationFailedException(e.getMessage(), this);
-			}
-		}
-	*/	
+		// empty method to extend abstract Annotator class 
 	}
-
 
 	@Override
 	public void initialize(NodeList children) {
-		/*
-		super.initialize(children);
 		
-		altJavaHome = this.getAttribute(ALT_JAVA_HOME);
-		if (altJavaHome == null) {
-			javaHome = "java";
-		}
-		else {
-			javaHome = altJavaHome;
-		}
-			
-		snpEffDir = this.getPipelineProperty(SNPEFF_DIR);
-		if (snpEffDir == null) {
-			snpEffDir = this.getAttribute(SNPEFF_DIR);
-			if (snpEffDir == null) {
-				throw new IllegalArgumentException("No path to snpEff dir specified, use " + SNPEFF_DIR);
-			}
-		}
-		
-		snpEffGenome = this.getAttribute(SNPEFF_GENOME);
-		if (snpEffGenome == null) {
-			throw new IllegalArgumentException("No snpEff genome specified, use attribute " + SNPEFF_GENOME);
-		}
-		
-		String updownStreamStr = this.getAttribute(UPDOWNSTREAM_LENGTH);
-		if (updownStreamStr != null) {
-			updownStreamLength = Integer.parseInt(updownStreamStr);
-		}
-
-		String spliceSiteStr = this.getAttribute(SPLICESITE_SIZE);
-		if (spliceSiteStr != null) {
-			spliceSiteSize = Integer.parseInt(spliceSiteStr);
-		}
-		*/
+		// empty method to extend abstract Annotator class 
 	}
 }
