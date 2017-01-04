@@ -7,3 +7,5 @@ bin/*
 .settings/
 src/main/resources/
 varutils.test.out
+snpeff.*
+snpeffDirLink
