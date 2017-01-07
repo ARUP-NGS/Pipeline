@@ -72,10 +72,10 @@ public class SnpEffGeneAnnotate extends Annotator {
 			BufferedWriter writer = new BufferedWriter(new FileWriter(input));
 			writer.write("##fileformat=VCFv4.1\n");
 			writer.write("#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	sample\n");
-			
 				for(String contig: variants.getContigs()) {
 					for(VariantRec rec: variants.getVariantsForContig(contig)) {
-						Integer recLength = rec.getRef().length() - rec.getAlt().length(); //if >0 Indicates a deletion
+
+						Integer recLength = rec.getRef().length() - rec.getAlt().length(); 
 						if (recLength < 0) { //Indicates that it is an insertion
 							recLength = 0; 
 						} else if (recLength == 0) { //Indicates that it is an snv or mnv
@@ -85,10 +85,11 @@ public class SnpEffGeneAnnotate extends Annotator {
 								recLength = rec.getRef().length();
 							}
 						}
-						Integer recEnd = rec.getStart() - 1 + recLength;
-						Interval recInterval = new Interval(rec.getStart() - 1, recEnd);
+						Integer recEnd = rec.getStart() + recLength;
+						Interval recInterval = new Interval(rec.getStart(), recEnd);
 						if (bedFile == null || bedFile.intersects(rec.getContig(), recInterval)) {
-							String varStr = convertVar(rec);		
+							String varStr = convertVar(rec);
+
 							writer.write(varStr + "\n");
 							varsWritten++;
 						}
@@ -201,12 +202,11 @@ public class SnpEffGeneAnnotate extends Annotator {
 	}
 	
 	private void annotateFromList(VariantRec var, List<SnpEffInfo> infoList) throws IOException, OperationFailedException {
-	// inputs are a var and list of associated snpefff annotations
+	// inputs are a var and list of associated snpeff annotations
 		
 		if (infoList == null || infoList.size() == 0) {
 			return;
 		}
-		
 		boolean hasPreferredNM = false; //can use this to throw error if transcripts for this region not seen in infoList
 		boolean isUsingPreferredNM = false;
 		ArrayList<Integer> nearestIndexes = null;
@@ -222,7 +222,6 @@ public class SnpEffGeneAnnotate extends Annotator {
 			if (varRefLength == 0) varRefLength = 1;
 			varEnd = varStart + varRefLength - 1;
 			Interval varInterval = new Interval(varStart, varEnd);
-			
 			//get all transcripts from this var's position
 			//make a "prioritized" transcript list (first in list takes priority)
 			nearestIndexes = arupBedFile.nearest(varContig, varInterval);
@@ -243,7 +242,6 @@ public class SnpEffGeneAnnotate extends Annotator {
 			for (String tr : varTrs) { 
 				int topRank = -1;
 				SnpEffInfo topHit = null;
-				
 				for (SnpEffInfo infoi : infoList) {
 					if (tr.equals(infoi.transcript)) {
 						int ranki = calculateRank(infoi.changeType);
@@ -295,7 +293,6 @@ public class SnpEffGeneAnnotate extends Annotator {
 					//if we found an info
 					//flesh the info out and add it to the annoResults list
 					if (topHit != null) {
-
 						SnpEffInfo infoForAnno = new SnpEffInfo();
 						infoForAnno.exon = topHit.exon;
 						infoForAnno.transcript = topHit.transcript;
@@ -339,7 +336,7 @@ public class SnpEffGeneAnnotate extends Annotator {
 					appendAnnotation(var, VariantRec.VARIANT_TYPE3, annoResults.get(3).changeType.replace("_CODING", ""));
 				}
 
-			} else {
+	          } else {
 				var.addAnnotation(VariantRec.NON_PREFERRED_TRANSCRIPT, "true");
 				//Modified exception text Jul-29-16 by Jacob Durtschi: To allow non-ARUP BED transcript annotations 
 				throw new OperationFailedException("It appears that snpEff did not give any annotations for the variant in region: " + var.getContig() + ":" + var.getStart(), this);
@@ -351,7 +348,6 @@ public class SnpEffGeneAnnotate extends Annotator {
 			int topRank = calculateRank(topHit.changeType);
 			for (SnpEffInfo info : infoList) {
 				int infoRank = calculateRank(info.changeType);
-
 				// First check to see if it's in the nmMap. If so, it gets a
 				// really high rank
 				if (nmMap.containsKey(info.gene)) {
@@ -452,7 +448,7 @@ public class SnpEffGeneAnnotate extends Annotator {
 			
 	
 	private static int calculateRank(String changeType) {
-		if (changeType == null || changeType.length()==0) {
+		/**if (changeType == null || changeType.length()==0) {
 			return 0;
 		}
 		
@@ -460,7 +456,11 @@ public class SnpEffGeneAnnotate extends Annotator {
 			return VarEffects.effects.get(changeType.trim());
 		} else {
 			return 6;
-		}
+		}**/
+		//returning lowest priority so VarEffects class will no longer be used 
+		//This is for better 4.2 compatibility to allow SnpEff to choose most damaging variant effect
+		//This is only relevant to tests not using ARUP style bed file format
+		return -2;
 	}
 	
 	private static String convertVar(String chr, int pos, String ref, String alt) {
@@ -472,7 +472,8 @@ public class SnpEffGeneAnnotate extends Annotator {
 		}
 		
 		if (cont.equals("M") || cont.equals("chrM") || cont.equals("MT") || cont.equals("chrMT")) {
-			cont = "NC_012920";
+			//cont = "NC_012920";
+			cont = "MT";
 		}
 
 		if (ref.equals("*")) {
@@ -480,7 +481,6 @@ public class SnpEffGeneAnnotate extends Annotator {
 		}
 		alt = alt.replace("+", "");
 		alt = alt.replace("DEL", "-");
-		
 		
 		
 		if (alt.equals("-")) {
