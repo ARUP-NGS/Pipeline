@@ -225,6 +225,12 @@ public class JSONVarsGenerator extends VariantPoolWriter {
 		fs.close();
 	}
 
+	public static void createJSONVariantsGZIP(VariantPool variants, File dest) throws JSONException, IOException {
+		FileOutputStream fs = new FileOutputStream(dest);
+		JSONVarsGenerator.createJSONVariantsGZIP(variants, fs);
+		fs.close();
+	}
+
 	public static String createJSONVariants(CSVFile inputVars, File destDir) throws JSONException, IOException {
 		String destFilename = inputVars.getFilename().replace(".csv", ".json.gz");
 		destFilename = destFilename.replace(".xls", ".json.gz");

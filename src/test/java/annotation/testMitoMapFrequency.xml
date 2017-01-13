@@ -1,0 +1,14 @@
+
+<Pipeline>
+
+<InputVCF class="buffer.VCFFile" filename="src/test/java/testvcfs/testMitoMapFrequency.vcf"/>
+
+<VariantPool class="buffer.variant.VariantPool">
+	<InputVCF />
+</VariantPool>
+
+<MitoMapFrequency class="operator.variant.MitoMapFrequency">
+	<VariantPool />
+</MitoMapFrequency>
+
+</Pipeline>
