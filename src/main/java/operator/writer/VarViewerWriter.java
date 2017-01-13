@@ -24,6 +24,7 @@ public class VarViewerWriter extends VariantPoolWriter {
 	public static final String ANNOTATION_KEYS = "anno.keys";
 
 	public final static List<String> keys = new ArrayList<String>( Arrays.asList(new String[]{
+			VariantRec.INDEL_LENGTH,
 			VariantRec.GENOTYPE,
 			VariantRec.VCF_POS,
 			VariantRec.VCF_REF,

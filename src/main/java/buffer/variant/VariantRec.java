@@ -31,6 +31,7 @@ public class VariantRec {
 	String GT;
 	protected GTType zygosity;
 	protected Map<String, Double> props = new SmallMap<String, Double>(); 
+	protected Map<String, Integer> ints = new SmallMap<String, Integer>(); 
 	protected Map<String, String> annotations = new SmallMap<String, String>(); 
 	protected Map<String,JSONArray> jsonobj = new SmallMap<String, JSONArray>();
 
@@ -91,6 +92,9 @@ public class VariantRec {
 	
 	public synchronized void addAnnotation(String key, String anno) {
 		annotations.put(key, anno);
+	}
+	public synchronized void addPropertyInt(String key, Integer num) {
+		ints.put(key, num);
 	}
 	
 	public synchronized void addAnnotationJSON(String key, JSONArray masterlist) {
@@ -204,6 +208,8 @@ public class VariantRec {
 	 * is not an insertion or deletion
 	 * @return
 	 */
+	
+	
 	public int getIndelLength() {
 		if (isInsertion())
 			return alt.length();
@@ -298,6 +304,10 @@ public class VariantRec {
 		return jsonobj.get(key);
 	}
 	
+	public Integer getPropertyInt(String key){
+		return ints.get(key);
+	}
+	
 	/**
 	 * Returns the property associated with the given key, but if there
 	 * is no such property, returns the annotation with the given key, and
@@ -321,6 +331,10 @@ public class VariantRec {
 		JSONArray json = getjsonProperty(key);
 		if (json != null)
 			return "" + json;
+		
+		Integer intvar = getPropertyInt(key);
+		if(intvar != null)
+			return "" +intvar;
 		
 		return "-";
 	}
@@ -981,8 +995,8 @@ public class VariantRec {
 	public static final String EXAC63K_OTHER_ALLELE_FREQ = "exac63K.other.allele.freq";
 	public static final String EXAC63K_OTHER_HEMI_COUNT = "exac63K.other.hemi.count";
 	
-//CHRISK
-public static final String SNPEFF_ALL = "snpeff.all";
+   public static final String SNPEFF_ALL = "snpeff.all";
+   public static final String INDEL_LENGTH = "indel.length";
 
 }
 
