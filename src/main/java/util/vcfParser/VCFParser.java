@@ -513,12 +513,16 @@ public class VCFParser implements VariantLineReader {
 		if (svlen != null && svlen !=-1){
 			var.addPropertyInt(VariantRec.INDEL_LENGTH, svlen);
 		}else if (svlen.equals(-1)){
-			int indelsize = var.getIndelLength();
-			if (indelsize == 0){
-				var.addPropertyInt(VariantRec.INDEL_LENGTH, null);
-			}
-			else{
+			int indelsize = var.getIndelLength();//gets indelsize if ref or alt =="-"
+			int reflength = var.getRef().length();
+			int altlength = var.getAlt().length();
+			
+			if (reflength!=altlength){ //in the case of a deletion-insertion where ref or alt != "-"
+				indelsize = Math.abs(reflength-altlength);
 				var.addPropertyInt(VariantRec.INDEL_LENGTH, indelsize);
+			}
+			else if (indelsize == 0){
+				var.addPropertyInt(VariantRec.INDEL_LENGTH, null);
 			}
 		}
 
