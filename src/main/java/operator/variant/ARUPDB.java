@@ -52,9 +52,9 @@ public class ARUPDB {
 					while(str != null) {
 						String[] toks = str.split("\t");
 						Integer qPos = Integer.parseInt(toks[1]);
-						String ALT = toks[3];
+						String qAlt = toks[3];
 						String overall = toks[4];
-						if (qPos == pos && ALT.equals(alt) && overall.equals("overall")) {
+						if (qPos == pos && qAlt.equals(alt) && overall.equals("overall")) {
 							//Found one..
 							String sampleTotalStr = toks[5];
 							String hetsFoundStr = toks[6];
