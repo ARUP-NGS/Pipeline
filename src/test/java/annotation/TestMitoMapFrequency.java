@@ -42,26 +42,22 @@ public class TestMitoMapFrequency extends TestCase {
 			VariantPool vars = annotator.getVariants();	
 			
 			VariantRec var = vars.findRecord("MT",146,"T","C");
-			System.out.println(var.getContig() + " " + var.getStart() + " " + var.getRef() + " " + var.getAlt() + " " + var.getProperty(VariantRec.MITOMAP_FREQ) + " " + var.getAnnotation(VariantRec.MITOMAP_ALLELE_ID));
 			Assert.assertTrue(var != null);
 			Assert.assertTrue(var.getProperty(VariantRec.MITOMAP_FREQ).equals(0.196949));
 			Assert.assertTrue(var.getAnnotation(VariantRec.MITOMAP_ALLELE_ID).equals("T146C"));
 			
 			var = vars.findRecord("MT",240,"AAC","-");
 			Assert.assertTrue(var != null);
-			System.out.println(var.getContig() + " " + var.getStart() + " " + var.getRef() + " " + var.getAlt() + " " + var.getProperty(VariantRec.MITOMAP_FREQ) + " " + var.getAnnotation(VariantRec.MITOMAP_ALLELE_ID));
 			Assert.assertTrue(var.getProperty(VariantRec.MITOMAP_FREQ).equals(0.0));
 			Assert.assertTrue(var.getAnnotation(VariantRec.MITOMAP_ALLELE_ID).equals("TAAC239T"));
 
 			var = vars.findRecord("MT",309,"-","CCT");
-			System.out.println(var.getContig() + " " + var.getStart() + " " + var.getRef() + " " + var.getAlt() + " " + var.getProperty(VariantRec.MITOMAP_FREQ) + " " + var.getAnnotation(VariantRec.MITOMAP_ALLELE_ID));
 			Assert.assertTrue(var != null);
 			Assert.assertTrue(var.getProperty(VariantRec.MITOMAP_FREQ).equals(0.000218));
 			Assert.assertTrue(var.getAnnotation(VariantRec.MITOMAP_ALLELE_ID).equals("C308CCCT"));
 			
 			var = vars.findRecord("MT",3107,"N","-");
 			Assert.assertTrue(var != null);
-			System.out.println(var.getContig() + " " + var.getStart() + " " + var.getRef() + " " + var.getAlt()) ;
 			Assert.assertTrue(var.getProperty(VariantRec.MITOMAP_FREQ) == null);
 			Assert.assertTrue(var.getAnnotation(VariantRec.MITOMAP_ALLELE_ID) == null);
 			
