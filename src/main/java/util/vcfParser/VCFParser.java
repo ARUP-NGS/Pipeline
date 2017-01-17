@@ -477,7 +477,7 @@ public class VCFParser implements VariantLineReader {
 		}
 		
 
-		//@author elainegee start
+		//@author elxainegee start
 
 		sampleMetrics = createSampleMetricsDict(); //Stores sample-specific key=value pairs from VCF entry from FORMAT & INFO, not header	
 	
@@ -506,6 +506,20 @@ public class VCFParser implements VariantLineReader {
 		Integer altDepth = getVariantDepth();
 		if (altDepth != null) {
 			var.addProperty(VariantRec.VAR_DEPTH, new Double(altDepth));
+		}
+		
+		//If no SVLEN present in VCF field, calculate size of indels instead
+		Integer svlen = getSVLEN();
+		if (svlen != null && svlen !=-1){
+			var.addPropertyInt(VariantRec.INDEL_LENGTH, svlen);
+		}else if (svlen.equals(-1)){
+			int indelsize = var.getIndelLength();
+			if (indelsize == 0){
+				var.addPropertyInt(VariantRec.INDEL_LENGTH, null);
+			}
+			else{
+				var.addPropertyInt(VariantRec.INDEL_LENGTH, indelsize);
+			}
 		}
 
 		String genotypeQuality = getGenotypeQuality();
@@ -1029,6 +1043,19 @@ public class VCFParser implements VariantLineReader {
 		String sbStr = getSampleMetricsStr(annoStr);
 		Double sb = convertStr2Double(sbStr);
 		return sb;	
+	}
+	/**
+	 * Grabs structural variant size from VCF, identified by SVLEN field. If not SVLEN (as would be the case for germline), return -1
+	 * @return svlen (structural variant length)
+	 * @author chrisk
+	 */
+	public int getSVLEN(){
+		int svlen = -1;
+		if (creator.equals("lofreq_scalpel_manta")){
+			String strsvlen = getSampleMetricsStr("SVLEN");
+			svlen = convertStr2Int(strsvlen);
+		}
+		return svlen;
 	}
 	
 	/**
