@@ -231,7 +231,8 @@ public class SnpEffGeneAnnotate extends Annotator {
 		}
 		
 		if (cont.equals("M") || cont.equals("chrM") || cont.equals("MT") || cont.equals("chrMT")) {
-			cont = "NC_012920";
+			//cont = "NC_012920";
+			cont = "MT";
 		}
 
 		if (ref.equals("*")) {
