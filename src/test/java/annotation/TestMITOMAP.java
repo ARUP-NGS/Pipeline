@@ -4,7 +4,7 @@ import java.io.File;
 
 import operator.variant.MITOMAP_rRNAtRNA;
 import operator.variant.MITOMAPcoding;
-import junit.framework.Assert;
+import org.junit.Assert;
 import junit.framework.TestCase;
 import pipeline.Pipeline;
 import buffer.variant.VariantPool;

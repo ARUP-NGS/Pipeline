@@ -21,10 +21,12 @@ import buffer.BEDFile;
 import buffer.CSVFile;
 import buffer.FileBuffer;
 import buffer.InstanceLogFile;
+import buffer.JSONBuffer;
 import buffer.MultiFileBuffer;
 import buffer.ReviewDirSubDir;
 import buffer.TextBuffer;
 import buffer.VCFFile;
+import buffer.variant.VariantPool;
 import json.JSONException;
 import operator.qc.QCReport;
 import pipeline.Pipeline;
@@ -45,6 +47,7 @@ public class ReviewDirGenerator extends Operator {
 	String submitter = "unknown";
 	String analysisType = "unknown";
 	String rootPath = null;
+	String jsonVarsName = null;
 	VCFFile variantFile = null;
 	BAMFile finalBAM = null;
 	CSVFile annotatedVariants = null;
@@ -54,6 +57,8 @@ public class ReviewDirGenerator extends Operator {
 	QCReport qcReport = null;
 	TextBuffer qcJsonFile = null;
 	BEDFile capture = null;
+	VariantPool varPool = null;
+	JSONBuffer jsonOutput = null;
 	private boolean createJSONVariants = true; //If true, create a compressed json variants file
 	
 	//Stores a list of all additional subdirs to be included in  the results directory. 
@@ -99,8 +104,22 @@ public class ReviewDirGenerator extends Operator {
 				manifest.put(subdir.getManifestKey(), subdir.getManifestValue());
 			}
 		}
-
 		
+		//Set var json name before creating sample manifest
+		if (annotatedVariants != null) {
+			if (createJSONVariants && varPool == null) {
+				jsonVarsName = annotatedVariants.getFilename().replace(".csv", ".json.gz");
+			}
+		}
+		if (varPool != null) {
+			if (createJSONVariants) {
+				if (jsonOutput == null) {
+					jsonVarsName = this.sampleName + "_variants.json.gz";
+				} else {
+					jsonVarsName = this.jsonOutput.getFilename();
+				}
+			}
+		}
 		
 		//This should happen before files get moved around
 		createSampleManifest(manifest, "sampleManifest.txt");
@@ -117,7 +136,7 @@ public class ReviewDirGenerator extends Operator {
 		}
 		
 		if (annotatedVariants != null) {
-			if (createJSONVariants) {
+			if (createJSONVariants && varPool == null) {
 				try {
 					JSONVarsGenerator.createJSONVariants(annotatedVariants, new File(rootPath + "/var/") );
 				} catch (JSONException e) {
@@ -127,10 +146,21 @@ public class ReviewDirGenerator extends Operator {
 					e.printStackTrace();
 				}
 			}
-			
 			moveFile(annotatedVariants, new File(rootPath + "/var/"));
 		}
 		
+		if (varPool != null) {
+			if (createJSONVariants) {
+				try {
+					JSONVarsGenerator.createJSONVariantsGZIP(varPool, new File(rootPath + "/var/" + jsonVarsName) );
+				} catch (JSONException e) {
+					Logger.getLogger(Pipeline.primaryLoggerName).warning("Error creating annotated vars json: " + e.getLocalizedMessage());
+				} catch (IOException e) {
+					Logger.getLogger(Pipeline.primaryLoggerName).warning("Error creating annotated vars json: " + e.getLocalizedMessage());
+					e.printStackTrace();
+				}
+			}
+		}
 		try {
 			
 			if (variantFile != null) {
@@ -169,9 +199,6 @@ public class ReviewDirGenerator extends Operator {
 		
 	}
 	
-
-	
-	
 	
 	private void createSampleManifest(Map<String, String> manifestEntries, String filename) {
 		File manifestFile = new File(rootPath + "/" +filename);
@@ -187,8 +214,10 @@ public class ReviewDirGenerator extends Operator {
 			
 			if (annotatedVariants != null) {
 				writer.write("annotated.vars=var/" + annotatedVariants.getFilename() + "\n");
-				if (createJSONVariants) {
-					writer.write("json.vars=var/" + annotatedVariants.getFilename().replace(".csv", ".json.gz") + "\n");
+			}
+			if (createJSONVariants) {
+				if (annotatedVariants != null || varPool == null) {
+					writer.write("json.vars=var/" + jsonVarsName + "\n");
 				}
 			}
 			if (variantFile != null) {
@@ -375,6 +404,14 @@ public class ReviewDirGenerator extends Operator {
 				
 				if (obj instanceof CSVFile) {
 					annotatedVariants = (CSVFile)obj;
+				}
+				
+				if (obj instanceof VariantPool) {
+					varPool = (VariantPool)obj;
+				}
+
+				if (obj instanceof JSONBuffer) {
+					jsonOutput = (JSONBuffer)obj;
 				}
 				
 				if (obj instanceof QCReport) {
