@@ -1,0 +1,11 @@
+<Pipeline>
+
+<VariantPool class="buffer.variant.VariantPool">
+    <InputVCF />
+</VariantPool>
+
+<ARUPFreqAnno class="operator.variant.ARUPDBAnnotate">
+ <VariantPool />
+</ARUPFreqAnno>
+
+</Pipeline>
