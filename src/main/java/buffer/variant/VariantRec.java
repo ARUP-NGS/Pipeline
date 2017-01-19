@@ -355,6 +355,22 @@ public class VariantRec {
 		return annotations.keySet();
 	}
 	
+	/**
+	 * Collection of all keys used for ints
+	 * @return
+	 */
+	public Collection<String> getIntKeys() {
+		return ints.keySet();
+	}
+	
+	/**
+	 * Collection of all keys used for json annotations
+	 * @return
+	 */
+	public Collection<String> getJsonobjKeys() {
+		return jsonobj.keySet();
+	}
+	
 	public String getAnnotation(String key) {
 		return annotations.get(key);
 	}
