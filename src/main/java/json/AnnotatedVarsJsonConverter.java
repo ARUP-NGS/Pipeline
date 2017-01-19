@@ -51,6 +51,18 @@ public class AnnotatedVarsJsonConverter {
 			}
 		}
 		
+		for(String key : var.getJsonobjKeys()) {
+			if (!excludeKeys.contains(key)) {
+				varObj.put(key, var.getjsonProperty(key));
+			}
+		}
+		
+		for(String key : var.getIntKeys()) {
+			if (!excludeKeys.contains(key)) {
+				varObj.put(key, var.getPropertyInt(key));
+			}
+		}
+		
 		for(String key : var.getPropertyKeys()) {
 			if (excludeKeys.contains(key)) {
 				continue;
