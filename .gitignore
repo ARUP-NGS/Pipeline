@@ -9,3 +9,4 @@ src/main/resources/
 varutils.test.out
 snpeff.*
 snpeffDirLink
+.DS_Store
