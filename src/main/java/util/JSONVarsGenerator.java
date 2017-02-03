@@ -47,13 +47,19 @@ public class JSONVarsGenerator extends VariantPoolWriter {
 	//doesn't exist as an annotation in a variant, the json will include the annotation but
 	//associate it with a 'null' value
 	private Set<String> includeKeys = new HashSet<String>();
+	private static List<String> excludedKeys = new ArrayList<String>();
 	
 	//A list of annotation keys that we DONT WANT included with typical 
 	//output
 	private static List<String> DEFAULT_EXCLUDED_KEYS = Arrays.asList(new String[]{
-			//VariantRec.EXOMES_63K_AFR_HET, //Left to show how to exclude keys.
+			//VariantRec.ARUP_HET_COUNT,
+			//VariantRec.ARUP_SAMPLE_COUNT,
+			//VariantRec.GERP_NR_SCORE,
+			//VariantRec.RP_SCORE,
+			//VariantRec.FS_SCORE,
+			//VariantRec.VCF_FILTER,
+			//VariantRec.VQSR
 			});
-	
 	
 	/**
 	 * Obtain the set of included keys 
@@ -79,6 +85,16 @@ public class JSONVarsGenerator extends VariantPoolWriter {
 
 		//Set the keys to include
 		this.varConverter.setKeys( new ArrayList<String>(this.includeKeys) );
+		
+		//Set the default keys to exclude
+		List<String> allExKeys = new ArrayList<String>();
+		allExKeys.addAll(excludedKeys);
+		for (String key : DEFAULT_EXCLUDED_KEYS) {
+			if (!allExKeys.contains(key)) {
+				allExKeys.add(key);
+			}
+		}
+		this.varConverter.setExcludeKeys(allExKeys);
 		
 		//Nothing to write, but we use this to initialize the JSONWriter
 		writer = new JSONWriter(new StreamWriter(outputStream));
@@ -199,6 +215,16 @@ public class JSONVarsGenerator extends VariantPoolWriter {
 				keys.addAll( var.getPropertyKeys() );
 			}
 		}
+		//added to minimize ngsweb impact
+		keys.add(VariantRec.INDEL_LENGTH);
+		//remove excluded keys
+		for (String ex : DEFAULT_EXCLUDED_KEYS) {
+				keys.remove(ex);
+		}
+		for (String ex : excludedKeys) {
+				keys.remove(ex);
+		}
+
 		jsonGenerator.setIncludeKeys(keys);
 		
 		jsonGenerator.writeHeader(ps);
@@ -226,6 +252,13 @@ public class JSONVarsGenerator extends VariantPoolWriter {
 	}
 
 	public static void createJSONVariantsGZIP(VariantPool variants, File dest) throws JSONException, IOException {
+		FileOutputStream fs = new FileOutputStream(dest);
+		JSONVarsGenerator.createJSONVariantsGZIP(variants, fs);
+		fs.close();
+	}
+
+	public static void createJSONVariantsGZIP(VariantPool variants, File dest, List<String> excludeKeys) throws JSONException, IOException {
+		excludedKeys = excludeKeys;
 		FileOutputStream fs = new FileOutputStream(dest);
 		JSONVarsGenerator.createJSONVariantsGZIP(variants, fs);
 		fs.close();
