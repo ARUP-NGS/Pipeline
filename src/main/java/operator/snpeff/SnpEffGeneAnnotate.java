@@ -239,7 +239,7 @@ public class SnpEffGeneAnnotate extends Annotator {
 			ref = "-";
 		}
 		alt = alt.replace("+", "");
-		alt = alt.replace("DEL", "-");
+		//alt = alt.replace("DEL", "-");
 		
 		
 		
