@@ -465,8 +465,6 @@ public class VCFParser implements VariantLineReader {
 		String ref = getRef();
 		String alt = getAlt(); //pulls out current alt
 			
-		//System.out.println(chr + "/" + pos + "/" + ref + "/" + alt); 
-			
 		String qualStr = currentLineToks[5];
 		double quality = -1;
 		try {
@@ -507,11 +505,17 @@ public class VCFParser implements VariantLineReader {
 		if (altDepth != null) {
 			var.addProperty(VariantRec.VAR_DEPTH, new Double(altDepth));
 		}
+
+		//Only add infoEND if it was present in VCF info field
+		Integer infoEnd = getInfoEND();
+		if (infoEnd != null && infoEnd !=-1){
+			var.addPropertyInt(VariantRec.INFO_END, infoEnd);
+		}
 		
 		//If no SVLEN present in VCF field, calculate size of indels instead
 		Integer svlen = getSVLEN();
 		if (svlen != null && svlen !=-1){
-			var.addPropertyInt(VariantRec.INDEL_LENGTH, svlen);
+			var.addPropertyInt(VariantRec.INDEL_LENGTH, Math.abs(svlen));
 		}else if (svlen.equals(-1)){
 			int indelsize = var.getIndelLength();//gets indelsize if ref or alt =="-"
 			int reflength = var.getRef().length();
@@ -1062,6 +1066,21 @@ public class VCFParser implements VariantLineReader {
 		return svlen;
 	}
 	
+	/**
+	 * Grabs the info field END annotation if it exists. If not infoEND (as would be the case for germline), return -1
+	 * @return svlen (structural variant length)
+	 * @author chrisk
+	 */
+	public int getInfoEND(){
+		int infoend = -1;
+		if (creator.equals("lofreq_scalpel_manta")){
+			String strinfoend = getSampleMetricsStr("END");
+			if (strinfoend != null) {
+				infoend = convertStr2Int(strinfoend);
+			}
+		}
+		return infoend;
+	}
 	/**
 	 * Alt vs. Ref Read position bias Z-score from Wilcoxon rank sum test, identified by "ReadPosRankSum"
 	 * @author elainegee
