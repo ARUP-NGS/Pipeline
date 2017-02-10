@@ -1013,6 +1013,7 @@ public class VariantRec {
 	
    public static final String SNPEFF_ALL = "snpeff.all";
    public static final String INDEL_LENGTH = "indel.length";
+   public static final String INFO_END = "info.end";
 
 }
 

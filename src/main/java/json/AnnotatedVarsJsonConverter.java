@@ -48,7 +48,7 @@ public class AnnotatedVarsJsonConverter {
 		for(String key : var.getAnnotationKeys()) {
 			if (!excludeKeys.contains(key)) {
 				if (key.equals(VariantRec.GENOTYPE_QUALITY) && var.getAnnotation(key).equals(".")) {
-					varObj.put(key, "0.0");
+					varObj.put(key, "0");
 				} else {
 					varObj.put(key, var.getAnnotation(key));
 				}
