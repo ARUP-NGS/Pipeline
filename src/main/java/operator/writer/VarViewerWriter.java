@@ -49,7 +49,10 @@ public class VarViewerWriter extends VariantPoolWriter {
 			VariantRec.VARBIN_BIN,
 			VariantRec.SVM_EFFECT,
 			VariantRec.SIFT_SCORE, 
-			VariantRec.POLYPHEN_SCORE, 
+			VariantRec.SIFT_PRED,
+			//VariantRec.POLYPHEN_SCORE, //This is for HDIV calculations
+			VariantRec.POLYPHEN_HVAR_SCORE,
+			VariantRec.POLYPHEN_HVAR_PRED,
 			VariantRec.PHYLOP_SCORE, 
 			VariantRec.MT_SCORE,
 			VariantRec.MT_PRED,
@@ -79,6 +82,7 @@ public class VarViewerWriter extends VariantPoolWriter {
 			VariantRec.UK10K_ALLELE_FREQ,
 			VariantRec.BAD_REGION,
 			VariantRec.LOW_COMPLEX_REGION,
+			VariantRec.VAR_CALLER,
 			//=========================================================
 			//Exac columns, 32 of them. 4 for overall, and 4 for each of the 7 populations.
 			VariantRec.EXAC63K_VERSION,

@@ -500,6 +500,11 @@ public class VCFParser implements VariantLineReader {
 		if (depth != null) {
 			var.addProperty(VariantRec.DEPTH, new Double(depth));
 		}
+		
+		String varCaller = getVarCaller();
+		if (varCaller != null){
+			var.addAnnotation(VariantRec.VAR_CALLER, varCaller);
+		}
 	
 		Integer altDepth = getVariantDepth();
 		if (altDepth != null) {
@@ -872,33 +877,33 @@ public class VCFParser implements VariantLineReader {
 		if (creator.contains("Torrent")){
 			AnnoStr = "FDP"; //Flow evaluator metrics reflect the corrected base calls based on model of ref, alt called by FreeBayes, & original base call	
 			AnnoIdx = new int[]{0};
-		} else if (creator.contains("lofreq_scalpel_manta")) {
-			if (getSampleMetricsStr("set").equals("lofreq")) {
-				AnnoStr = "DP4";
-				AnnoIdx = new int[]{0,1,2,3};
-			} else if (getSampleMetricsStr("set").equals("scalpel")) {
-				AnnoStr = "DP";
-				AnnoIdx = new int[]{0};
-			} else if (getSampleMetricsStr("set").equals("manta")) {
-				String pairedStr = getSampleMetricsStr("PR");
-				String splitStr = getSampleMetricsStr("SR");
-				String[] pairedDepthToks = {"0","0"};
-				String[] splitDepthToks = {"0","0"};
-				
-				if (pairedStr != null) {
-					pairedDepthToks = pairedStr.split(",");
+			} else if (creator.contains("lofreq_scalpel_manta")) {
+				if (getSampleMetricsStr("set").equals("lofreq")) {
+					AnnoStr = "DP4";
+					AnnoIdx = new int[]{0,1,2,3};
+				} else if (getSampleMetricsStr("set").equals("scalpel")) {
+					AnnoStr = "DP";
+					AnnoIdx = new int[]{0};
+				} else if (getSampleMetricsStr("set").equals("manta")) {
+					String pairedStr = getSampleMetricsStr("PR");
+					String splitStr = getSampleMetricsStr("SR");
+					String[] pairedDepthToks = {"0","0"};
+					String[] splitDepthToks = {"0","0"};
+					
+					if (pairedStr != null) {
+						pairedDepthToks = pairedStr.split(",");
+					}
+					if (splitStr != null) {
+						splitDepthToks = splitStr.split(",");
+					} 
+					
+					dp = convertStr2Int(pairedDepthToks[0]) + convertStr2Int(pairedDepthToks[1]) +
+						 convertStr2Int(splitDepthToks[0]) + convertStr2Int(splitDepthToks[1]);
+					return dp;
+				} else {
+					throw new IllegalStateException("ERROR: VCF malformed! Merged Lofreq/Scalpel/Manta VCF contains a 'set' key of "
+							+ getSampleMetricsStr("set") + ", which is not defined. 'set' must be 'lofreq', 'scalpel', or 'manta'.");
 				}
-				if (splitStr != null) {
-					splitDepthToks = splitStr.split(",");
-				} 
-				
-				dp = convertStr2Int(pairedDepthToks[0]) + convertStr2Int(pairedDepthToks[1]) +
-					 convertStr2Int(splitDepthToks[0]) + convertStr2Int(splitDepthToks[1]);
-				return dp;
-			} else {
-				throw new IllegalStateException("ERROR: VCF malformed! Merged Lofreq/Scalpel/Manta VCF contains a 'set' key of "
-						+ getSampleMetricsStr("set") + ", which is not defined. 'set' must be 'lofreq', 'scalpel', or 'manta'.");
-			}
 		} else {
 			//good for lofreq_scalpel_USeqMerged
 			AnnoStr = "DP";
@@ -925,6 +930,7 @@ public class VCFParser implements VariantLineReader {
 		int vardp = -1;
 		String annoStr = null;
 		int[] annoIdx = null;
+
 		if (creator.startsWith("freeBayes")){
 			annoStr = "AO";
 			annoIdx = new int[]{altIndex}; //AO doesn't contain depth for REF, which is stored in RO
@@ -935,39 +941,39 @@ public class VCFParser implements VariantLineReader {
 			annoStr = "AD";
 			annoIdx = new int[]{altIndex}; //AD does not contain depth for REF
 		} else if (creator.equals("lofreq_scalpel_manta")){
-			if (getSampleMetricsStr("set").equals("lofreq")) {
-				annoStr = "DP4";
-				annoIdx = new int[]{2,3};
-			} else if (getSampleMetricsStr("set").equals("scalpel")) {
-				annoStr = "AD";
-				annoIdx = new int[]{1};
-			} else if (getSampleMetricsStr("set").equals("manta")) {
-				String pairedStr = getSampleMetricsStr("PR");
-				String splitStr = getSampleMetricsStr("SR");
-				
-				String[] pairedDepthToks = null;
-				String[] splitDepthToks = null;
-				
-				if (pairedStr != null) {
-					pairedDepthToks = pairedStr.split(",");
+				if (getSampleMetricsStr("set").equals("lofreq")) {
+					annoStr = "DP4";
+					annoIdx = new int[]{2,3};
+				} else if (getSampleMetricsStr("set").equals("scalpel")) {
+					annoStr = "AD";
+					annoIdx = new int[]{1};
+				} else if (getSampleMetricsStr("set").equals("manta")) {
+					String pairedStr = getSampleMetricsStr("PR");
+					String splitStr = getSampleMetricsStr("SR");
+					
+					String[] pairedDepthToks = null;
+					String[] splitDepthToks = null;
+					
+					if (pairedStr != null) {
+						pairedDepthToks = pairedStr.split(",");
+					}
+					if (splitStr != null) {
+						splitDepthToks = splitStr.split(",");
+					} 
+					
+					if (pairedStr != null &&  splitStr != null) {
+						vardp = convertStr2Int(pairedDepthToks[altIndex+1]) + 
+								convertStr2Int(splitDepthToks[altIndex+1]);
+					} else if (pairedStr != null &&  splitStr == null) {
+						vardp = convertStr2Int(pairedDepthToks[altIndex+1]);
+					} else if (pairedStr == null &&  splitStr != null) {
+						vardp = convertStr2Int(splitDepthToks[altIndex+1]);
+					}
+					return vardp;
+				} else  {
+					throw new IllegalStateException("ERROR: VCF malformed! Merged Lofreq/Scalpel/Manta VCF contains a 'set' key of "
+							+ getSampleMetricsStr("set") + ", which is not defined. 'set' must be 'lofreq', 'scalpel', or 'manta'.");
 				}
-				if (splitStr != null) {
-					splitDepthToks = splitStr.split(",");
-				} 
-				
-				if (pairedStr != null &&  splitStr != null) {		
-					vardp = convertStr2Int(pairedDepthToks[altIndex+1]) + 
-							convertStr2Int(splitDepthToks[altIndex+1]);
-				} else if (pairedStr != null &&  splitStr == null) {
-					vardp = convertStr2Int(pairedDepthToks[altIndex+1]);
-				} else if (pairedStr == null &&  splitStr != null) {
-					vardp = convertStr2Int(splitDepthToks[altIndex+1]);
-				}
-				return vardp;
-			} else {
-				throw new IllegalStateException("ERROR: VCF malformed! Merged Lofreq/Scalpel/Manta VCF contains a 'set' key of "
-						+ getSampleMetricsStr("set") + ", which is not defined. 'set' must be 'lofreq', 'scalpel', or 'manta'.");
-			}
 		} else if (creator.equals("lofreq_scalpel_USeqMerged")){
 			//get total depth
 			Integer readDept = this.getDepth();
@@ -1068,8 +1074,8 @@ public class VCFParser implements VariantLineReader {
 	
 	/**
 	 * Grabs the info field END annotation if it exists. If not infoEND (as would be the case for germline), return -1
-	 * @return svlen (structural variant length)
-	 * @author chrisk
+	 * @return infoend (end position of structural variant)
+	 * @author jacobd
 	 */
 	public int getInfoEND(){
 		int infoend = -1;
@@ -1081,6 +1087,20 @@ public class VCFParser implements VariantLineReader {
 		}
 		return infoend;
 	}
+	
+	/**
+	 * Grabs set value from info field which indicates what variant caller
+	 * @return setfield (which variant caller called variant)
+	 * @author chrisk
+	 */
+	public String getVarCaller(){
+		String setfield = "";
+		if (creator.equals("lofreq_scalpel_manta")){
+			setfield = getSampleMetricsStr("set");
+		}
+		return setfield;
+	}
+	
 	/**
 	 * Alt vs. Ref Read position bias Z-score from Wilcoxon rank sum test, identified by "ReadPosRankSum"
 	 * @author elainegee

@@ -9,7 +9,7 @@
 </VariantPool>
 
 
-<GeneAnnotate class="operator.snpeff.SnpEffGeneAnnotate" snpeff.genome="hg19" updownstream.length="100">
+<GeneAnnotate class="operator.snpeff.SnpEffGeneAnnotate" snpeff.genome="hg19_arup_January_05_2017" updownstream.length="100">
 	<VariantPool />
 </GeneAnnotate>
 
