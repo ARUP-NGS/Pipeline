@@ -16,6 +16,7 @@ import pipeline.Pipeline;
  * Computes a ranking score for a gene by examining the information
  * from the DBNSFP_gene database
  * @author brendan
+ * chrisk added 2.9 gene database and throw exception if 3.1a is used
  *
  */
 public class DBNSFPGeneRanker extends AbstractGeneRelevanceRanker {
@@ -24,11 +25,22 @@ public class DBNSFPGeneRanker extends AbstractGeneRelevanceRanker {
 	
 	@Override
 	public void annotateGene(Gene g) throws OperationFailedException {
+		
+		
 		if (geneDB == null) {
 			String pathToDBNSFPGene = this.getPipelineProperty(DBNSFPGeneAnnotator.DBNSFPGENE_PATH);
 			Logger.getLogger(Pipeline.primaryLoggerName).info("dbNSFP-gene reader using directory : " + pathToDBNSFPGene);
+			DBNSFPGene version = geneDB.getDB();
 			try {
+				if (version.equals("2.0")){
 				geneDB = DBNSFPGene.getDB(new File(pathToDBNSFPGene + "/dbNSFP2.0b4_gene"));
+				}
+				else if (version.equals("2.9")){
+					geneDB = DBNSFPGene.getDB(new File(pathToDBNSFPGene + "/dbNSFP2.9_gene"));
+				}
+				else if (version.equals("3.1a")){
+					throw new OperationFailedException("v3.1a not implemented in pipeline yet...", this);
+				}
 			} catch (IOException e) {
 				throw new OperationFailedException("Could not initialize dbNSFP gene file", this);
 			}

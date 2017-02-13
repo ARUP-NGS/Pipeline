@@ -182,7 +182,7 @@ public class TestDBNSFP extends TestCase {
 ////          var.addProperty(VariantRec.LRT_SCORE, Double.parseDouble(toks[35]));
             Assert.assertEquals(1.0, var1.getProperty(VariantRec.MT_SCORE), 0);
 ////          var.addProperty(VariantRec.MT_SCORE, Double.parseDouble(toks[39]));
-            Assert.assertEquals(0.14516, var1.getProperty(VariantRec.MA_SCORE), 0);
+            Assert.assertEquals(0.08118, var1.getProperty(VariantRec.MA_SCORE), 0);
 ////          var.addProperty(VariantRec.MA_SCORE, Double.parseDouble(toks[46]));
 
             Assert.assertEquals(2.05, var1.getProperty(VariantRec.GERP_NR_SCORE), 0);
@@ -342,7 +342,7 @@ public class TestDBNSFP extends TestCase {
             VariantRec var1 = new VariantRec("11", 71146654, 71146654, "A", "T");
             var1 = VCFParser.normalizeVariant(var1);
             annotator_29.annotateVariant(var1);
-            Assert.assertEquals(0.97976, var1.getProperty(VariantRec.MA_SCORE), 0);
+            Assert.assertEquals(0.79805, var1.getProperty(VariantRec.MA_SCORE), 0);
 
             VariantRec varNull = new VariantRec("11", 71146654, 71146654, "A", "C");
             varNull = VCFParser.normalizeVariant(varNull);

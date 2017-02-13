@@ -70,8 +70,15 @@ public class DBNSFPGeneAnnotator extends AbstractGeneAnnotator {
 	    if (dbsnfpVersion == null) dbsnfpVersion= getPipelineProperty (DBNSFPAnnotator.DBNSFP_VERSION);
 		
 	    //set file
-	    if (dbsnfpVersion != null && dbsnfpVersion.equals("3.1a")) dbFile = new File(pathToDBNSFPGene + "/dbNSFP3.1_gene");
-	    else dbFile = new File(pathToDBNSFPGene + "/dbNSFP2.0b4_gene");
+	    if (dbsnfpVersion != null && dbsnfpVersion.equals("3.1a")) {
+	    	dbFile = new File(pathToDBNSFPGene + "/dbNSFP3.1_gene");
+	    }
+	    else if (dbsnfpVersion != null && dbsnfpVersion.equals("2.9")){
+	    	dbFile = new File(pathToDBNSFPGene + "/dbNSFP2.9_gene");
+	    }
+	    else {
+	    	dbFile = new File(pathToDBNSFPGene + "/dbNSFP2.0b4_gene");
+	    }
 	    
 		if (! dbFile.exists()) throw new IllegalArgumentException("DBNSFP file " + dbFile.getAbsolutePath() + " does not exist");
 

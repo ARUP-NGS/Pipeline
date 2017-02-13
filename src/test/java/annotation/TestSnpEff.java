@@ -70,7 +70,9 @@ public class TestSnpEff extends TestCase {
 	
 	public void testSnpEff() {
 
-		Pipeline ppl = this.preparePipeline(inputFile);
+		Pipeline ppl;
+                ppl = this.preparePipeline(inputFile);
+                 
 		try {
 
 			ppl.initializePipeline();
@@ -87,7 +89,7 @@ public class TestSnpEff extends TestCase {
 			VariantRec var = vars.findRecord("20", 31022442, "-", "G");
 			Assert.assertTrue(var != null);
 			JSONArray snpeff_annos = var.getjsonProperty(VariantRec.SNPEFF_ALL);
-			JSONObject hit = findJsonObj(snpeff_annos, "NM_015338.5");
+			JSONObject hit = findJsonObj(snpeff_annos, "NM_015338.5.1");
 			Assert.assertNotNull(hit);
 			Assert.assertTrue(hit.has(VariantRec.VARIANT_TYPE));
 			Assert.assertTrue(hit.get(VariantRec.VARIANT_TYPE).equals("frameshift_variant"));
@@ -97,7 +99,7 @@ public class TestSnpEff extends TestCase {
 			var = vars.findRecord("13", 28602256, "C", "T");
 			Assert.assertTrue(var != null);
 			snpeff_annos = var.getjsonProperty(VariantRec.SNPEFF_ALL);
-			hit = findJsonObj(snpeff_annos, "NM_004119.2");
+			hit = findJsonObj(snpeff_annos, "NM_004119.2.1");
 			Assert.assertNotNull(hit);
 			Assert.assertTrue(hit.get(VariantRec.VARIANT_TYPE).equals("intron_variant"));
 			Assert.assertTrue(hit.get(VariantRec.GENE_NAME).equals("FLT3"));
@@ -106,7 +108,7 @@ public class TestSnpEff extends TestCase {
 		} catch (Exception ex) {
 			ex.printStackTrace();
 			Assert.assertTrue(false);
-		}
+		} 
 
 		ppl = this.preparePipeline(inputFile2);
 		try {
@@ -123,7 +125,7 @@ public class TestSnpEff extends TestCase {
 			VariantRec var = vars.findRecord("1", 24201919, "T", "C");
 			Assert.assertTrue(var != null); 
 			JSONArray snpeff_annos = var.getjsonProperty(VariantRec.SNPEFF_ALL);
-			JSONObject hit = findJsonObj(snpeff_annos, "NM_001841.2");
+			JSONObject hit = findJsonObj(snpeff_annos, "NM_001841.2.1");
 			Assert.assertNotNull(hit);
 			Assert.assertTrue(hit.get(VariantRec.VARIANT_TYPE).equals("synonymous_variant"));
 			Assert.assertTrue(hit.get(VariantRec.GENE_NAME).equals("CNR2"));
@@ -133,19 +135,19 @@ public class TestSnpEff extends TestCase {
 			var = vars.findRecord("1", 26582091, "G", "A");
 			Assert.assertTrue(var != null);
 			snpeff_annos = var.getjsonProperty(VariantRec.SNPEFF_ALL);
-			hit = findJsonObj(snpeff_annos, "NM_001281517.1");
+			hit = findJsonObj(snpeff_annos, "NM_022778.3.1");
 			Assert.assertNotNull(hit);
 			Assert.assertTrue(hit.get(VariantRec.VARIANT_TYPE).equals("missense_variant"));
 			Assert.assertTrue(hit.get(VariantRec.GENE_NAME).equals("CEP85"));
-			Assert.assertTrue(hit.get(VariantRec.CDOT).equals("c.485G>A"));
-			Assert.assertTrue(hit.get(VariantRec.PDOT).equals("p.Ser162Asn"));
+			Assert.assertTrue(hit.get(VariantRec.CDOT).equals("c.638G>A"));
+			Assert.assertTrue(hit.get(VariantRec.PDOT).equals("p.Ser213Asn"));
 
 			var = vars.findRecord("1", 1900107, "-", "CTC");
 			Assert.assertTrue(var != null); 
 			snpeff_annos = var.getjsonProperty(VariantRec.SNPEFF_ALL);
-			hit = findJsonObj(snpeff_annos, "NM_001304360.1");
+			hit = findJsonObj(snpeff_annos, "NM_001304360.1.1");
 			Assert.assertNotNull(hit);
-			Assert.assertTrue(hit.get(VariantRec.VARIANT_TYPE).equals("inframe_insertion"));
+			Assert.assertTrue(hit.get(VariantRec.VARIANT_TYPE).equals("conservative_inframe_insertion"));
 			Assert.assertTrue(hit.get(VariantRec.GENE_NAME).equals("CFAP74"));
 			Assert.assertTrue(hit.get(VariantRec.CDOT).equals("c.1212_1213insGAG"));
 			Assert.assertTrue(hit.get(VariantRec.PDOT).equals("p.Lys404_Lys405insGlu"));
@@ -154,7 +156,7 @@ public class TestSnpEff extends TestCase {
 			var = vars.findRecord("1", 16464673, "G", "A");
 			Assert.assertTrue(var != null);
 			snpeff_annos = var.getjsonProperty(VariantRec.SNPEFF_ALL);
-			hit = findJsonObj(snpeff_annos, "NM_004431.3");
+			hit = findJsonObj(snpeff_annos, "NM_004431.3.1");
 			Assert.assertNotNull(hit);
 			Assert.assertTrue(hit.get(VariantRec.VARIANT_TYPE).equals("synonymous_variant"));
 			Assert.assertTrue(hit.get(VariantRec.GENE_NAME).equals("EPHA2"));
@@ -165,7 +167,7 @@ public class TestSnpEff extends TestCase {
 			var = vars.findRecord("1", 47280747, "AT", "-");
 			Assert.assertTrue(var != null);
 			snpeff_annos = var.getjsonProperty(VariantRec.SNPEFF_ALL);
-			hit = findJsonObj(snpeff_annos, "NM_000779.3");
+			hit = findJsonObj(snpeff_annos, "NM_000779.3.1");
 			Assert.assertNotNull(hit);
 			Assert.assertTrue(hit.get(VariantRec.VARIANT_TYPE).equals("frameshift_variant&splice_region_variant"));
 			Assert.assertTrue(hit.get(VariantRec.GENE_NAME).equals("CYP4B1"));
@@ -178,7 +180,7 @@ public class TestSnpEff extends TestCase {
 			ex.printStackTrace(System.err);
 			Assert.assertFalse(true);
 		}
-
+         
 		ppl = this.preparePipeline(inputFile3);
 		try {
 			//This tests the 'complex vars' file
@@ -195,7 +197,7 @@ public class TestSnpEff extends TestCase {
 			VariantRec var = vars.findRecord("18", 48610383, "-", "CGCA");
 			Assert.assertTrue(var != null); 
 			JSONArray snpeff_annos = var.getjsonProperty(VariantRec.SNPEFF_ALL);
-			JSONObject hit = findJsonObj(snpeff_annos, "NM_005359.5");
+			JSONObject hit = findJsonObj(snpeff_annos, "NM_005359.5.1");
 			Assert.assertNotNull(hit);
 			Assert.assertTrue(hit.get(VariantRec.VARIANT_TYPE).equals("3_prime_UTR_variant"));
 			Assert.assertTrue(hit.get(VariantRec.GENE_NAME).equals("SMAD4"));
@@ -205,7 +207,7 @@ public class TestSnpEff extends TestCase {
 			var = vars.findRecord("18", 48610383, "CACA", "-");
 			Assert.assertTrue(var != null);
 			snpeff_annos = var.getjsonProperty(VariantRec.SNPEFF_ALL);
-			hit = findJsonObj(snpeff_annos, "NM_005359.5");
+			hit = findJsonObj(snpeff_annos, "NM_005359.5.1");
 			Assert.assertNotNull(hit);
 			Assert.assertTrue(hit.get(VariantRec.VARIANT_TYPE).equals("3_prime_UTR_variant"));
 			Assert.assertTrue(hit.get(VariantRec.GENE_NAME).equals("SMAD4"));
@@ -215,7 +217,7 @@ public class TestSnpEff extends TestCase {
 			System.err.println("Exception during testing: " + ex.getLocalizedMessage());
 			ex.printStackTrace(System.err);
 			Assert.assertFalse(true);
-		}
+		} 
 
 	}
 }

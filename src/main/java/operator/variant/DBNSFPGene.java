@@ -13,6 +13,8 @@ import java.util.Map;
  * @author brendan
  *
  * Modified by Nix March 2016
+ * 
+####
  index	v3.1a
 0	Gene_name
 1	Ensembl_gene
@@ -45,34 +47,39 @@ import java.util.Map;
 28	Expression(egenetics)
 29	Expression(GNF/Atlas)
 	Lots more
-	
-index	v2.0b4
+
+####
+index	v2.9b4
 0	Gene_name
 1	Ensembl_gene
 2	chr
 3	Gene_old_names
 4	Gene_other_names
-5	Uniprot_acc(HGNC/Uniprot)
-6	Uniprot_id(HGNC/Uniprot)
+5	Uniprot_acc
+6	Uniprot_id
 7	Entrez_gene_id
 8	CCDS_id
 9	Refseq_id
 10	ucsc_id
 11	MIM_id
 12	Gene_full_name
-13	Pathway
-14	Function_description
-15	Disease_description
-16	MIM_phenotype_id
-17	MIM_disease
-18	Trait_association(GWAS)
-19	Expression(egenetics)
-20	Expression(GNF/Atlas)
-21	Interactions(IntAct)
-22	Interactions(BioGRID)
-23	P(HI)
-24	P(rec)
-25	Known_rec_info
+13	Pathway(BioCarta)_short
+14	Pathway(BioCarta)_full
+15	Pathway(ConsensusPathDB)
+16	Pathway(KEGG)_id
+17	Pathway(KEGG)_full
+18	Function_description
+19	Disease_description
+20	MIM_phenotype_id
+21	MIM_disease
+22	Trait_association(GWAS)
+23	GO_Slim_biological_process
+24	GO_Slim_cellular_component
+25	GO_Slim_molecular_function
+26	Expression(egenetics)
+27	Expression(GNF/Atlas) 
+....lots more
+
 
  */
 public class DBNSFPGene {
@@ -139,12 +146,21 @@ public class DBNSFPGene {
 				info.functionDesc = toks[14];
 				info.expression = toks[19] + ";" + toks[20];
 			}
+			//version 2.9
+			else if (version.equals("2.9")){
+				info.geneName = toks[0];
+				info.mimDisease = toks[20];
+				info.diseaseDesc = toks[19];
+				info.functionDesc = toks[15];
+				info.expression = toks[26] + ";" +toks[27];
+			}
+			
 			else throw new IOException ("Unsupported dbNSFPGene version "+version);
 			map.put(info.geneName, info);
 			line = reader.readLine();
 		}
 	
-		System.err.println("Initialized dbNSFP2.0-gene database with " + map.size() + " elements");
+		System.err.println("Initialized dbNSFP gene database with " + map.size() + " elements");
 		reader.close();
 	}
 	
@@ -158,10 +174,10 @@ public class DBNSFPGene {
 	
 	public class GeneInfo {
 		public String geneName = null;
-		public String mimDisease =  null; //Column 16
-		public String diseaseDesc = null; //Column 15
-		public String functionDesc = null; //Column 14
-		public String expression = null; //Columns 19 and 20
+		public String mimDisease =  null; 
+		public String diseaseDesc = null; 
+		public String functionDesc = null; 
+		public String expression = null; 
 	}
 	
 }

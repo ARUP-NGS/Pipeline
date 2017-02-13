@@ -215,8 +215,10 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
     protected String dbsnfpVersion = null;
     
     private int sift_score_col;
+    private int sift_pred_col;
     private int polyphen_score_col;
     private int Polyphen2_hvar_score_col;
+    private int Polyphen2_hvar_pred_col;
     private int lrt_score_column;
     private int mt_score_column;
     private int mt_pred_column;
@@ -259,8 +261,20 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
      */
     private int getSiftColumn(String dbsnfpVersion) {
         if (dbsnfpVersion.equals("3.0") || dbsnfpVersion.equals("3.1a")) return 23;
-        if (dbsnfpVersion.equals("2.9")) return 26;
+        if (dbsnfpVersion.equals("2.9")) return 26; 
         if (dbsnfpVersion.equals("2.0")) return 21;
+        return -1;
+    }
+    /**
+     * returns the sift prediction column for a specific dbNSFP DB
+     *
+     * @param dbsnfpVersion
+     * @return column index
+     */
+    private int getSiftPredColumn(String dbsnfpVersion) {
+        if (dbsnfpVersion.equals("3.0") || dbsnfpVersion.equals("3.1a")) return -1;
+        if (dbsnfpVersion.equals("2.9")) return 28;
+        if (dbsnfpVersion.equals("2.0")) return -1;
         return -1;
     }
 
@@ -289,6 +303,18 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
         if (dbsnfpVersion.equals("2.0")) return 24;
         return -1;
     }
+    /**
+     * Returns the Polyphen2_HVAR_PRED column index for a specific dbNSFP DB
+     *
+     * @param dbsnfpVersion
+     * @return column index
+     */
+    private int getPolyphenScoreHVARPREDColumn(String dbsnfpVersion) {
+        if (dbsnfpVersion.equals("3.0") || dbsnfpVersion.equals("3.1a")) return -1;
+        if (dbsnfpVersion.equals("2.9")) return 34;
+        if (dbsnfpVersion.equals("2.0")) return -1;
+        return -1;
+    }
 
     /**
      * Returns the LRT_score column index for a specific dbNSFP DB
@@ -315,10 +341,15 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
         if (dbsnfpVersion.equals("2.0")) return -1;
         return -1;
     }
-
+    /**
+     * Returns the Mutation_taster_prediction column index for a specific dbNSFP DB
+     *
+     * @param dbsnfpVersion
+     * @return column index
+     */
     private int getMTPredColumn(String dbsnfpVersion) {
         if (dbsnfpVersion.equals("3.0") || dbsnfpVersion.equals("3.1a")) return -1;
-        if (dbsnfpVersion.equals("2.9")) return 37;
+        if (dbsnfpVersion.equals("2.9")) return 40;//from 37????
         if (dbsnfpVersion.equals("2.0")) return -1;
         return -1;
     }    
@@ -331,10 +362,17 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
      */
     private int getMAScoreColumn(String dbsnfpVersion) {
         if (dbsnfpVersion.equals("3.0") || dbsnfpVersion.equals("3.1a")) return -1;
-        if (dbsnfpVersion.equals("2.9")) return 45;//this is the "converted" score of 0-1
+        if (dbsnfpVersion.equals("2.9")) return 42;//this is the "converted" score of 0-1
         if (dbsnfpVersion.equals("2.0")) return -1;
         return -1;
     }   
+    
+    /**
+     * Returns the Mutation_Assessor_prediction column index for a specific dbNSFP DB
+     *
+     * @param dbsnfpVersion
+     * @return column index
+     */
     private int getMAPredColumn(String dbsnfpVersion) {
         if (dbsnfpVersion.equals("3.0") || dbsnfpVersion.equals("3.1a")) return -1;
         if (dbsnfpVersion.equals("2.9")) return 43;
@@ -431,15 +469,16 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
     	String[] toks = TAB.split(val);
 
         //SIFT_SCORE, takes the lowest
+    	int siftindex = 0;
         try {
             if (toks[sift_score_col].contains(";")) {
                 String[] values = toks[sift_score_col].split(";");
-                //System.out.println(sift_score_col);
                 double lowest = 2.0;
                 for (String i : values) {
                     try {
                         if (Double.parseDouble(i) < lowest) {
                             lowest = Double.parseDouble(i);
+                            siftindex = Arrays.asList(values).indexOf(i);//get index of  "highest"
                         }
                     } catch (NumberFormatException ex) {
                         //Thrown if the value in the tabix is not parsable "." and moves to the next value
@@ -450,6 +489,29 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
                 var.addProperty(VariantRec.SIFT_SCORE, Double.parseDouble(toks[sift_score_col]));
             }           
         } catch (NumberFormatException ex) {//Thrown if the value in the tabix is not parsable "."
+        }
+        
+        //SIFT_PRED
+        try {
+            String nonAbrrvSIFTPredColumn = "";
+            String abrrvSIFTPredColumn = "";
+            if (toks[sift_pred_col].contains(";")) {
+                String[] values = toks[sift_pred_col].split(";");
+                abrrvSIFTPredColumn = values[siftindex];
+            } else {
+                abrrvSIFTPredColumn = toks[sift_pred_col];
+            }
+            if (abrrvSIFTPredColumn.equals("D")) {
+                nonAbrrvSIFTPredColumn = "damaging";
+            } else if(abrrvSIFTPredColumn.equals("T")) {
+                nonAbrrvSIFTPredColumn = "tolerated";
+            }
+            else{
+                nonAbrrvSIFTPredColumn = abrrvSIFTPredColumn;
+            }
+                var.addAnnotation(VariantRec.SIFT_PRED, nonAbrrvSIFTPredColumn);   	         
+        } catch (NumberFormatException ex) {
+        	//Thrown if the value in the tabix is not parsable "."
         }
 
         //Polyphen2_HDIV_score, takes the highest
@@ -473,6 +535,7 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
         }
 
         //POLYPHEN_HVAR_SCORE, takes the highest
+        int hvarindex = 0;
         try {
             if (toks[Polyphen2_hvar_score_col].contains(";")) {
                 String[] values = toks[Polyphen2_hvar_score_col].split(";");
@@ -481,6 +544,7 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
                     try {
                         if (Double.parseDouble(i) > highest) {
                             highest = Double.parseDouble(i);
+                            hvarindex = Arrays.asList(values).indexOf(i);//get index of  "highest"
                         }
                     } catch (NumberFormatException ex) {
                     }
@@ -491,13 +555,36 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
             }
         } catch (NumberFormatException ex) {
         }
+        //POLYPHEN_HVAR_PRED
+        try {
+        	String nonAbrrvPPPredColumn = "";
+        	String abrrvPPPredColumn = "";
+            if (toks[Polyphen2_hvar_pred_col].contains(";")) {
+                String[] values = toks[Polyphen2_hvar_pred_col].split(";");
+                abrrvPPPredColumn = values[hvarindex];
+            } else {
+            	abrrvPPPredColumn = toks[Polyphen2_hvar_pred_col];
+            }
+            if (abrrvPPPredColumn.equals("D")) {
+            		nonAbrrvPPPredColumn = "probably_damaging";
+            } else if(abrrvPPPredColumn.equals("P")) {
+            		nonAbrrvPPPredColumn= "possibly_damaging";
+            } else if(abrrvPPPredColumn.equals("B")) {
+            		nonAbrrvPPPredColumn= "benign";
+            }
+            else{
+            		nonAbrrvPPPredColumn = abrrvPPPredColumn;
+            }
+            var.addAnnotation(VariantRec.POLYPHEN_HVAR_PRED, nonAbrrvPPPredColumn);
+        } catch (NumberFormatException ex) {
+        }
 
         //LRT SCORE, just adds
         try {
             var.addProperty(VariantRec.LRT_SCORE, Double.parseDouble(toks[lrt_score_column])); 
         } catch (NumberFormatException ex) {
         }
-//CHRISK
+
         int mutalyzerindex = 0;
         //MT_SCORE, takes the highest
         try {
@@ -518,30 +605,37 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
                 var.addProperty(VariantRec.MT_SCORE, Double.parseDouble(toks[mt_score_column]));
             }
         } catch (NumberFormatException ex) {
+        	//Thrown if the value in the tabix is not parsable "."
         }
 
         String mt_pred = null;
         try {
+        	String nonAbrrvPredColumn = "";
+        	String abrrvPredColumn = "";
+        	
             if (toks[mt_pred_column].contains(";")) {
                 String[] values = toks[mt_pred_column].split(";");
                 mt_pred = values[mutalyzerindex];
                 var.addAnnotation(VariantRec.MT_PRED, mt_pred);
                 }
             else{
-            	String abrrvPredColumn = toks[mt_pred_column];
-            	String nonAbrrvPredColumn = "";
-            	if (abrrvPredColumn.equals("A")) {
-            		nonAbrrvPredColumn = "disease_causing_automatic";
-            	} else if(abrrvPredColumn.equals("D")) {
-            		nonAbrrvPredColumn= "disease_causing";
-            	} else if(abrrvPredColumn.equals("N")) {
-            		nonAbrrvPredColumn= "polymorphism";
-            	} else if(abrrvPredColumn.equals("P")) {
-            		nonAbrrvPredColumn= "polymorphism_automatic";
-            	}
-            	var.addAnnotation(VariantRec.MT_PRED, nonAbrrvPredColumn);
+            	abrrvPredColumn = toks[mt_pred_column];
             }
+            if (abrrvPredColumn.equals("A")) {
+            		nonAbrrvPredColumn = "disease_causing_automatic";
+            } else if(abrrvPredColumn.equals("D")) {
+            		nonAbrrvPredColumn= "disease_causing";
+            } else if(abrrvPredColumn.equals("N")) {
+            		nonAbrrvPredColumn= "polymorphism";
+            } else if(abrrvPredColumn.equals("P")) {
+            		nonAbrrvPredColumn= "polymorphism_automatic";
+            }
+            else{
+            	nonAbrrvPredColumn = abrrvPredColumn;
+            }
+            var.addAnnotation(VariantRec.MT_PRED, nonAbrrvPredColumn);
         } catch (NumberFormatException ex) {
+        	
         }        
         
         
@@ -578,6 +672,7 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
             }
         }
             catch (NumberFormatException ex) {
+            	//Thrown if the value in the tabix is not parsable "."
         }   
 
         //GERP_NR_SCORE, just adds
@@ -685,8 +780,10 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
         
         //set column indexes, bad way of doing this!
         sift_score_col = getSiftColumn(dbsnfpVersion);
+        sift_pred_col = getSiftPredColumn(dbsnfpVersion);
         polyphen_score_col = getPolyphenScoreColumn(dbsnfpVersion);
         Polyphen2_hvar_score_col = getPolyphenScoreHVARColumn(dbsnfpVersion);
+        Polyphen2_hvar_pred_col = getPolyphenScoreHVARPREDColumn(dbsnfpVersion);
         lrt_score_column = getLRTScoreColumn(dbsnfpVersion);
         mt_score_column = getMTScoreColumn(dbsnfpVersion);
         mt_pred_column = getMTPredColumn(dbsnfpVersion);

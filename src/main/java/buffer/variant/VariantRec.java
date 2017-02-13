@@ -805,8 +805,10 @@ public class VariantRec {
 	public static final String ASN_FREQUENCY = "asn.freq";
 	public static final String CG69_FREQUENCY = "cg69.freq";
 	public static final String SIFT_SCORE = "sift.score";
-	public static final String POLYPHEN_SCORE = "pp.score";
-	public static final String POLYPHEN_HVAR_SCORE = "pp.hvar.score";
+	public static final String SIFT_PRED = "sift.pred";
+	public static final String POLYPHEN_HVAR_SCORE = "pp.score";
+	public static final String POLYPHEN_SCORE = "pp.hdiv.score";
+	public static final String POLYPHEN_HVAR_PRED = "pp.pred";
 	public static final String MA_SCORE = "mut.assessor.score";
 	public static final String MA_PRED = "mut.assessor.pred";
 	public static final String MT_SCORE = "mt.score";
@@ -822,6 +824,7 @@ public class VariantRec {
 	public static final String FS_SCORE = "strand.bias.score";
 	public static final String LOGFS_SCORE = "log.fs";
 	public static final String DEPTH = "depth";
+	public static final String VAR_CALLER = "var.call";
 
 	//snpEff .2 and .3 annotations only apply to arupBedFile usage with multiple transcripts in a bed line (column 4, "|" separated)
 	public static final String CDOT = "cdot";
