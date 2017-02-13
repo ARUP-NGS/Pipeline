@@ -30,9 +30,9 @@ public class AnnotatedVarsJsonConverter {
 	}
 	
 	public void setExcludeKeys(List<String> excludes) {
-		excludeKeys = new HashSet<String>();
+		//excludeKeys = new HashSet<String>();
 		for(String key : excludes) {
-			excludeKeys.add(key);
+			this.excludeKeys.add(key);
 		}
 	}
 	
@@ -47,7 +47,23 @@ public class AnnotatedVarsJsonConverter {
 		
 		for(String key : var.getAnnotationKeys()) {
 			if (!excludeKeys.contains(key)) {
-				varObj.put(key, var.getAnnotation(key));
+				if (key.equals(VariantRec.GENOTYPE_QUALITY) && var.getAnnotation(key).equals(".")) {
+					varObj.put(key, "0");
+				} else {
+					varObj.put(key, var.getAnnotation(key));
+				}
+			}
+		}
+		
+		for(String key : var.getJsonobjKeys()) {
+			if (!excludeKeys.contains(key)) {
+				varObj.put(key, var.getjsonProperty(key));
+			}
+		}
+		
+		for(String key : var.getIntKeys()) {
+			if (!excludeKeys.contains(key)) {
+				varObj.put(key, var.getPropertyInt(key));
 			}
 		}
 		
@@ -69,14 +85,22 @@ public class AnnotatedVarsJsonConverter {
 			
 			Double val = var.getProperty(key);
 			//JSON can't handle infinite or NaN's, so convert to a string here
+			if (("" + val).equals(".")) {
+				varObj.put(key, "0.0");
+			}
 			if (val.isInfinite() || val.isNaN()) {
-				varObj.put(key, "" + val);
+				//extra-special case that pipey does not like
+				if (("" + val).equals(".")) {
+					varObj.put(key, "0.0");
+				} else {
+					varObj.put(key, "" + val);
+				}
 			}
 			else {
 				varObj.put(key, var.getProperty(key));
 			}
 		}
-
+		
 		//A few special cases:
 		varObj.put("chr", var.getContig());
 		varObj.put("pos", var.getStart());
@@ -103,7 +127,15 @@ public class AnnotatedVarsJsonConverter {
 		}
 		varObj.put("zygosity", zyg);
 		
-
+		//a pipey special fix
+		if (varObj.has(VariantRec.HGMD_HIT)) {
+			if (varObj.getString(VariantRec.HGMD_HIT).length() > 5) {
+				varObj.put(VariantRec.HGMD_HIT, "true");
+			} else {
+				varObj.put(VariantRec.HGMD_HIT, "");
+			}
+		}
+		
 		for(String key : ensureKeys) {
 			if (! varObj.has(key)) {
 				varObj.put(key, NO_VALUE);

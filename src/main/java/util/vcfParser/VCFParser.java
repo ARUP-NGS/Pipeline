@@ -465,8 +465,6 @@ public class VCFParser implements VariantLineReader {
 		String ref = getRef();
 		String alt = getAlt(); //pulls out current alt
 			
-		//System.out.println(chr + "/" + pos + "/" + ref + "/" + alt); 
-			
 		String qualStr = currentLineToks[5];
 		double quality = -1;
 		try {
@@ -512,11 +510,17 @@ public class VCFParser implements VariantLineReader {
 		if (altDepth != null) {
 			var.addProperty(VariantRec.VAR_DEPTH, new Double(altDepth));
 		}
+
+		//Only add infoEND if it was present in VCF info field
+		Integer infoEnd = getInfoEND();
+		if (infoEnd != null && infoEnd !=-1){
+			var.addPropertyInt(VariantRec.INFO_END, infoEnd);
+		}
 		
 		//If no SVLEN present in VCF field, calculate size of indels instead
 		Integer svlen = getSVLEN();
 		if (svlen != null && svlen !=-1){
-			var.addPropertyInt(VariantRec.INDEL_LENGTH, svlen);
+			var.addPropertyInt(VariantRec.INDEL_LENGTH, Math.abs(svlen));
 		}else if (svlen.equals(-1)){
 			int indelsize = var.getIndelLength();//gets indelsize if ref or alt =="-"
 			int reflength = var.getRef().length();
@@ -1069,7 +1073,23 @@ public class VCFParser implements VariantLineReader {
 	}
 	
 	/**
-	 * Grabs "set" value from info field from which indicates what variant tool called the variant
+	 * Grabs the info field END annotation if it exists. If not infoEND (as would be the case for germline), return -1
+	 * @return infoend (end position of structural variant)
+	 * @author jacobd
+	 */
+	public int getInfoEND(){
+		int infoend = -1;
+		if (creator.equals("lofreq_scalpel_manta")){
+			String strinfoend = getSampleMetricsStr("END");
+			if (strinfoend != null) {
+				infoend = convertStr2Int(strinfoend);
+			}
+		}
+		return infoend;
+	}
+	
+	/**
+	 * Grabs set value from info field which indicates what variant caller
 	 * @return setfield (which variant caller called variant)
 	 * @author chrisk
 	 */

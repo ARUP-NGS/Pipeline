@@ -7,6 +7,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -43,6 +44,7 @@ public class ReviewDirGenerator extends Operator {
 	public static final String DEST_DIR = "destination.dir";
 	public static final String CREATE_JSON_VARIANTS = "create.json.variants";
 	
+	List<String> excludeJsonKeys = new ArrayList<String>();
 	String sampleName = "unknown";
 	String submitter = "unknown";
 	String analysisType = "unknown";
@@ -152,7 +154,7 @@ public class ReviewDirGenerator extends Operator {
 		if (varPool != null) {
 			if (createJSONVariants) {
 				try {
-					JSONVarsGenerator.createJSONVariantsGZIP(varPool, new File(rootPath + "/var/" + jsonVarsName) );
+					JSONVarsGenerator.createJSONVariantsGZIP(varPool, new File(rootPath + "/var/" + jsonVarsName), excludeJsonKeys);
 				} catch (JSONException e) {
 					Logger.getLogger(Pipeline.primaryLoggerName).warning("Error creating annotated vars json: " + e.getLocalizedMessage());
 				} catch (IOException e) {
@@ -369,6 +371,12 @@ public class ReviewDirGenerator extends Operator {
 		String jsonCreationAttr = searchForAttribute(CREATE_JSON_VARIANTS);
 		if(jsonCreationAttr != null)
 			this.createJSONVariants = Boolean.parseBoolean(jsonCreationAttr);
+		
+		String keysString = this.getAttribute("exclude.json.keys").trim();
+		if(keysString != null) {
+			excludeJsonKeys = Arrays.asList(keysString.split("\\s*,\\s*"));
+		} else
+
 		
 		sampleName = this.getAttribute("sample");
 		submitter = this.getAttribute("submitter");
