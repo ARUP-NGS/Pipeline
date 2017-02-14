@@ -261,7 +261,7 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
      */
     private int getSiftColumn(String dbnsfpVersion) {
         if (dbnsfpVersion.equals("3.0") || dbnsfpVersion.equals("3.1a")) return 23;
-        if (dbnsfpVersion.equals("2.9")) return 26; 
+        if (dbnsfpVersion.equals("2.9") || dbnsfpVersion.equals("2.9.2")) return 26; 
         if (dbnsfpVersion.equals("2.0")) return 21;
         return -1;
     }
@@ -273,7 +273,7 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
      */
     private int getSiftPredColumn(String dbnsfpVersion) {
         if (dbnsfpVersion.equals("3.0") || dbnsfpVersion.equals("3.1a")) return -1;
-        if (dbnsfpVersion.equals("2.9")) return 28;
+        if (dbnsfpVersion.equals("2.9") || dbnsfpVersion.equals("2.9.2")) return 28;
         if (dbnsfpVersion.equals("2.0")) return -1;
         return -1;
     }
@@ -286,7 +286,7 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
      */
     private int getPolyphenScoreColumn(String dbnsfpVersion) {
         if (dbnsfpVersion.equals("3.0") || dbnsfpVersion.equals("3.1a")) return 29;
-        if (dbnsfpVersion.equals("2.9")) return 29;
+        if (dbnsfpVersion.equals("2.9") || dbnsfpVersion.equals("2.9.2")) return 29;
         if (dbnsfpVersion.equals("2.0")) return 22;
         return -1;
     }
@@ -299,7 +299,7 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
      */
     private int getPolyphenScoreHVARColumn(String dbnsfpVersion) {
         if (dbnsfpVersion.equals("3.0") || dbnsfpVersion.equals("3.1a")) return 32;
-        if (dbnsfpVersion.equals("2.9")) return 32;
+        if (dbnsfpVersion.equals("2.9") || dbnsfpVersion.equals("2.9.2")) return 32;
         if (dbnsfpVersion.equals("2.0")) return 24;
         return -1;
     }
@@ -311,7 +311,7 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
      */
     private int getPolyphenScoreHVARPREDColumn(String dbnsfpVersion) {
         if (dbnsfpVersion.equals("3.0") || dbnsfpVersion.equals("3.1a")) return -1;
-        if (dbnsfpVersion.equals("2.9")) return 34;
+        if (dbnsfpVersion.equals("2.9") || dbnsfpVersion.equals("2.9.2")) return 34;
         if (dbnsfpVersion.equals("2.0")) return -1;
         return -1;
     }
@@ -324,7 +324,7 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
      */
     private int getLRTScoreColumn(String dbnsfpVersion) {
         if (dbnsfpVersion.equals("3.0") || dbnsfpVersion.equals("3.1a")) return 35;
-        if (dbnsfpVersion.equals("2.9")) return 35;
+        if (dbnsfpVersion.equals("2.9") || dbnsfpVersion.equals("2.9.2")) return 35;
         if (dbnsfpVersion.equals("2.0")) return 26;
         return -1;
     }
@@ -337,7 +337,7 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
      */
     private int getMTScoreColumn(String dbnsfpVersion) {
         if (dbnsfpVersion.equals("3.0") || dbnsfpVersion.equals("3.1a")) return -1;
-        if (dbnsfpVersion.equals("2.9")) return 38;
+        if (dbnsfpVersion.equals("2.9") || dbnsfpVersion.equals("2.9.2")) return 38;
         if (dbnsfpVersion.equals("2.0")) return -1;
         return -1;
     }
@@ -349,7 +349,7 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
      */
     private int getMTPredColumn(String dbnsfpVersion) {
         if (dbnsfpVersion.equals("3.0") || dbnsfpVersion.equals("3.1a")) return -1;
-        if (dbnsfpVersion.equals("2.9")) return 40;//from 37????
+        if (dbnsfpVersion.equals("2.9") || dbnsfpVersion.equals("2.9.2")) return 40;//from 37????
         if (dbnsfpVersion.equals("2.0")) return -1;
         return -1;
     }    
@@ -362,7 +362,7 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
      */
     private int getMAScoreColumn(String dbnsfpVersion) {
         if (dbnsfpVersion.equals("3.0") || dbnsfpVersion.equals("3.1a")) return -1;
-        if (dbnsfpVersion.equals("2.9")) return 42;//this is the "converted" score of 0-1
+        if (dbnsfpVersion.equals("2.9") || dbnsfpVersion.equals("2.9.2")) return 42;//this is the "converted" score of 0-1
         if (dbnsfpVersion.equals("2.0")) return -1;
         return -1;
     }   
@@ -375,7 +375,7 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
      */
     private int getMAPredColumn(String dbnsfpVersion) {
         if (dbnsfpVersion.equals("3.0") || dbnsfpVersion.equals("3.1a")) return -1;
-        if (dbnsfpVersion.equals("2.9")) return 43;
+        if (dbnsfpVersion.equals("2.9") || dbnsfpVersion.equals("2.9.2")) return 43;
         if (dbnsfpVersion.equals("2.0")) return -1;
         return -1;
     }    
@@ -389,7 +389,7 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
     private int getGerpNRColumn(String dbnsfpVersion) {
     	if (dbnsfpVersion.equals("3.1a")) return 87;
     	if (dbnsfpVersion.equals("3.0")) return 62;
-        if (dbnsfpVersion.equals("2.9")) return 62;
+        if (dbnsfpVersion.equals("2.9") || dbnsfpVersion.equals("2.9.2")) return 62;
         if (dbnsfpVersion.equals("2.0")) return 32;
         return -1;
     }
@@ -403,7 +403,7 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
     private int getGerpColumn(String dbnsfpVersion) {
     	if (dbnsfpVersion.equals("3.1a")) return 88;
         if (dbnsfpVersion.equals("3.0")) return 63;
-        if (dbnsfpVersion.equals("2.9")) return 63;
+        if (dbnsfpVersion.equals("2.9") || dbnsfpVersion.equals("2.9.2")) return 63;
         if (dbnsfpVersion.equals("2.0")) return 33;
         return -1;
     
@@ -418,7 +418,7 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
     private int getPhylopColumn(String dbnsfpVersion) {
     	if (dbnsfpVersion.equals("3.1a")) return 90;
         if (dbnsfpVersion.equals("3.0")) return 65;
-        if (dbnsfpVersion.equals("2.9")) return 69;
+        if (dbnsfpVersion.equals("2.9") || dbnsfpVersion.equals("2.9.2")) return 69;
         if (dbnsfpVersion.equals("2.0")) return 34;
         return -1;
 
@@ -433,7 +433,7 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
     private int getSiphyColumn(String dbnsfpVersion) {
     	if (dbnsfpVersion.equals("3.1a")) return 99;
         if (dbnsfpVersion.equals("3.0")) return 70;
-        if (dbnsfpVersion.equals("2.9")) return 78;
+        if (dbnsfpVersion.equals("2.9") || dbnsfpVersion.equals("2.9.2")) return 78;
         if (dbnsfpVersion.equals("2.0")) return 36;
         return -1;
     }
@@ -774,8 +774,8 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
         
         //I'm going to force a declaration of what version they are using, Nix
         if (dbnsfpVersion == null) throw new IllegalArgumentException ("Failed to parse your "+DBNSFP_VERSION +". Please include it in your pipeline properties xml file.");
-        else if (dbnsfpVersion.equals("2.0") == false && dbnsfpVersion.equals("2.9") == false && dbnsfpVersion.equals("3.0") == false && dbnsfpVersion.equals("3.1a") == false){
-        	throw new IllegalArgumentException ("Only the 2.0, 2.9, 3.0, 3.1a versions of "+DBNSFP_VERSION +" are supported");
+        else if (dbnsfpVersion.equals("2.0") == false && dbnsfpVersion.equals("2.9") == false && dbnsfpVersion.equals("2.9.2") == false && dbnsfpVersion.equals("3.0") == false && dbnsfpVersion.equals("3.1a") == false){
+        	throw new IllegalArgumentException ("Only the 2.0, 2.9, 2.9.2, 3.0, 3.1a versions of "+DBNSFP_VERSION +" are supported");
         }
         
         //set column indexes, bad way of doing this!
