@@ -511,10 +511,10 @@ public class VCFParser implements VariantLineReader {
 			var.addProperty(VariantRec.VAR_DEPTH, new Double(altDepth));
 		}
 
-		//Only add infoEND if it was present in VCF info field
+		//Only add END if it was present in VCF info field
 		Integer infoEnd = getInfoEND();
 		if (infoEnd != null && infoEnd !=-1){
-			var.addPropertyInt(VariantRec.INFO_END, infoEnd);
+			var.addPropertyInt(VariantRec.SV_END, infoEnd);
 		}
 		
 		//If no SVLEN present in VCF field, calculate size of indels instead

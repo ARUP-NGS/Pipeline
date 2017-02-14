@@ -276,7 +276,7 @@ public class SnpEffGeneAnnotate extends Annotator {
 
 		//For some structural vars the END annotation in the INFO field is needed
 		String infoField = ".";
-		Integer infoEnd = rec.getPropertyInt(VariantRec.INFO_END);
+		Integer infoEnd = rec.getPropertyInt(VariantRec.SV_END);
 		if (infoEnd != null && infoEnd != -1) {
 			infoField = "END=" + infoEnd;
 		}
