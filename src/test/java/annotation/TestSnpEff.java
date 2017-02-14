@@ -23,6 +23,7 @@ public class TestSnpEff extends TestCase {
 	File inputFile = new File("src/test/java/annotation/testSnpEff.xml");
 	File inputFile2 = new File("src/test/java/annotation/testSnpEff2.xml");
 	File inputFile3 = new File("src/test/java/annotation/testSnpEff3.xml");
+        File inputFile4 = new File("src/test/java/annotation/testSnpEff4.xml");
 	File propertiesFile = new File("src/test/java/core/inputFiles/testProperties.xml");
 	File snpEffDir = null;
 
@@ -218,6 +219,42 @@ public class TestSnpEff extends TestCase {
 			ex.printStackTrace(System.err);
 			Assert.assertFalse(true);
 		} 
+
+                ppl = this.preparePipeline(inputFile4);
+                try {
+                        // This tests the large structural variants
+                        ppl.initializePipeline();
+                        ppl.stopAllLogging();
+
+                        ppl.execute();
+
+                        SnpEffGeneAnnotate annotator = (SnpEffGeneAnnotate)ppl.getObjectHandler().getObjectForLabel("GeneAnnotate");
+                        VariantPool vars = annotator.getVariants();
+                        Assert.assertTrue(vars.size() == 9);
+                        vars.listAll(System.err);
+
+                        VariantRec var = vars.findRecord("9", 86588186, "TTT", "-");
+                        Assert.assertTrue(var != null);
+                        JSONArray snpeff_annos = var.getjsonProperty(VariantRec.SNPEFF_ALL);
+                        JSONObject hit = findJsonObj(snpeff_annos, "NM_002140.3.1");
+                        Assert.assertNotNull(hit);
+                        Assert.assertTrue(hit.get(VariantRec.VARIANT_TYPE).equals("intron_variant"));
+                        Assert.assertTrue(hit.get(VariantRec.GENE_NAME).equals("HNRNPK"));
+                        Assert.assertTrue(hit.get(VariantRec.CDOT).equals("c.516+13_516+15delAAA"));
+
+                        var = vars.findRecord("MT", 743, "C", "<DEL>");
+                        Assert.assertTrue(var != null);
+                        Assert.assertTrue( var.getPropertyInt(VariantRec.INFO_END) == 15784 );
+                        Assert.assertTrue( var.getPropertyInt(VariantRec.INDEL_LENGTH) == 15041 );
+                        snpeff_annos = var.getjsonProperty(VariantRec.SNPEFF_ALL);
+                        //hit = findJsonObj(snpeff_annos, "n.744_15784del");
+                        //Assert.assertNotNull(hit);
+
+                } catch (Exception ex) {
+                        System.err.println("Exception during testing: " + ex.getLocalizedMessage());
+                        ex.printStackTrace(System.err);
+                        Assert.assertFalse(true);
+                }
 
 	}
 }
