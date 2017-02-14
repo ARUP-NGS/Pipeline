@@ -236,19 +236,27 @@ public class TestSnpEff extends TestCase {
                         VariantRec var = vars.findRecord("9", 86588186, "TTT", "-");
                         Assert.assertTrue(var != null);
                         JSONArray snpeff_annos = var.getjsonProperty(VariantRec.SNPEFF_ALL);
+                        //System.out.println(snpeff_annos);
                         JSONObject hit = findJsonObj(snpeff_annos, "NM_002140.3.1");
                         Assert.assertNotNull(hit);
                         Assert.assertTrue(hit.get(VariantRec.VARIANT_TYPE).equals("intron_variant"));
                         Assert.assertTrue(hit.get(VariantRec.GENE_NAME).equals("HNRNPK"));
                         Assert.assertTrue(hit.get(VariantRec.CDOT).equals("c.516+13_516+15delAAA"));
 
+                        var = vars.findRecord("13", 28608224, "T", "<DUP:TANDEM>");
+                        Assert.assertTrue( var != null );
+                        Assert.assertTrue( var.getPropertyOrAnnotation(VariantRec.VAR_CALLER).equals("manta") );
+
                         var = vars.findRecord("MT", 743, "C", "<DEL>");
                         Assert.assertTrue(var != null);
                         Assert.assertTrue( var.getPropertyInt(VariantRec.SV_END) == 15784 );
                         Assert.assertTrue( var.getPropertyInt(VariantRec.INDEL_LENGTH) == 15041 );
                         snpeff_annos = var.getjsonProperty(VariantRec.SNPEFF_ALL);
-                        //hit = findJsonObj(snpeff_annos, "n.744_15784del");
-                        //Assert.assertNotNull(hit);
+                        //System.out.println(snpeff_annos);
+                        hit = findJsonObj(snpeff_annos, "MT-RNR1");
+                        Assert.assertNotNull(hit);
+                        Assert.assertTrue(hit.get(VariantRec.CDOT).equals("n.744_15784del"));
+                        Assert.assertTrue(hit.get(VariantRec.VARIANT_TYPE).equals("feature_ablation"));
 
                 } catch (Exception ex) {
                         System.err.println("Exception during testing: " + ex.getLocalizedMessage());
