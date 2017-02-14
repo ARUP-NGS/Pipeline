@@ -244,7 +244,7 @@ public class TestSnpEff extends TestCase {
 
                         var = vars.findRecord("MT", 743, "C", "<DEL>");
                         Assert.assertTrue(var != null);
-                        Assert.assertTrue( var.getPropertyInt(VariantRec.INFO_END) == 15784 );
+                        Assert.assertTrue( var.getPropertyInt(VariantRec.SV_END) == 15784 );
                         Assert.assertTrue( var.getPropertyInt(VariantRec.INDEL_LENGTH) == 15041 );
                         snpeff_annos = var.getjsonProperty(VariantRec.SNPEFF_ALL);
                         //hit = findJsonObj(snpeff_annos, "n.744_15784del");
