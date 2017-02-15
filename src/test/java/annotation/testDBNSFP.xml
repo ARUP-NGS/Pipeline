@@ -8,7 +8,7 @@
         <VariantPool />
     </GeneAnnotate30-->
 
-    <GeneAnnotate29 class="operator.variant.DBNSFPAnnotator" dbnsfp.version="2.9.2">
+    <GeneAnnotate29 class="operator.variant.DBNSFPAnnotator" dbnsfp.version="2.9">
         <VariantPool />
     </GeneAnnotate29>
 </Pipeline>
