@@ -362,7 +362,8 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
      */
     private int getMAScoreColumn(String dbnsfpVersion) {
         if (dbnsfpVersion.equals("3.0") || dbnsfpVersion.equals("3.1a")) return -1;
-        if (dbnsfpVersion.equals("2.9") || dbnsfpVersion.equals("2.9.2")) return 42;//this is the "converted" score of 0-1
+        if (dbnsfpVersion.equals("2.9")) return 42; //this is the "converted" score of 0-1
+        if (dbnsfpVersion.equals("2.9.2")) return 42; // this is really MutationAssessor_rankscore !!!!
         if (dbnsfpVersion.equals("2.0")) return -1;
         return -1;
     }   
@@ -389,7 +390,8 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
     private int getGerpNRColumn(String dbnsfpVersion) {
     	if (dbnsfpVersion.equals("3.1a")) return 87;
     	if (dbnsfpVersion.equals("3.0")) return 62;
-        if (dbnsfpVersion.equals("2.9") || dbnsfpVersion.equals("2.9.2")) return 62;
+        if (dbnsfpVersion.equals("2.9")) return 62;
+        if (dbnsfpVersion.equals("2.9.2")) return 72;
         if (dbnsfpVersion.equals("2.0")) return 32;
         return -1;
     }
@@ -403,7 +405,8 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
     private int getGerpColumn(String dbnsfpVersion) {
     	if (dbnsfpVersion.equals("3.1a")) return 88;
         if (dbnsfpVersion.equals("3.0")) return 63;
-        if (dbnsfpVersion.equals("2.9") || dbnsfpVersion.equals("2.9.2")) return 63;
+        if (dbnsfpVersion.equals("2.9")) return 63;
+        if (dbnsfpVersion.equals("2.9.2")) return 72;
         if (dbnsfpVersion.equals("2.0")) return 33;
         return -1;
     
@@ -418,7 +421,8 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
     private int getPhylopColumn(String dbnsfpVersion) {
     	if (dbnsfpVersion.equals("3.1a")) return 90;
         if (dbnsfpVersion.equals("3.0")) return 65;
-        if (dbnsfpVersion.equals("2.9") || dbnsfpVersion.equals("2.9.2")) return 69;
+        if (dbnsfpVersion.equals("2.9")) return 69;
+        if (dbnsfpVersion.equals("2.9.2")) return 74; // phyloP46way_primate????
         if (dbnsfpVersion.equals("2.0")) return 34;
         return -1;
 
@@ -433,7 +437,8 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
     private int getSiphyColumn(String dbnsfpVersion) {
     	if (dbnsfpVersion.equals("3.1a")) return 99;
         if (dbnsfpVersion.equals("3.0")) return 70;
-        if (dbnsfpVersion.equals("2.9") || dbnsfpVersion.equals("2.9.2")) return 78;
+        if (dbnsfpVersion.equals("2.9")) return 78;
+        if (dbnsfpVersion.equals("2.9.2")) return 87;
         if (dbnsfpVersion.equals("2.0")) return 36;
         return -1;
     }
