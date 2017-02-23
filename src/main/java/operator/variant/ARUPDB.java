@@ -42,7 +42,7 @@ public class ARUPDB {
 	}
 
 	
-	public QueryResult getInfoForPostion(String contig, int pos, String alt) throws IOException {
+	public QueryResult getInfoForPostion(String contig, int pos, String ref, String alt) throws IOException {
 		String queryStr = contig + ":" + pos + "-" + (pos);
 		
 		try {
@@ -52,9 +52,10 @@ public class ARUPDB {
 					while(str != null) {
 						String[] toks = str.split("\t");
 						Integer qPos = Integer.parseInt(toks[1]);
+						String qRef = toks[2];
 						String qAlt = toks[3];
 						String overall = toks[4];
-						if (qPos == pos && qAlt.equals(alt) && overall.equals("overall")) {
+						if (qPos == pos && qRef.equals(ref) && qAlt.equals(alt) && overall.equals("overall")) {
 							//Found one..
 							String sampleTotalStr = toks[5];
 							String hetsFoundStr = toks[6];
