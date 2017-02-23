@@ -69,8 +69,9 @@ public class TestARUPFreq extends TestCase {
 			Assert.assertEquals("Total samples: 0", var3.getAnnotation(VariantRec.ARUP_FREQ_DETAILS));
 			
 			// Deletion
-			VariantRec var4 = new VariantRec("13", 20763686, 20763686, "C", "-");
+			VariantRec var4 = new VariantRec("13", 20763685, 20763685, "GC", "G");
 			var4 = VCFParser.normalizeVariant(var4);
+			// After normalization, the position for this deletion shifts to position 20763686
 			annotator.annotateVariant(var4);
 			Assert.assertEquals(.01404, var4.getProperty(VariantRec.ARUP_OVERALL_FREQ), 0.0001);
 			Assert.assertEquals(23, var4.getProperty(VariantRec.ARUP_HET_COUNT), 0.0001);
@@ -78,8 +79,18 @@ public class TestARUPFreq extends TestCase {
 			Assert.assertEquals(961, var4.getProperty(VariantRec.ARUP_SAMPLE_COUNT), 0.0001);
 			Assert.assertEquals("Samples: 961 Hets: 23 Homs: 2", var4.getAnnotation(VariantRec.ARUP_FREQ_DETAILS));
 			
+			VariantRec var4b = new VariantRec("13", 20763686, 20763686, "CC", "C");
+			var4b = VCFParser.normalizeVariant(var4b);
+			// After normalization, the position for this deletion will not shift
+			annotator.annotateVariant(var4b);
+			Assert.assertEquals(.01404, var4b.getProperty(VariantRec.ARUP_OVERALL_FREQ), 0.0001);
+			Assert.assertEquals(23, var4b.getProperty(VariantRec.ARUP_HET_COUNT), 0.0001);
+			Assert.assertEquals(2, var4b.getProperty(VariantRec.ARUP_HOM_COUNT), 0.0001);
+			Assert.assertEquals(961, var4b.getProperty(VariantRec.ARUP_SAMPLE_COUNT), 0.0001);
+			Assert.assertEquals("Samples: 961 Hets: 23 Homs: 2", var4b.getAnnotation(VariantRec.ARUP_FREQ_DETAILS));
+			
 			// Insertion
-			VariantRec var5 = new VariantRec("16", 90161004, 90161004, "-", "GG");
+			VariantRec var5 = new VariantRec("16", 90161004, 90161004, "G", "GGG");
 			var5 = VCFParser.normalizeVariant(var5);
 			annotator.annotateVariant(var5);
 			
@@ -89,7 +100,16 @@ public class TestARUPFreq extends TestCase {
 			Assert.assertEquals(778, var5.getProperty(VariantRec.ARUP_SAMPLE_COUNT), 0.0001);
 			Assert.assertEquals("Samples: 778 Hets: 23 Homs: 3", var5.getAnnotation(VariantRec.ARUP_FREQ_DETAILS));
 			
-			// Insertion
+			// Indel
+			VariantRec var5b = new VariantRec("1", 220986516, 220986516, "CTAT", "TTAC");
+			var5b = VCFParser.normalizeVariant(var5b);
+			annotator.annotateVariant(var5b);
+			
+			Assert.assertEquals(.00077, var5b.getProperty(VariantRec.ARUP_OVERALL_FREQ), 0.0001);
+			Assert.assertEquals(1, var5b.getProperty(VariantRec.ARUP_HET_COUNT), 0.0001);
+			Assert.assertEquals(0, var5b.getProperty(VariantRec.ARUP_HOM_COUNT), 0.0001);
+			Assert.assertEquals(646, var5b.getProperty(VariantRec.ARUP_SAMPLE_COUNT), 0.0001);
+			Assert.assertEquals("Samples: 646 Hets: 1 Homs: 0", var5b.getAnnotation(VariantRec.ARUP_FREQ_DETAILS));
 			
 			// X Chrom variant
 			VariantRec var6 = new VariantRec("X", 103042882, 103042882, "T", "C");
