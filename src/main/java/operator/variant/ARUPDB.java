@@ -42,25 +42,24 @@ public class ARUPDB {
 	}
 
 	
-	public QueryResult getInfoForPostion(String contig, int pos) throws IOException {
+	public QueryResult getInfoForPostion(String contig, int pos, String ref, String alt) throws IOException {
 		String queryStr = contig + ":" + pos + "-" + (pos);
 		
 		try {
 			TabixReader.Iterator iter = reader.query(queryStr);
-
 			if(iter != null) {
 					String str = iter.next();
 					while(str != null) {
 						String[] toks = str.split("\t");
 						Integer qPos = Integer.parseInt(toks[1]);
-						
-						
-						if (qPos == pos) {
+						String qRef = toks[2];
+						String qAlt = toks[3];
+						String overall = toks[4];
+						if (qPos == pos && qRef.equals(ref) && qAlt.equals(alt) && overall.equals("overall")) {
 							//Found one..
-							
-							String sampleTotalStr = toks[4];
-							String hetsFoundStr = toks[5];
-							String homsFoundStr = toks[6];
+							String sampleTotalStr = toks[5];
+							String hetsFoundStr = toks[6];
+							String homsFoundStr = toks[7];
 							
 							double totalSamples = Double.parseDouble(sampleTotalStr);
 							double overallHets = Double.parseDouble(hetsFoundStr);
@@ -74,7 +73,7 @@ public class ARUPDB {
 							QueryResult result = new QueryResult();
 							result.overallFreq = overallAF;
 							result.totHets = overallHets;
-							result.totHets = overallHoms;
+							result.totHoms = overallHoms;
 							result.totSamples = totalSamples;
 							result.details = details;
 							return result;
