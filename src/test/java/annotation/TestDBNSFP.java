@@ -26,6 +26,7 @@ public class TestDBNSFP extends TestCase {
     File propertiesFile = new File("src/test/java/core/inputFiles/testProperties.xml"); //do I need?
     DBNSFPAnnotator annotator_30;//currently commented out
     DBNSFPAnnotator annotator_29;
+    DBNSFPAnnotator annotator_292;
     boolean thrown;
 
     public void setUp() {
@@ -41,13 +42,24 @@ public class TestDBNSFP extends TestCase {
 
 
             Pipeline ppl2 = new Pipeline(inputFile, propertiesFile.getAbsolutePath());
-            ppl.setProperty(
+            ppl2.setProperty(
                     "dbnsfp.path",
                     "src/test/java/testcsvs/dbNSFP2.9_2015_09_11_test.tab.gz");
-            ppl.initializePipeline();
-            ppl.stopAllLogging();
-            ppl.execute();
-            annotator_29 = (DBNSFPAnnotator) ppl.getObjectHandler().getObjectForLabel("GeneAnnotate29");
+            ppl2.initializePipeline();
+            ppl2.stopAllLogging();
+            ppl2.execute();
+            annotator_29 = (DBNSFPAnnotator) ppl2.getObjectHandler().getObjectForLabel("GeneAnnotate29");
+            
+            
+            Pipeline ppl3 = new Pipeline(inputFile, propertiesFile.getAbsolutePath());
+            ppl3.setProperty(
+                    "dbnsfp.path",
+                    "src/test/java/testcsvs/dbNSFP2.9.2.b1c_2017_01_23-truncated.tab.gz"); 
+            ppl3.initializePipeline();
+            ppl3.stopAllLogging();
+            ppl3.execute();
+            annotator_292 = (DBNSFPAnnotator) ppl3.getObjectHandler().getObjectForLabel("GeneAnnotate292");
+            
 
 
         } catch (Exception ex) {
@@ -57,7 +69,259 @@ public class TestDBNSFP extends TestCase {
             Assert.assertTrue(false);
         }
     }
+    public void testFirstDBVariantAllAnnotations292() {
+        try {
+            VariantRec var1 = new VariantRec("1", 35138,  35138, "T", "A");
+            var1 = VCFParser.normalizeVariant(var1);
+            annotator_292.annotateVariant(var1);
+            Assert.assertNull(var1.getAnnotation(VariantRec.SIFT_SCORE));
 
+            VariantRec varNull = new VariantRec("1", 883869, 883869, "C", "T");
+            varNull = VCFParser.normalizeVariant(varNull);
+            annotator_292.annotateVariant(varNull);
+            Assert.assertNull(varNull.getAnnotation(VariantRec.SIFT_SCORE));
+            Assert.assertNull(var1.getProperty(VariantRec.POLYPHEN_SCORE));
+            Assert.assertNull(var1.getProperty(VariantRec.POLYPHEN_HVAR_SCORE));
+            Assert.assertNull(var1.getProperty(VariantRec.LRT_SCORE));
+            Assert.assertEquals(1, var1.getProperty(VariantRec.MT_SCORE), 0);
+            Assert.assertNull(var1.getProperty(VariantRec.MA_SCORE)); //value is "."
+            Assert.assertEquals(0.742, var1.getProperty(VariantRec.GERP_NR_SCORE), 0);
+            Assert.assertEquals(0.742, var1.getProperty(VariantRec.GERP_SCORE), 0); 
+            Assert.assertEquals(3.8237, var1.getProperty(VariantRec.SIPHY_SCORE), 0);
+
+        } catch (Exception ex) {
+            thrown = true;
+            System.err.println("Exception during testing: " + ex.getLocalizedMessage());
+            ex.printStackTrace();
+        }
+        Assert.assertFalse(thrown);
+    }
+
+    public void testLastDBVariantAllAnnotations292() {
+        try {
+            VariantRec var1 = new VariantRec("X", 78216484, 78216484, "T", "A");
+            var1 = VCFParser.normalizeVariant(var1);
+            annotator_292.annotateVariant(var1);
+
+            VariantRec varNull = new VariantRec("X", 78216484, 78216484, "T", "C");//double check this
+            varNull = VCFParser.normalizeVariant(varNull);
+            annotator_292.annotateVariant(varNull);
+
+            Assert.assertEquals(0.011, var1.getProperty(VariantRec.SIFT_SCORE), 0);
+            Assert.assertEquals(0.908, var1.getProperty(VariantRec.POLYPHEN_HVAR_SCORE), 0);
+            Assert.assertEquals(0.070684, var1.getProperty(VariantRec.LRT_SCORE), 0);
+            Assert.assertEquals(0.790707, var1.getProperty(VariantRec.MT_SCORE), 0);
+            Assert.assertEquals(0.89745, var1.getProperty(VariantRec.MA_SCORE), 0);
+            Assert.assertEquals(4.93, var1.getProperty(VariantRec.GERP_NR_SCORE), 0);
+            Assert.assertEquals(4.93, var1.getProperty(VariantRec.GERP_SCORE), 0);
+            Assert.assertEquals(12.4896, var1.getProperty(VariantRec.SIPHY_SCORE), 0);
+
+        } catch (Exception ex) {
+            thrown = true;
+            System.err.println("Exception during testing: " + ex.getLocalizedMessage());
+            ex.printStackTrace();
+        }
+        Assert.assertFalse(thrown);
+    }
+
+
+    public void testRandomDBVariantAllAnnotations292() { //with semicolon separated values
+        try {
+            VariantRec var1 = new VariantRec("19", 48946461, 48946461, "C", "T");
+            var1 = VCFParser.normalizeVariant(var1);
+            annotator_292.annotateVariant(var1);
+            Assert.assertEquals(0.001, var1.getProperty(VariantRec.SIFT_SCORE), 0);
+
+            VariantRec varNull = new VariantRec("19", 48946461, 48946461, "T", "C");
+            varNull = VCFParser.normalizeVariant(varNull);
+            annotator_292.annotateVariant(varNull);
+
+            Assert.assertEquals(0.045, var1.getProperty(VariantRec.POLYPHEN_HVAR_SCORE), 0);
+            Assert.assertEquals(0.139850, var1.getProperty(VariantRec.LRT_SCORE), 0);
+            Assert.assertEquals(1.0, var1.getProperty(VariantRec.MT_SCORE), 0);
+            Assert.assertEquals(0.06538, var1.getProperty(VariantRec.MA_SCORE), 0);
+            Assert.assertEquals(2.05, var1.getProperty(VariantRec.GERP_NR_SCORE), 0);
+            Assert.assertEquals(0.918, var1.getProperty(VariantRec.GERP_SCORE), 0);
+            Assert.assertEquals(4.361, var1.getProperty(VariantRec.SIPHY_SCORE), 0);
+
+        } catch (Exception ex) {
+            thrown = true;
+            System.err.println("Exception during testing: " + ex.getLocalizedMessage());
+            ex.printStackTrace();
+        }
+        Assert.assertFalse(thrown);
+    }
+
+    public void testSiftScore292() {
+        //with semicolon
+        try {
+            VariantRec var1 = new VariantRec("19", 15636185, 15636185, "G", "C");
+            var1 = VCFParser.normalizeVariant(var1);
+            annotator_292.annotateVariant(var1);
+            Assert.assertEquals(0.023, var1.getProperty(VariantRec.SIFT_SCORE), 0);
+
+            VariantRec var2 = new VariantRec("12", 25249910, 25249910, "A", "G");
+            var2 = VCFParser.normalizeVariant(var2);
+            annotator_292.annotateVariant(var2);
+            Assert.assertEquals(0.106, var2.getProperty(VariantRec.SIFT_SCORE), 0);
+
+            VariantRec varNull = new VariantRec("19", 15636185, 15636185, "T", "A");
+            varNull = VCFParser.normalizeVariant(varNull);
+            annotator_292.annotateVariant(varNull);
+            Assert.assertNull(varNull.getProperty(VariantRec.SIFT_SCORE));
+
+
+        } catch (Exception ex) {
+            thrown = true;
+            System.err.println("Exception during testing: " + ex.getLocalizedMessage());
+            ex.printStackTrace();
+        }
+        Assert.assertFalse(thrown);
+    }
+
+
+
+    public void testPOLYPHEN_HVAR_SCORE292() {
+        //with semicolon
+        try {
+            VariantRec var1 = new VariantRec("12", 25699414, 25699414, "A", "G");
+            var1 = VCFParser.normalizeVariant(var1);
+            annotator_292.annotateVariant(var1);
+            Assert.assertEquals(0.998, var1.getProperty(VariantRec.POLYPHEN_HVAR_SCORE), 0);
+
+            VariantRec varNull = new VariantRec("12", 25699414, 25699414, "T", "A");
+            varNull = VCFParser.normalizeVariant(varNull);
+            annotator_292.annotateVariant(varNull);
+            Assert.assertNull(varNull.getProperty(VariantRec.POLYPHEN_HVAR_SCORE));
+        } catch (Exception ex) {
+            thrown = true;
+            System.err.println("Exception during testing: " + ex.getLocalizedMessage());
+            ex.printStackTrace();
+        }
+        Assert.assertFalse(thrown);
+    }
+
+
+    public void testLRT_SCORE292() {
+        try {
+            VariantRec var1 = new VariantRec("10", 22830948, 22830948, "T", "C");
+            var1 = VCFParser.normalizeVariant(var1);
+            annotator_292.annotateVariant(var1);
+            Assert.assertEquals(0.000001, var1.getProperty(VariantRec.LRT_SCORE), 0);
+
+            VariantRec varNull = new VariantRec("10", 22607060, 22607060, "T", "A");
+            varNull = VCFParser.normalizeVariant(varNull);
+            annotator_292.annotateVariant(varNull);
+            Assert.assertNull(varNull.getProperty(VariantRec.LRT_SCORE));
+        } catch (Exception ex) {
+            thrown = true;
+            System.err.println("Exception during testing: " + ex.getLocalizedMessage());
+            ex.printStackTrace();
+        }
+        Assert.assertFalse(thrown);
+    }
+
+    
+    public void testMT_SCORE292() {
+        try {
+            VariantRec var1 = new VariantRec("1", 1139566, 1139566, "T", "G");
+            var1 = VCFParser.normalizeVariant(var1);
+            annotator_292.annotateVariant(var1);
+            Assert.assertEquals(0.999998, var1.getProperty(VariantRec.MT_SCORE), 0);
+
+            VariantRec varNull = new VariantRec("1", 1139566, 1139566, "T", "A");
+            varNull = VCFParser.normalizeVariant(varNull);
+            annotator_292.annotateVariant(varNull);
+            Assert.assertNull(varNull.getProperty(VariantRec.MT_SCORE));
+        } catch (Exception ex) {
+            thrown = true;
+            System.err.println("Exception during testing: " + ex.getLocalizedMessage());
+            ex.printStackTrace();
+        }
+        Assert.assertFalse(thrown);
+    }
+    
+
+    public void testMA_SCORE292() {    	
+        try {
+            VariantRec var1 = new VariantRec("11", 71146654, 71146654, "A", "T");
+            var1 = VCFParser.normalizeVariant(var1);
+            annotator_292.annotateVariant(var1);
+            Assert.assertEquals(0.87347, var1.getProperty(VariantRec.MA_SCORE), 0);
+
+            VariantRec varNull = new VariantRec("11", 71146654, 71146654, "A", "G");
+            varNull = VCFParser.normalizeVariant(varNull);
+            annotator_292.annotateVariant(varNull);
+            Assert.assertNull(varNull.getProperty(VariantRec.MA_SCORE));
+        } catch (Exception ex) {
+            thrown = true;
+            System.err.println("Exception during testing: " + ex.getLocalizedMessage());
+            ex.printStackTrace();
+        }
+        Assert.assertFalse(thrown);
+    }
+
+
+    public void testGERP_NR_SCORE292() {
+        try {
+            VariantRec var1 = new VariantRec("6", 90402250, 90402250, "A", "T");
+            var1 = VCFParser.normalizeVariant(var1);
+            annotator_292.annotateVariant(var1);
+            Assert.assertEquals(5.67, var1.getProperty(VariantRec.GERP_NR_SCORE), 0);
+
+            VariantRec varNull = new VariantRec("6", 90402250, 90402250, "T", "A");
+            varNull = VCFParser.normalizeVariant(varNull);
+            annotator_292.annotateVariant(varNull);
+            Assert.assertNull(varNull.getProperty(VariantRec.GERP_NR_SCORE));
+        } catch (Exception ex) {
+            thrown = true;
+            System.err.println("Exception during testing: " + ex.getLocalizedMessage());
+            ex.printStackTrace();
+        }
+        Assert.assertFalse(thrown);
+    }
+
+
+
+    public void testGERP_SCORE292() {
+        try {
+            VariantRec var1 = new VariantRec("5", 72800195, 72800195, "G", "C");
+            var1 = VCFParser.normalizeVariant(var1);
+            annotator_292.annotateVariant(var1);
+            Assert.assertEquals(5.61, var1.getProperty(VariantRec.GERP_SCORE), 0);
+
+            VariantRec varNull = new VariantRec("5", 72800195, 72800195, "T", "A");
+            varNull = VCFParser.normalizeVariant(varNull);
+            annotator_292.annotateVariant(varNull);
+            Assert.assertNull(varNull.getProperty(VariantRec.GERP_SCORE));
+        } catch (Exception ex) {
+            thrown = true;
+            System.err.println("Exception during testing: " + ex.getLocalizedMessage());
+            ex.printStackTrace();
+        }
+        Assert.assertFalse(thrown);
+    }
+
+    public void testSIPHY_SCORE292() {
+        try {
+            //8959:12.8949
+            VariantRec var1 = new VariantRec("4", 140309231, 140309231, "A", "G");
+            var1 = VCFParser.normalizeVariant(var1);
+            annotator_292.annotateVariant(var1);
+            Assert.assertEquals(16.3636, var1.getProperty(VariantRec.SIPHY_SCORE), 0);
+
+            VariantRec varNull = new VariantRec("X", 154262983, 154262983, "T", "A");
+            varNull = VCFParser.normalizeVariant(varNull);
+            annotator_292.annotateVariant(varNull);
+            Assert.assertNull(varNull.getProperty(VariantRec.SIPHY_SCORE));
+        } catch (Exception ex) {
+            thrown = true;
+            System.err.println("Exception during testing: " + ex.getLocalizedMessage());
+            ex.printStackTrace();
+        }
+        Assert.assertFalse(thrown);
+    }
+   
  
     public void testFirstDBVariantAllAnnotations29() {
         try {

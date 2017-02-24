@@ -349,7 +349,7 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
      */
     private int getMTPredColumn(String dbnsfpVersion) {
         if (dbnsfpVersion.equals("3.0") || dbnsfpVersion.equals("3.1a")) return -1;
-        if (dbnsfpVersion.equals("2.9") || dbnsfpVersion.equals("2.9.2")) return 40;//from 37????
+        if (dbnsfpVersion.equals("2.9") || dbnsfpVersion.equals("2.9.2")) return 40;
         if (dbnsfpVersion.equals("2.0")) return -1;
         return -1;
     }    
@@ -391,7 +391,7 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
     	if (dbnsfpVersion.equals("3.1a")) return 87;
     	if (dbnsfpVersion.equals("3.0")) return 62;
         if (dbnsfpVersion.equals("2.9")) return 62;
-        if (dbnsfpVersion.equals("2.9.2")) return 72;
+        if (dbnsfpVersion.equals("2.9.2")) return 71; //GERP++ neutral rate
         if (dbnsfpVersion.equals("2.0")) return 32;
         return -1;
     }
@@ -406,7 +406,7 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
     	if (dbnsfpVersion.equals("3.1a")) return 88;
         if (dbnsfpVersion.equals("3.0")) return 63;
         if (dbnsfpVersion.equals("2.9")) return 63;
-        if (dbnsfpVersion.equals("2.9.2")) return 72;
+        if (dbnsfpVersion.equals("2.9.2")) return 72; //GERP++_RS:
         if (dbnsfpVersion.equals("2.0")) return 33;
         return -1;
     
@@ -483,7 +483,7 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
                     try {
                         if (Double.parseDouble(i) < lowest) {
                             lowest = Double.parseDouble(i);
-                            siftindex = Arrays.asList(values).indexOf(i);//get index of  "highest"
+                            siftindex = Arrays.asList(values).indexOf(i);//get index of  "lowest"
                         }
                     } catch (NumberFormatException ex) {
                         //Thrown if the value in the tabix is not parsable "." and moves to the next value
@@ -590,7 +590,7 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
         } catch (NumberFormatException ex) {
         }
 
-        int mutalyzerindex = 0;
+        int mtindex = 0;
         //MT_SCORE, takes the highest
         try {
             if (toks[mt_score_column].contains(";")) {
@@ -600,7 +600,7 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
                     try {
                         if (Double.parseDouble(i) > highest) {
                             highest = Double.parseDouble(i);
-                            mutalyzerindex = Arrays.asList(values).indexOf(i);//get index of  "highest" 
+                            mtindex = Arrays.asList(values).indexOf(i);//get index of  "highest" 
                         }
                     } catch (NumberFormatException ex) {
                     }
@@ -620,7 +620,7 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
         	
             if (toks[mt_pred_column].contains(";")) {
                 String[] values = toks[mt_pred_column].split(";");
-                mt_pred = values[mutalyzerindex];
+                mt_pred = values[mtindex];
                 var.addAnnotation(VariantRec.MT_PRED, mt_pred);
                 }
             else{
@@ -654,7 +654,7 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
                     try {
                         if (Double.parseDouble(i) > highest) {
                             highest = Double.parseDouble(i);
-                            mutalyzerindex = Arrays.asList(values).indexOf(i);
+                            mtindex = Arrays.asList(values).indexOf(i);
                         }
                     } catch (NumberFormatException ex) {
                     }
@@ -669,7 +669,7 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
         try {
             if (toks[ma_pred_column].contains(";")) {
                 String[] values = toks[ma_pred_column].split(";");
-                ma_pred = values[mutalyzerindex];
+                ma_pred = values[mtindex];
                 var.addAnnotation(VariantRec.MA_PRED, ma_pred);
                 }
             else{
