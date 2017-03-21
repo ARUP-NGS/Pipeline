@@ -27,15 +27,20 @@ public  class GeneListFromVariants extends Operator {
 	
 	@Override
 	public void performOperation() throws OperationFailedException {
-	
 		
 		for(String contig : vars.getContigs()) {
 			for(VariantRec var : vars.getVariantsForContig(contig)) {
-				String geneName = var.getAnnotation(VariantRec.GENE_NAME);
+                                JSONArray snpeff_annos = var.getjsonProperty(VariantRec.SNPEFF_ALL);
+                                String geneName = null;
+                                for(int i=0; i<snpeff_annos.length(); i++) {
+                                    JSONObject jobj = (JSONObject)snpeff_annos.get(i); 
+                                    geneName = jobj.get(VariantRec.GENE_NAME);
+                                    if (geneName != null) break;
+                                }
+
 				if (geneName != null) {
 					if (! genes.containsGene(geneName)) {
 						genes.addGene(geneName);
-						
 					}
 					var.setGene( genes.getGeneByName(geneName));
 				}
