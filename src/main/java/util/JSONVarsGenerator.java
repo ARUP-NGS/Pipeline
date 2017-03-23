@@ -26,7 +26,9 @@ import buffer.CSVFile;
 import buffer.variant.CSVLineReader;
 import buffer.variant.VariantLineReader;
 import buffer.variant.VariantPool;
+import buffer.GeneList;
 import buffer.variant.VariantRec;
+import gene.Gene;
 
 /**
  * A VariantPoolWriter that writes variants in JSON form. It tries to be smart about this and 
@@ -60,6 +62,13 @@ public class JSONVarsGenerator extends VariantPoolWriter {
 			//VariantRec.VCF_FILTER,
 			//VariantRec.VQSR
 			});
+	
+	//A list of gene annotation keys that we WANT included 
+	public final static List<String> geneKeys = new ArrayList<String>( Arrays.asList(new String[]{
+			Gene.OMIM_DISEASES,
+			Gene.OMIM_NUMBERS,
+			Gene.OMIM_INHERITANCE,
+			Gene.HGMD_INFO}));
 	
 	/**
 	 * Obtain the set of included keys 
@@ -195,6 +204,51 @@ public class JSONVarsGenerator extends VariantPoolWriter {
 	}
 	
 	/**
+	 * Write all variants in JSON form to the given output stream, gzipping the string
+	 * Also adds important gene annotations to the variants
+	 * (Gene.OMIM_DISEASES,Gene.OMIM_NUMBERS,Gene.OMIM_INHERITANCE,Gene.HGMD_INFO)
+	 * @param variants
+	 * @param geneList
+	 * @param outputStream
+	 * @throws IOException
+	 * @throws JSONException
+	 */
+	public static void createJSONVariantsGZIP(VariantPool variants, GeneList geneList, OutputStream outputStream) throws IOException, JSONException {
+		GZIPOutputStream gzipOutputStream = new GZIPOutputStream(outputStream);
+		
+		for(String contig: variants.getContigs()) {
+			for (VariantRec var: variants.getVariantsForContig(contig)) {	
+				for(int i=0; i<geneKeys.size(); i++) {
+					Gene g = var.getGene();
+					if (g == null) {
+						String geneName = var.getAnnotation(VariantRec.GENE_NAME);
+						if (geneName != null && geneList != null)
+							g = geneList.getGeneByName(geneName);
+					}
+
+					String val = "-";
+					if (g != null) {
+						val = g.getPropertyOrAnnotation(geneKeys.get(i)).trim();
+					}
+
+					//Special case, if HGMD_INFO, just emit "true" if there is anything
+					if (geneKeys.get(i).equals(Gene.HGMD_INFO) && val.length() > 5) {
+						val = "true";
+					}
+
+					var.addAnnotation(geneKeys.get(i), val);
+				}
+			}
+		}
+
+		JSONVarsGenerator.createJSONVariants(variants, gzipOutputStream);
+		gzipOutputStream.close();
+	}
+	
+	
+	
+	
+	/**
 	 * Write all of the variants in json form to the given output stream
 	 * @param variants
 	 * @param outputStream
@@ -233,6 +287,9 @@ public class JSONVarsGenerator extends VariantPoolWriter {
 				jsonGenerator.writeVariant(var, ps);
 			}
 		}
+		
+		
+		
 		jsonGenerator.writeFooter(ps);
 		ps.close();
 	}
@@ -261,6 +318,13 @@ public class JSONVarsGenerator extends VariantPoolWriter {
 		excludedKeys = excludeKeys;
 		FileOutputStream fs = new FileOutputStream(dest);
 		JSONVarsGenerator.createJSONVariantsGZIP(variants, fs);
+		fs.close();
+	}
+
+	public static void createJSONVariantsGZIP(VariantPool variants, GeneList geneList, File dest, List<String> excludeKeys) throws JSONException, IOException {
+		excludedKeys = excludeKeys;
+		FileOutputStream fs = new FileOutputStream(dest);
+		JSONVarsGenerator.createJSONVariantsGZIP(variants, geneList, fs);
 		fs.close();
 	}
 
