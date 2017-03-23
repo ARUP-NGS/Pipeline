@@ -190,6 +190,12 @@ public class SnpEffGeneAnnotate extends Annotator {
 			return;
 		}
 
+		// First add the GENE_NAME annotation to the VariantRec var
+		// This is needed for other variant annotations that are based on the gene
+		// Only adds the top ranking gene from all snpeff annotations for the variant alts
+		
+		var.addAnnotation(VariantRec.GENE_NAME, infoList.get(0).gene);
+		
 		JSONArray masterlist = new JSONArray();
 
 		String tempstring="";

@@ -28,6 +28,7 @@ import buffer.ReviewDirSubDir;
 import buffer.TextBuffer;
 import buffer.VCFFile;
 import buffer.variant.VariantPool;
+import buffer.GeneList;
 import json.JSONException;
 import operator.qc.QCReport;
 import pipeline.Pipeline;
@@ -60,6 +61,7 @@ public class ReviewDirGenerator extends Operator {
 	TextBuffer qcJsonFile = null;
 	BEDFile capture = null;
 	VariantPool varPool = null;
+	GeneList geneList = null;
 	JSONBuffer jsonOutput = null;
 	private boolean createJSONVariants = true; //If true, create a compressed json variants file
 	
@@ -153,13 +155,24 @@ public class ReviewDirGenerator extends Operator {
 		
 		if (varPool != null) {
 			if (createJSONVariants) {
-				try {
-					JSONVarsGenerator.createJSONVariantsGZIP(varPool, new File(rootPath + "/var/" + jsonVarsName), excludeJsonKeys);
-				} catch (JSONException e) {
-					Logger.getLogger(Pipeline.primaryLoggerName).warning("Error creating annotated vars json: " + e.getLocalizedMessage());
-				} catch (IOException e) {
-					Logger.getLogger(Pipeline.primaryLoggerName).warning("Error creating annotated vars json: " + e.getLocalizedMessage());
-					e.printStackTrace();
+				if (geneList != null) {
+					try {
+						JSONVarsGenerator.createJSONVariantsGZIP(varPool, geneList, new File(rootPath + "/var/" + jsonVarsName), excludeJsonKeys);
+					} catch (JSONException e) {
+						Logger.getLogger(Pipeline.primaryLoggerName).warning("Error creating annotated vars json: " + e.getLocalizedMessage());
+					} catch (IOException e) {
+						Logger.getLogger(Pipeline.primaryLoggerName).warning("Error creating annotated vars json: " + e.getLocalizedMessage());
+						e.printStackTrace();
+					}
+				} else {
+					try {
+						JSONVarsGenerator.createJSONVariantsGZIP(varPool, new File(rootPath + "/var/" + jsonVarsName), excludeJsonKeys);
+					} catch (JSONException e) {
+						Logger.getLogger(Pipeline.primaryLoggerName).warning("Error creating annotated vars json: " + e.getLocalizedMessage());
+					} catch (IOException e) {
+						Logger.getLogger(Pipeline.primaryLoggerName).warning("Error creating annotated vars json: " + e.getLocalizedMessage());
+						e.printStackTrace();
+					}
 				}
 			}
 		}
@@ -416,6 +429,10 @@ public class ReviewDirGenerator extends Operator {
 				
 				if (obj instanceof VariantPool) {
 					varPool = (VariantPool)obj;
+				}
+
+				if (obj instanceof GeneList) {
+					geneList = (GeneList)obj;
 				}
 
 				if (obj instanceof JSONBuffer) {
