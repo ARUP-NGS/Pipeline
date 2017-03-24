@@ -85,8 +85,8 @@ public class SnpEffGeneAnnotate extends Annotator {
 								recLength = rec.getRef().length();
 							}
 						}
-						Integer recEnd = rec.getStart() + recLength;
-						Interval recInterval = new Interval(rec.getStart(), recEnd);
+						Integer recEnd = rec.getStart() -1 + recLength;
+						Interval recInterval = new Interval(rec.getStart() -1, recEnd);
 						if (bedFile == null || bedFile.intersects(rec.getContig(), recInterval)) {
 							String varStr = convertVar(rec);
 
@@ -328,12 +328,12 @@ public class SnpEffGeneAnnotate extends Annotator {
 				}
 				//add third annotation if it exists
 				if (annoResults.size() >= 3) {
-					appendAnnotation(var, VariantRec.CDOT3, annoResults.get(3).cDot);
-					appendAnnotation(var, VariantRec.PDOT3, annoResults.get(3).pDot);
-					appendAnnotation(var, VariantRec.EXON_NUMBER3, annoResults.get(3).exon);
-					appendAnnotation(var, VariantRec.NM_NUMBER3, annoResults.get(3).transcript);
-					appendAnnotation(var, VariantRec.GENE_NAME3, annoResults.get(3).gene);
-					appendAnnotation(var, VariantRec.VARIANT_TYPE3, annoResults.get(3).changeType.replace("_CODING", ""));
+					appendAnnotation(var, VariantRec.CDOT3, annoResults.get(2).cDot);
+					appendAnnotation(var, VariantRec.PDOT3, annoResults.get(2).pDot);
+					appendAnnotation(var, VariantRec.EXON_NUMBER3, annoResults.get(2).exon);
+					appendAnnotation(var, VariantRec.NM_NUMBER3, annoResults.get(2).transcript);
+					appendAnnotation(var, VariantRec.GENE_NAME3, annoResults.get(2).gene);
+					appendAnnotation(var, VariantRec.VARIANT_TYPE3, annoResults.get(2).changeType.replace("_CODING", ""));
 				}
 
 	          } else {
@@ -448,7 +448,7 @@ public class SnpEffGeneAnnotate extends Annotator {
 			
 	
 	private static int calculateRank(String changeType) {
-		/**if (changeType == null || changeType.length()==0) {
+		if (changeType == null || changeType.length()==0) {
 			return 0;
 		}
 		
@@ -456,11 +456,7 @@ public class SnpEffGeneAnnotate extends Annotator {
 			return VarEffects.effects.get(changeType.trim());
 		} else {
 			return 6;
-		}**/
-		//returning lowest priority so VarEffects class will no longer be used 
-		//This is for better 4.2 compatibility to allow SnpEff to choose most damaging variant effect
-		//This is only relevant to tests not using ARUP style bed file format
-		return -2;
+		}
 	}
 	
 	private static String convertVar(String chr, int pos, String ref, String alt) {
@@ -472,7 +468,6 @@ public class SnpEffGeneAnnotate extends Annotator {
 		}
 		
 		if (cont.equals("M") || cont.equals("chrM") || cont.equals("MT") || cont.equals("chrMT")) {
-			//cont = "NC_012920";
 			cont = "MT";
 		}
 
