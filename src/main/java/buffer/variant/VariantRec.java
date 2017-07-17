@@ -31,6 +31,7 @@ public class VariantRec {
 	String GT;
 	protected GTType zygosity;
 	protected Map<String, Double> props = new SmallMap<String, Double>(); 
+	protected Map<String, Integer> ints = new SmallMap<String, Integer>(); 
 	protected Map<String, String> annotations = new SmallMap<String, String>(); 
 	protected Map<String,JSONArray> jsonobj = new SmallMap<String, JSONArray>();
 
@@ -91,6 +92,9 @@ public class VariantRec {
 	
 	public synchronized void addAnnotation(String key, String anno) {
 		annotations.put(key, anno);
+	}
+	public synchronized void addPropertyInt(String key, Integer num) {
+		ints.put(key, num);
 	}
 	
 	public synchronized void addAnnotationJSON(String key, JSONArray masterlist) {
@@ -204,6 +208,8 @@ public class VariantRec {
 	 * is not an insertion or deletion
 	 * @return
 	 */
+	
+	
 	public int getIndelLength() {
 		if (isInsertion())
 			return alt.length();
@@ -298,6 +304,10 @@ public class VariantRec {
 		return jsonobj.get(key);
 	}
 	
+	public Integer getPropertyInt(String key){
+		return ints.get(key);
+	}
+	
 	/**
 	 * Returns the property associated with the given key, but if there
 	 * is no such property, returns the annotation with the given key, and
@@ -322,6 +332,10 @@ public class VariantRec {
 		if (json != null)
 			return "" + json;
 		
+		Integer intvar = getPropertyInt(key);
+		if(intvar != null)
+			return "" +intvar;
+		
 		return "-";
 	}
 	
@@ -339,6 +353,22 @@ public class VariantRec {
 	 */
 	public Collection<String> getAnnotationKeys() {
 		return annotations.keySet();
+	}
+	
+	/**
+	 * Collection of all keys used for ints
+	 * @return
+	 */
+	public Collection<String> getIntKeys() {
+		return ints.keySet();
+	}
+	
+	/**
+	 * Collection of all keys used for json annotations
+	 * @return
+	 */
+	public Collection<String> getJsonobjKeys() {
+		return jsonobj.keySet();
 	}
 	
 	public String getAnnotation(String key) {
@@ -791,8 +821,10 @@ public class VariantRec {
 	public static final String ASN_FREQUENCY = "asn.freq";
 	public static final String CG69_FREQUENCY = "cg69.freq";
 	public static final String SIFT_SCORE = "sift.score";
-	public static final String POLYPHEN_SCORE = "pp.score";
-	public static final String POLYPHEN_HVAR_SCORE = "pp.hvar.score";
+	public static final String SIFT_PRED = "sift.pred";
+	public static final String POLYPHEN_HVAR_SCORE = "pp.score";
+	public static final String POLYPHEN_SCORE = "pp.hdiv.score";
+	public static final String POLYPHEN_HVAR_PRED = "pp.pred";
 	public static final String MA_SCORE = "mut.assessor.score";
 	public static final String MA_PRED = "mut.assessor.pred";
 	public static final String MT_SCORE = "mt.score";
@@ -808,6 +840,7 @@ public class VariantRec {
 	public static final String FS_SCORE = "strand.bias.score";
 	public static final String LOGFS_SCORE = "log.fs";
 	public static final String DEPTH = "depth";
+	public static final String VAR_CALLER = "var.call";
 
 	//snpEff .2 and .3 annotations only apply to arupBedFile usage with multiple transcripts in a bed line (column 4, "|" separated)
 	public static final String CDOT = "cdot";
@@ -981,8 +1014,9 @@ public class VariantRec {
 	public static final String EXAC63K_OTHER_ALLELE_FREQ = "exac63K.other.allele.freq";
 	public static final String EXAC63K_OTHER_HEMI_COUNT = "exac63K.other.hemi.count";
 	
-//CHRISK
-public static final String SNPEFF_ALL = "snpeff.all";
+   public static final String SNPEFF_ALL = "snpeff.all";
+   public static final String INDEL_LENGTH = "indel.length";
+   public static final String SV_END = "sv.end";
 
 }
 

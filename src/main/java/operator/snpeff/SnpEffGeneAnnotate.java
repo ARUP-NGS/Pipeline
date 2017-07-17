@@ -92,7 +92,7 @@ public class SnpEffGeneAnnotate extends Annotator {
 						Integer recEnd = rec.getStart() - 1 + recLength;
 						Interval recInterval = new Interval(rec.getStart() - 1, recEnd);
 						if (bedFile == null || bedFile.intersects(rec.getContig(), recInterval)) {
-							String varStr = convertVar(rec);		
+							String varStr = convertVarWithInfoEND(rec);		
 							writer.write(varStr + "\n");
 							varsWritten++;
 						}
@@ -130,7 +130,7 @@ public class SnpEffGeneAnnotate extends Annotator {
 				List<SnpEffInfo> newInfos = parseOutputLineVCF(line);
 				String[] toks = line.split("\t");
 				
-				String varKey = convertVar(toks[0], Integer.parseInt(toks[1]),toks[3], toks[4]);
+				String varKey = convertVar(toks[0], Integer.parseInt(toks[1]),toks[3], toks[4], ".");
 				List<SnpEffInfo> infos = annos.get(varKey);
 				if (infos == null) {
 					infos = new ArrayList<SnpEffInfo>();
@@ -160,14 +160,13 @@ public class SnpEffGeneAnnotate extends Annotator {
 		}
 		
 		String varStr = convertVar(var);
-		
 		String[] allAlts = varStr.split("\n");
 		
 		//crashes if one of the alts has no annotations
 		for(String alt : allAlts) {
 			List<SnpEffInfo> annoList = annos.get(alt);
 			if (annoList == null) {
-				throw new OperationFailedException("No annotation info found for " + varStr, this);
+				throw new OperationFailedException("No annotation info found the alt " + alt + " for " + varStr, this);
 			}
 		
 			//use annos from any of the alts to choose highest ranking
@@ -191,6 +190,12 @@ public class SnpEffGeneAnnotate extends Annotator {
 			return;
 		}
 
+		// First add the GENE_NAME annotation to the VariantRec var
+		// This is needed for other variant annotations that are based on the gene
+		// Only adds the top ranking gene from all snpeff annotations for the variant alts
+		
+		var.addAnnotation(VariantRec.GENE_NAME, infoList.get(0).gene);
+		
 		JSONArray masterlist = new JSONArray();
 
 		String tempstring="";
@@ -222,34 +227,37 @@ public class SnpEffGeneAnnotate extends Annotator {
 	}
 
 	
-	private static String convertVar(String chr, int pos, String ref, String alt) {
+	private static String convertVar(String chr, int pos, String ref, String alt, String infoField) {
 		String cont = chr;
 		if (alt.contains(",")) {
-			String var1 = convertVar(chr, pos, ref, alt.split(",", 2)[0]);
-			String var2 = convertVar(chr, pos, ref, alt.split(",", 2)[1]);
+			String var1 = convertVar(chr, pos, ref, alt.split(",", 2)[0], infoField);
+			String var2 = convertVar(chr, pos, ref, alt.split(",", 2)[1], infoField);
 			return var1 + "\n" + var2;
 		}
 		
 		if (cont.equals("M") || cont.equals("chrM") || cont.equals("MT") || cont.equals("chrMT")) {
-			cont = "NC_012920";
+			//cont = "NC_012920";
+			cont = "MT";
 		}
 
 		if (ref.equals("*")) {
 			ref = "-";
 		}
 		alt = alt.replace("+", "");
-		alt = alt.replace("DEL", "-");
+		//alt = alt.replace("DEL", "-");
+		
+
 		
 		
 		
 		if (alt.equals("-")) {
 			ref = ref.replace("-", "");
-			return cont + "\t" + (pos-1) + "\t.\tG" + ref + "\tG\t.\t.\t.";
+			return cont + "\t" + (pos-1) + "\t.\tG" + ref + "\tG\t.\t.\t" + infoField;
 		} else {
 			if (ref.equals("-")) {
-				return cont + "\t" + (pos-1) + "\t.\tG\tG" + alt + "\t.\t.\t.";
+				return cont + "\t" + (pos-1) + "\t.\tG\tG" + alt + "\t.\t.\t" + infoField;
 			} else {
-				return cont + "\t" + pos + "\t.\t" + ref + "\t" + alt + "\t.\t.\t.";	
+				return cont + "\t" + pos + "\t.\t" + ref + "\t" + alt + "\t.\t.\t" + infoField;	
 			}
 		}		
 	}
@@ -262,7 +270,23 @@ public class SnpEffGeneAnnotate extends Annotator {
 	 * @return
 	 */
 	private static String convertVar(VariantRec rec) {
-		return convertVar(rec.getContig(), rec.getStart(), rec.getRef(), rec.getAlt());
+		return convertVar(rec.getContig(), rec.getStart(), rec.getRef(), rec.getAlt(), ".");
+	}
+	
+	/**
+	 * Convert the variant info a form that works with SnpEff parsing
+	 * @param rec
+	 * @return
+	 */
+	private static String convertVarWithInfoEND(VariantRec rec) {
+
+		//For some structural vars the END annotation in the INFO field is needed
+		String infoField = ".";
+		Integer infoEnd = rec.getPropertyInt(VariantRec.SV_END);
+		if (infoEnd != null && infoEnd != -1) {
+			infoField = "END=" + infoEnd;
+		}
+		return convertVar(rec.getContig(), rec.getStart(), rec.getRef(), rec.getAlt(), infoField);
 	}
 	
 	/**

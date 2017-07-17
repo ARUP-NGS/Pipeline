@@ -26,7 +26,9 @@ import buffer.CSVFile;
 import buffer.variant.CSVLineReader;
 import buffer.variant.VariantLineReader;
 import buffer.variant.VariantPool;
+import buffer.GeneList;
 import buffer.variant.VariantRec;
+import gene.Gene;
 
 /**
  * A VariantPoolWriter that writes variants in JSON form. It tries to be smart about this and 
@@ -47,13 +49,26 @@ public class JSONVarsGenerator extends VariantPoolWriter {
 	//doesn't exist as an annotation in a variant, the json will include the annotation but
 	//associate it with a 'null' value
 	private Set<String> includeKeys = new HashSet<String>();
+	private static List<String> excludedKeys = new ArrayList<String>();
 	
 	//A list of annotation keys that we DONT WANT included with typical 
 	//output
 	private static List<String> DEFAULT_EXCLUDED_KEYS = Arrays.asList(new String[]{
-			//VariantRec.EXOMES_63K_AFR_HET, //Left to show how to exclude keys.
+			//VariantRec.ARUP_HET_COUNT,
+			//VariantRec.ARUP_SAMPLE_COUNT,
+			//VariantRec.GERP_NR_SCORE,
+			//VariantRec.RP_SCORE,
+			//VariantRec.FS_SCORE,
+			//VariantRec.VCF_FILTER,
+			//VariantRec.VQSR
 			});
 	
+	//A list of gene annotation keys that we WANT included 
+	public final static List<String> geneKeys = new ArrayList<String>( Arrays.asList(new String[]{
+			Gene.OMIM_DISEASES,
+			Gene.OMIM_NUMBERS,
+			Gene.OMIM_INHERITANCE,
+			Gene.HGMD_INFO}));
 	
 	/**
 	 * Obtain the set of included keys 
@@ -79,6 +94,16 @@ public class JSONVarsGenerator extends VariantPoolWriter {
 
 		//Set the keys to include
 		this.varConverter.setKeys( new ArrayList<String>(this.includeKeys) );
+		
+		//Set the default keys to exclude
+		List<String> allExKeys = new ArrayList<String>();
+		allExKeys.addAll(excludedKeys);
+		for (String key : DEFAULT_EXCLUDED_KEYS) {
+			if (!allExKeys.contains(key)) {
+				allExKeys.add(key);
+			}
+		}
+		this.varConverter.setExcludeKeys(allExKeys);
 		
 		//Nothing to write, but we use this to initialize the JSONWriter
 		writer = new JSONWriter(new StreamWriter(outputStream));
@@ -179,6 +204,51 @@ public class JSONVarsGenerator extends VariantPoolWriter {
 	}
 	
 	/**
+	 * Write all variants in JSON form to the given output stream, gzipping the string
+	 * Also adds important gene annotations to the variants
+	 * (Gene.OMIM_DISEASES,Gene.OMIM_NUMBERS,Gene.OMIM_INHERITANCE,Gene.HGMD_INFO)
+	 * @param variants
+	 * @param geneList
+	 * @param outputStream
+	 * @throws IOException
+	 * @throws JSONException
+	 */
+	public static void createJSONVariantsGZIP(VariantPool variants, GeneList geneList, OutputStream outputStream) throws IOException, JSONException {
+		GZIPOutputStream gzipOutputStream = new GZIPOutputStream(outputStream);
+		
+		for(String contig: variants.getContigs()) {
+			for (VariantRec var: variants.getVariantsForContig(contig)) {	
+				for(int i=0; i<geneKeys.size(); i++) {
+					Gene g = var.getGene();
+					if (g == null) {
+						String geneName = var.getAnnotation(VariantRec.GENE_NAME);
+						if (geneName != null && geneList != null)
+							g = geneList.getGeneByName(geneName);
+					}
+
+					String val = "-";
+					if (g != null) {
+						val = g.getPropertyOrAnnotation(geneKeys.get(i)).trim();
+					}
+
+					//Special case, if HGMD_INFO, just emit "true" if there is anything
+					if (geneKeys.get(i).equals(Gene.HGMD_INFO) && val.length() > 5) {
+						val = "true";
+					}
+
+					var.addAnnotation(geneKeys.get(i), val);
+				}
+			}
+		}
+
+		JSONVarsGenerator.createJSONVariants(variants, gzipOutputStream);
+		gzipOutputStream.close();
+	}
+	
+	
+	
+	
+	/**
 	 * Write all of the variants in json form to the given output stream
 	 * @param variants
 	 * @param outputStream
@@ -199,6 +269,16 @@ public class JSONVarsGenerator extends VariantPoolWriter {
 				keys.addAll( var.getPropertyKeys() );
 			}
 		}
+		//added to minimize ngsweb impact
+		keys.add(VariantRec.INDEL_LENGTH);
+		//remove excluded keys
+		for (String ex : DEFAULT_EXCLUDED_KEYS) {
+				keys.remove(ex);
+		}
+		for (String ex : excludedKeys) {
+				keys.remove(ex);
+		}
+
 		jsonGenerator.setIncludeKeys(keys);
 		
 		jsonGenerator.writeHeader(ps);
@@ -207,6 +287,9 @@ public class JSONVarsGenerator extends VariantPoolWriter {
 				jsonGenerator.writeVariant(var, ps);
 			}
 		}
+		
+		
+		
 		jsonGenerator.writeFooter(ps);
 		ps.close();
 	}
@@ -222,6 +305,26 @@ public class JSONVarsGenerator extends VariantPoolWriter {
 	public static void createJSONVariants(VariantPool variants, File dest) throws JSONException, IOException {
 		FileOutputStream fs = new FileOutputStream(dest);
 		JSONVarsGenerator.createJSONVariants(variants, fs);
+		fs.close();
+	}
+
+	public static void createJSONVariantsGZIP(VariantPool variants, File dest) throws JSONException, IOException {
+		FileOutputStream fs = new FileOutputStream(dest);
+		JSONVarsGenerator.createJSONVariantsGZIP(variants, fs);
+		fs.close();
+	}
+
+	public static void createJSONVariantsGZIP(VariantPool variants, File dest, List<String> excludeKeys) throws JSONException, IOException {
+		excludedKeys = excludeKeys;
+		FileOutputStream fs = new FileOutputStream(dest);
+		JSONVarsGenerator.createJSONVariantsGZIP(variants, fs);
+		fs.close();
+	}
+
+	public static void createJSONVariantsGZIP(VariantPool variants, GeneList geneList, File dest, List<String> excludeKeys) throws JSONException, IOException {
+		excludedKeys = excludeKeys;
+		FileOutputStream fs = new FileOutputStream(dest);
+		JSONVarsGenerator.createJSONVariantsGZIP(variants, geneList, fs);
 		fs.close();
 	}
 

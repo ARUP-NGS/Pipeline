@@ -39,14 +39,13 @@ public class ARUPDBAnnotate extends Annotator {
 		}
 		
 		try {
-			QueryResult dbInfo = arupDB.getInfoForPostion(var.getContig(), var.getStart());
+			QueryResult dbInfo = arupDB.getInfoForPostion(var.getContig(), var.getStart(), var.getRef(), var.getAlt());
 			if (dbInfo != null) {
 				var.addProperty(VariantRec.ARUP_OVERALL_FREQ, dbInfo.overallFreq);
 				var.addProperty(VariantRec.ARUP_HET_COUNT, dbInfo.totHets);
 				var.addProperty(VariantRec.ARUP_HOM_COUNT, dbInfo.totHoms);
 				var.addProperty(VariantRec.ARUP_SAMPLE_COUNT, dbInfo.totSamples);
 				var.addAnnotation(VariantRec.ARUP_FREQ_DETAILS, dbInfo.details);
-				
 			}
 			else {
 				var.addProperty(VariantRec.ARUP_OVERALL_FREQ, 0.0);

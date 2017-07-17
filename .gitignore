@@ -7,3 +7,8 @@ bin/*
 .settings/
 src/main/resources/
 varutils.test.out
+.DS_Store
+snpEffDirLink
+pipeinstance*
+snpeff.input.vcf
+snpeff.output

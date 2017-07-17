@@ -48,9 +48,10 @@ public abstract class AbstractTabixAnnotator extends Annotator {
 	 * @param altIndex
 	 */
 
-	protected abstract boolean addAnnotationsFromString(VariantRec variantToAnnotate, String vcfLine, int altIndex);
+	protected abstract boolean addAnnotationsFromString(VariantRec variantToAnnotate, String vcfLine, int altIndex) throws OperationFailedException;
 
 	protected void initializeReader(String filePath) {
+
 		try {
 			reader = new TabixReader(filePath);
 		} catch (IOException e) {
@@ -64,7 +65,7 @@ public abstract class AbstractTabixAnnotator extends Annotator {
 	 * prior to the first call to annotateVariant, and gives us a chance to do a little
 	 * initialization. 
 	 */
-	protected void prepare() {
+	protected void prepare() throws OperationFailedException {
 		initializeReader( getPathToTabixedFile());
 	}
 
@@ -89,8 +90,9 @@ public abstract class AbstractTabixAnnotator extends Annotator {
 	 * @param varToAnnotate
 	 * @param vcfLine
 	 * @return
+	 * @throws OperationFailedException 
 	 */
-	protected int findMatchingVariant(VariantRec varToAnnotate, String vcfLine) {
+	protected int findMatchingVariant(VariantRec varToAnnotate, String vcfLine) throws OperationFailedException {
 		String[] toks = vcfLine.split("\t");
 		String[] alts = toks[4].split(",");
 		
@@ -149,7 +151,9 @@ public abstract class AbstractTabixAnnotator extends Annotator {
 		if(iter != null) {
 			try {
 				String val = iter.next();
+
 				while(val != null) {
+
 					String[] toks = val.split("\t");
 					if (toks.length > 6) {
 

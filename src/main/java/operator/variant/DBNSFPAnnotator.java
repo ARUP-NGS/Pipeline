@@ -75,9 +75,9 @@ import buffer.variant.VariantRec;
  * 36 LRT_converted_rankscore
  * 37 LRT_pred
  * 38 LRT_Omega
- * 39 MutationTaster_score <------ MT
+ * 39 MutationTaster_score <------ MT this is column 37 in 2.9
  * 40 MutationTaster_converted_rankscore
- * 41 MutationTaster_pred
+ * 41 MutationTaster_pred <------ MT this is column 38 in 2.9
  * 42 MutationTaster_model
  * 43 MutationTaster_AAE
  * 44 Uniprot_id_MutationAssessor
@@ -212,11 +212,13 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
     public static final String DBNSFP_PATH = "dbnsfp.path";
     public static final String DBNSFP_VERSION = "dbnsfp.version";
     public static final Pattern TAB = Pattern.compile("\\t");
-    protected String dbsnfpVersion = null;
+    protected String dbnsfpVersion = null;
     
     private int sift_score_col;
+    private int sift_pred_col;
     private int polyphen_score_col;
     private int Polyphen2_hvar_score_col;
+    private int Polyphen2_hvar_pred_col;
     private int lrt_score_column;
     private int mt_score_column;
     private int mt_pred_column;
@@ -254,119 +256,158 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
     /**
      * returns the sift column for a specific dbNSFP DB
      *
-     * @param dbsnfpVersion
+     * @param dbnsfpVersion
      * @return column index
      */
-    private int getSiftColumn(String dbsnfpVersion) {
-        if (dbsnfpVersion.equals("3.0") || dbsnfpVersion.equals("3.1a")) return 23;
-        if (dbsnfpVersion.equals("2.9")) return 26;
-        if (dbsnfpVersion.equals("2.0")) return 21;
+    private int getSiftColumn(String dbnsfpVersion) {
+        if (dbnsfpVersion.equals("3.0") || dbnsfpVersion.equals("3.1a")) return 23;
+        if (dbnsfpVersion.equals("2.9") || dbnsfpVersion.equals("2.9.2")) return 26; 
+        if (dbnsfpVersion.equals("2.0")) return 21;
+        return -1;
+    }
+    /**
+     * returns the sift prediction column for a specific dbNSFP DB
+     *
+     * @param dbnsfpVersion
+     * @return column index
+     */
+    private int getSiftPredColumn(String dbnsfpVersion) {
+        if (dbnsfpVersion.equals("3.0") || dbnsfpVersion.equals("3.1a")) return -1;
+        if (dbnsfpVersion.equals("2.9") || dbnsfpVersion.equals("2.9.2")) return 28;
+        if (dbnsfpVersion.equals("2.0")) return -1;
         return -1;
     }
 
     /**
      * returns the Polyphen2_HDIV_score column index for a specific dbNSFP DB
      *
-     * @param dbsnfpVersion
+     * @param dbnsfpVersion
      * @return column index
      */
-    private int getPolyphenScoreColumn(String dbsnfpVersion) {
-        if (dbsnfpVersion.equals("3.0") || dbsnfpVersion.equals("3.1a")) return 29;
-        if (dbsnfpVersion.equals("2.9")) return 29;
-        if (dbsnfpVersion.equals("2.0")) return 22;
+    private int getPolyphenScoreColumn(String dbnsfpVersion) {
+        if (dbnsfpVersion.equals("3.0") || dbnsfpVersion.equals("3.1a")) return 29;
+        if (dbnsfpVersion.equals("2.9") || dbnsfpVersion.equals("2.9.2")) return 29;
+        if (dbnsfpVersion.equals("2.0")) return 22;
         return -1;
     }
     
     /**
      * Returns the Polyphen2_HVAR_score column index for a specific dbNSFP DB
      *
-     * @param dbsnfpVersion
+     * @param dbnsfpVersion
      * @return column index
      */
-    private int getPolyphenScoreHVARColumn(String dbsnfpVersion) {
-        if (dbsnfpVersion.equals("3.0") || dbsnfpVersion.equals("3.1a")) return 32;
-        if (dbsnfpVersion.equals("2.9")) return 32;
-        if (dbsnfpVersion.equals("2.0")) return 24;
+    private int getPolyphenScoreHVARColumn(String dbnsfpVersion) {
+        if (dbnsfpVersion.equals("3.0") || dbnsfpVersion.equals("3.1a")) return 32;
+        if (dbnsfpVersion.equals("2.9") || dbnsfpVersion.equals("2.9.2")) return 32;
+        if (dbnsfpVersion.equals("2.0")) return 24;
+        return -1;
+    }
+    /**
+     * Returns the Polyphen2_HVAR_PRED column index for a specific dbNSFP DB
+     *
+     * @param dbnsfpVersion
+     * @return column index
+     */
+    private int getPolyphenScoreHVARPREDColumn(String dbnsfpVersion) {
+        if (dbnsfpVersion.equals("3.0") || dbnsfpVersion.equals("3.1a")) return -1;
+        if (dbnsfpVersion.equals("2.9") || dbnsfpVersion.equals("2.9.2")) return 34;
+        if (dbnsfpVersion.equals("2.0")) return -1;
         return -1;
     }
 
     /**
      * Returns the LRT_score column index for a specific dbNSFP DB
      *
-     * @param dbsnfpVersion
+     * @param dbnsfpVersion
      * @return column index
      */
-    private int getLRTScoreColumn(String dbsnfpVersion) {
-        if (dbsnfpVersion.equals("3.0") || dbsnfpVersion.equals("3.1a")) return 35;
-        if (dbsnfpVersion.equals("2.9")) return 35;
-        if (dbsnfpVersion.equals("2.0")) return 26;
+    private int getLRTScoreColumn(String dbnsfpVersion) {
+        if (dbnsfpVersion.equals("3.0") || dbnsfpVersion.equals("3.1a")) return 35;
+        if (dbnsfpVersion.equals("2.9") || dbnsfpVersion.equals("2.9.2")) return 35;
+        if (dbnsfpVersion.equals("2.0")) return 26;
         return -1;
     }
 
     /**
      * Returns the Mutation_taster_score column index for a specific dbNSFP DB
      *
-     * @param dbsnfpVersion
+     * @param dbnsfpVersion
      * @return column index
      */
-    private int getMTScoreColumn(String dbsnfpVersion) {
-        if (dbsnfpVersion.equals("3.0") || dbsnfpVersion.equals("3.1a")) return -1;
-        if (dbsnfpVersion.equals("2.9")) return 39;
-        if (dbsnfpVersion.equals("2.0")) return -1;
+    private int getMTScoreColumn(String dbnsfpVersion) {
+        if (dbnsfpVersion.equals("3.0") || dbnsfpVersion.equals("3.1a")) return -1;
+        if (dbnsfpVersion.equals("2.9") || dbnsfpVersion.equals("2.9.2")) return 38;
+        if (dbnsfpVersion.equals("2.0")) return -1;
         return -1;
     }
-
-    private int getMTPredColumn(String dbsnfpVersion) {
-        if (dbsnfpVersion.equals("3.0") || dbsnfpVersion.equals("3.1a")) return -1;
-        if (dbsnfpVersion.equals("2.9")) return 40;
-        if (dbsnfpVersion.equals("2.0")) return -1;
+    /**
+     * Returns the Mutation_taster_prediction column index for a specific dbNSFP DB
+     *
+     * @param dbnsfpVersion
+     * @return column index
+     */
+    private int getMTPredColumn(String dbnsfpVersion) {
+        if (dbnsfpVersion.equals("3.0") || dbnsfpVersion.equals("3.1a")) return -1;
+        if (dbnsfpVersion.equals("2.9") || dbnsfpVersion.equals("2.9.2")) return 40;
+        if (dbnsfpVersion.equals("2.0")) return -1;
         return -1;
     }    
 
     /**
      * Returns the Mutation_Assessor_score column index for a specific dbNSFP DB
      *
-     * @param dbsnfpVersion
+     * @param dbnsfpVersion
      * @return column index
      */
-    private int getMAScoreColumn(String dbsnfpVersion) {
-        if (dbsnfpVersion.equals("3.0") || dbsnfpVersion.equals("3.1a")) return -1;
-        if (dbsnfpVersion.equals("2.9")) return 42;
-        if (dbsnfpVersion.equals("2.0")) return -1;
+    private int getMAScoreColumn(String dbnsfpVersion) {
+        if (dbnsfpVersion.equals("3.0") || dbnsfpVersion.equals("3.1a")) return -1;
+        if (dbnsfpVersion.equals("2.9")) return 42; //this is the "converted" score of 0-1
+        if (dbnsfpVersion.equals("2.9.2")) return 42; // this is really MutationAssessor_rankscore !!!!
+        if (dbnsfpVersion.equals("2.0")) return -1;
         return -1;
     }   
-    private int getMAPredColumn(String dbsnfpVersion) {
-        if (dbsnfpVersion.equals("3.0") || dbsnfpVersion.equals("3.1a")) return -1;
-        if (dbsnfpVersion.equals("2.9")) return 43;
-        if (dbsnfpVersion.equals("2.0")) return -1;
+    
+    /**
+     * Returns the Mutation_Assessor_prediction column index for a specific dbNSFP DB
+     *
+     * @param dbnsfpVersion
+     * @return column index
+     */
+    private int getMAPredColumn(String dbnsfpVersion) {
+        if (dbnsfpVersion.equals("3.0") || dbnsfpVersion.equals("3.1a")) return -1;
+        if (dbnsfpVersion.equals("2.9") || dbnsfpVersion.equals("2.9.2")) return 43;
+        if (dbnsfpVersion.equals("2.0")) return -1;
         return -1;
     }    
-//CHRISK
+
     /**
      * Returns the GERP_NR column index for a specific dbNSFP DB
      *
-     * @param dbsnfpVersion
+     * @param dbnsfpVersion
      * @return column index
      */
-    private int getGerpNRColumn(String dbsnfpVersion) {
-    	if (dbsnfpVersion.equals("3.1a")) return 87;
-    	if (dbsnfpVersion.equals("3.0")) return 62;
-        if (dbsnfpVersion.equals("2.9")) return 62;
-        if (dbsnfpVersion.equals("2.0")) return 32;
+    private int getGerpNRColumn(String dbnsfpVersion) {
+    	if (dbnsfpVersion.equals("3.1a")) return 87;
+    	if (dbnsfpVersion.equals("3.0")) return 62;
+        if (dbnsfpVersion.equals("2.9")) return 62;
+        if (dbnsfpVersion.equals("2.9.2")) return 71; //GERP++ neutral rate
+        if (dbnsfpVersion.equals("2.0")) return 32;
         return -1;
     }
 
     /**
      * Returns the GERP_RS column index for a specific dbNSFP DB
      *
-     * @param dbsnfpVersion
+     * @param dbnsfpVersion
      * @return column index
      */
-    private int getGerpColumn(String dbsnfpVersion) {
-    	if (dbsnfpVersion.equals("3.1a")) return 88;
-        if (dbsnfpVersion.equals("3.0")) return 63;
-        if (dbsnfpVersion.equals("2.9")) return 63;
-        if (dbsnfpVersion.equals("2.0")) return 33;
+    private int getGerpColumn(String dbnsfpVersion) {
+    	if (dbnsfpVersion.equals("3.1a")) return 88;
+        if (dbnsfpVersion.equals("3.0")) return 63;
+        if (dbnsfpVersion.equals("2.9")) return 63;
+        if (dbnsfpVersion.equals("2.9.2")) return 72; //GERP++_RS:
+        if (dbnsfpVersion.equals("2.0")) return 33;
         return -1;
     
     }
@@ -374,14 +415,15 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
     /**
      * Returns the PhyloP column index for a specific dbNSFP DB
      *
-     * @param dbsnfpVersion
+     * @param dbnsfpVersion
      * @return column index
      */
-    private int getPhylopColumn(String dbsnfpVersion) {
-    	if (dbsnfpVersion.equals("3.1a")) return 90;
-        if (dbsnfpVersion.equals("3.0")) return 65;
-        if (dbsnfpVersion.equals("2.9")) return 69;
-        if (dbsnfpVersion.equals("2.0")) return 34;
+    private int getPhylopColumn(String dbnsfpVersion) {
+    	if (dbnsfpVersion.equals("3.1a")) return 90;
+        if (dbnsfpVersion.equals("3.0")) return 65;
+        if (dbnsfpVersion.equals("2.9")) return 69;
+        if (dbnsfpVersion.equals("2.9.2")) return 74; // phyloP46way_primate????
+        if (dbnsfpVersion.equals("2.0")) return 34;
         return -1;
 
     }
@@ -389,14 +431,15 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
     /**
      * Returns the SiPhy_29way_logOdds column index for a specific dbNSFP DB
      *
-     * @param dbsnfpVersion
+     * @param dbnsfpVersion
      * @return column index
      */
-    private int getSiphyColumn(String dbsnfpVersion) {
-    	if (dbsnfpVersion.equals("3.1a")) return 99;
-        if (dbsnfpVersion.equals("3.0")) return 70;
-        if (dbsnfpVersion.equals("2.9")) return 78;
-        if (dbsnfpVersion.equals("2.0")) return 36;
+    private int getSiphyColumn(String dbnsfpVersion) {
+    	if (dbnsfpVersion.equals("3.1a")) return 99;
+        if (dbnsfpVersion.equals("3.0")) return 70;
+        if (dbnsfpVersion.equals("2.9")) return 78;
+        if (dbnsfpVersion.equals("2.9.2")) return 87;
+        if (dbnsfpVersion.equals("2.0")) return 36;
         return -1;
     }
 
@@ -431,15 +474,16 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
     	String[] toks = TAB.split(val);
 
         //SIFT_SCORE, takes the lowest
+    	int siftindex = 0;
         try {
             if (toks[sift_score_col].contains(";")) {
                 String[] values = toks[sift_score_col].split(";");
-                //System.out.println(sift_score_col);
                 double lowest = 2.0;
                 for (String i : values) {
                     try {
                         if (Double.parseDouble(i) < lowest) {
                             lowest = Double.parseDouble(i);
+                            siftindex = Arrays.asList(values).indexOf(i);//get index of  "lowest"
                         }
                     } catch (NumberFormatException ex) {
                         //Thrown if the value in the tabix is not parsable "." and moves to the next value
@@ -450,6 +494,29 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
                 var.addProperty(VariantRec.SIFT_SCORE, Double.parseDouble(toks[sift_score_col]));
             }           
         } catch (NumberFormatException ex) {//Thrown if the value in the tabix is not parsable "."
+        }
+        
+        //SIFT_PRED
+        try {
+            String nonAbrrvSIFTPredColumn = "";
+            String abrrvSIFTPredColumn = "";
+            if (toks[sift_pred_col].contains(";")) {
+                String[] values = toks[sift_pred_col].split(";");
+                abrrvSIFTPredColumn = values[siftindex];
+            } else {
+                abrrvSIFTPredColumn = toks[sift_pred_col];
+            }
+            if (abrrvSIFTPredColumn.equals("D")) {
+                nonAbrrvSIFTPredColumn = "damaging";
+            } else if(abrrvSIFTPredColumn.equals("T")) {
+                nonAbrrvSIFTPredColumn = "tolerated";
+            }
+            else{
+                nonAbrrvSIFTPredColumn = abrrvSIFTPredColumn;
+            }
+                var.addAnnotation(VariantRec.SIFT_PRED, nonAbrrvSIFTPredColumn);   	         
+        } catch (NumberFormatException ex) {
+        	//Thrown if the value in the tabix is not parsable "."
         }
 
         //Polyphen2_HDIV_score, takes the highest
@@ -473,6 +540,7 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
         }
 
         //POLYPHEN_HVAR_SCORE, takes the highest
+        int hvarindex = 0;
         try {
             if (toks[Polyphen2_hvar_score_col].contains(";")) {
                 String[] values = toks[Polyphen2_hvar_score_col].split(";");
@@ -481,6 +549,7 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
                     try {
                         if (Double.parseDouble(i) > highest) {
                             highest = Double.parseDouble(i);
+                            hvarindex = Arrays.asList(values).indexOf(i);//get index of  "highest"
                         }
                     } catch (NumberFormatException ex) {
                     }
@@ -491,14 +560,37 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
             }
         } catch (NumberFormatException ex) {
         }
+        //POLYPHEN_HVAR_PRED
+        try {
+        	String nonAbrrvPPPredColumn = "";
+        	String abrrvPPPredColumn = "";
+            if (toks[Polyphen2_hvar_pred_col].contains(";")) {
+                String[] values = toks[Polyphen2_hvar_pred_col].split(";");
+                abrrvPPPredColumn = values[hvarindex];
+            } else {
+            	abrrvPPPredColumn = toks[Polyphen2_hvar_pred_col];
+            }
+            if (abrrvPPPredColumn.equals("D")) {
+            		nonAbrrvPPPredColumn = "probably_damaging";
+            } else if(abrrvPPPredColumn.equals("P")) {
+            		nonAbrrvPPPredColumn= "possibly_damaging";
+            } else if(abrrvPPPredColumn.equals("B")) {
+            		nonAbrrvPPPredColumn= "benign";
+            }
+            else{
+            		nonAbrrvPPPredColumn = abrrvPPPredColumn;
+            }
+            var.addAnnotation(VariantRec.POLYPHEN_HVAR_PRED, nonAbrrvPPPredColumn);
+        } catch (NumberFormatException ex) {
+        }
 
         //LRT SCORE, just adds
         try {
             var.addProperty(VariantRec.LRT_SCORE, Double.parseDouble(toks[lrt_score_column])); 
         } catch (NumberFormatException ex) {
         }
-//CHRISK
-        int mutalyzerindex = 0;
+
+        int mtindex = 0;
         //MT_SCORE, takes the highest
         try {
             if (toks[mt_score_column].contains(";")) {
@@ -508,7 +600,7 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
                     try {
                         if (Double.parseDouble(i) > highest) {
                             highest = Double.parseDouble(i);
-                            mutalyzerindex = Arrays.asList(values).indexOf(i);//get index of  "highest" 
+                            mtindex = Arrays.asList(values).indexOf(i);//get index of  "highest" 
                         }
                     } catch (NumberFormatException ex) {
                     }
@@ -518,30 +610,37 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
                 var.addProperty(VariantRec.MT_SCORE, Double.parseDouble(toks[mt_score_column]));
             }
         } catch (NumberFormatException ex) {
+        	//Thrown if the value in the tabix is not parsable "."
         }
 
         String mt_pred = null;
         try {
+        	String nonAbrrvPredColumn = "";
+        	String abrrvPredColumn = "";
+        	
             if (toks[mt_pred_column].contains(";")) {
                 String[] values = toks[mt_pred_column].split(";");
-                mt_pred = values[mutalyzerindex];
+                mt_pred = values[mtindex];
                 var.addAnnotation(VariantRec.MT_PRED, mt_pred);
                 }
             else{
-            	String abrrvPredColumn = toks[mt_pred_column];
-            	String nonAbrrvPredColumn = "";
-            	if (abrrvPredColumn.equals("A")) {
-            		nonAbrrvPredColumn = "disease_causing_automatic";
-            	} else if(abrrvPredColumn.equals("D")) {
-            		nonAbrrvPredColumn= "disease_causing";
-            	} else if(abrrvPredColumn.equals("N")) {
-            		nonAbrrvPredColumn= "polymorphism";
-            	} else if(abrrvPredColumn.equals("P")) {
-            		nonAbrrvPredColumn= "polymorphism_automatic";
-            	}
-            	var.addAnnotation(VariantRec.MT_PRED, nonAbrrvPredColumn);
+            	abrrvPredColumn = toks[mt_pred_column];
             }
+            if (abrrvPredColumn.equals("A")) {
+            		nonAbrrvPredColumn = "disease_causing_automatic";
+            } else if(abrrvPredColumn.equals("D")) {
+            		nonAbrrvPredColumn= "disease_causing";
+            } else if(abrrvPredColumn.equals("N")) {
+            		nonAbrrvPredColumn= "polymorphism";
+            } else if(abrrvPredColumn.equals("P")) {
+            		nonAbrrvPredColumn= "polymorphism_automatic";
+            }
+            else{
+            	nonAbrrvPredColumn = abrrvPredColumn;
+            }
+            var.addAnnotation(VariantRec.MT_PRED, nonAbrrvPredColumn);
         } catch (NumberFormatException ex) {
+        	
         }        
         
         
@@ -555,7 +654,7 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
                     try {
                         if (Double.parseDouble(i) > highest) {
                             highest = Double.parseDouble(i);
-                            mutalyzerindex = Arrays.asList(values).indexOf(i);
+                            mtindex = Arrays.asList(values).indexOf(i);
                         }
                     } catch (NumberFormatException ex) {
                     }
@@ -570,7 +669,7 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
         try {
             if (toks[ma_pred_column].contains(";")) {
                 String[] values = toks[ma_pred_column].split(";");
-                ma_pred = values[mutalyzerindex];
+                ma_pred = values[mtindex];
                 var.addAnnotation(VariantRec.MA_PRED, ma_pred);
                 }
             else{
@@ -578,6 +677,7 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
             }
         }
             catch (NumberFormatException ex) {
+            	//Thrown if the value in the tabix is not parsable "."
         }   
 
         //GERP_NR_SCORE, just adds
@@ -674,31 +774,33 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
     public void initialize(NodeList children) {
         super.initialize(children);
 
-        dbsnfpVersion = getAttribute(DBNSFP_VERSION);
-        if (dbsnfpVersion == null) dbsnfpVersion= getPipelineProperty (DBNSFP_VERSION);
+        dbnsfpVersion = getAttribute(DBNSFP_VERSION);
+        if (dbnsfpVersion == null) dbnsfpVersion= getPipelineProperty (DBNSFP_VERSION);
         
         //I'm going to force a declaration of what version they are using, Nix
-        if (dbsnfpVersion == null) throw new IllegalArgumentException ("Failed to parse your "+DBNSFP_VERSION +". Please include it in your pipeline properties xml file.");
-        else if (dbsnfpVersion.equals("2.0") == false && dbsnfpVersion.equals("2.9") == false && dbsnfpVersion.equals("3.0") == false && dbsnfpVersion.equals("3.1a") == false){
-        	throw new IllegalArgumentException ("Only the 2.0, 2.9, 3.0, 3.1a versions of "+DBNSFP_VERSION +" are supported");
+        if (dbnsfpVersion == null) throw new IllegalArgumentException ("Failed to parse your "+DBNSFP_VERSION +". Please include it in your pipeline properties xml file.");
+        else if (dbnsfpVersion.equals("2.0") == false && dbnsfpVersion.equals("2.9") == false && dbnsfpVersion.equals("2.9.2") == false && dbnsfpVersion.equals("3.0") == false && dbnsfpVersion.equals("3.1a") == false){
+        	throw new IllegalArgumentException ("Only the 2.0, 2.9, 2.9.2, 3.0, 3.1a versions of "+DBNSFP_VERSION +" are supported");
         }
         
         //set column indexes, bad way of doing this!
-        sift_score_col = getSiftColumn(dbsnfpVersion);
-        polyphen_score_col = getPolyphenScoreColumn(dbsnfpVersion);
-        Polyphen2_hvar_score_col = getPolyphenScoreHVARColumn(dbsnfpVersion);
-        lrt_score_column = getLRTScoreColumn(dbsnfpVersion);
-        mt_score_column = getMTScoreColumn(dbsnfpVersion);
-        mt_pred_column = getMTPredColumn(dbsnfpVersion);
-        ma_pred_column = getMAPredColumn(dbsnfpVersion);
-        ma_score_column = getMAScoreColumn(dbsnfpVersion);
-        gerp_nr_score_column = getGerpNRColumn(dbsnfpVersion);
-        gerp_score_column = getGerpColumn(dbsnfpVersion);
-        phylop_score_column = getPhylopColumn(dbsnfpVersion);
-        siphy_score_column = getSiphyColumn(dbsnfpVersion);
+        sift_score_col = getSiftColumn(dbnsfpVersion);
+        sift_pred_col = getSiftPredColumn(dbnsfpVersion);
+        polyphen_score_col = getPolyphenScoreColumn(dbnsfpVersion);
+        Polyphen2_hvar_score_col = getPolyphenScoreHVARColumn(dbnsfpVersion);
+        Polyphen2_hvar_pred_col = getPolyphenScoreHVARPREDColumn(dbnsfpVersion);
+        lrt_score_column = getLRTScoreColumn(dbnsfpVersion);
+        mt_score_column = getMTScoreColumn(dbnsfpVersion);
+        mt_pred_column = getMTPredColumn(dbnsfpVersion);
+        ma_pred_column = getMAPredColumn(dbnsfpVersion);
+        ma_score_column = getMAScoreColumn(dbnsfpVersion);
+        gerp_nr_score_column = getGerpNRColumn(dbnsfpVersion);
+        gerp_score_column = getGerpColumn(dbnsfpVersion);
+        phylop_score_column = getPhylopColumn(dbnsfpVersion);
+        siphy_score_column = getSiphyColumn(dbnsfpVersion);
         
         //set indexes for the correct columns in a dbnsfp line, first is 0.
-        if (dbsnfpVersion.equals("3.1a")){
+        if (dbnsfpVersion.equals("3.1a")){
             b37Chr_column =7;
             b37Pos_column =8;
             b37Ref_column =2;

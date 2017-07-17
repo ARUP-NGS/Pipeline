@@ -27,7 +27,7 @@ public class DBNSFPGeneAnnotator extends AbstractGeneAnnotator {
 	DBNSFPGene db;
 	private File dbFile;
 	public static final String DBNSFPGENE_PATH = "dbnsfp.gene.path";
-	private String dbsnfpVersion = null; 
+	private String dbnsfpVersion = null; 
 	
 	@Override
 	public void annotateGene(Gene g) throws OperationFailedException {
@@ -35,10 +35,10 @@ public class DBNSFPGeneAnnotator extends AbstractGeneAnnotator {
 		if (db == null) {
 			Logger.getLogger(Pipeline.primaryLoggerName).info("dbNSFP-gene looking to use file: " + dbFile.getAbsolutePath());
 			try {
-				if (dbFile.getName().contains("2.0")) dbsnfpVersion = "2.0";
+				if (dbFile.getName().contains("2.0")) dbnsfpVersion = "2.0";
 				//support for 2.0, or 3.1a
-				if (dbsnfpVersion == null) db = DBNSFPGene.getDB(dbFile);
-				else db = new DBNSFPGene( dbFile, dbsnfpVersion);
+				if (dbnsfpVersion == null) db = DBNSFPGene.getDB(dbFile);
+				else db = new DBNSFPGene( dbFile, dbnsfpVersion);
 				
 			} catch (IOException e) {
 				throw new OperationFailedException("Could not initialize dbNSFP gene file " + dbFile.getAbsolutePath() + " : " + e.getMessage(), this);
@@ -64,14 +64,7 @@ public class DBNSFPGeneAnnotator extends AbstractGeneAnnotator {
 		if (pathToDBNSFPGene == null) throw new IllegalArgumentException("No path to dbNSFP specified, cannot use dbNSFP gene annotator");
 		Logger.getLogger(Pipeline.primaryLoggerName).info("dbNSFP-gene reader using directory : " + pathToDBNSFPGene);
 		
-		
-		//look for version, might be null
-		dbsnfpVersion = getAttribute(DBNSFPAnnotator.DBNSFP_VERSION);
-	    if (dbsnfpVersion == null) dbsnfpVersion= getPipelineProperty (DBNSFPAnnotator.DBNSFP_VERSION);
-		
-	    //set file
-	    if (dbsnfpVersion != null && dbsnfpVersion.equals("3.1a")) dbFile = new File(pathToDBNSFPGene + "/dbNSFP3.1_gene");
-	    else dbFile = new File(pathToDBNSFPGene + "/dbNSFP2.0b4_gene");
+	    	dbFile = new File(pathToDBNSFPGene);
 	    
 		if (! dbFile.exists()) throw new IllegalArgumentException("DBNSFP file " + dbFile.getAbsolutePath() + " does not exist");
 
