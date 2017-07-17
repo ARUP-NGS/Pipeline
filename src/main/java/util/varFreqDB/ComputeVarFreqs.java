@@ -64,7 +64,7 @@ public class ComputeVarFreqs {
 		
 		//Only add if there's nothing else with this key OR if there is a sample with this key but it
 		//has an older date than the current sample
-		
+		System.out.println("Sample with name " + sampInfo.sampleName + " has key " + sampInfo.key());
 		if (! allSamples.containsKey(sampInfo.key())) {
 			allSamples.put(sampInfo.key(), sampInfo);
 		} else {
