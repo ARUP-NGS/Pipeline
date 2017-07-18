@@ -516,7 +516,11 @@ public class VCFParser implements VariantLineReader {
 		if (infoEnd != null && infoEnd !=-1){
 			var.addPropertyInt(VariantRec.SV_END, infoEnd);
 		}
-		
+
+		String alleles = getMNPAlleleComponents();
+		if(alleles != null) {
+			var.addAnnotation(VariantRec.MNP_ALLELES, alleles);
+		}
 		//If no SVLEN present in VCF field, calculate size of indels instead
 		Integer svlen = getSVLEN();
 		if (svlen != null && svlen !=-1){
@@ -1024,6 +1028,19 @@ public class VCFParser implements VariantLineReader {
 			//Double gq = convertStr2Double(genoQualStr);
 		}
 		return genoQualStr;	
+	}
+
+	/**
+	 * For records that are reconstructed MNPs created by MNPoster, parse and return the ALLELES entry in the
+	 * INFO dict
+	 * @return String containing component alleles, or null if no ALLELES entry is found in the INFO dict
+	 */
+	public String getMNPAlleleComponents() {
+		if (sampleMetrics.containsKey("ALLELES")) {
+			return sampleMetrics.get("ALLELES");
+		} else {
+			return null;
+		}
 	}
 
 	/**

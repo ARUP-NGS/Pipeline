@@ -1018,5 +1018,7 @@ public class VariantRec {
    public static final String INDEL_LENGTH = "indel.length";
    public static final String SV_END = "sv.end";
 
+   public static final String MNP_ALLELES = "mnp.alleles";
+
 }
 
