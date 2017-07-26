@@ -954,6 +954,14 @@ public class VCFParser implements VariantLineReader {
 				} else if (getSampleMetricsStr("set").equals("scalpel")) {
 					annoStr = "AD";
 					annoIdx = new int[]{1};
+				} else if (getSampleMetricsStr("set").equals("MNPoster")) {
+					if (sampleMetrics.containsKey("DP") && sampleMetrics.containsKey("AF")) {
+						int dp = convertStr2Int(sampleMetrics.get("DP"));
+						double af = convertStr2Double(sampleMetrics.get("AF"));
+						return new Integer( (int)Math.round(dp * af));
+					} else {
+						throw new IllegalStateException("Could not parse DP and AF fields for reconstructed MNP variant");
+					}
 				} else if (getSampleMetricsStr("set").equals("manta")) {
 					String pairedStr = getSampleMetricsStr("PR");
 					String splitStr = getSampleMetricsStr("SR");
@@ -979,7 +987,7 @@ public class VCFParser implements VariantLineReader {
 					return vardp;
 				} else  {
 					throw new IllegalStateException("ERROR: VCF malformed! Merged Lofreq/Scalpel/Manta VCF contains a 'set' key of "
-							+ getSampleMetricsStr("set") + ", which is not defined. 'set' must be 'lofreq', 'scalpel', or 'manta'.");
+							+ getSampleMetricsStr("set") + ", which is not defined. 'set' must be 'lofreq', 'scalpel', 'manta' or 'MNPoster'.");
 				}
 		} else if (creator.equals("lofreq_scalpel_USeqMerged")){
 			//get total depth
