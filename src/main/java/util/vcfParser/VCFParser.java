@@ -554,7 +554,9 @@ public class VCFParser implements VariantLineReader {
 		if (rpScore != null){
 			var.addProperty(VariantRec.RP_SCORE, rpScore);
 		}
-		
+
+		var.addAnnotation(VariantRec.RAW_GT, getSampleMetricsStr("GT"));
+
 		//Iterator over all annotators and cause them to annotator if need be
 		for(VCFMetricsAnnotator vcfAnnotator : annotators) {
 			vcfAnnotator.addAnnotation(var, sampleMetrics);
