@@ -557,6 +557,8 @@ public class VCFParser implements VariantLineReader {
 
 		var.addAnnotation(VariantRec.RAW_GT, getSampleMetricsStr("GT"));
 
+		var.addAnnotation(VariantRec.SV_IMPRECISE, getSVImpreciseFlag());
+
 		//Iterator over all annotators and cause them to annotator if need be
 		for(VCFMetricsAnnotator vcfAnnotator : annotators) {
 			vcfAnnotator.addAnnotation(var, sampleMetrics);
@@ -1013,19 +1015,24 @@ public class VCFParser implements VariantLineReader {
 	 * @return
 	 */
 	public String getGenotypeQuality() {
-		String genoQualStr=null;
+		return getSampleMetricsStr("GQ");
+	}
+
+	/**
+	 * If creator is "lofreq_scalpel_manta", search for a field with key "IMPRECISE", if found return true
+	 * otherwise false
+	 * If creator is not "lofreq_scalpel_manta", return null
+	 * @return
+	 */
+	public String getSVImpreciseFlag() {
 		if (creator.equals("lofreq_scalpel_manta")) {
 			if (sampleMetrics.containsKey("IMPRECISE")) {
-				genoQualStr = "IMPRECISE";
+				return "true";
 			} else {
-				genoQualStr = ".";
+				return "false";
 			}
-		} else {
-			//Get GQ from sampleMetrics dictionary
-			genoQualStr = getSampleMetricsStr("GQ");
-			//Double gq = convertStr2Double(genoQualStr);
 		}
-		return genoQualStr;	
+		return null;
 	}
 
 	/**
