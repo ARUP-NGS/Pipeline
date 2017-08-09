@@ -881,33 +881,33 @@ public class VCFParser implements VariantLineReader {
 		if (creator.contains("Torrent")){
 			AnnoStr = "FDP"; //Flow evaluator metrics reflect the corrected base calls based on model of ref, alt called by FreeBayes, & original base call	
 			AnnoIdx = new int[]{0};
-			} else if (creator.contains("lofreq_scalpel_manta")) {
-				if (getSampleMetricsStr("set").equals("lofreq")) {
-					AnnoStr = "DP4";
-					AnnoIdx = new int[]{0,1,2,3};
-				} else if (getSampleMetricsStr("set").equals("scalpel")) {
-					AnnoStr = "DP";
-					AnnoIdx = new int[]{0};
-				} else if (getSampleMetricsStr("set").equals("manta")) {
-					String pairedStr = getSampleMetricsStr("PR");
-					String splitStr = getSampleMetricsStr("SR");
-					String[] pairedDepthToks = {"0","0"};
-					String[] splitDepthToks = {"0","0"};
-					
-					if (pairedStr != null) {
-						pairedDepthToks = pairedStr.split(",");
-					}
-					if (splitStr != null) {
-						splitDepthToks = splitStr.split(",");
-					} 
-					
-					dp = convertStr2Int(pairedDepthToks[0]) + convertStr2Int(pairedDepthToks[1]) +
-						 convertStr2Int(splitDepthToks[0]) + convertStr2Int(splitDepthToks[1]);
-					return dp;
-				} else {
-					throw new IllegalStateException("ERROR: VCF malformed! Merged Lofreq/Scalpel/Manta VCF contains a 'set' key of "
-							+ getSampleMetricsStr("set") + ", which is not defined. 'set' must be 'lofreq', 'scalpel', or 'manta'.");
+		} else if (creator.contains("lofreq_scalpel_manta")) {
+			if (getSampleMetricsStr("set").equals("lofreq")) {
+				AnnoStr = "DP4";
+				AnnoIdx = new int[]{0,1,2,3};
+			} else if (getSampleMetricsStr("set").equals("scalpel")) {
+				AnnoStr = "DP";
+				AnnoIdx = new int[]{0};
+			} else if (getSampleMetricsStr("set").equals("manta")) {
+				String pairedStr = getSampleMetricsStr("PR");
+				String splitStr = getSampleMetricsStr("SR");
+				String[] pairedDepthToks = {"0","0"};
+				String[] splitDepthToks = {"0","0"};
+
+				if (pairedStr != null) {
+					pairedDepthToks = pairedStr.split(",");
 				}
+				if (splitStr != null) {
+					splitDepthToks = splitStr.split(",");
+				}
+
+				dp = convertStr2Int(pairedDepthToks[0]) + convertStr2Int(pairedDepthToks[1]) +
+						convertStr2Int(splitDepthToks[0]) + convertStr2Int(splitDepthToks[1]);
+				return dp;
+			} else {
+				throw new IllegalStateException("ERROR: VCF malformed! Merged Lofreq/Scalpel/Manta VCF contains a 'set' key of "
+						+ getSampleMetricsStr("set") + ", which is not defined. 'set' must be 'lofreq', 'scalpel', or 'manta'.");
+			}
 		} else {
 			//good for lofreq_scalpel_USeqMerged
 			AnnoStr = "DP";
