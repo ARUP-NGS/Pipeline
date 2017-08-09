@@ -841,6 +841,7 @@ public class VariantRec {
 	public static final String LOGFS_SCORE = "log.fs";
 	public static final String DEPTH = "depth";
 	public static final String VAR_CALLER = "var.call";
+	public static final String RAW_GT = "raw.gt";
 
 	//snpEff .2 and .3 annotations only apply to arupBedFile usage with multiple transcripts in a bed line (column 4, "|" separated)
 	public static final String CDOT = "cdot";
@@ -1017,6 +1018,7 @@ public class VariantRec {
    public static final String SNPEFF_ALL = "snpeff.all";
    public static final String INDEL_LENGTH = "indel.length";
    public static final String SV_END = "sv.end";
+   public static final String SV_IMPRECISE = "sv.imprecise";
 
    public static final String MNP_ALLELES = "mnp.alleles";
 

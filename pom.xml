@@ -4,7 +4,7 @@
   <groupId>com.aruplab.ngs</groupId>
   <artifactId>Pipeline</artifactId>
   <packaging>jar</packaging>
-  <version>1.9.9</version>
+  <version>1.9.11-dev</version>
   <name>Pipeline</name>
   <url>http://maven.apache.org</url>
   <properties>
@@ -56,8 +56,13 @@
 	    <artifactId>maven-surefire-plugin</artifactId>
 	    <version>2.17</version>
 	    <configuration>
+<<<<<<< HEAD
                 <skipTests>true</skipTests>
                 <!-- testFailureIgnore>true</testFailureIgnore -->
+=======
+                <skipTests>false</skipTests>
+                <testFailureIgnore>true</testFailureIgnore>
+>>>>>>> dev
             </configuration>
 	</plugin>
 
