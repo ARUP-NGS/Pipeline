@@ -522,7 +522,11 @@ public class VCFParser implements VariantLineReader {
 		if (infoEnd != null && infoEnd !=-1){
 			var.addPropertyInt(VariantRec.SV_END, infoEnd);
 		}
-		
+
+		String alleles = getMNPAlleleComponents();
+		if(alleles != null) {
+			var.addAnnotation(VariantRec.MNP_ALLELES, alleles);
+		}
 		//If no SVLEN present in VCF field, calculate size of indels instead
 		Integer svlen = getSVLEN();
 		if (svlen != null && svlen !=-1){
@@ -887,35 +891,38 @@ public class VCFParser implements VariantLineReader {
 		if (creator.contains("Torrent")){
 			AnnoStr = "FDP"; //Flow evaluator metrics reflect the corrected base calls based on model of ref, alt called by FreeBayes, & original base call	
 			AnnoIdx = new int[]{0};
-			} else if (creator.contains("lofreq_scalpel_manta")) {
-				if (getSampleMetricsStr("set").equals("lofreq")) {
-					AnnoStr = "DP4";
-					AnnoIdx = new int[]{0,1,2,3};
-				} else if (getSampleMetricsStr("set").equals("scalpel")) {
-					AnnoStr = "DP";
-					AnnoIdx = new int[]{0};
-				} else if (getSampleMetricsStr("set").equals("manta")) {
-					String pairedStr = getSampleMetricsStr("PR");
-					String splitStr = getSampleMetricsStr("SR");
-					String[] pairedDepthToks = {"0","0"};
-					String[] splitDepthToks = {"0","0"};
-					
-					if (pairedStr != null) {
-						pairedDepthToks = pairedStr.split(",");
-					}
-					if (splitStr != null) {
-						splitDepthToks = splitStr.split(",");
-					} 
-					
-					dp = convertStr2Int(pairedDepthToks[0]) + convertStr2Int(pairedDepthToks[1]) +
-						 convertStr2Int(splitDepthToks[0]) + convertStr2Int(splitDepthToks[1]);
-					return dp;
-				} else {
-					throw new IllegalStateException("ERROR: VCF malformed! Merged Lofreq/Scalpel/Manta VCF contains a 'set' key of "
-							+ getSampleMetricsStr("set") + ", which is not defined. 'set' must be 'lofreq', 'scalpel', or 'manta'.");
+		} else if (creator.contains("lofreq_scalpel_manta")) {
+			if (getSampleMetricsStr("set").equals("lofreq")) {
+				AnnoStr = "DP4";
+				AnnoIdx = new int[]{0,1,2,3};
+			} else if (getSampleMetricsStr("set").equals("scalpel")) {
+				AnnoStr = "DP";
+				AnnoIdx = new int[]{0};
+			} else if (getSampleMetricsStr("set").equals("manta")) {
+				String pairedStr = getSampleMetricsStr("PR");
+				String splitStr = getSampleMetricsStr("SR");
+				String[] pairedDepthToks = {"0","0"};
+				String[] splitDepthToks = {"0","0"};
+
+				if (pairedStr != null) {
+					pairedDepthToks = pairedStr.split(",");
 				}
+				if (splitStr != null) {
+					splitDepthToks = splitStr.split(",");
+				}
+
+				dp = convertStr2Int(pairedDepthToks[0]) + convertStr2Int(pairedDepthToks[1]) +
+						convertStr2Int(splitDepthToks[0]) + convertStr2Int(splitDepthToks[1]);
+				return dp;
+			} else if (getSampleMetricsStr("set").equals("MNPoster")) {
+				AnnoStr = "DP";
+				AnnoIdx = new int[]{0};
+			} else {
+				throw new IllegalStateException("ERROR: VCF malformed! Merged Lofreq/Scalpel/Manta VCF contains a 'set' key of "
+						+ getSampleMetricsStr("set") + ", which is not defined. 'set' must be 'lofreq', 'scalpel', 'manta' or 'MNPoster'.");
+			}
 		} else {
-			//good for lofreq_scalpel_USeqMerged
+			//If creator is not 'Torrent' or 'lofreq_scalpel_manta'
 			AnnoStr = "DP";
 			AnnoIdx = new int[]{0};
 		}
@@ -927,7 +934,7 @@ public class VCFParser implements VariantLineReader {
 		dp = 0;
 		for (int i : AnnoIdx)
 			dp += convertStr2Int(DepthToks[i]);
-		return dp;				
+		return dp;
 	}
 	
 	/**
@@ -957,6 +964,14 @@ public class VCFParser implements VariantLineReader {
 				} else if (getSampleMetricsStr("set").equals("scalpel")) {
 					annoStr = "AD";
 					annoIdx = new int[]{1};
+				} else if (getSampleMetricsStr("set").equals("MNPoster")) {
+					if (sampleMetrics.containsKey("DP") && sampleMetrics.containsKey("AF")) {
+						int dp = convertStr2Int(sampleMetrics.get("DP"));
+						double af = convertStr2Double(sampleMetrics.get("AF"));
+						return new Integer( (int)Math.round(dp * af));
+					} else {
+						throw new IllegalStateException("Could not parse DP and AF fields for reconstructed MNP variant");
+					}
 				} else if (getSampleMetricsStr("set").equals("manta")) {
 					String pairedStr = getSampleMetricsStr("PR");
 					String splitStr = getSampleMetricsStr("SR");
@@ -982,7 +997,7 @@ public class VCFParser implements VariantLineReader {
 					return vardp;
 				} else  {
 					throw new IllegalStateException("ERROR: VCF malformed! Merged Lofreq/Scalpel/Manta VCF contains a 'set' key of "
-							+ getSampleMetricsStr("set") + ", which is not defined. 'set' must be 'lofreq', 'scalpel', or 'manta'.");
+							+ getSampleMetricsStr("set") + ", which is not defined. 'set' must be 'lofreq', 'scalpel', 'manta' or 'MNPoster'.");
 				}
 		} else if (creator.equals("lofreq_scalpel_USeqMerged")){
 			//get total depth
@@ -1039,6 +1054,19 @@ public class VCFParser implements VariantLineReader {
 			}
 		}
 		return null;
+	}
+
+	/**
+	 * For records that are reconstructed MNPs created by MNPoster, parse and return the ALLELES entry in the
+	 * INFO dict
+	 * @return String containing component alleles, or null if no ALLELES entry is found in the INFO dict
+	 */
+	public String getMNPAlleleComponents() {
+		if (sampleMetrics.containsKey("ALLELES")) {
+			return sampleMetrics.get("ALLELES");
+		} else {
+			return null;
+		}
 	}
 
 	/**

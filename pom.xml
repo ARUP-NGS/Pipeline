@@ -58,7 +58,7 @@
 	    <configuration>
                 <skipTests>false</skipTests>
                 <testFailureIgnore>true</testFailureIgnore>
-            </configuration>
+        </configuration>
 	</plugin>
 
         <plugin>
