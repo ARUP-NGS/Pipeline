@@ -505,7 +505,13 @@ public class VCFParser implements VariantLineReader {
 		if (varCaller != null){
 			var.addAnnotation(VariantRec.VAR_CALLER, varCaller);
 		}
-	
+
+		// If we have a somatic caller try and grab the AF info field.
+		if (creator.equals("lofreq_scalpel_manta") && sampleMetrics.containsKey("AF")) {
+			double alleleFrequency = convertStr2Double(sampleMetrics.get("AF"));
+			var.addProperty("var.freq", alleleFrequency);
+		}
+
 		Integer altDepth = getVariantDepth();
 		if (altDepth != null) {
 			var.addProperty(VariantRec.VAR_DEPTH, new Double(altDepth));
@@ -862,8 +868,8 @@ public class VCFParser implements VariantLineReader {
 		} else {
 			return new String[0];
 		}
-	}	
-		
+	}
+
 	/**
 	 * Total read depth at locus from INFO column, identified by "DP" and specified for the particular ALT
 	 * @author elainegee

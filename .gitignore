@@ -12,3 +12,5 @@ snpEffDirLink
 pipeinstance*
 snpeff.input.vcf
 snpeff.output
+.idea/
+*.iml
