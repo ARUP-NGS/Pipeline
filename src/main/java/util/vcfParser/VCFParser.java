@@ -1153,14 +1153,12 @@ public class VCFParser implements VariantLineReader {
 	 * @author jacobd
 	 */
 	public int getInfoEND(){
-		int infoend = -1;
-		if (creator.equals("lofreq_scalpel_manta")){
-			String strinfoend = getSampleMetricsStr("END");
-			if (strinfoend != null) {
-				infoend = convertStr2Int(strinfoend);
-			}
+		String strinfoend = getSampleMetricsStr("END");
+		if (strinfoend != null) {
+			return convertStr2Int(strinfoend);
+		} else {
+			return -1;
 		}
-		return infoend;
 	}
 	
 	/**
