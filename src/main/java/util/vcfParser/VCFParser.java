@@ -905,7 +905,7 @@ public class VCFParser implements VariantLineReader {
 			if (getSampleMetricsStr("set").equals("lofreq")) {
 				AnnoStr = "DP4";
 				AnnoIdx = new int[]{0,1,2,3};
-			} else if (getSampleMetricsStr("set").equals("scalpel")) {
+			} else if (getSampleMetricsStr("set").equals("scalpel") || getSampleMetricsStr("set").equals("pindel")) {
 				AnnoStr = "DP";
 				AnnoIdx = new int[]{0};
 			} else if (getSampleMetricsStr("set").equals("manta")) {
@@ -929,7 +929,7 @@ public class VCFParser implements VariantLineReader {
 				AnnoIdx = new int[]{0};
 			} else {
 				throw new IllegalStateException("ERROR: VCF malformed! Merged Lofreq/Scalpel/Manta VCF contains a 'set' key of "
-						+ getSampleMetricsStr("set") + ", which is not defined. 'set' must be 'lofreq', 'scalpel', 'manta' or 'MNPoster'.");
+						+ getSampleMetricsStr("set") + ", which is not defined. 'set' must be 'lofreq', 'scalpel', 'pindel', 'manta' or 'MNPoster'.");
 			}
 		} else {
 			//If creator is not 'Torrent' or 'lofreq_scalpel_manta'
@@ -971,9 +971,9 @@ public class VCFParser implements VariantLineReader {
 				if (getSampleMetricsStr("set").equals("lofreq")) {
 					annoStr = "DP4";
 					annoIdx = new int[]{2,3};
-				} else if (getSampleMetricsStr("set").equals("scalpel")) {
+				} else if (getSampleMetricsStr("set").equals("scalpel") || getSampleMetricsStr("set").equals("pindel")) {
 					annoStr = "AD";
-					annoIdx = new int[]{1};
+					annoIdx = new int[]{altIndex + 1};
 				} else if (getSampleMetricsStr("set").equals("MNPoster")) {
 					if (sampleMetrics.containsKey("DP") && sampleMetrics.containsKey("AF")) {
 						int dp = convertStr2Int(sampleMetrics.get("DP"));
@@ -1007,7 +1007,7 @@ public class VCFParser implements VariantLineReader {
 					return vardp;
 				} else  {
 					throw new IllegalStateException("ERROR: VCF malformed! Merged Lofreq/Scalpel/Manta VCF contains a 'set' key of "
-							+ getSampleMetricsStr("set") + ", which is not defined. 'set' must be 'lofreq', 'scalpel', 'manta' or 'MNPoster'.");
+							+ getSampleMetricsStr("set") + ", which is not defined. 'set' must be 'lofreq', 'scalpel', 'pindel', 'manta' or 'MNPoster'.");
 				}
 		} else if (creator.equals("lofreq_scalpel_USeqMerged")){
 			//get total depth
