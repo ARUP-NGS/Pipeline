@@ -980,7 +980,15 @@ public class VCFParser implements VariantLineReader {
 				annoIdx = new int[]{altIndex + 1};
 			} else if (getSampleMetricsStr("set").equals("cobalt")) {
 				return null;
-			}
+			} else if (getSampleMetricsStr("set").equals("MNPoster")) {
+                if (sampleMetrics.containsKey("DP") && sampleMetrics.containsKey("AF")) {
+                    int dp = convertStr2Int(sampleMetrics.get("DP"));
+                    double af = convertStr2Double(sampleMetrics.get("AF"));
+                    return new Integer((int) Math.round(dp * af));
+                } else {
+                    throw new IllegalStateException("Could not parse DP and AF fields for reconstructed MNP variant");
+                }
+            }
 		} else if (creator.equals("lofreq_scalpel_manta")){
 				if (getSampleMetricsStr("set").equals("lofreq")) {
 					annoStr = "DP4";
