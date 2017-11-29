@@ -921,6 +921,13 @@ public class VCFParser implements VariantLineReader {
 				throw new IllegalStateException("ERROR: VCF malformed! Merged Lofreq/Scalpel/Manta VCF contains a 'set' key of "
 						+ getSampleMetricsStr("set") + ", which is not defined. 'set' must be 'lofreq', 'scalpel', 'manta' or 'MNPoster'.");
 			}
+		} else if (creator.startsWith("GATK")) {
+			if (getSampleMetricsStr("set").equals("HC")) {
+				AnnoStr = "DP";
+				AnnoIdx = new int[]{0};
+			} else if (getSampleMetricsStr("set").equals("cobalt")) {
+				return null;
+			}
 		} else {
 			//If creator is not 'Torrent' or 'lofreq_scalpel_manta'
 			AnnoStr = "DP";
@@ -957,6 +964,13 @@ public class VCFParser implements VariantLineReader {
 		} else if (creator.startsWith("RTG") || creator.equals("CompleteGenomics")) { //RTG variant caller or Complete Genomics
 			annoStr = "AD";
 			annoIdx = new int[]{altIndex}; //AD does not contain depth for REF
+		} else if (creator.startsWith("GATK")) {
+			if (getSampleMetricsStr("set").equals("HC")) {
+				annoStr = "AD";
+				annoIdx = new int[]{altIndex + 1};
+			} else if (getSampleMetricsStr("set").equals("cobalt")) {
+				return null;
+			}
 		} else if (creator.equals("lofreq_scalpel_manta")){
 				if (getSampleMetricsStr("set").equals("lofreq")) {
 					annoStr = "DP4";
