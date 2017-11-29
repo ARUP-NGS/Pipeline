@@ -1022,5 +1022,9 @@ public class VariantRec {
 
    public static final String MNP_ALLELES = "mnp.alleles";
 
+
+   public static final String PINDEL_ORIG_REF = "pindel.orig.ref";
+   public static final String PINDEL_ORIG_ALT = "pindel.orig.alt";
+
 }
 

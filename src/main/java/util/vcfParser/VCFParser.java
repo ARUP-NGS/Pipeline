@@ -545,6 +545,16 @@ public class VCFParser implements VariantLineReader {
 			}
 		}
 
+		String pindelRef = getPindelRef();
+		if (pindelRef != null) {
+			var.addAnnotation(VariantRec.PINDEL_ORIG_REF, pindelRef);
+		}
+
+		String pindelAlt = getPindelAlt();
+		if (pindelAlt != null) {
+			var.addAnnotation(VariantRec.PINDEL_ORIG_ALT, pindelAlt);
+		}
+
 		String genotypeQuality = getGenotypeQuality();
 		if (genotypeQuality != null) {
 			var.addAnnotation(VariantRec.GENOTYPE_QUALITY, genotypeQuality);
@@ -876,8 +886,8 @@ public class VCFParser implements VariantLineReader {
 		} else {
 			return new String[0];
 		}
-	}
-
+	}	
+		
 	/**
 	 * Total read depth at locus from INFO column, identified by "DP" and specified for the particular ALT
 	 * @author elainegee
@@ -1084,6 +1094,28 @@ public class VCFParser implements VariantLineReader {
 	}
 
 	/**
+	 * Return the bases associated with the 'pindel.orig.ref' field, or null if that key doesn't exist
+	 */
+	public String getPindelRef() {
+		if (sampleMetrics.containsKey("orig_ref")) {
+			return sampleMetrics.get("orig_ref");
+		} else {
+			return null;
+		}
+	}
+
+	/**
+	 * Return the bases associated with the 'pindel.orig.alt' field, or null if that key doesn't exist
+	 */
+	public String getPindelAlt() {
+		if (sampleMetrics.containsKey("orig_alt")) {
+			return sampleMetrics.get("orig_alt");
+		} else {
+			return null;
+		}
+	}
+
+	/**
 	 * Log odds ratio of being a true variant vs. being falsed under trained Gaussian 
 	 * mixture model, identified by "VQSLOD"
 	 * @author elainegee
@@ -1135,14 +1167,12 @@ public class VCFParser implements VariantLineReader {
 	 * @author jacobd
 	 */
 	public int getInfoEND(){
-		int infoend = -1;
-		if (creator.equals("lofreq_scalpel_manta")){
-			String strinfoend = getSampleMetricsStr("END");
-			if (strinfoend != null) {
-				infoend = convertStr2Int(strinfoend);
-			}
+		String strinfoend = getSampleMetricsStr("END");
+		if (strinfoend != null) {
+			return convertStr2Int(strinfoend);
+		} else {
+			return -1;
 		}
-		return infoend;
 	}
 	
 	/**
