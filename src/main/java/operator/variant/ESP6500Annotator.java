@@ -16,16 +16,15 @@ public class ESP6500Annotator extends AbstractTabixAnnotator {
 	public static final String ESP_PATH = "esp.path";
 	private boolean hasHaploidObservations = false;
 	private boolean isYChromVariant        = false;
-	String[] GTSStringArray = null;
 
 	@Override
 	protected String getPathToTabixedFile() {
 		return searchForAttribute(ESP_PATH);
 	}
 
-	private boolean hasHaploidCalls() {
-		for(int j = 0; j < GTSStringArray.length; j++) {
-			if (GTSStringArray[j].length() == 1) {
+	private boolean hasHaploidCalls(String[] GTS) {
+		for(int j = 0; j < GTS.length; j++) {
+			if (GTS[j].length() == 1) {
 				return true;
 			}
 		}
@@ -34,6 +33,7 @@ public class ESP6500Annotator extends AbstractTabixAnnotator {
 	
 	
 	protected boolean addAnnotationsFromString(VariantRec var, String dbline, int altIndex) {
+	        String[] GTSStringArray = null;
 		String[] toks = dbline.split("\t");
 		String[] infoToks = toks[7].split(";");
 		Double totOverall = 0.0;
@@ -63,7 +63,7 @@ public class ESP6500Annotator extends AbstractTabixAnnotator {
 				if (var.getContig().equals("Y")) { //Y Chrom.
 					isYChromVariant = true;
 				}
-				hasHaploidObservations = hasHaploidCalls();
+				hasHaploidObservations = hasHaploidCalls(GTSStringArray);
 				
 				if (tok.contains("R")) { //Indel
 					String altString = "A" + String.valueOf(altIndex+1); //Base 1 ie A1 in DB, but altindex is 0 based.
