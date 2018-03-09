@@ -24,14 +24,13 @@ import buffer.variant.VariantRec;
  */
 public abstract class AbstractTabixAnnotator extends Annotator {
 
-	private boolean initialized = false;
-	private TabixReader reader = null;
+        @Override
+        protected boolean isTabixAnnotator() {
+            return true;
+        }
 
-	/**
-	 * Should return the path to the file we want to read
-	 * @return
-	 */
-	protected abstract String getPathToTabixedFile();
+        @Override    
+        protected abstract String getPathToTabixedFile();
 
 
 	/**
@@ -50,14 +49,10 @@ public abstract class AbstractTabixAnnotator extends Annotator {
 
 	protected abstract boolean addAnnotationsFromString(VariantRec variantToAnnotate, String vcfLine, int altIndex) throws OperationFailedException;
 
+    
+
 	protected void initializeReader(String filePath) {
 
-		try {
-			reader = new TabixReader(filePath);
-		} catch (IOException e) {
-			throw new IllegalArgumentException("Error opening data at path " + filePath + " error : " + e.getMessage());
-		}
-		initialized = true;
 	}
 
 	/**
@@ -65,8 +60,8 @@ public abstract class AbstractTabixAnnotator extends Annotator {
 	 * prior to the first call to annotateVariant, and gives us a chance to do a little
 	 * initialization. 
 	 */
+        @Override
 	protected void prepare() throws OperationFailedException {
-		initializeReader( getPathToTabixedFile());
 	}
 
 
@@ -115,6 +110,14 @@ public abstract class AbstractTabixAnnotator extends Annotator {
 		}//Loop over alts	
 		return -1;
 	}
+
+        
+        /**
+         * This method won't be used by any subclasses so make it empty.
+         */
+        @Override 
+        public void annotateVariant(VariantRec varToAnnotate) throws OperationFailedException {
+        }
 	
 	/**
 	 * This actually annotates the variant - it performs new tabix query, then converts the
@@ -122,15 +125,7 @@ public abstract class AbstractTabixAnnotator extends Annotator {
 	 * variant we want to annotate. If so 
 	 */
 	@Override
-	public void annotateVariant(VariantRec varToAnnotate) throws OperationFailedException {
-
-		if (! initialized) {
-			throw new OperationFailedException("Failed to initialize", this);
-		}
-
-		if (reader == null) {
-			throw new OperationFailedException("Tabix reader not initialized", this);
-		}
+	public void annotateVariant(VariantRec varToAnnotate, TabixReader reader) throws OperationFailedException {
 
 		String contig = varToAnnotate.getContig();
 		Integer pos = varToAnnotate.getStart();
