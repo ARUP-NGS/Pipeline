@@ -164,6 +164,9 @@ public abstract class Annotator extends Operator {
                 List<Future<Integer>> futs = new ArrayList();
                 for (String contig : variants.getContigs()) {
                         List<VariantRec> contigVars = variants.getVariantsForContig(contig);
+
+                        if (contigVars.size() <= 0) { continue; }
+
                         TabixReader reader;
                         try
                         {
