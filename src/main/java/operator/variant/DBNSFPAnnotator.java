@@ -206,9 +206,6 @@ cat dbNSFP3.1a_variant.chr1.sorted dbNSFP3.1a_variant.chr2.sorted dbNSFP3.1a_var
 
 public class DBNSFPAnnotator extends AbstractTabixAnnotator {
 
-    private boolean initialized = false;
-    private TabixReader reader = null;
-
     public static final String DBNSFP_PATH = "dbnsfp.path";
     public static final String DBNSFP_VERSION = "dbnsfp.version";
     public static final Pattern TAB = Pattern.compile("\\t");
@@ -241,15 +238,6 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
     @Override
     protected String getPathToTabixedFile() {
         return searchForAttribute(DBNSFP_PATH);
-    }
-
-    protected void initializeReader(String filePath) {
-        try {
-            reader = new TabixReader(filePath);
-        } catch (IOException e) {
-            throw new IllegalArgumentException("Error opening data at path " + filePath + " error : " + e.getMessage());
-        }
-        initialized = true;
     }
 
 
@@ -716,10 +704,7 @@ public class DBNSFPAnnotator extends AbstractTabixAnnotator {
      * @throws OperationFailedException
      */
     @Override
-    public void annotateVariant(VariantRec varToAnnotate) throws OperationFailedException {
-
-        if (!initialized) throw new OperationFailedException("Failed to initialize", this);
-        if (reader == null) throw new OperationFailedException("Tabix reader not initialized", this);
+    public void annotateVariant(VariantRec varToAnnotate, TabixReader reader) throws OperationFailedException {
 
         String contig = varToAnnotate.getContig();
         Integer pos = varToAnnotate.getStart();
