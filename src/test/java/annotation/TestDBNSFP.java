@@ -7,6 +7,8 @@ import operator.variant.DBNSFPAnnotator;
 
 import org.junit.Assert;
 
+import org.broad.tribble.readers.TabixReader;
+
 import pipeline.Pipeline;
 import util.vcfParser.VCFParser;
 import buffer.variant.VariantRec;
@@ -27,6 +29,11 @@ public class TestDBNSFP extends TestCase {
     DBNSFPAnnotator annotator_30;//currently commented out
     DBNSFPAnnotator annotator_29;
     DBNSFPAnnotator annotator_292;
+
+    TabixReader reader_30;
+    TabixReader reader_29;
+    TabixReader reader_292;
+
     boolean thrown;
 
     public void setUp() {
@@ -38,7 +45,8 @@ public class TestDBNSFP extends TestCase {
             ppl.initializePipeline();
             ppl.stopAllLogging();
             ppl.execute();
-           annotator_30 = (DBNSFPAnnotator) ppl.getObjectHandler().getObjectForLabel("GeneAnnotate30");
+            annotator_30 = (DBNSFPAnnotator) ppl.getObjectHandler().getObjectForLabel("GeneAnnotate30");
+            reader_30 = new TabixReader((String)ppl.getProperty("dbnsfp.path"));
 
 
             Pipeline ppl2 = new Pipeline(inputFile, propertiesFile.getAbsolutePath());
@@ -49,7 +57,7 @@ public class TestDBNSFP extends TestCase {
             ppl2.stopAllLogging();
             ppl2.execute();
             annotator_29 = (DBNSFPAnnotator) ppl2.getObjectHandler().getObjectForLabel("GeneAnnotate29");
-            
+            reader_29 = new TabixReader((String)ppl2.getProperty("dbnsfp.path")); 
             
             Pipeline ppl3 = new Pipeline(inputFile, propertiesFile.getAbsolutePath());
             ppl3.setProperty(
@@ -59,7 +67,7 @@ public class TestDBNSFP extends TestCase {
             ppl3.stopAllLogging();
             ppl3.execute();
             annotator_292 = (DBNSFPAnnotator) ppl3.getObjectHandler().getObjectForLabel("GeneAnnotate292");
-            
+            reader_292 = new TabixReader((String)ppl3.getProperty("dbnsfp.path")); 
 
 
         } catch (Exception ex) {
@@ -73,12 +81,12 @@ public class TestDBNSFP extends TestCase {
         try {
             VariantRec var1 = new VariantRec("1", 35138,  35138, "T", "A");
             var1 = VCFParser.normalizeVariant(var1);
-            annotator_292.annotateVariant(var1);
+            annotator_292.annotateVariant(var1, reader_292);
             Assert.assertNull(var1.getAnnotation(VariantRec.SIFT_SCORE));
 
             VariantRec varNull = new VariantRec("1", 883869, 883869, "C", "T");
             varNull = VCFParser.normalizeVariant(varNull);
-            annotator_292.annotateVariant(varNull);
+            annotator_292.annotateVariant(varNull, reader_292);
             Assert.assertNull(varNull.getAnnotation(VariantRec.SIFT_SCORE));
             Assert.assertNull(var1.getProperty(VariantRec.POLYPHEN_SCORE));
             Assert.assertNull(var1.getProperty(VariantRec.POLYPHEN_HVAR_SCORE));
@@ -101,11 +109,11 @@ public class TestDBNSFP extends TestCase {
         try {
             VariantRec var1 = new VariantRec("X", 78216484, 78216484, "T", "A");
             var1 = VCFParser.normalizeVariant(var1);
-            annotator_292.annotateVariant(var1);
+            annotator_292.annotateVariant(var1, reader_292);
 
             VariantRec varNull = new VariantRec("X", 78216484, 78216484, "T", "C");//double check this
             varNull = VCFParser.normalizeVariant(varNull);
-            annotator_292.annotateVariant(varNull);
+            annotator_292.annotateVariant(varNull, reader_292);
 
             Assert.assertEquals(0.011, var1.getProperty(VariantRec.SIFT_SCORE), 0);
             Assert.assertEquals(0.908, var1.getProperty(VariantRec.POLYPHEN_HVAR_SCORE), 0);
@@ -129,12 +137,12 @@ public class TestDBNSFP extends TestCase {
         try {
             VariantRec var1 = new VariantRec("19", 48946461, 48946461, "C", "T");
             var1 = VCFParser.normalizeVariant(var1);
-            annotator_292.annotateVariant(var1);
+            annotator_292.annotateVariant(var1, reader_292);
             Assert.assertEquals(0.001, var1.getProperty(VariantRec.SIFT_SCORE), 0);
 
             VariantRec varNull = new VariantRec("19", 48946461, 48946461, "T", "C");
             varNull = VCFParser.normalizeVariant(varNull);
-            annotator_292.annotateVariant(varNull);
+            annotator_292.annotateVariant(varNull, reader_292);
 
             Assert.assertEquals(0.045, var1.getProperty(VariantRec.POLYPHEN_HVAR_SCORE), 0);
             Assert.assertEquals(0.139850, var1.getProperty(VariantRec.LRT_SCORE), 0);
@@ -157,17 +165,17 @@ public class TestDBNSFP extends TestCase {
         try {
             VariantRec var1 = new VariantRec("19", 15636185, 15636185, "G", "C");
             var1 = VCFParser.normalizeVariant(var1);
-            annotator_292.annotateVariant(var1);
+            annotator_292.annotateVariant(var1, reader_292);
             Assert.assertEquals(0.023, var1.getProperty(VariantRec.SIFT_SCORE), 0);
 
             VariantRec var2 = new VariantRec("12", 25249910, 25249910, "A", "G");
             var2 = VCFParser.normalizeVariant(var2);
-            annotator_292.annotateVariant(var2);
+            annotator_292.annotateVariant(var2, reader_292);
             Assert.assertEquals(0.106, var2.getProperty(VariantRec.SIFT_SCORE), 0);
 
             VariantRec varNull = new VariantRec("19", 15636185, 15636185, "T", "A");
             varNull = VCFParser.normalizeVariant(varNull);
-            annotator_292.annotateVariant(varNull);
+            annotator_292.annotateVariant(varNull, reader_292);
             Assert.assertNull(varNull.getProperty(VariantRec.SIFT_SCORE));
 
 
@@ -186,12 +194,12 @@ public class TestDBNSFP extends TestCase {
         try {
             VariantRec var1 = new VariantRec("12", 25699414, 25699414, "A", "G");
             var1 = VCFParser.normalizeVariant(var1);
-            annotator_292.annotateVariant(var1);
+            annotator_292.annotateVariant(var1, reader_292);
             Assert.assertEquals(0.998, var1.getProperty(VariantRec.POLYPHEN_HVAR_SCORE), 0);
 
             VariantRec varNull = new VariantRec("12", 25699414, 25699414, "T", "A");
             varNull = VCFParser.normalizeVariant(varNull);
-            annotator_292.annotateVariant(varNull);
+            annotator_292.annotateVariant(varNull, reader_292);
             Assert.assertNull(varNull.getProperty(VariantRec.POLYPHEN_HVAR_SCORE));
         } catch (Exception ex) {
             thrown = true;
@@ -206,12 +214,12 @@ public class TestDBNSFP extends TestCase {
         try {
             VariantRec var1 = new VariantRec("10", 22830948, 22830948, "T", "C");
             var1 = VCFParser.normalizeVariant(var1);
-            annotator_292.annotateVariant(var1);
+            annotator_292.annotateVariant(var1, reader_292);
             Assert.assertEquals(0.000001, var1.getProperty(VariantRec.LRT_SCORE), 0);
 
             VariantRec varNull = new VariantRec("10", 22607060, 22607060, "T", "A");
             varNull = VCFParser.normalizeVariant(varNull);
-            annotator_292.annotateVariant(varNull);
+            annotator_292.annotateVariant(varNull, reader_292);
             Assert.assertNull(varNull.getProperty(VariantRec.LRT_SCORE));
         } catch (Exception ex) {
             thrown = true;
@@ -226,12 +234,12 @@ public class TestDBNSFP extends TestCase {
         try {
             VariantRec var1 = new VariantRec("1", 1139566, 1139566, "T", "G");
             var1 = VCFParser.normalizeVariant(var1);
-            annotator_292.annotateVariant(var1);
+            annotator_292.annotateVariant(var1, reader_292);
             Assert.assertEquals(0.999998, var1.getProperty(VariantRec.MT_SCORE), 0);
 
             VariantRec varNull = new VariantRec("1", 1139566, 1139566, "T", "A");
             varNull = VCFParser.normalizeVariant(varNull);
-            annotator_292.annotateVariant(varNull);
+            annotator_292.annotateVariant(varNull, reader_292);
             Assert.assertNull(varNull.getProperty(VariantRec.MT_SCORE));
         } catch (Exception ex) {
             thrown = true;
@@ -246,12 +254,12 @@ public class TestDBNSFP extends TestCase {
         try {
             VariantRec var1 = new VariantRec("11", 71146654, 71146654, "A", "T");
             var1 = VCFParser.normalizeVariant(var1);
-            annotator_292.annotateVariant(var1);
+            annotator_292.annotateVariant(var1, reader_292);
             Assert.assertEquals(0.87347, var1.getProperty(VariantRec.MA_SCORE), 0);
 
             VariantRec varNull = new VariantRec("11", 71146654, 71146654, "A", "G");
             varNull = VCFParser.normalizeVariant(varNull);
-            annotator_292.annotateVariant(varNull);
+            annotator_292.annotateVariant(varNull, reader_292);
             Assert.assertNull(varNull.getProperty(VariantRec.MA_SCORE));
         } catch (Exception ex) {
             thrown = true;
@@ -266,12 +274,12 @@ public class TestDBNSFP extends TestCase {
         try {
             VariantRec var1 = new VariantRec("6", 90402250, 90402250, "A", "T");
             var1 = VCFParser.normalizeVariant(var1);
-            annotator_292.annotateVariant(var1);
+            annotator_292.annotateVariant(var1, reader_292);
             Assert.assertEquals(5.67, var1.getProperty(VariantRec.GERP_NR_SCORE), 0);
 
             VariantRec varNull = new VariantRec("6", 90402250, 90402250, "T", "A");
             varNull = VCFParser.normalizeVariant(varNull);
-            annotator_292.annotateVariant(varNull);
+            annotator_292.annotateVariant(varNull, reader_292);
             Assert.assertNull(varNull.getProperty(VariantRec.GERP_NR_SCORE));
         } catch (Exception ex) {
             thrown = true;
@@ -287,12 +295,12 @@ public class TestDBNSFP extends TestCase {
         try {
             VariantRec var1 = new VariantRec("5", 72800195, 72800195, "G", "C");
             var1 = VCFParser.normalizeVariant(var1);
-            annotator_292.annotateVariant(var1);
+            annotator_292.annotateVariant(var1, reader_292);
             Assert.assertEquals(5.61, var1.getProperty(VariantRec.GERP_SCORE), 0);
 
             VariantRec varNull = new VariantRec("5", 72800195, 72800195, "T", "A");
             varNull = VCFParser.normalizeVariant(varNull);
-            annotator_292.annotateVariant(varNull);
+            annotator_292.annotateVariant(varNull, reader_292);
             Assert.assertNull(varNull.getProperty(VariantRec.GERP_SCORE));
         } catch (Exception ex) {
             thrown = true;
@@ -307,12 +315,12 @@ public class TestDBNSFP extends TestCase {
             //8959:12.8949
             VariantRec var1 = new VariantRec("4", 140309231, 140309231, "A", "G");
             var1 = VCFParser.normalizeVariant(var1);
-            annotator_292.annotateVariant(var1);
+            annotator_292.annotateVariant(var1, reader_292);
             Assert.assertEquals(16.3636, var1.getProperty(VariantRec.SIPHY_SCORE), 0);
 
             VariantRec varNull = new VariantRec("X", 154262983, 154262983, "T", "A");
             varNull = VCFParser.normalizeVariant(varNull);
-            annotator_292.annotateVariant(varNull);
+            annotator_292.annotateVariant(varNull, reader_292);
             Assert.assertNull(varNull.getProperty(VariantRec.SIPHY_SCORE));
         } catch (Exception ex) {
             thrown = true;
@@ -327,7 +335,7 @@ public class TestDBNSFP extends TestCase {
         try {
             VariantRec var1 = new VariantRec("1", 35138,  35138, "T", "A");
             var1 = VCFParser.normalizeVariant(var1);
-            annotator_29.annotateVariant(var1);
+            annotator_29.annotateVariant(var1, reader_29);
             //System.out.println(var1.toString());
             //Assert.assertEquals(0.0, var1.getProperty(VariantRec.SIFT_SCORE), 0);
             Assert.assertNull(var1.getAnnotation(VariantRec.SIFT_SCORE));
@@ -336,7 +344,7 @@ public class TestDBNSFP extends TestCase {
 
             VariantRec varNull = new VariantRec("1", 883869, 883869, "C", "T");
             varNull = VCFParser.normalizeVariant(varNull);
-            annotator_29.annotateVariant(varNull);
+            annotator_29.annotateVariant(varNull, reader_29);
             //System.out.println(varNull.getAnnotation(VariantRec.SIFT_SCORE));
             Assert.assertNull(varNull.getAnnotation(VariantRec.SIFT_SCORE));
 
@@ -386,13 +394,13 @@ public class TestDBNSFP extends TestCase {
         try {
             VariantRec var1 = new VariantRec("Y", 28133957, 28133957, "G", "T");
             var1 = VCFParser.normalizeVariant(var1);
-            annotator_29.annotateVariant(var1);
+            annotator_29.annotateVariant(var1, reader_29);
             Assert.assertNull(var1.getProperty(VariantRec.SIFT_SCORE));
             //Assert.assertTrue(var1.getProperty(VariantRec.SIPHY_SCORE).equals("0.13"));
 
             VariantRec varNull = new VariantRec("Y", 28133957, 28133957, "T", "C");
             varNull = VCFParser.normalizeVariant(varNull);
-            annotator_29.annotateVariant(varNull);
+            annotator_29.annotateVariant(varNull, reader_29);
 
             //System.out.println(varNull.getAnnotation(VariantRec.SIFT_SCORE));
             Assert.assertNull(varNull.getAnnotation(VariantRec.SIFT_SCORE));
@@ -429,13 +437,13 @@ public class TestDBNSFP extends TestCase {
         try {
             VariantRec var1 = new VariantRec("19", 48946461, 48946461, "C", "T");
             var1 = VCFParser.normalizeVariant(var1);
-            annotator_29.annotateVariant(var1);
+            annotator_29.annotateVariant(var1, reader_29);
             Assert.assertEquals(0.001, var1.getProperty(VariantRec.SIFT_SCORE), 0);
             //Assert.assertTrue(var1.getProperty(VariantRec.SIPHY_SCORE).equals("0.13"));
 
             VariantRec varNull = new VariantRec("19", 48946461, 48946461, "T", "C");
             varNull = VCFParser.normalizeVariant(varNull);
-            annotator_29.annotateVariant(varNull);
+            annotator_29.annotateVariant(varNull, reader_29);
 //            //System.out.println(varNull.getAnnotation(VariantRec.SIFT_SCORE));
 
 //          var.addProperty(VariantRec.POLYPHEN_SCORE, Double.parseDouble(toks[29]));
@@ -473,19 +481,19 @@ public class TestDBNSFP extends TestCase {
         try {
             VariantRec var1 = new VariantRec("19", 15636185, 15636185, "G", "C");
             var1 = VCFParser.normalizeVariant(var1);
-            annotator_29.annotateVariant(var1);
+            annotator_29.annotateVariant(var1, reader_29);
             Assert.assertEquals(0.023, var1.getProperty(VariantRec.SIFT_SCORE), 0);
 
             VariantRec var2 = new VariantRec("12", 25249910, 25249910, "A", "G");
             var2 = VCFParser.normalizeVariant(var2);
-            annotator_29.annotateVariant(var2);
+            annotator_29.annotateVariant(var2, reader_29);
             Assert.assertEquals(0.106, var2.getProperty(VariantRec.SIFT_SCORE), 0);
 
 
 
             VariantRec varNull = new VariantRec("19", 15636185, 15636185, "T", "A");
             varNull = VCFParser.normalizeVariant(varNull);
-            annotator_29.annotateVariant(varNull);
+            annotator_29.annotateVariant(varNull, reader_29);
             Assert.assertNull(varNull.getProperty(VariantRec.SIFT_SCORE));
 
 
@@ -505,12 +513,12 @@ public class TestDBNSFP extends TestCase {
         try {
             VariantRec var1 = new VariantRec("16", 685297, 685297, "A", "G");
             var1 = VCFParser.normalizeVariant(var1);
-            annotator_29.annotateVariant(var1);
+            annotator_29.annotateVariant(var1, reader_29);
             Assert.assertEquals(0.622, var1.getProperty(VariantRec.POLYPHEN_SCORE), 0);
 
             VariantRec varNull = new VariantRec("16", 685297, 685297, "T", "A");
             varNull = VCFParser.normalizeVariant(varNull);
-            annotator_29.annotateVariant(varNull);
+            annotator_29.annotateVariant(varNull, reader_29);
             Assert.assertNull(varNull.getProperty(VariantRec.POLYPHEN_SCORE));
         } catch (Exception ex) {
             thrown = true;
@@ -527,12 +535,12 @@ public class TestDBNSFP extends TestCase {
         try {
             VariantRec var1 = new VariantRec("12", 25699414, 25699414, "A", "G");
             var1 = VCFParser.normalizeVariant(var1);
-            annotator_29.annotateVariant(var1);
+            annotator_29.annotateVariant(var1, reader_29);
             Assert.assertEquals(0.998, var1.getProperty(VariantRec.POLYPHEN_HVAR_SCORE), 0);
 
             VariantRec varNull = new VariantRec("12", 25699414, 25699414, "T", "A");
             varNull = VCFParser.normalizeVariant(varNull);
-            annotator_29.annotateVariant(varNull);
+            annotator_29.annotateVariant(varNull, reader_29);
             Assert.assertNull(varNull.getProperty(VariantRec.POLYPHEN_HVAR_SCORE));
         } catch (Exception ex) {
             thrown = true;
@@ -547,12 +555,12 @@ public class TestDBNSFP extends TestCase {
         try {
             VariantRec var1 = new VariantRec("10", 22830948, 22830948, "T", "C");
             var1 = VCFParser.normalizeVariant(var1);
-            annotator_29.annotateVariant(var1);
+            annotator_29.annotateVariant(var1, reader_29);
             Assert.assertEquals(0.000001, var1.getProperty(VariantRec.LRT_SCORE), 0);
 
             VariantRec varNull = new VariantRec("10", 22607060, 22607060, "T", "A");
             varNull = VCFParser.normalizeVariant(varNull);
-            annotator_29.annotateVariant(varNull);
+            annotator_29.annotateVariant(varNull, reader_29);
             Assert.assertNull(varNull.getProperty(VariantRec.LRT_SCORE));
         } catch (Exception ex) {
             thrown = true;
@@ -567,12 +575,12 @@ public class TestDBNSFP extends TestCase {
         try {
             VariantRec var1 = new VariantRec("X", 78216484, 78216484, "T", "G");
             var1 = VCFParser.normalizeVariant(var1);
-            annotator_29.annotateVariant(var1);
+            annotator_29.annotateVariant(var1, reader_29);
             Assert.assertEquals(0.768, var1.getProperty(VariantRec.MT_SCORE), 0);
 
             VariantRec varNull = new VariantRec("X", 78216484, 78216484, "T", "A");
             varNull = VCFParser.normalizeVariant(varNull);
-            annotator_29.annotateVariant(varNull);
+            annotator_29.annotateVariant(varNull, reader_29);
             Assert.assertNull(varNull.getProperty(VariantRec.MT_SCORE));
         } catch (Exception ex) {
             thrown = true;
@@ -586,11 +594,11 @@ public class TestDBNSFP extends TestCase {
         try {
             VariantRec var1 = new VariantRec("X", 78216484, 78216484, "T", "G");
             var1 = VCFParser.normalizeVariant(var1);
-            annotator_29.annotateVariant(var1);
+            annotator_29.annotateVariant(var1, reader_29);
             Assert.assertTrue(var1.getAnnotation(VariantRec.MT_PRED).equals("polymorphism"));
             VariantRec varNull = new VariantRec("X", 78216484, 78216484, "T", "A");
             varNull = VCFParser.normalizeVariant(varNull);
-            annotator_29.annotateVariant(varNull);
+            annotator_29.annotateVariant(varNull, reader_29);
             Assert.assertNull(varNull.getProperty(VariantRec.MT_PRED));
         } catch (Exception ex) {
             thrown = true;
@@ -605,12 +613,12 @@ public class TestDBNSFP extends TestCase {
         try {
             VariantRec var1 = new VariantRec("11", 71146654, 71146654, "A", "T");
             var1 = VCFParser.normalizeVariant(var1);
-            annotator_29.annotateVariant(var1);
+            annotator_29.annotateVariant(var1, reader_29);
             Assert.assertEquals(0.79805, var1.getProperty(VariantRec.MA_SCORE), 0);
 
             VariantRec varNull = new VariantRec("11", 71146654, 71146654, "A", "C");
             varNull = VCFParser.normalizeVariant(varNull);
-            annotator_29.annotateVariant(varNull);
+            annotator_29.annotateVariant(varNull, reader_29);
             Assert.assertNull(varNull.getProperty(VariantRec.MA_SCORE));
         } catch (Exception ex) {
             thrown = true;
@@ -624,12 +632,12 @@ public class TestDBNSFP extends TestCase {
         try {
             VariantRec var1 = new VariantRec("11", 71146654, 71146654, "A", "T");
             var1 = VCFParser.normalizeVariant(var1);
-            annotator_29.annotateVariant(var1);
+            annotator_29.annotateVariant(var1, reader_29);
             Assert.assertTrue(var1.getAnnotation(VariantRec.MA_PRED).equals("M"));
 
             VariantRec varNull = new VariantRec("11", 71146654, 71146654, "A", "C");
             varNull = VCFParser.normalizeVariant(varNull);
-            annotator_29.annotateVariant(varNull);
+            annotator_29.annotateVariant(varNull, reader_29);
             Assert.assertNull(varNull.getProperty(VariantRec.MA_PRED));
         } catch (Exception ex) {
             thrown = true;
@@ -643,12 +651,12 @@ public class TestDBNSFP extends TestCase {
         try {
             VariantRec var1 = new VariantRec("6", 90402250, 90402250, "A", "T");
             var1 = VCFParser.normalizeVariant(var1);
-            annotator_29.annotateVariant(var1);
+            annotator_29.annotateVariant(var1, reader_29);
             Assert.assertEquals(5.64, var1.getProperty(VariantRec.GERP_NR_SCORE), 0);
 
             VariantRec varNull = new VariantRec("6", 90402250, 90402250, "T", "A");
             varNull = VCFParser.normalizeVariant(varNull);
-            annotator_29.annotateVariant(varNull);
+            annotator_29.annotateVariant(varNull, reader_29);
             Assert.assertNull(varNull.getProperty(VariantRec.GERP_NR_SCORE));
         } catch (Exception ex) {
             thrown = true;
@@ -664,12 +672,12 @@ public class TestDBNSFP extends TestCase {
         try {
             VariantRec var1 = new VariantRec("5", 72800195, 72800195, "G", "C");
             var1 = VCFParser.normalizeVariant(var1);
-            annotator_29.annotateVariant(var1);
+            annotator_29.annotateVariant(var1, reader_29);
             Assert.assertEquals(5.61, var1.getProperty(VariantRec.GERP_SCORE), 0);
 
             VariantRec varNull = new VariantRec("5", 72800195, 72800195, "T", "A");
             varNull = VCFParser.normalizeVariant(varNull);
-            annotator_29.annotateVariant(varNull);
+            annotator_29.annotateVariant(varNull, reader_29);
             Assert.assertNull(varNull.getProperty(VariantRec.GERP_SCORE));
         } catch (Exception ex) {
             thrown = true;
@@ -684,12 +692,12 @@ public class TestDBNSFP extends TestCase {
             //5985:-0.448000
             VariantRec var1 = new VariantRec("4", 140394089, 140394089, "G", "T");
             var1 = VCFParser.normalizeVariant(var1);
-            annotator_29.annotateVariant(var1);
+            annotator_29.annotateVariant(var1, reader_29);
             Assert.assertEquals(8.062, var1.getProperty(VariantRec.PHYLOP_SCORE), 0);
 
             VariantRec varNull = new VariantRec("4", 140394089, 140394089, "T", "A");
             varNull = VCFParser.normalizeVariant(varNull);
-            annotator_29.annotateVariant(varNull);
+            annotator_29.annotateVariant(varNull, reader_29);
             Assert.assertNull(varNull.getProperty(VariantRec.PHYLOP_SCORE));
         } catch (Exception ex) {
             thrown = true;
@@ -705,12 +713,12 @@ public class TestDBNSFP extends TestCase {
             //8959:12.8949
             VariantRec var1 = new VariantRec("4", 140309231, 140309231, "A", "G");
             var1 = VCFParser.normalizeVariant(var1);
-            annotator_29.annotateVariant(var1);
+            annotator_29.annotateVariant(var1, reader_29);
             Assert.assertEquals(16.3636, var1.getProperty(VariantRec.SIPHY_SCORE), 0);
 
             VariantRec varNull = new VariantRec("X", 154262983, 154262983, "T", "A");
             varNull = VCFParser.normalizeVariant(varNull);
-            annotator_29.annotateVariant(varNull);
+            annotator_29.annotateVariant(varNull, reader_29);
             Assert.assertNull(varNull.getProperty(VariantRec.SIPHY_SCORE));
         } catch (Exception ex) {
             thrown = true;
