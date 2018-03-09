@@ -14,8 +14,6 @@ import buffer.variant.VariantRec;
 public class ESP6500Annotator extends AbstractTabixAnnotator {
 
 	public static final String ESP_PATH = "esp.path";
-	private boolean hasHaploidObservations = false;
-	private boolean isYChromVariant        = false;
 
 	@Override
 	protected String getPathToTabixedFile() {
@@ -34,17 +32,19 @@ public class ESP6500Annotator extends AbstractTabixAnnotator {
 	
 	protected boolean addAnnotationsFromString(VariantRec var, String dbline, int altIndex) {
 	        String[] GTSStringArray = null;
+	        boolean isYChromVariant  = false;
+		boolean hasHaploidObservations = false;
+
 		String[] toks = dbline.split("\t");
 		String[] infoToks = toks[7].split(";");
 		Double totOverall = 0.0;
 		Double homOverall = 0.0;
-		isYChromVariant = false;
-		hasHaploidObservations = false;
 		int homRefIndex = -1;
 		int hetIndex = -1;
 		int homAltIndex = -1;
 		int haploidRefIndex = -1;		
 		int haploidAltIndex = -1;
+
 		//Start by getting the indexes of our allele combinations of interest. We will use these indexes to pull the freqs from EA_GTC etc.
 		for(int i=0; i<infoToks.length; i++) {
 			String tok = infoToks[i];
