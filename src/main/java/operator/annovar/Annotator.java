@@ -5,17 +5,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.logging.Logger;
-import java.util.ArrayList;
-import java.util.List;
-
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.Callable;
-import java.util.concurrent.TimeUnit;
-
-import org.broad.tribble.readers.TabixReader;
 
 import json.JSONArray;
 import json.JSONObject;
@@ -46,7 +35,7 @@ public abstract class Annotator extends Operator {
 	protected VariantPool variants = null;
 	protected BEDFile bedFile = null;
 	protected ArupBEDFile arupBedFile = null;
-        public static final String THREAD_KEY = "threads";	
+	
 
 	/**
 	 * Compute or obtain an annotation for the given variant and add it to the list of
@@ -55,12 +44,7 @@ public abstract class Annotator extends Operator {
 	 * @throws OperationFailedException 
 	 */
 	public abstract void annotateVariant(VariantRec var) throws OperationFailedException;
-
-        /**
-         * This MUST be overriden by TabixAnnotators; Make it empty here so Non-TabixAnnotators
-         * do not need to do anything.
-         */
-        public void annotateVariant(VariantRec var, TabixReader Reader) throws OperationFailedException {}	
+	
 	/**
 	 * If true, we write some progress indicators to system.out
 	 * @return
@@ -73,144 +57,14 @@ public abstract class Annotator extends Operator {
 	public VariantPool getVariants() {
 		return variants;
 	}
-
-        /**
-         * This shold be overriden by AbstractTabixAnnotator and return true
-         */ 
-        protected boolean isTabixAnnotator() {
-                return false;
-        }
-
-        /**
-         * This should be overriden by AbstractTabixAnnotator and never be used by
-         * NonTabixAnnotators
-         */
-        protected String getPathToTabixedFile() { 
-               return "Error: called on NonTabixAnnotators!";  
-        }
 	
 	public void performOperation() throws OperationFailedException {
 		if (variants == null)
 			throw new OperationFailedException("No variant pool specified", this);
-
-                if (isTabixAnnotator() == true) {
-                        tabixOperation();
-                } else {
-                    nonTabixOperation();
-                }
-        }
-
-
-        /**
-         * This inner class implements Callable and its call function will be used to 
-         * annotate variants in the list of VariantRec objects; This should only be 
-         * used by TabixAnnotators.
-         **/
-        public class TabixCallable implements Callable<Integer> {
-            int myVarsAnnotated = 0;
-            List<VariantRec> varList;
-            TabixReader reader;
-  
-            public TabixCallable(List<VariantRec> vList, TabixReader trr) {
-                this.varList = vList;
-                this.reader = trr;
-            }
-  
-            public Integer call() throws Exception {
-                for (VariantRec rec : varList) {
-                    Integer recLength = Integer.valueOf(rec.getRef().length() - rec.getAlt().length());
-                    if (recLength.intValue() < 0) {
-                        recLength = Integer.valueOf(0);
-                    } else if (recLength.intValue() == 0) {
-                        if (rec.getRef().length() == 1) {
-                            recLength = Integer.valueOf(1);
-                        } else {
-                                recLength = Integer.valueOf(rec.getRef().length());
-                        }
-                    }
-                    Integer recEnd = Integer.valueOf(rec.getStart() - 1 + recLength.intValue());
-                    Interval recInterval = new Interval(rec.getStart() - 1, recEnd.intValue());
-                    if ((bedFile == null) || (bedFile.intersects(rec.getContig(), recInterval))) {
-                        annotateVariant(rec, reader);
-                    }
-                    myVarsAnnotated += 1;
-                }
-
-                return new Integer(myVarsAnnotated);
-
-            }
-        }
-
-        /** 
-         * For TabixAnnotators only, sprawn multiple threads to speed up!
-         */
-        protected void tabixOperation() throws OperationFailedException {
-                prepare();
-
-                int varsAnnotated = 0;
-
-                String str_threads = this.getPipelineProperty(THREAD_KEY);
-                int n_threads = 1;
-                try {
-                    n_threads = Integer.parseInt(str_threads);
-                } catch (NumberFormatException e) {
-                    n_threads = 1;
-                }
-                if (n_threads > 24) { n_threads = 24; }
-                if (n_threads < 1) { n_threads = 1; } 
-
-                ExecutorService execPool = Executors.newFixedThreadPool(n_threads);
-                    
-                List<Future<Integer>> futs = new ArrayList();
-                for (String contig : variants.getContigs()) {
-                        List<VariantRec> contigVars = variants.getVariantsForContig(contig);
-
-                        if (contigVars.size() <= 0) { continue; }
-
-                        TabixReader reader;
-                        try
-                        {
-                               reader = new TabixReader(getPathToTabixedFile());
-                        } catch (IOException e) {
-                                throw new IllegalArgumentException("Error opening " + getPathToTabixedFile() + " errror : " + e.getMessage()); 
-                        }
-                        TabixCallable callable = new TabixCallable(contigVars, reader);
-                      
-                        Future<Integer> fut = execPool.submit(callable);
-                        futs.add(fut);
-                }
-                    
-                for (Future<Integer> fut : futs) {
-                        try {
-                                varsAnnotated += ((Integer)fut.get()).intValue();
-                        } catch (InterruptedException ierr) {
-                                System.out.println("Interrupted exception:");
-                                ierr.printStackTrace();
-                        } catch (ExecutionException err) {
-                                System.out.println("Exeuction exception:");
-                                err.printStackTrace();
-                                throw new OperationFailedException(err.toString(), this);
-                        }
-                }
-                    
-                execPool.shutdown();
-                try {
-                        if (!execPool.awaitTermination(1L, TimeUnit.SECONDS)) {
-                                execPool.shutdownNow();
-                        }
-                } catch (InterruptedException ie) {
-                        execPool.shutdownNow();
-                }
-                    
-                cleanup();
-        }                
-        
-        /**
-         * For Non-TabixAnnotators, the same as the sequential version.
-         */
-        protected void nonTabixOperation() throws OperationFailedException {
+		
 		DecimalFormat formatter = new DecimalFormat("#0.00");
 		int tot = variants.size();
+		
 	
 		prepare();
 		
