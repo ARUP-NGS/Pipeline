@@ -2,12 +2,22 @@ package operator.variant;
 
 import java.io.IOException;
 import java.util.logging.Logger;
+import java.util.ArrayList;
+import java.util.List;                  
+                                        
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
 
 import operator.OperationFailedException;
 import operator.annovar.Annotator;
 
 import org.broad.tribble.readers.TabixReader;
 
+import util.Interval;
 import pipeline.Pipeline;
 import util.vcfParser.VCFParser;
 import buffer.variant.VariantRec;
@@ -23,15 +33,10 @@ import buffer.variant.VariantRec;
  *
  */
 public abstract class AbstractTabixAnnotator extends Annotator {
+        public static final String THREAD_KEY = "threads";	
 
-        @Override
-        protected boolean isTabixAnnotator() {
-            return true;
-        }
 
-        @Override    
         protected abstract String getPathToTabixedFile();
-
 
 	/**
 	 * Subclasses should override this method to actually perform the annotations.
@@ -49,11 +54,6 @@ public abstract class AbstractTabixAnnotator extends Annotator {
 
 	protected abstract boolean addAnnotationsFromString(VariantRec variantToAnnotate, String vcfLine, int altIndex) throws OperationFailedException;
 
-    
-
-	protected void initializeReader(String filePath) {
-
-	}
 
 	/**
 	 * This overrides the 'prepare' method in the base Annotator class. It is always called 
@@ -111,20 +111,17 @@ public abstract class AbstractTabixAnnotator extends Annotator {
 		return -1;
 	}
 
-        
         /**
-         * This method won't be used by any subclasses so make it empty.
+         * This method won't be used by TabixedAnnotators at all.
          */
-        @Override 
-        public void annotateVariant(VariantRec varToAnnotate) throws OperationFailedException {
-        }
-	
+        public final void annotateVariant(VariantRec var) throws OperationFailedException {}
+ 
+        
 	/**
 	 * This actually annotates the variant - it performs new tabix query, then converts the
 	 * result to a normalized VariantRec, then sees if the normalized VariantRec matches the
-	 * variant we want to annotate. If so 
+	 * variant we want to annotate. 
 	 */
-	@Override
 	public void annotateVariant(VariantRec varToAnnotate, TabixReader reader) throws OperationFailedException {
 
 		String contig = varToAnnotate.getContig();
@@ -168,6 +165,107 @@ public abstract class AbstractTabixAnnotator extends Annotator {
 			}
 		}
 	}
-	
+
+        /**
+         * This inner class implements Callable and its call function will be used to 
+         * annotate variants in the list of VariantRec objects; This should only be 
+         * used by TabixAnnotators.
+         **/
+        public class TabixCallable implements Callable<Integer> {
+            int myVarsAnnotated = 0;
+            List<VariantRec> varList;
+            TabixReader reader;
+  
+            public TabixCallable(List<VariantRec> vList, TabixReader trr) {
+                this.varList = vList;
+                this.reader = trr;
+            }
+  
+            public Integer call() throws Exception {
+                for (VariantRec rec : varList) {
+                    Integer recLength = Integer.valueOf(rec.getRef().length() - rec.getAlt().length());
+                    if (recLength.intValue() < 0) {
+                        recLength = Integer.valueOf(0);
+                    } else if (recLength.intValue() == 0) {
+                        if (rec.getRef().length() == 1) {
+                            recLength = Integer.valueOf(1);
+                        } else {
+                                recLength = Integer.valueOf(rec.getRef().length());
+                        }
+                    }
+                    Integer recEnd = Integer.valueOf(rec.getStart() - 1 + recLength.intValue());
+                    Interval recInterval = new Interval(rec.getStart() - 1, recEnd.intValue());
+                    if ((bedFile == null) || (bedFile.intersects(rec.getContig(), recInterval))) {
+                        annotateVariant(rec, reader);
+                    }
+                    myVarsAnnotated += 1;
+                }
+
+                return new Integer(myVarsAnnotated);
+
+            }
+        }
+
+        @Override	
+        public void performOperation() throws OperationFailedException {
+                prepare();
+
+                int varsAnnotated = 0;
+
+                String str_threads = this.getPipelineProperty(THREAD_KEY);
+                int n_threads = 1;
+                try {
+                    n_threads = Integer.parseInt(str_threads);
+                } catch (NumberFormatException e) {
+                    n_threads = 1;
+                }
+                if (n_threads > 24) { n_threads = 24; }
+                if (n_threads < 1) { n_threads = 1; } 
+
+                ExecutorService execPool = Executors.newFixedThreadPool(n_threads);
+                    
+                List<Future<Integer>> futs = new ArrayList();
+                for (String contig : variants.getContigs()) {
+                        List<VariantRec> contigVars = variants.getVariantsForContig(contig);
+
+                        if (contigVars.size() <= 0) { continue; }
+
+                        TabixReader reader;
+                        try
+                        {
+                               reader = new TabixReader(getPathToTabixedFile());
+                        } catch (IOException e) {
+                                throw new IllegalArgumentException("Error opening " + getPathToTabixedFile() + " errror : " + e.getMessage()); 
+                        }
+                        TabixCallable callable = new TabixCallable(contigVars, reader);
+                      
+                        Future<Integer> fut = execPool.submit(callable);
+                        futs.add(fut);
+                }
+                    
+                for (Future<Integer> fut : futs) {
+                        try {
+                                varsAnnotated += ((Integer)fut.get()).intValue();
+                        } catch (InterruptedException ierr) {
+                                System.out.println("Interrupted exception:");
+                                ierr.printStackTrace();
+                                throw new OperationFailedException(ierr.toString(), this);
+                        } catch (ExecutionException err) {
+                                System.out.println("Exeuction exception:");
+                                err.printStackTrace();
+                                throw new OperationFailedException(err.toString(), this);
+                        }
+                }
+                    
+                execPool.shutdown();
+                try {
+                        if (!execPool.awaitTermination(1L, TimeUnit.SECONDS)) {
+                                execPool.shutdownNow();
+                        }
+                } catch (InterruptedException ie) {
+                        execPool.shutdownNow();
+                }
+                    
+        }
 
 }
