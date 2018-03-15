@@ -6,6 +6,8 @@ import junit.framework.TestCase;
 import operator.OperationFailedException;
 import operator.variant.ESP6500Annotator;
 
+import org.broad.tribble.readers.TabixReader;
+
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -17,6 +19,7 @@ public class TestESP6500 extends TestCase {
 	File inputFile = new File("src/test/java/annotation/testESP6500.xml");
 	File propertiesFile = new File("src/test/java/core/inputFiles/testProperties.xml"); //do I need?
 	ESP6500Annotator annotator;
+        TabixReader reader;
 	boolean thrown;
 
 	public void setUp() {
@@ -27,6 +30,7 @@ public class TestESP6500 extends TestCase {
 			ppl.stopAllLogging();
 			ppl.execute();
 			annotator = (ESP6500Annotator) ppl.getObjectHandler().getObjectForLabel("ESPAnnotator");
+                        reader = new TabixReader((String)ppl.getProperty("esp.path"));
 
 		} catch (Exception ex) {
 			thrown = true;
@@ -59,7 +63,7 @@ public class TestESP6500 extends TestCase {
 			VariantRec var1 = new VariantRec("15", 43678542, 43678542, "CGTATATATAT", "CAT");
 
 			var1 = VCFParser.normalizeVariant(var1);
-			annotator.annotateVariant(var1);
+			annotator.annotateVariant(var1, reader);
 
 			Assert.assertEquals(.306513, var1.getProperty(VariantRec.EXOMES_FREQ_EA), 0.0001);
 			Assert.assertEquals(.2528, var1.getProperty(VariantRec.EXOMES_FREQ_AA), 0.0001);
@@ -77,7 +81,7 @@ public class TestESP6500 extends TestCase {
 			VariantRec var2 = new VariantRec("15", 43678542, 43678542, "CGTATATATAT", "CATATAT"); //CATAT CATATAT
 
 			var2 = VCFParser.normalizeVariant(var2);
-			annotator.annotateVariant(var2);
+			annotator.annotateVariant(var2, reader);
 
 			Assert.assertEquals(.306513, var2.getProperty(VariantRec.EXOMES_FREQ_EA), 0.0001);
 			Assert.assertEquals(.2528, var2.getProperty(VariantRec.EXOMES_FREQ_AA), 0.0001);
@@ -96,7 +100,7 @@ public class TestESP6500 extends TestCase {
 			VariantRec var3 = new VariantRec("15", 43678542, 43678542, "CGTATATATAT", "CATATATAT");
 
 			var3 = VCFParser.normalizeVariant(var3);
-			annotator.annotateVariant(var3);
+			annotator.annotateVariant(var3, reader);
 
 			Assert.assertEquals(.306513, var3.getProperty(VariantRec.EXOMES_FREQ_EA), 0.0001);
 			Assert.assertEquals(.2528, var3.getProperty(VariantRec.EXOMES_FREQ_AA), 0.0001);
@@ -133,7 +137,7 @@ public class TestESP6500 extends TestCase {
 			VariantRec var1 = new VariantRec("X", 154158158, 154158158, "T", "C");
 
 			var1 = VCFParser.normalizeVariant(var1);
-			annotator.annotateVariant(var1);
+			annotator.annotateVariant(var1, reader);
 
 			Assert.assertEquals(0.0149/100, var1.getProperty(VariantRec.EXOMES_FREQ_EA), 0.0000001);
 			Assert.assertEquals(0.0, var1.getProperty(VariantRec.EXOMES_FREQ_AA), 0.0000001);
@@ -169,7 +173,7 @@ public class TestESP6500 extends TestCase {
 
 		var1 = VCFParser.normalizeVariant(var1);
 		try {
-			annotator.annotateVariant(var1);
+			annotator.annotateVariant(var1, reader);
 		} catch (OperationFailedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

@@ -34,7 +34,7 @@ public class MitoMapFrequency extends AbstractTabixAnnotator {
 	 */
 	@Override
 	protected void prepare() throws OperationFailedException {
-		initializeReader( getPathToTabixedFile());
+		//initializeReader( getPathToTabixedFile());
 		//get total alleles from freq vcf header
 		this.totalAlleles = getTotalAlleles();
 	}

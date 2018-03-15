@@ -3,6 +3,8 @@ package annotation;
 
 import java.io.File;
 
+import org.broad.tribble.readers.TabixReader;
+
 import junit.framework.TestCase;
 import operator.variant.DBSNPAnnotator;
 
@@ -32,6 +34,9 @@ public class TestDBSNP extends TestCase {
     DBSNPAnnotator annotator;
     DBSNPAnnotator annotator_non_normalized;
 
+    TabixReader reader;
+    TabixReader non_normalized_reader;
+
     boolean thrown = false;
 
     public void setUp() {
@@ -44,6 +49,7 @@ public class TestDBSNP extends TestCase {
             ppl.stopAllLogging();
             ppl.execute();
             annotator = (DBSNPAnnotator) ppl.getObjectHandler().getObjectForLabel("GeneAnnotate");
+            reader = new TabixReader((String)ppl.getProperty("dbsnp.path"));
 
             Pipeline ppl1 = new Pipeline(inputFile, propertiesFile.getAbsolutePath());
             ppl1.setProperty(
@@ -53,6 +59,7 @@ public class TestDBSNP extends TestCase {
             ppl1.stopAllLogging();
             ppl1.execute();
             annotator_non_normalized = (DBSNPAnnotator) ppl.getObjectHandler().getObjectForLabel("GeneAnnotate");
+            non_normalized_reader = new TabixReader((String)ppl1.getProperty("dbsnp.path"));
 
         }catch (Exception ex) {
             thrown = true;
@@ -75,13 +82,13 @@ public class TestDBSNP extends TestCase {
         try {
             VariantRec var1 = new VariantRec("1", 10108, 10108, "C", "T");
             var1 = VCFParser.normalizeVariant(var1);
-            annotator.annotateVariant(var1);
+            annotator.annotateVariant(var1, reader);
             System.out.println(var1.getAnnotation(VariantRec.RSNUM));
             Assert.assertTrue(var1.getAnnotation(VariantRec.RSNUM).equals("rs62651026"));
 
             VariantRec varNull = new VariantRec("1", 10108, 10108, "C", "G");
             var1 = VCFParser.normalizeVariant(varNull);
-            annotator.annotateVariant(varNull);
+            annotator.annotateVariant(varNull, reader);
             System.out.println(varNull.getAnnotation(VariantRec.RSNUM));
             Assert.assertNull(varNull.getAnnotation(VariantRec.RSNUM));
 
@@ -99,7 +106,7 @@ public class TestDBSNP extends TestCase {
         try {
             //2       83512429        rs190851925     G       C       .       .       RS=190851925;
             VariantRec var1 = new VariantRec("2", 83512429, 83512429, "G", "C");
-            annotator.annotateVariant(var1);
+            annotator.annotateVariant(var1, reader);
             var1 = VCFParser.normalizeVariant(var1);
             System.out.println(var1.getAnnotation(VariantRec.RSNUM));
             Assert.assertTrue(var1.getAnnotation(VariantRec.RSNUM).equals("rs190851925"));
@@ -118,7 +125,7 @@ public class TestDBSNP extends TestCase {
             //1       958601  rs183632277     C       T       .       .       RS=183632277;
             //This variant would be normailized to -- 1	10056	10057	-	A	1000.0	-	unknown	-	-
             VariantRec var1 = new VariantRec("1", 958601, 958601, "C", "T");
-            annotator.annotateVariant(var1);
+            annotator.annotateVariant(var1, reader);
             Assert.assertTrue(var1.getAnnotation(VariantRec.RSNUM).equals("rs183632277"));
 
         } catch (Exception ex) {
@@ -133,7 +140,7 @@ public class TestDBSNP extends TestCase {
         try {
             //4       10105588        rs373722200     T       C       .       .
             VariantRec  var1 = new VariantRec("4", 10105588, 10105588, "T", "C");
-            annotator.annotateVariant(var1);
+            annotator.annotateVariant(var1, reader);
             Assert.assertTrue(var1.getAnnotation(VariantRec.RSNUM).equals("rs373722200"));
 
         } catch (Exception ex) {
@@ -149,7 +156,7 @@ public class TestDBSNP extends TestCase {
 		try {
 			VariantRec  var1 = new VariantRec("4", 10105588, 10105588, "T", "G,C,A"); //Should not be observed in Pipeline normalized variantpool variants.
 			var1 = VCFParser.normalizeVariant(var1);
-			annotator.annotateVariant(var1);
+			annotator.annotateVariant(var1, reader);
 			Assert.assertNull(var1.getAnnotation(VariantRec.RSNUM));
 		} catch (Exception ex) {
 			thrown = true;
@@ -165,7 +172,7 @@ public class TestDBSNP extends TestCase {
 			//1	17231846	rs77384259	A	C,G	.	.	RS=77384259;RSPOS=17231846;dbSNPBuildID=132;SSR=16;SAO=0;VP=0x050000000005000102000140;WGT=1;VC=SNV;ASP;GNO;OTHERKG
 			VariantRec  var2 = new VariantRec("1", 17231846, 17231846, "A", "G");
 			var2 = VCFParser.normalizeVariant(var2);
-			annotator.annotateVariant(var2);
+			annotator.annotateVariant(var2, reader);
 			Assert.assertTrue(var2.getAnnotation(VariantRec.RSNUM).equals("rs77384259"));
 
 			//Tricky variant as there are two queries that return, which have the same position. Because we go through each alt the correct one should be chosen.
@@ -173,22 +180,22 @@ public class TestDBSNP extends TestCase {
 			//1	25648165	rs56928540	T	TAAATAAAATA,TAAATAAAATAAAATA,TAAATAAAATAAAATAAAATA	.	.	RS=56928540;RSPOS=25648200;dbSNPBuildID=129;SSR=0;SAO=0;VP=0x050100080005000102000204;WGT=1;VC=DIV;SLO;INT;ASP;GNO;OTHERKG;NOV
 			VariantRec  var3 = new VariantRec("1", 25648165, 25648165, "T", "TAAATAAAATAAAATAAAATAAAATAAAATAAA");
 			var3 = VCFParser.normalizeVariant(var3);
-			annotator.annotateVariant(var3);
+			annotator.annotateVariant(var3, reader);
 			Assert.assertTrue(var3.getAnnotation(VariantRec.RSNUM).equals("rs372082737"));
 
 			VariantRec  var3A1 = new VariantRec("1", 25648165, 25648165, "T", "TAAATAAAATA");
 			var3A1 = VCFParser.normalizeVariant(var3A1);
-			annotator.annotateVariant(var3A1);
+			annotator.annotateVariant(var3A1, reader);
 			Assert.assertTrue(var3A1.getAnnotation(VariantRec.RSNUM).equals("rs56928540"));
 
 			VariantRec  var3A2 = new VariantRec("1", 25648165, 25648165, "T", "TAAATAAAATAAAATA");
 			var3A2 = VCFParser.normalizeVariant(var3A2);
-			annotator.annotateVariant(var3A2);
+			annotator.annotateVariant(var3A2, reader);
 			Assert.assertTrue(var3A2.getAnnotation(VariantRec.RSNUM).equals("rs56928540"));
 
 			VariantRec  var3A3 = new VariantRec("1", 25648165, 25648165, "T", "TAAATAAAATAAAATAAAATA");
 			var3A3 = VCFParser.normalizeVariant(var3A3);
-			annotator.annotateVariant(var3A3);
+			annotator.annotateVariant(var3A3, reader);
 			Assert.assertTrue(var3A3.getAnnotation(VariantRec.RSNUM).equals("rs56928540"));
 
 		} catch (Exception ex) {
@@ -202,7 +209,7 @@ public class TestDBSNP extends TestCase {
     public void testVariantNotInDBsnp() {
         try {
             VariantRec  var1 = new VariantRec("1", 10020, 10021, "A", "T");
-            annotator.annotateVariant(var1);
+            annotator.annotateVariant(var1, reader);
             Assert.assertNull(var1.getAnnotation(VariantRec.RSNUM));
 
         } catch (Exception ex) {
@@ -216,7 +223,7 @@ public class TestDBSNP extends TestCase {
     public void testMultiAllelicVariantNotInDBsnp() {
         try {
             VariantRec  var1 = new VariantRec("1", 10020, 10021, "A", "T,C");
-            annotator.annotateVariant(var1);
+            annotator.annotateVariant(var1, reader);
             Assert.assertNull(var1.getAnnotation(VariantRec.RSNUM));
 
         } catch (Exception ex) {
@@ -233,7 +240,7 @@ public class TestDBSNP extends TestCase {
             VariantRec var1 = new VariantRec("1", 1466207, 1466207, "TCAAAAAAAAAAAAAAAAAAAAA", "T");
             var1 = VCFParser.normalizeVariant(var1);
             //System.out.print(var1.toString());
-            annotator.annotateVariant(var1);
+            annotator.annotateVariant(var1, reader);
             Assert.assertTrue(var1.getAnnotation(VariantRec.RSNUM).equals("rs564016727"));
 
         } catch (Exception ex) {
@@ -250,7 +257,7 @@ public class TestDBSNP extends TestCase {
             VariantRec var1 = new VariantRec("4", 26736520, 26736520, "G",
                     "ATATATACACACATGTGTACATACACATATATGTGTGTATATATGTATACACATATGTATATGTATATATGTATACACATATGTATA");
             var1 = VCFParser.normalizeVariant(var1);
-            annotator.annotateVariant(var1);
+            annotator.annotateVariant(var1, reader);
             Assert.assertTrue(var1.getAnnotation(VariantRec.RSNUM).equals("rs68002084"));
         } catch (Exception ex) {
             thrown = true;
@@ -264,7 +271,7 @@ public class TestDBSNP extends TestCase {
         try {
             // MT      16529   rs370705831     T       C
             VariantRec var1 = new VariantRec("MT", 16529, 16529, "T", "C");
-            annotator.annotateVariant(var1);
+            annotator.annotateVariant(var1, reader);
             Assert.assertTrue(var1.getAnnotation(VariantRec.RSNUM).equals("rs370705831"));
         } catch (Exception ex) {
             thrown = true;
@@ -279,7 +286,7 @@ public class TestDBSNP extends TestCase {
             //Y       1427711 rs35662505      G       GC      .       .
             VariantRec var1 = new VariantRec("Y", 1427711, 1427711, "G", "GC");
             var1 = VCFParser.normalizeVariant(var1);
-            annotator.annotateVariant(var1);
+            annotator.annotateVariant(var1, reader);
             System.out.println(var1.toString());
             Assert.assertNotNull((var1.getAnnotation(VariantRec.RSNUM)));
             Assert.assertTrue(var1.getAnnotation(VariantRec.RSNUM).equals("rs35662505"));
@@ -296,7 +303,7 @@ public class TestDBSNP extends TestCase {
             //X       147991599       rs201998867     CAG     C       .       .
             VariantRec var1 = new VariantRec("X", 147991599 , 147991599 , "CAG", "C");
             var1 = VCFParser.normalizeVariant(var1);
-            annotator.annotateVariant(var1);
+            annotator.annotateVariant(var1, reader);
             Assert.assertTrue(var1.getAnnotation(VariantRec.RSNUM).equals("rs201998867"));
 
         } catch (Exception ex) {
@@ -312,7 +319,7 @@ public class TestDBSNP extends TestCase {
             //1	4066114	rs201371334	T	TG,TT,TTG
             VariantRec var1 = new VariantRec("1", 4066114, 4066114, "T", "TG");
             VCFParser.normalizeVariant(var1);
-            annotator_non_normalized.annotateVariant(var1);
+            annotator_non_normalized.annotateVariant(var1, non_normalized_reader);
             //Assert.assertTrue(var1.getAnnotation(VariantRec.RSNUM).equals("rs192710666"));
 
         } catch (Exception ex) {
