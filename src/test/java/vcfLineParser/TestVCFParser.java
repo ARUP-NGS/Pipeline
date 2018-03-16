@@ -528,7 +528,7 @@ public class TestVCFParser {
 				int altDepthSum = 476 + 273;
 				Assert.assertTrue(varDepth==altDepthSum);
 						
-				Assert.assertTrue(var.getAnnotation(VariantRec.GENOTYPE_QUALITY) == ".");			
+				Assert.assertTrue(var.getAnnotation(VariantRec.GENOTYPE_QUALITY) == null);			
 						
 				Double strandbias = LSMparser.getStrandBiasScore();
 				Assert.assertTrue(strandbias.equals(4.0));
@@ -614,7 +614,7 @@ public class TestVCFParser {
 				Assert.assertTrue(varDepth==22);
 						
 				//Manta doesn't name give GQ a key, just IMPRECISE
-				Assert.assertTrue(var.getAnnotation(VariantRec.GENOTYPE_QUALITY).equals("IMPRECISE"));
+				Assert.assertTrue(var.getAnnotation(VariantRec.GENOTYPE_QUALITY) == null);
 						
 				Double strandbias = LSMparser.getStrandBiasScore();
 				Assert.assertTrue(strandbias.equals(-1.0));
@@ -668,7 +668,7 @@ public class TestVCFParser {
 				Assert.assertTrue(varDepth==varDepthSum);
 						
 				//Manta doesn't name give GQ a key, just IMPRECISE
-				Assert.assertTrue(var.getAnnotation(VariantRec.GENOTYPE_QUALITY).equals("."));
+				Assert.assertTrue(var.getAnnotation(VariantRec.GENOTYPE_QUALITY) == null);
 						
 				Double strandbias = LSMparser.getStrandBiasScore();
 				Assert.assertTrue(strandbias.equals(-1.0));
