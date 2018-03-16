@@ -768,7 +768,7 @@ public class TestVCFParser {
 				Assert.assertTrue(varDepth==73);
 						
 				//Manta doesn't name give GQ a key, just IMPRECISE
-				Assert.assertTrue(var.getAnnotation(VariantRec.GENOTYPE_QUALITY).equals("."));
+				Assert.assertTrue(var.getAnnotation(VariantRec.GENOTYPE_QUALITY) == null);
 						
 				Double strandbias = normLSMparser.getStrandBiasScore();
 				Assert.assertTrue(strandbias.equals(-1.0));
