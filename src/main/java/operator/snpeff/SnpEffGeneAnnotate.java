@@ -130,7 +130,7 @@ public class SnpEffGeneAnnotate extends Annotator {
 				List<SnpEffInfo> newInfos = parseOutputLineVCF(line);
 				String[] toks = line.split("\t");
 				
-				String varKey = convertVar(toks[0], Integer.parseInt(toks[1]),toks[3], toks[4], ".");
+				String varKey = convertVar(toks[0], Integer.parseInt(toks[1]),toks[3], toks[4], findInfoEndFromVCF(toks[7]));
 				List<SnpEffInfo> infos = annos.get(varKey);
 				if (infos == null) {
 					infos = new ArrayList<SnpEffInfo>();
@@ -150,7 +150,20 @@ public class SnpEffGeneAnnotate extends Annotator {
 
 	}
 	
-
+	/**
+	 * InfoToks should be field 7 from a VCF record (the INFO column), we split this into tokens on ; and search for the END field,
+	 * If found return it, otherwise return '.'
+	 * @return Either the END entry from the INFO field, or "." if no END found
+	 */
+	private String findInfoEndFromVCF(String infotoks) {
+		for(String tok : infotoks.split(";")) {
+			if (tok.startsWith("END=")) {
+				return tok.replace("END=", "");
+			}
+		}
+		return ".";
+	}
+	
 	@Override
 	public void annotateVariant(VariantRec var) throws OperationFailedException {
 		
@@ -159,7 +172,7 @@ public class SnpEffGeneAnnotate extends Annotator {
 			
 		}
 		
-		String varStr = convertVar(var);
+		String varStr = convertVarWithInfoEND(var);
 		String[] allAlts = varStr.split("\n");
 		
 		//crashes if one of the alts has no annotations

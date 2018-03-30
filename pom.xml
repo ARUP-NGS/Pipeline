@@ -4,7 +4,7 @@
   <groupId>com.aruplab.ngs</groupId>
   <artifactId>Pipeline</artifactId>
   <packaging>jar</packaging>
-  <version>1.9.15</version>
+  <version>1.9.17</version>
   <name>Pipeline</name>
   <url>http://maven.apache.org</url>
   <properties>
