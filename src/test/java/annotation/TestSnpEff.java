@@ -2,6 +2,7 @@ package annotation;
 
 import java.io.File;
 import java.util.Iterator;
+import java.util.List;
 
 import junit.framework.TestCase;
 import operator.snpeff.SnpEffGeneAnnotate;
@@ -9,7 +10,12 @@ import operator.snpeff.SnpEffGeneAnnotate;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.sun.jndi.ldap.pool.Pool;
+
+import pipeline.ObjectCreationException;
 import pipeline.Pipeline;
+import pipeline.PipelineDocException;
+import plugin.PluginLoaderException;
 import buffer.variant.VariantPool;
 import buffer.variant.VariantRec;
 import json.JSONArray;
@@ -23,7 +29,8 @@ public class TestSnpEff extends TestCase {
 	File inputFile = new File("src/test/java/annotation/testSnpEff.xml");
 	File inputFile2 = new File("src/test/java/annotation/testSnpEff2.xml");
 	File inputFile3 = new File("src/test/java/annotation/testSnpEff3.xml");
-        File inputFile4 = new File("src/test/java/annotation/testSnpEff4.xml");
+    File inputFile4 = new File("src/test/java/annotation/testSnpEff4.xml");
+    File inputFile5 = new File("src/test/java/annotation/testSnpEff5.xml");
 	File propertiesFile = new File("src/test/java/core/inputFiles/testProperties.xml");
 	File snpEffDir = null;
 
@@ -67,7 +74,68 @@ public class TestSnpEff extends TestCase {
 		return null;
 	}
 	
-	
+
+	/**
+	 * Regression test for cases where two symbolic alts start at the same position but have different lengths,
+	 * we didn't annotate these correctly in the past
+	 */
+	public void testSnpEffAlmostDuplicateHandling() {
+		Pipeline ppl;
+        ppl = this.preparePipeline(inputFile5);
+		try {
+			ppl.initializePipeline();
+			ppl.stopAllLogging();
+
+			ppl.execute();
+			
+			SnpEffGeneAnnotate annotator = (SnpEffGeneAnnotate)ppl.getObjectHandler().getObjectForLabel("GeneAnnotate");
+			VariantPool vars = annotator.getVariants();
+			Assert.assertTrue(vars.size() == 4);
+			
+			List<VariantRec> c1vars = vars.getVariantsForContig("10");
+			Assert.assertTrue(c1vars.size() == 2);
+			JSONArray snpeff_annos = c1vars.get(0).getjsonProperty(VariantRec.SNPEFF_ALL);
+			JSONObject hit = findJsonObj(snpeff_annos, "NM_001304717.2.1");
+			Assert.assertNotNull(hit);
+			Assert.assertTrue(hit.has(VariantRec.VARIANT_TYPE));
+			Assert.assertTrue(hit.get(VariantRec.VARIANT_TYPE).equals("conservative_inframe_deletion"));
+			Assert.assertTrue(hit.get(VariantRec.GENE_NAME).equals("PTEN"));
+			Assert.assertTrue(hit.get(VariantRec.CDOT).equals("c.618_620delANN"));
+			
+			snpeff_annos = c1vars.get(1).getjsonProperty(VariantRec.SNPEFF_ALL);
+			hit = findJsonObj(snpeff_annos, "NM_001304717.2.1");
+			Assert.assertNotNull(hit);
+			Assert.assertTrue(hit.has(VariantRec.VARIANT_TYPE));
+			Assert.assertTrue(hit.get(VariantRec.VARIANT_TYPE).equals("frameshift_variant"));
+			Assert.assertTrue(hit.get(VariantRec.GENE_NAME).equals("PTEN"));
+			Assert.assertTrue(hit.get(VariantRec.CDOT).equals("c.618_624delANNNNNN"));
+			
+			
+			List<VariantRec> c2vars = vars.getVariantsForContig("13");
+			Assert.assertTrue(c2vars.size() == 2);
+			
+			snpeff_annos = c2vars.get(0).getjsonProperty(VariantRec.SNPEFF_ALL);
+			hit = findJsonObj(snpeff_annos, "NM_004119.2.1");
+			Assert.assertNotNull(hit);
+			Assert.assertTrue(hit.has(VariantRec.VARIANT_TYPE));
+			Assert.assertTrue(hit.get(VariantRec.VARIANT_TYPE).equals("frameshift_variant"));
+			Assert.assertTrue(hit.get(VariantRec.GENE_NAME).equals("FLT3"));
+			Assert.assertTrue(hit.get(VariantRec.CDOT).equals("c.1826_1831dup"));
+			
+			snpeff_annos = c2vars.get(1).getjsonProperty(VariantRec.SNPEFF_ALL);
+			hit = findJsonObj(snpeff_annos, "NM_004119.2.1");
+			Assert.assertNotNull(hit);
+			Assert.assertTrue(hit.has(VariantRec.VARIANT_TYPE));
+			Assert.assertTrue(hit.get(VariantRec.VARIANT_TYPE).equals("duplication"));
+			Assert.assertTrue(hit.get(VariantRec.GENE_NAME).equals("FLT3"));
+			Assert.assertTrue(hit.get(VariantRec.CDOT).equals("c.1816_1831dup"));
+			
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			Assert.assertTrue(false);
+		}
+
+	}
 	
 	public void testSnpEff() {
 

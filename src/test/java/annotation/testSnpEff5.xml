@@ -1,0 +1,18 @@
+
+<Pipeline>
+
+<InputVCF class="buffer.VCFFile" filename="src/test/java/testvcfs/neardups.vcf" />
+
+<VariantPool class="buffer.variant.VariantPool">
+	<InputVCF />
+</VariantPool>
+
+
+<GeneAnnotate class="operator.snpeff.SnpEffGeneAnnotate" snpeff.genome="hg19_arup_January_05_2017" updownstream.length="100">
+	<VariantPool />
+</GeneAnnotate>
+
+
+
+
+</Pipeline>
