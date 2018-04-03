@@ -153,12 +153,13 @@ public class SnpEffGeneAnnotate extends Annotator {
 	/**
 	 * InfoToks should be field 7 from a VCF record (the INFO column), we split this into tokens on ; and search for the END field,
 	 * If found return it, otherwise return '.'
+	 * In general, this must match the output format of convertVariantFromINFOEnd
 	 * @return Either the END entry from the INFO field, or "." if no END found
 	 */
 	private String findInfoEndFromVCF(String infotoks) {
 		for(String tok : infotoks.split(";")) {
 			if (tok.startsWith("END=")) {
-				return tok.replace("END=", "");
+				return tok;
 			}
 		}
 		return ".";
