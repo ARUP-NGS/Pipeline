@@ -36,7 +36,7 @@ public class TestARUPFreq extends TestCase {
 		}
 	}
 	@Test
-	public void testARUPDBAnnotate() {
+	public void testARUPDBSnp() {
 		try{
 			// Two variants at the same position:
 			// First var			
@@ -57,7 +57,15 @@ public class TestARUPFreq extends TestCase {
 			Assert.assertEquals(52, var2.getProperty(VariantRec.ARUP_HOM_COUNT), 0.0001);
 			Assert.assertEquals(646, var2.getProperty(VariantRec.ARUP_SAMPLE_COUNT), 0.0001);
 			Assert.assertEquals("Samples: 646 Hets: 250 Homs: 52", var2.getAnnotation(VariantRec.ARUP_FREQ_DETAILS));
-			
+		}  catch (Exception ex) {
+			thrown = true;
+			System.err.println("Exception during testing: " + ex.getLocalizedMessage());
+			ex.printStackTrace();
+		}
+	}
+	@Test
+	public void testARUPDBNewVar() {
+		try {
 			// Variant that isn't in database
 			VariantRec var3 = new VariantRec("9", 117165114, 117165114, "G", "T");
 			var3 = VCFParser.normalizeVariant(var3);
@@ -67,7 +75,15 @@ public class TestARUPFreq extends TestCase {
 			Assert.assertEquals(0.0, var3.getProperty(VariantRec.ARUP_HOM_COUNT), 0.0001);
 			Assert.assertEquals(0.0, var3.getProperty(VariantRec.ARUP_SAMPLE_COUNT), 0.0001);
 			Assert.assertEquals("Total samples: 0", var3.getAnnotation(VariantRec.ARUP_FREQ_DETAILS));
-			
+		}	catch (Exception ex) {
+			thrown = true;
+			System.err.println("Exception during testing: " + ex.getLocalizedMessage());
+			ex.printStackTrace();
+		}
+	}
+	@Test
+	public void testARUPDBDeletion() {
+		try {
 			// Deletion
 			VariantRec var4 = new VariantRec("13", 20763685, 20763685, "GC", "G");
 			var4 = VCFParser.normalizeVariant(var4);
@@ -78,7 +94,6 @@ public class TestARUPFreq extends TestCase {
 			Assert.assertEquals(2, var4.getProperty(VariantRec.ARUP_HOM_COUNT), 0.0001);
 			Assert.assertEquals(961, var4.getProperty(VariantRec.ARUP_SAMPLE_COUNT), 0.0001);
 			Assert.assertEquals("Samples: 961 Hets: 23 Homs: 2", var4.getAnnotation(VariantRec.ARUP_FREQ_DETAILS));
-			
 			VariantRec var4b = new VariantRec("13", 20763686, 20763686, "CC", "C");
 			var4b = VCFParser.normalizeVariant(var4b);
 			// After normalization, the position for this deletion will not shift
@@ -88,48 +103,65 @@ public class TestARUPFreq extends TestCase {
 			Assert.assertEquals(2, var4b.getProperty(VariantRec.ARUP_HOM_COUNT), 0.0001);
 			Assert.assertEquals(961, var4b.getProperty(VariantRec.ARUP_SAMPLE_COUNT), 0.0001);
 			Assert.assertEquals("Samples: 961 Hets: 23 Homs: 2", var4b.getAnnotation(VariantRec.ARUP_FREQ_DETAILS));
-			
-			// Insertion
-			VariantRec var5 = new VariantRec("16", 90161004, 90161004, "G", "GGG");
-			var5 = VCFParser.normalizeVariant(var5);
-			annotator.annotateVariant(var5);
-			
-			Assert.assertEquals(.018637, var5.getProperty(VariantRec.ARUP_OVERALL_FREQ), 0.0001);
-			Assert.assertEquals(23, var5.getProperty(VariantRec.ARUP_HET_COUNT), 0.0001);
-			Assert.assertEquals(3, var5.getProperty(VariantRec.ARUP_HOM_COUNT), 0.0001);
-			Assert.assertEquals(778, var5.getProperty(VariantRec.ARUP_SAMPLE_COUNT), 0.0001);
-			Assert.assertEquals("Samples: 778 Hets: 23 Homs: 3", var5.getAnnotation(VariantRec.ARUP_FREQ_DETAILS));
-			
-			// Indel
-			VariantRec var5b = new VariantRec("1", 220986516, 220986516, "CTAT", "TTAC");
-			var5b = VCFParser.normalizeVariant(var5b);
-			annotator.annotateVariant(var5b);
-			
-			Assert.assertEquals(.00077, var5b.getProperty(VariantRec.ARUP_OVERALL_FREQ), 0.0001);
-			Assert.assertEquals(1, var5b.getProperty(VariantRec.ARUP_HET_COUNT), 0.0001);
-			Assert.assertEquals(0, var5b.getProperty(VariantRec.ARUP_HOM_COUNT), 0.0001);
-			Assert.assertEquals(646, var5b.getProperty(VariantRec.ARUP_SAMPLE_COUNT), 0.0001);
-			Assert.assertEquals("Samples: 646 Hets: 1 Homs: 0", var5b.getAnnotation(VariantRec.ARUP_FREQ_DETAILS));
-			
-			// X Chrom variant
-			VariantRec var6 = new VariantRec("X", 103042882, 103042882, "T", "C");
-			var6 = VCFParser.normalizeVariant(var6);
-			annotator.annotateVariant(var6);
-			
-			Assert.assertEquals(.28771, var6.getProperty(VariantRec.ARUP_OVERALL_FREQ), 0.0001);
-			Assert.assertEquals(143, var6.getProperty(VariantRec.ARUP_HET_COUNT), 0.0001);
-			Assert.assertEquals(165, var6.getProperty(VariantRec.ARUP_HOM_COUNT), 0.0001);
-			Assert.assertEquals(822, var6.getProperty(VariantRec.ARUP_SAMPLE_COUNT), 0.0001);
-			Assert.assertEquals("Samples: 822 Hets: 143 Homs: 165", var6.getAnnotation(VariantRec.ARUP_FREQ_DETAILS));
-			
-			
-			
-			
-		}  catch (Exception ex) {
+		}	catch (Exception ex) {
 			thrown = true;
 			System.err.println("Exception during testing: " + ex.getLocalizedMessage());
 			ex.printStackTrace();
 		}
 	}
-
+	
+	@Test
+	public void testARUPDBInsertion() {
+		try {
+			// Insertion
+			VariantRec var5 = new VariantRec("16", 90161004, 90161004, "G", "GGG");
+			var5 = VCFParser.normalizeVariant(var5);
+			annotator.annotateVariant(var5);
+			Assert.assertEquals(.018637, var5.getProperty(VariantRec.ARUP_OVERALL_FREQ), 0.0001);
+			Assert.assertEquals(23, var5.getProperty(VariantRec.ARUP_HET_COUNT), 0.0001);
+			Assert.assertEquals(3, var5.getProperty(VariantRec.ARUP_HOM_COUNT), 0.0001);
+			Assert.assertEquals(778, var5.getProperty(VariantRec.ARUP_SAMPLE_COUNT), 0.0001);
+			Assert.assertEquals("Samples: 778 Hets: 23 Homs: 3", var5.getAnnotation(VariantRec.ARUP_FREQ_DETAILS));		
+		}	catch (Exception ex) {
+			thrown = true;
+			System.err.println("Exception during testing: " + ex.getLocalizedMessage());
+			ex.printStackTrace();
+		}
+	}
+	@Test
+	public void testARUPDBIndel() {
+		try {
+			// Indel
+			VariantRec var5b = new VariantRec("1", 220986516, 220986516, "CTAT", "TTAC");
+			var5b = VCFParser.normalizeVariant(var5b);
+			annotator.annotateVariant(var5b);
+			Assert.assertEquals(.00077, var5b.getProperty(VariantRec.ARUP_OVERALL_FREQ), 0.0001);
+			Assert.assertEquals(1, var5b.getProperty(VariantRec.ARUP_HET_COUNT), 0.0001);
+			Assert.assertEquals(0, var5b.getProperty(VariantRec.ARUP_HOM_COUNT), 0.0001);
+			Assert.assertEquals(646, var5b.getProperty(VariantRec.ARUP_SAMPLE_COUNT), 0.0001);
+			Assert.assertEquals("Samples: 646 Hets: 1 Homs: 0", var5b.getAnnotation(VariantRec.ARUP_FREQ_DETAILS));
+		}	catch (Exception ex) {
+			thrown = true;
+			System.err.println("Exception during testing: " + ex.getLocalizedMessage());
+			ex.printStackTrace();
+		}
+	}
+	@Test
+	public void testARUPDBChromXvar() {
+		try {
+			// X Chrom variant
+			VariantRec var6 = new VariantRec("X", 103042882, 103042882, "T", "C");
+			var6 = VCFParser.normalizeVariant(var6);
+			annotator.annotateVariant(var6);
+			Assert.assertEquals(.28771, var6.getProperty(VariantRec.ARUP_OVERALL_FREQ), 0.0001);
+			Assert.assertEquals(143, var6.getProperty(VariantRec.ARUP_HET_COUNT), 0.0001);
+			Assert.assertEquals(165, var6.getProperty(VariantRec.ARUP_HOM_COUNT), 0.0001);
+			Assert.assertEquals(822, var6.getProperty(VariantRec.ARUP_SAMPLE_COUNT), 0.0001);
+			Assert.assertEquals("Samples: 822 Hets: 143 Homs: 165", var6.getAnnotation(VariantRec.ARUP_FREQ_DETAILS));
+		}	catch (Exception ex) {
+			thrown = true;
+			System.err.println("Exception during testing: " + ex.getLocalizedMessage());
+			ex.printStackTrace();
+		}
+	}
 }
