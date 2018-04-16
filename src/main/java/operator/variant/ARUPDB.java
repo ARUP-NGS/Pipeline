@@ -42,7 +42,7 @@ public class ARUPDB {
 	}
 
 	
-	public QueryResult getInfoForPostion(String contig, int pos, String ref, String alt) throws IOException {
+	public QueryResult getInfoForVariant(String contig, int pos, String ref, String alt) throws IOException {
 		String queryStr = contig + ":" + pos + "-" + (pos);
 		
 		try {
