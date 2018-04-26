@@ -39,7 +39,7 @@ public class ARUPDBAnnotate extends Annotator {
 		}
 		
 		try {
-			QueryResult dbInfo = arupDB.getInfoForPostion(var.getContig(), var.getStart(), var.getRef(), var.getAlt());
+			QueryResult dbInfo = arupDB.getInfoForVariant(var.getContig(), var.getStart(), var.getRef(), var.getAlt());
 			if (dbInfo != null) {
 				var.addProperty(VariantRec.ARUP_OVERALL_FREQ, dbInfo.overallFreq);
 				var.addProperty(VariantRec.ARUP_HET_COUNT, dbInfo.totHets);
