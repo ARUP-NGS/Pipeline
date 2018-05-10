@@ -12,6 +12,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
+import java.util.regex.*;
+
 import pipeline.Pipeline;
 
 /**
@@ -88,6 +90,7 @@ public class HGMDB {
 		
 		
 		
+
 		sortAll();
 		
 		int count = 0;
@@ -124,7 +127,9 @@ public class HGMDB {
 			return null;
 		
 		qInfo.pos = pos;
+
 		int index = Collections.binarySearch(list, qInfo, new InfoComparator());
+
 		if (index < 0)
 			return null;
 		else 
@@ -132,6 +137,35 @@ public class HGMDB {
 		
 	}
 	
+	/**
+	 * Obtain the record associated with the given contig, position, ref, and alt, or null if there is no such record
+	 * @param contig
+	 * @param pos
+	 * @param ref
+	 * @param alt
+	 * @return
+	 */
+	public HGMDInfo getRecordRefAlt(String contig, int pos, String ref, String alt) {
+		List<HGMDInfo> list2 = db.get(contig);
+		if (list2 == null)
+			return null;
+
+		qInfo_exact.pos = pos;
+		qInfo_exact.ref = ref;
+		qInfo_exact.alt = alt;
+
+		int index = Collections.binarySearch(list2, qInfo_exact, new InfoComparator());
+
+		if (qInfo_exact.ref.equals(list2.get(index).ref) && qInfo_exact.alt.equals(list2.get(index).alt)){
+			if (index < 0)
+				return null;
+			else
+				return list2.get(index);
+		}
+		else
+			return null;
+	}
+
 	/**
 	 * Return list of all records associated with given gene name
 	 * @param geneName
@@ -163,7 +197,6 @@ public class HGMDB {
 		}
 		String contig = coordToks[0].replace("chr", "");
 		
-		
 		info.contig = contig;
 		
 		try {
@@ -180,6 +213,33 @@ public class HGMDB {
 		info.geneName = toks[8];
 		info.condition = toks[9];
 		info.assocType = toks[1];
+		info.ref = "";
+		info.alt = "";
+
+
+
+		try{ // Grabbing ref and alt from c.dot
+			String[] cDotsplit = toks[6].split(":");
+			String actualcDot = cDotsplit[1];
+			Pattern pattern = Pattern.compile("([0-9])+([ATCG])[-]([ATCG])");
+			Matcher m = pattern.matcher(actualcDot);
+
+			if (m.find()){
+				if (coordToks[2].equals("-")){
+					info.ref = m.group(2).replace("A", "t").replace("T", "a").replace("G", "c").replace("C", "g").toUpperCase();
+					info.alt = m.group(3).replace("A", "t").replace("T", "a").replace("G", "c").replace("C", "g").toUpperCase();
+				}
+				else{
+					info.ref = m.group(2);
+					info.alt = m.group(3);
+				}
+			}
+		}
+		catch (Exception ex){//NULL values are caused by variant falling in INTRONIC REGIONS!!!!
+			info.ref = "?";
+			info.alt = "?";
+		}
+
 		try {
 			info.citation = toks[18] + " " + toks[19] + " vol. " + toks[20] + ": " + toks[21] + " (" + toks[22] + ")" ;
 			info.pmid = toks[23];
@@ -187,11 +247,11 @@ public class HGMDB {
 		catch (Exception ex) {
 			//Sometimes this happens, if  so fine, but no citation
 		}
-		
 
 		return info;
 	}
 	
+
 	private HGMDInfo importIndelFromLine(String line) {
 		if (line.startsWith("//")) {
 			return null;
@@ -203,6 +263,7 @@ public class HGMDB {
 		if (toks.length < 6) {
 			return null;
 		}
+
 		HGMDInfo info = new HGMDInfo();
 		
 		String coords = toks[6];
@@ -238,6 +299,8 @@ public class HGMDB {
 		info.geneName = toks[2];
 		info.condition = toks[3];
 		info.assocType = toks[1];
+
+
 		try {
 			info.citation = toks[13] + " " + toks[14] + " vol. " + toks[15] + ": " + toks[16] + " (" + toks[17] + ")" ;
 			info.pmid = toks[18];
@@ -290,7 +353,6 @@ public class HGMDB {
 		info.pos = pos;
 		//info.strand = strand;
 		
-		//System.out.println(contig + ":" + pos + " " + info.toString());
 		List<HGMDInfo> list = db.get(contig);
 		if (list == null) {
 			list = new ArrayList<HGMDInfo>(1024);
@@ -358,6 +420,8 @@ public class HGMDB {
 		public String condition;
 		public String assocType;
 		public String citation;
+		public String ref;
+		public String alt;
 		
 		public String toString() {
 			return " nm: " + nm + " gene: " + geneName + " condition: " + condition + " cdot: " + cDot;
@@ -382,5 +446,6 @@ public class HGMDB {
 	
 	//Used to speed up db lookups
 	private HGMDInfo qInfo = new HGMDInfo();
+	private HGMDInfo qInfo_exact = new HGMDInfo(); //Looking at exact ref and alt matches in HGMD database file
 	
 }
