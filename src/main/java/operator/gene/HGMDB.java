@@ -156,14 +156,14 @@ public class HGMDB {
 
 		int index = Collections.binarySearch(list2, qInfo_exact, new InfoComparator());
 
-		if (qInfo_exact.ref.equals(list2.get(index).ref) && qInfo_exact.alt.equals(list2.get(index).alt)){
 			if (index < 0)
 				return null;
-			else
-				return list2.get(index);
+			else{
+				if (qInfo_exact.ref.equals(list2.get(index).ref) && qInfo_exact.alt.equals(list2.get(index).alt))
+					return list2.get(index);
+				else
+					return null;
 		}
-		else
-			return null;
 	}
 
 	/**
