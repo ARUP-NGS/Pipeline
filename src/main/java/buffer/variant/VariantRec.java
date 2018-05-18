@@ -887,11 +887,14 @@ public class VariantRec {
 	public static final String EXOMES_AA_HOMREF = "exomes6500.AA.homref";
 	public static final String EXOMES_AA_HET = "exomes6500.AA.het";
 	public static final String EXOMES_AA_HOMALT = "exomes6500.AA.homalt";
-	
+
 	public static final String HGMD_INFO = "hgmd.info";
+	public static final String HGMD_CLASS = "hgmd.class";
+	public static final String HGMD_HIT_EXACT = "hgmd.hit.exact";
+	public static final String HGMD_HIT = "hgmd.hit";
+
 	public static final String SAMPLE_COUNT = "sample.count";	
 	public static final String EFFECT_RELEVANCE_PRODUCT = "effect.rel.product";
-	public static final String HGMD_HIT = "hgmd.hit";
 	public static final String ARUP_FREQ = "ARUP.freq";
 	public static final String ARUP_TOT = "ARUP.tot";
 	public static final String ARUP_OVERALL_FREQ = "ARUP.overall.freq";

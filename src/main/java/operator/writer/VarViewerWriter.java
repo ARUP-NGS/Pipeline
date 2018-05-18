@@ -62,6 +62,8 @@ public class VarViewerWriter extends VariantPoolWriter {
 			VariantRec.MA_SCORE,
 			VariantRec.MA_PRED,
 			VariantRec.HGMD_HIT,
+			VariantRec.HGMD_HIT_EXACT,
+			VariantRec.HGMD_CLASS,
 			VariantRec.HALOPLEX_PANEL_FREQ,
 			VariantRec.SPLICING_ALL,
 			VariantRec.SPLICING_TOPNM,
@@ -205,6 +207,10 @@ public class VarViewerWriter extends VariantPoolWriter {
 
 			if (keys.get(i).equals(VariantRec.HGMD_HIT) && val.length() > 5) {
 				val = "true";				
+			}
+
+			if (keys.get(i).equals(VariantRec.HGMD_HIT_EXACT) && val.length() > 5) {
+				val = "true";
 			}
 
 			if (keys.get(i).equals(VariantRec.GENE_NAME) && val.contains("(")) {
