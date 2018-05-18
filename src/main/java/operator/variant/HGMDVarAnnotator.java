@@ -59,16 +59,25 @@ public class HGMDVarAnnotator extends Annotator {
 			
 		}
 		
-		HGMDInfo info_exact = db.getRecordRefAlt(var.getContig(), var.getStart(), var.getRef(), var.getAlt());
-		if (info_exact != null) {
-			var.addAnnotation(VariantRec.HGMD_HIT_EXACT, info_exact.condition + ", " + info_exact.assocType + " (" + info_exact.cDot + ",  " + info_exact.citation + ")");
-		}
-
 		HGMDInfo info = db.getRecord(var.getContig(), var.getStart());
 		if (info != null) {
-			String variant_class = info.assocType;
-			var.addAnnotation(VariantRec.HGMD_CLASS, variant_class);
-			var.addAnnotation(VariantRec.HGMD_HIT, info.condition + ", " + info.assocType + " (" + info.cDot + ",  " + info.citation + ")");
+			String assocType = "?";
+			if (info.assocType.equals("DM")) {
+				assocType = "Disease-causing";
+			}
+			if (info.assocType.equals("DP")) {
+				assocType = "Disease-associated polymorphism";
+			}
+			if (info.assocType.equals("DFP")) {
+				assocType = "Disease-associated polymorphism with functional evidence";
+			}
+			if (info.assocType.equals("FP")) {
+				assocType = "Functional polymorphism with in vitro evidence";
+			}
+			if (info.assocType.equals("FTV")) {
+				assocType = "Frameshifting or truncating variant";
+			}
+			var.addAnnotation(VariantRec.HGMD_HIT, info.condition + ", " + assocType + " (" + info.cDot + ",  " + info.citation + ")");
 		}
 		
 	}
