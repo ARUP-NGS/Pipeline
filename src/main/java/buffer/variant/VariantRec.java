@@ -889,8 +889,9 @@ public class VariantRec {
 	public static final String EXOMES_AA_HOMALT = "exomes6500.AA.homalt";
 
 	public static final String HGMD_INFO = "hgmd.info";
-	public static final String HGMD_CLASS = "hgmd.class";
-	public static final String HGMD_HIT_EXACT = "hgmd.hit.exact";
+	public static final String HGMD_VCF_HIT = "hgmd.exact.hit";
+	public static final String HGMD_VCF_CLASS = "hgmd.class";
+	public static final String HGMD_VCF_DISEASE = "hgmd.disease";
 	public static final String HGMD_HIT = "hgmd.hit";
 
 	public static final String SAMPLE_COUNT = "sample.count";	
