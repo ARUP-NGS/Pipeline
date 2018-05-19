@@ -55,6 +55,8 @@ public class VarViewerWriter extends VariantPoolWriter {
 			VariantRec.SIPHY_SCORE,
 			VariantRec.MA_SCORE,
 			VariantRec.HGMD_HIT,
+			VariantRec.HGMD_VCF_CLASS,
+			VariantRec.HGMD_VCF_HIT,
 			VariantRec.HALOPLEX_PANEL_FREQ,
 			VariantRec.SPLICING_ALL,
 			VariantRec.SPLICING_TOPNM,
