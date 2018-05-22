@@ -140,13 +140,13 @@ public class VCFParser implements VariantLineReader {
 
 		if (creator != null) {
 			
-			if (creator.startsWith("SelectVariants")) creator = "GATK / UnifiedGenotyper";
+			if (creator.startsWith("gatk_haplotype")) creator = "GATK / HaplotypeCaller";
 			else if (creator.startsWith("CGAPipeline")) creator = "CompleteGenomics";	
 			else if (creator.equals("lofreq_scalpel_manta")) creator = "lofreq_scalpel_manta";
 			else if (creator.equals("lofreq_scalpel_USeqMerged")) creator = "lofreq_scalpel_USeqMerged";
 			else if (!(creator.startsWith("freeBayes")) && !(creator.contains("Torrent")) && !(creator.startsWith("RTG")) && !(creator.startsWith("CGAPipeline"))) {
 				if (failIfNoSource) {
-					throw new IOException("Cannot determine which variant caller generated the VCF. Header property '##source' must be start with 'freeBayes' or 'CGAPipeline' or contain 'Torrent' or 'RTG' or 'SelectVariants' or 'lofreq_scalpel_USeqMerged' .");
+					throw new IOException("Cannot determine which variant caller generated the VCF. Header property '##source' must be start with 'freeBayes' or 'CGAPipeline' or contain 'Torrent' or 'RTG' or 'gatk_haplotype' or 'lofreq_scalpel_USeqMerged' .");
 				}
 			}
 		} else {
@@ -1164,11 +1164,11 @@ public class VCFParser implements VariantLineReader {
 	/**
 	 * Grabs set value from info field which indicates what variant caller
 	 * @return setfield (which variant caller called variant)
-	 * @author chrisk
+	 * @author ashinib
 	 */
 	public String getVarCaller(){
 		String setfield = "";
-		if (creator.equals("lofreq_scalpel_manta")){
+		if (creator.equals("lofreq_scalpel_manta") || creator.equals("GATK / HaplotypeCaller")){
 			setfield = getSampleMetricsStr("set");
 		}
 		return setfield;
