@@ -840,6 +840,9 @@ public class VariantRec {
 	public static final String SAMPLE_COUNT = "sample.count";	
 	public static final String EFFECT_RELEVANCE_PRODUCT = "effect.rel.product";
 	public static final String HGMD_HIT = "hgmd.hit";
+	public static final String HGMD_VCF_HIT = "hgmd.exact.hit";
+	public static final String HGMD_VCF_CLASS = "hgmd.class";
+	public static final String HGMD_VCF_DISEASE = "hgmd.disease";
 	public static final String ARUP_FREQ = "ARUP.freq";
 	public static final String ARUP_TOT = "ARUP.tot";
 	public static final String ARUP_OVERALL_FREQ = "ARUP.overall.freq";
