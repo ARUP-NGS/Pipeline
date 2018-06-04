@@ -85,6 +85,7 @@ public class VarViewerWriter extends VariantPoolWriter {
 			VariantRec.BAD_REGION,
 			VariantRec.LOW_COMPLEX_REGION,
 			VariantRec.VAR_CALLER,
+			VariantRec.FS_SCORE,
 			//=========================================================
 			//Exac columns, 32 of them. 4 for overall, and 4 for each of the 7 populations.
 			VariantRec.EXAC63K_VERSION,
