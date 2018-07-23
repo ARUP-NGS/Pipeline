@@ -75,6 +75,7 @@ public class VarViewerWriter extends VariantPoolWriter {
 			VariantRec.COSMIC_ID,
 			VariantRec.COSMIC_COUNT,
 			VariantRec.UK10K_ALLELE_FREQ,
+			VariantRec.FS_SCORE,//strand bias
 			//=========================================================
 			//Exac columns, 32 of them. 4 for overall, and 4 for each of the 7 populations.
 			VariantRec.EXAC63K_VERSION,
