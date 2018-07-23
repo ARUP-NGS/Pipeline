@@ -521,8 +521,7 @@ public class TestVCFParser {
 											
 				Integer depth = LSMparser.getDepth();
 				Assert.assertTrue(var.getProperty(VariantRec.DEPTH).equals( new Double(depth)));
-				int DepthSum = 485 + 306 + 476 + 273;
-				Assert.assertTrue(depth==DepthSum);
+				Assert.assertTrue(depth==5546);
 
 				Integer varDepth = LSMparser.getVariantDepth();
 				int altDepthSum = 476 + 273;

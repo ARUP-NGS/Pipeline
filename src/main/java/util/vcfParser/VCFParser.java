@@ -907,13 +907,11 @@ public class VCFParser implements VariantLineReader {
 			AnnoStr = "FDP"; //Flow evaluator metrics reflect the corrected base calls based on model of ref, alt called by FreeBayes, & original base call	
 			AnnoIdx = new int[]{0};
 		} else if (creator.contains("lofreq_scalpel_manta")) {
-			if (getSampleMetricsStr("set").equals("lofreq")) {
-				AnnoStr = "DP4";
-				AnnoIdx = new int[]{0,1,2,3};
-			} else if (getSampleMetricsStr("set").equals("scalpel") || getSampleMetricsStr("set").equals("pindel")) {
+			String caller = getSampleMetricsStr("set");
+			if (caller.equals("scalpel") || caller.equals("pindel") || caller.equals("lofreq") || caller.equals("MNPoster")) {
 				AnnoStr = "DP";
 				AnnoIdx = new int[]{0};
-			} else if (getSampleMetricsStr("set").equals("manta")) {
+			} else if (caller.equals("manta")) {
 				String pairedStr = getSampleMetricsStr("PR");
 				String splitStr = getSampleMetricsStr("SR");
 				String[] pairedDepthToks = {"0","0"};
@@ -929,9 +927,6 @@ public class VCFParser implements VariantLineReader {
 				dp = convertStr2Int(pairedDepthToks[0]) + convertStr2Int(pairedDepthToks[1]) +
 						convertStr2Int(splitDepthToks[0]) + convertStr2Int(splitDepthToks[1]);
 				return dp;
-			} else if (getSampleMetricsStr("set").equals("MNPoster")) {
-				AnnoStr = "DP";
-				AnnoIdx = new int[]{0};
 			} else {
 				throw new IllegalStateException("ERROR: VCF malformed! Merged Lofreq/Scalpel/Manta VCF contains a 'set' key of "
 						+ getSampleMetricsStr("set") + ", which is not defined. 'set' must be 'lofreq', 'scalpel', 'pindel', 'manta' or 'MNPoster'.");
