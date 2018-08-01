@@ -1334,7 +1334,7 @@ public class VCFParser implements VariantLineReader {
 
 				String refGT = gtToks[0]; //Allele1 genotype
 				String altGT = gtToks[1]; //Allele2 genotype
-				if (refGT.equals(".") || altGT.equals(".")) {
+				if (refGT.equals(".") && altGT.equals(".")) {
 					//missing genotype for allele
 					return GTType.UNKNOWN;
 				} else if (refGT.equals(altGT)) {
