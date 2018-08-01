@@ -1141,7 +1141,7 @@ public class TestVCFParser {
 		
 					//Go through file
 		int i=0;
-		while(parserGT.advanceLine() && i < 5) {	
+		while(parserGT.advanceLine() && i < 9) {	
 			VariantRec var = parserGT.toVariantRec();
 			var = parserGT.normalizeVariant(var);
 			
@@ -1156,7 +1156,7 @@ public class TestVCFParser {
 				Assert.assertTrue(genotype.equals("-/."));
 				
 				GTType hetero = parserGT.isHetero();
-				Assert.assertTrue(hetero == GTType.UNKNOWN);
+				Assert.assertTrue(hetero == GTType.HET)
 			} else if (i == 1) {
 				// Check the 2nd  variant (GT="1|0")
 				Assert.assertTrue(var.getProperty(VariantRec.VCF_POS).equals(new Double(2289063)));
@@ -1178,7 +1178,7 @@ public class TestVCFParser {
 				Assert.assertTrue(genotype.equals("T|."));
 				
 				GTType hetero = parserGT.isHetero();
-				Assert.assertTrue(hetero == GTType.UNKNOWN);
+				Assert.assertTrue(hetero == GTType.HET)
 			} else if (i == 3) {
 				// Check the 4th  variant (GT=".")
 				Assert.assertTrue(var.getProperty(VariantRec.VCF_POS).equals(new Double(2699516)));
@@ -1201,7 +1201,49 @@ public class TestVCFParser {
 				
 				GTType hetero = parserGT.isHetero();
 				Assert.assertTrue(hetero == GTType.HEMI);
-			}
+			} else if (i == 5) {
+				Assert.assertTrue(var.getProperty(VariantRec.VCF_POS).equals(new Double(2701200)));
+				Assert.assertTrue(var.getAnnotation(VariantRec.VCF_REF).equals("CA"));
+				Assert.assertTrue(var.getAnnotation(VariantRec.VCF_ALT).equals("C"));
+		
+				String genotype = parserGT.getGT();
+				Assert.assertTrue(genotype.equals("./A"));
+				
+				GTType hetero = parserGT.isHetero();
+				Assert.assertTrue(hetero == GTType.HET);
+                        } else if (i == 6) {
+				Assert.assertTrue(var.getProperty(VariantRec.VCF_POS).equals(new Double(2701210)));
+				Assert.assertTrue(var.getAnnotation(VariantRec.VCF_REF).equals("CA"));
+				Assert.assertTrue(var.getAnnotation(VariantRec.VCF_ALT).equals("C"));
+		
+				String genotype = parserGT.getGT();
+				Assert.assertTrue(genotype.equals("./-"));
+				
+				GTType hetero = parserGT.isHetero();
+				Assert.assertTrue(hetero == GTType.HET);
+                        } else if (i == 7) {
+				Assert.assertTrue(var.getProperty(VariantRec.VCF_POS).equals(new Double(2701220)));
+				Assert.assertTrue(var.getAnnotation(VariantRec.VCF_REF).equals("CA"));
+				Assert.assertTrue(var.getAnnotation(VariantRec.VCF_ALT).equals("C"));
+		
+				String genotype = parserGT.getGT();
+				Assert.assertTrue(genotype.equals("A/."));
+				
+				GTType hetero = parserGT.isHetero();
+				Assert.assertTrue(hetero == GTType.HET);
+
+                        } else if (i == 8) {
+				Assert.assertTrue(var.getProperty(VariantRec.VCF_POS).equals(new Double(2701230)));
+				Assert.assertTrue(var.getAnnotation(VariantRec.VCF_REF).equals("CA"));
+				Assert.assertTrue(var.getAnnotation(VariantRec.VCF_ALT).equals("C"));
+		
+				String genotype = parserGT.getGT();
+				Assert.assertTrue(genotype.equals("./."));
+				
+				GTType hetero = parserGT.isHetero();
+				Assert.assertTrue(hetero == GTType.UNKNOWN);
+                        } 
+                   
 			
 			i++;		
 		}
