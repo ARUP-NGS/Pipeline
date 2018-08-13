@@ -1178,7 +1178,7 @@ public class TestVCFParser {
 				Assert.assertTrue(genotype.equals("T|."));
 				
 				GTType hetero = parserGT.isHetero();
-				Assert.assertTrue(hetero == GTType.HET);
+				Assert.assertTrue(hetero == GTType.UNKNOWN);
 			} else if (i == 3) {
 				// Check the 4th  variant (GT=".")
 				Assert.assertTrue(var.getProperty(VariantRec.VCF_POS).equals(new Double(2699516)));
@@ -1210,7 +1210,7 @@ public class TestVCFParser {
 				Assert.assertTrue(genotype.equals("./A"));
 				
 				GTType hetero = parserGT.isHetero();
-				Assert.assertTrue(hetero == GTType.HET);
+				Assert.assertTrue(hetero == GTType.UNKNOWN);
                         } else if (i == 6) {
 				Assert.assertTrue(var.getProperty(VariantRec.VCF_POS).equals(new Double(2701210)));
 				Assert.assertTrue(var.getAnnotation(VariantRec.VCF_REF).equals("CA"));
@@ -1230,7 +1230,7 @@ public class TestVCFParser {
 				Assert.assertTrue(genotype.equals("A/."));
 				
 				GTType hetero = parserGT.isHetero();
-				Assert.assertTrue(hetero == GTType.HET);
+				Assert.assertTrue(hetero == GTType.UNKNOWN);
 
                         } else if (i == 8) {
 				Assert.assertTrue(var.getProperty(VariantRec.VCF_POS).equals(new Double(2701230)));
