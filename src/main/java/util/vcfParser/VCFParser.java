@@ -1201,7 +1201,7 @@ public class VCFParser implements VariantLineReader {
 		String genoQualStr = getSampleMetricsStr("GT");
 		// Grab array of ref & alternates
 		String[] sequences = getRawSeqArray();
-		
+
 		if (genoQualStr != null) {		
 			//Grab genotype sequence alleles when there are 2 alleles		
 			String delimRegex = getGTDelimitor();
@@ -1237,7 +1237,6 @@ public class VCFParser implements VariantLineReader {
 					normSequences[idx+1] = normData[3][idx]; 
 				}
 
-
 			
 				// Grab diploid alleles
 				String gtAlleles = "";
@@ -1249,11 +1248,10 @@ public class VCFParser implements VariantLineReader {
 					} else {
 						int currentIdx = Integer.parseInt(GTToks[i]);
 						gtAlleles += normSequences[currentIdx];
-						
-						if (i < 1) {
-							gtAlleles += delim;
-						}
-					}							
+				        }		
+					if (i < 1) {
+						gtAlleles += delim;
+                                        }
 				}
 				return gtAlleles;
 				
@@ -1334,7 +1332,9 @@ public class VCFParser implements VariantLineReader {
 
 				String refGT = gtToks[0]; //Allele1 genotype
 				String altGT = gtToks[1]; //Allele2 genotype
-				if (refGT.equals(".") || altGT.equals(".")) {
+				if ( (refGT.equals(".") && altGT.equals(".")) || 
+                                     (refGT.equals(".") && altGT.equals("0")) ||
+                                     (refGT.equals("0") && altGT.equals("."))) {
 					//missing genotype for allele
 					return GTType.UNKNOWN;
 				} else if (refGT.equals(altGT)) {
