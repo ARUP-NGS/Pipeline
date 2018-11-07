@@ -506,8 +506,10 @@ public class VCFParser implements VariantLineReader {
 			var.addAnnotation(VariantRec.VAR_CALLER, varCaller);
 		}
 
-		// If we have a somatic caller try and grab the AF info field.
-		if (creator.equals("lofreq_scalpel_manta") && sampleMetrics.containsKey("AF")) {
+		// If we have a somatic caller OR it's an MNP in a germline VCF try and grab the AF info field.
+		if ((creator.equals("lofreq_scalpel_manta") 
+				|| (creator.equals("GATK / HaplotypeCaller") && getSampleMetricsStr("set").equals("MNPoster"))) 
+				&& sampleMetrics.containsKey("AF")) {
 			double alleleFrequency = convertStr2Double(sampleMetrics.get("AF"));
 			var.addProperty("var.freq", alleleFrequency);
 		}
