@@ -2,6 +2,8 @@ package vcfLineParser;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 import org.junit.Assert;
@@ -31,6 +33,8 @@ public class TestVCFParser {
 	File completeGenomicsVCF = new File("src/test/java/testvcfs/completeGenomics-GTtest.vcf");
 	
 	File LoFreqScalpelMantaVCF = new File("src/test/java/testvcfs/lofreq_scalpel_manta.vcf");
+	
+	File germlineMNPSVCF = new File("src/test/java/testvcfs/mnps3.vcf");
 	
 	@Test (expected = IOException.class)
 	public void TestEmptyHeader() throws IOException {
@@ -1249,6 +1253,29 @@ public class TestVCFParser {
 		}
 		
 		System.out.println("\tVCFParser tests on parsing genotypes from Complete Genomics VCF passed (normalized variants).");			
+		
+	}
+	
+	
+	@Test
+	public void TestParseMNPProperties() throws IOException{
+		
+		VCFParser parser = new VCFParser(germlineMNPSVCF);
+		List<VariantRec> vars = new ArrayList<VariantRec>();
+		while(parser.advanceLine()) {
+			VariantRec var = parser.toVariantRec();
+			vars.add(var);
+		}
+		
+		Assert.assertTrue(vars.size() == 3);
+		Assert.assertTrue(vars.get(0).getProperty("var.freq") == 0.4651);
+		Assert.assertTrue(vars.get(0).getProperty(VariantRec.DEPTH) == 43);
+		
+		Assert.assertTrue(vars.get(1).getProperty("var.freq") == 0.1250);
+		Assert.assertTrue(vars.get(1).getProperty(VariantRec.DEPTH) == 8);
+		
+		Assert.assertTrue(vars.get(2).getProperty("var.freq") == 1.0);
+		Assert.assertTrue(vars.get(2).getProperty(VariantRec.DEPTH) == 58);
 		
 	}
 }
