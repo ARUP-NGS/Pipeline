@@ -31,6 +31,7 @@ public class TestSnpEff extends TestCase {
 	File inputFile3 = new File("src/test/java/annotation/testSnpEff3.xml");
     File inputFile4 = new File("src/test/java/annotation/testSnpEff4.xml");
     File inputFile5 = new File("src/test/java/annotation/testSnpEff5.xml");
+    File inputFileSplice = new File("src/test/java/annotation/testSnpEffSplice.xml");
 	File propertiesFile = new File("src/test/java/core/inputFiles/testProperties.xml");
 	File snpEffDir = null;
 
@@ -136,6 +137,103 @@ public class TestSnpEff extends TestCase {
 		}
 
 	}
+
+	public void testSplice() {
+
+		Pipeline ppl;
+                ppl = this.preparePipeline(inputFileSplice);
+                 
+		try {
+
+			ppl.initializePipeline();
+			ppl.stopAllLogging();
+
+			ppl.execute();
+
+			//Grab the snpEff annotator - we'll take a look at the variants to make sure
+			//they're ok
+			SnpEffGeneAnnotate annotator = (SnpEffGeneAnnotate)ppl.getObjectHandler().getObjectForLabel("GeneAnnotate");
+			VariantPool vars = annotator.getVariants();
+			Assert.assertTrue(vars.size() == 8);
+
+			VariantRec var = vars.findRecord("13", 32921034, "G", "A");
+			Assert.assertTrue(var != null);
+			JSONArray snpeff_annos = var.getjsonProperty(VariantRec.SNPEFF_ALL);
+			JSONObject hit = findJsonObj(snpeff_annos, "NM_000059.3.1");
+			Assert.assertNotNull(hit);
+			Assert.assertTrue(hit.has(VariantRec.VARIANT_TYPE));
+			Assert.assertTrue(hit.get(VariantRec.VARIANT_TYPE).equals("splice_donor_variant&intron_variant"));
+			Assert.assertTrue(hit.get(VariantRec.GENE_NAME).equals("BRCA2"));
+			
+			
+			var = vars.findRecord("13", 32921035, "T", "A");
+			Assert.assertTrue(var != null);
+			snpeff_annos = var.getjsonProperty(VariantRec.SNPEFF_ALL);
+			hit = findJsonObj(snpeff_annos, "NM_000059.3.1");
+			Assert.assertNotNull(hit);
+			Assert.assertTrue(hit.has(VariantRec.VARIANT_TYPE));
+			Assert.assertTrue(hit.get(VariantRec.VARIANT_TYPE).equals("splice_donor_variant&intron_variant"));
+			Assert.assertTrue(hit.get(VariantRec.GENE_NAME).equals("BRCA2"));
+			
+			
+			var = vars.findRecord("13", 32921036, "A", "G");
+			Assert.assertTrue(var != null);
+			snpeff_annos = var.getjsonProperty(VariantRec.SNPEFF_ALL);
+			hit = findJsonObj(snpeff_annos, "NM_000059.3.1");
+			Assert.assertNotNull(hit);
+			Assert.assertTrue(hit.has(VariantRec.VARIANT_TYPE));
+			Assert.assertTrue(hit.get(VariantRec.VARIANT_TYPE).equals("splice_region_variant&intron_variant"));
+			Assert.assertTrue(hit.get(VariantRec.GENE_NAME).equals("BRCA2"));
+			
+			var = vars.findRecord("13", 32921041, "A", "G");
+			Assert.assertTrue(var != null);
+			snpeff_annos = var.getjsonProperty(VariantRec.SNPEFF_ALL);
+			hit = findJsonObj(snpeff_annos, "NM_000059.3.1");
+			Assert.assertNotNull(hit);
+			Assert.assertTrue(hit.has(VariantRec.VARIANT_TYPE));
+			Assert.assertTrue(hit.get(VariantRec.VARIANT_TYPE).equals("splice_region_variant&intron_variant"));
+			Assert.assertTrue(hit.get(VariantRec.GENE_NAME).equals("BRCA2"));
+			
+			var = vars.findRecord("13", 32921042, "T", "G");
+			Assert.assertTrue(var != null);
+			snpeff_annos = var.getjsonProperty(VariantRec.SNPEFF_ALL);
+			hit = findJsonObj(snpeff_annos, "NM_000059.3.1");
+			Assert.assertNotNull(hit);
+			Assert.assertTrue(hit.has(VariantRec.VARIANT_TYPE));
+			Assert.assertTrue(hit.get(VariantRec.VARIANT_TYPE).equals("intron_variant"));
+			Assert.assertTrue(hit.get(VariantRec.GENE_NAME).equals("BRCA2"));
+			
+			
+			var = vars.findRecord("13", 32920963, "G", "A");
+			Assert.assertTrue(var != null);
+			snpeff_annos = var.getjsonProperty(VariantRec.SNPEFF_ALL);
+			hit = findJsonObj(snpeff_annos, "NM_000059.3.1");
+			Assert.assertNotNull(hit);
+			Assert.assertTrue(hit.has(VariantRec.VARIANT_TYPE));
+			Assert.assertTrue(hit.get(VariantRec.VARIANT_TYPE).equals("splice_acceptor_variant&intron_variant"));
+			
+			var = vars.findRecord("13", 32920962, "A", "T");
+			Assert.assertTrue(var != null);
+			snpeff_annos = var.getjsonProperty(VariantRec.SNPEFF_ALL);
+			hit = findJsonObj(snpeff_annos, "NM_000059.3.1");
+			Assert.assertNotNull(hit);
+			Assert.assertTrue(hit.has(VariantRec.VARIANT_TYPE));
+			Assert.assertTrue(hit.get(VariantRec.VARIANT_TYPE).equals("splice_acceptor_variant&intron_variant"));
+			
+			var = vars.findRecord("13", 32920961, "T", "G");
+			Assert.assertTrue(var != null);
+			snpeff_annos = var.getjsonProperty(VariantRec.SNPEFF_ALL);
+			hit = findJsonObj(snpeff_annos, "NM_000059.3.1");
+			Assert.assertNotNull(hit);
+			Assert.assertTrue(hit.has(VariantRec.VARIANT_TYPE));
+			Assert.assertTrue(hit.get(VariantRec.VARIANT_TYPE).equals("splice_region_variant&intron_variant"));
+			
+		}  catch (Exception ex) {
+			ex.printStackTrace();
+			Assert.assertTrue(false);
+		} 
+	}
+	
 	
 	public void testSnpEff() {
 
