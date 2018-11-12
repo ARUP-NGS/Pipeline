@@ -288,7 +288,7 @@ public class TestSnpEff extends TestCase {
 			SnpEffGeneAnnotate annotator = (SnpEffGeneAnnotate)ppl.getObjectHandler().getObjectForLabel("GeneAnnotate");
 			VariantPool vars = annotator.getVariants();
 			int x = vars.size();
-			Assert.assertTrue(vars.size() == 6);
+			Assert.assertTrue(vars.size() == 13);
 
 			VariantRec var = vars.findRecord("1", 24201919, "T", "C");
 			Assert.assertTrue(var != null); 
