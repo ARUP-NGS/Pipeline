@@ -48,6 +48,7 @@ import util.text.QueuedLogHandler;
  */
 public class Pipeline {
 
+
 	public static final String PIPELINE_VERSION = "1.9.23";
 	protected File source;
 	protected Document xmlDoc;
