@@ -4,7 +4,7 @@
   <groupId>com.aruplab.ngs</groupId>
   <artifactId>Pipeline</artifactId>
   <packaging>jar</packaging>
-  <version>1.9.22</version>
+  <version>1.9.23</version>
   <name>Pipeline</name>
   <url>http://maven.apache.org</url>
   <properties>
@@ -57,7 +57,7 @@
 	    <version>2.17</version>
 	    <configuration>
                 <skipTests>false</skipTests>
-                <testFailureIgnore>true</testFailureIgnore>
+                <testFailureIgnore>false</testFailureIgnore>
         </configuration>
 	</plugin>
 
