@@ -35,6 +35,8 @@ public class TestVCFParser {
 	File LoFreqScalpelMantaVCF = new File("src/test/java/testvcfs/lofreq_scalpel_manta.vcf");
 	
 	File germlineMNPSVCF = new File("src/test/java/testvcfs/mnps3.vcf");
+
+        File lithiumVCF = new File("src/test/java/testvcfs/lithium_filter.vcf");
 	
 	@Test (expected = IOException.class)
 	public void TestEmptyHeader() throws IOException {
@@ -1278,6 +1280,31 @@ public class TestVCFParser {
 		Assert.assertTrue(vars.get(2).getProperty(VariantRec.DEPTH) == 58);
 		
 	}
+
+	// Test single-sample Lithium filtered VCF
+	@Test
+	public void TestLithiumFilterVCF() throws IOException {	
+		System.err.println("Testing VCFLineParser: Lithium Filtered VCF ...");
+
+		VCFParser parser = new VCFParser(lithiumVCF);
+		List<VariantRec> vars = new ArrayList<VariantRec>();
+		while(parser.advanceLine()) {
+			VariantRec var = parser.toVariantRec();
+			vars.add(var);
+		}
+		Assert.assertTrue(vars.size() == 2);
+					
+	        // Check Lithium Deletion Score: "MLDEL"
+	        Double lithiumDel = vars.get(0).getProperty("lithium.del.score");
+                Assert.assertTrue(lithiumDel == 0.544549);	
+									
+	        // Check Lithium insertion score: "MLINS"
+	        Double lithiumIns = vars.get(1).getProperty("lithium.ins.score");
+                Assert.assertTrue(lithiumIns == 0.9411);	
+						
+		System.err.println("\tVCFLineParser tests passed on Lithium Filtered VCF.");
+	}
+
 }
 	
 
