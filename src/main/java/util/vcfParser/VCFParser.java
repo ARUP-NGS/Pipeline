@@ -583,12 +583,12 @@ public class VCFParser implements VariantLineReader {
 		}
 
                 Double lithiumIns = getLithiumInsertionScore();
-                if (lithiumIns != null) {
+                if (lithiumIns != null && lithiumIns != -1.0d ) {
                     var.addProperty(VariantRec.LITHIUM_INS_SCORE, lithiumIns);
                 }
 
                 Double lithiumDel = getLithiumDeletionScore();
-                if (lithiumDel != null) {
+                if (lithiumDel != null && lithiumDel != -1.0d ) {
                     var.addProperty(VariantRec.LITHIUM_DEL_SCORE, lithiumDel);
                 }
 
