@@ -592,6 +592,11 @@ public class VCFParser implements VariantLineReader {
                     var.addProperty(VariantRec.LITHIUM_DEL_SCORE, lithiumDel);
                 }
 
+		Double valAF = getValAF();
+		if (valAF != null) {
+			var.addProperty(VariantRec.VAL_AF, valAF);
+		}
+		
 		var.addAnnotation(VariantRec.RAW_GT, getSampleMetricsStr("GT"));
 
 		var.addAnnotation(VariantRec.SV_IMPRECISE, getSVImpreciseFlag());
@@ -1222,6 +1227,15 @@ public class VCFParser implements VariantLineReader {
         }
 
 	/**
+	 * Parse the VAL_AF field from the variant and return it as a Double
+	 * @return
+	 */
+	public Double getValAF() {
+		String valAF = getSampleMetricsStr("VAL_AF");
+		return convertStr2Double(valAF);
+	}
+	
+	/**
 	 * Returns the genotype sequence alleles 
 	 * @author elainegee
 	 * @return
@@ -1430,3 +1444,5 @@ public class VCFParser implements VariantLineReader {
 	}
 					
 }
+
+	
