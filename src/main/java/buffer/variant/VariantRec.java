@@ -1032,6 +1032,7 @@ public class VariantRec {
    public static final String PINDEL_ORIG_REF = "pindel.orig.ref";
    public static final String PINDEL_ORIG_ALT = "pindel.orig.alt";
 
+   public static final String LITHIUM_SNV_SCORE = "lithium.snv.score";
    public static final String LITHIUM_INS_SCORE = "lithium.ins.score";
    public static final String LITHIUM_DEL_SCORE = "lithium.del.score";
 
