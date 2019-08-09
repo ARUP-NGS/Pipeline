@@ -45,6 +45,7 @@
 ##source=gatk_haplotype
 ##INFO=<ID=OLD_MULTIALLELIC,Number=1,Type=String,Description="Original chr:pos:ref:alt encoding">
 ##INFO=<ID=OLD_VARIANT,Number=.,Type=String,Description="Original chr:pos:ref:alt encoding">
+##INFO=<ID=MLSNV,Number=1,Type=Float,Description="The ML score for SNVs">
 ##INFO=<ID=MLINS,Number=1,Type=Float,Description="The ML score for insertion variants">
 ##INFO=<ID=MLDEL,Number=1,Type=Float,Description="The ML score for deletion variants">
 ##FILTER=<ID=MLFLT,Description="The ML filter based on the ML score">
@@ -53,3 +54,4 @@
 22	38170254	.	GC	G	59.28	PASS	AC=2;AF=1;AN=2;DP=2;ExcessHet=3.0103;FS=0;MLEAC=1;MLEAF=0.5;MQ=60;QD=29.64;SOR=0.693;set=haplotype;MLDEL=0.544549;VAL_AF=0.0	GT:AD:DP:GQ:PL	1/1:0,2:2:6:71,6,0
 22	42454950	.	A	AG	73.6	PASS	AC=1;AF=0.5;AN=2;BaseQRankSum=-1.834;ClippingRankSum=0;DP=6;ExcessHet=3.0103;FS=3.31;MLEAC=1;MLEAF=0.5;MQ=60;MQRankSum=0;QD=12.27;ReadPosRankSum=0.253;SOR=0.105;set=haplotype;MLINS=0.9411;VAL_AF=0.0	GT:AD:DP:GQ:PL	0/1:2,4:6:38:81,0,38
 22	50297888	.	T	C	37.61	PASS	AC=1;AF=0.5;AN=2;BaseQRankSum=0;ClippingRankSum=0;DP=3;ExcessHet=3.0103;FS=4.771;MLEAC=1;MLEAF=0.5;MQ=60;MQRankSum=0;QD=12.54;ReadPosRankSum=0.967;SOR=2.225;set=haplotype;VAL_AF=0.07785499840974808	GT:AD:DP:GQ:PL	0/1:1,2:3:18:45,0,18
+22	50297898	.	G	A	37.11	PASS	AC=1;AF=0.5;AN=2;BaseQRankSum=0;ClippingRankSum=0;DP=3;ExcessHet=3.0103;FS=4.771;MLEAC=1;MLEAF=0.5;MQ=60;MQRankSum=0;QD=12.54;ReadPosRankSum=0.967;SOR=2.225;set=haplotype;MLSNV=0.25;VAL_AF=0.07785499840974808	GT:AD:DP:GQ:PL	0/1:1,2:3:18:45,0,18

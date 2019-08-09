@@ -1292,7 +1292,7 @@ public class TestVCFParser {
 			VariantRec var = parser.toVariantRec();
 			vars.add(var);
 		}
-		Assert.assertTrue(vars.size() == 3);
+		Assert.assertTrue(vars.size() == 4);
 					
 	        // Check Lithium Deletion Score: "MLDEL"
 	        Double lithiumDel = vars.get(0).getProperty("lithium.del.score");
@@ -1304,10 +1304,14 @@ public class TestVCFParser {
                 Assert.assertTrue(lithiumIns == 0.9411);	
                 Assert.assertTrue(vars.get(1).getProperty("lithium.del.score") == null);
 						
-                // For an SNV, it should not have nither Lithium insertion nor deletion score.
-                Assert.assertTrue(vars.get(2).getProperty("lithium.ins.score") == null);
-                Assert.assertTrue(vars.get(2).getProperty("lithium.del.score") == null);
 
+                // The third SNV does not have Lithium SNV score
+                Assert.assertTrue(vars.get(2).getProperty("lithium.snv.score") == null);
+
+                // The fourth variant, a SNV has Lithiium SNV score 
+                Double lithiumSNV = vars.get(3).getProperty("lithium.snv.score");
+                Assert.assertTrue(lithiumSNV == 0.25);
+               
 		System.err.println("\tVCFLineParser tests passed on Lithium Filtered VCF.");
 
 	}
