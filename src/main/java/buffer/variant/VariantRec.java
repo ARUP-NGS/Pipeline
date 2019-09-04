@@ -1027,7 +1027,8 @@ public class VariantRec {
    public static final String MNP_ALLELES = "mnp.alleles";
    
    public static final String VAL_AF = "val.af";
-
+   public static final String MEAN_VAL_AF = "mean.val.af";
+   public static final String MAX_VAL_AF = "max.val.af";
 
    public static final String PINDEL_ORIG_REF = "pindel.orig.ref";
    public static final String PINDEL_ORIG_ALT = "pindel.orig.alt";

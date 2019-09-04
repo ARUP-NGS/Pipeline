@@ -37,6 +37,8 @@ public class TestVCFParser {
 	File germlineMNPSVCF = new File("src/test/java/testvcfs/mnps3.vcf");
 
         File lithiumVCF = new File("src/test/java/testvcfs/lithium_filter.vcf");
+
+        File valafVCF = new File("src/test/java/testvcfs/validation_vaf.vcf");
 	
 	@Test (expected = IOException.class)
 	public void TestEmptyHeader() throws IOException {
@@ -1315,6 +1317,39 @@ public class TestVCFParser {
 		System.err.println("\tVCFLineParser tests passed on Lithium Filtered VCF.");
 
 	}
+
+        // Test single sample with validation mean VAF & max VAF
+        @Test
+	public void TestValidationVafVCF() throws IOException {	
+		System.err.println("Testing VCFLineParser: Validation VAFs VCF ...");
+
+		VCFParser parser = new VCFParser(valafVCF);
+		List<VariantRec> vars = new ArrayList<VariantRec>();
+		while(parser.advanceLine()) {
+			VariantRec var = parser.toVariantRec();
+			vars.add(var);
+		}
+		Assert.assertTrue(vars.size() == 3);
+					
+	        // Check Mean VAF: "MNVAF"
+	        Double mean_val_af = vars.get(0).getProperty("mean.val.af");
+                Assert.assertTrue(mean_val_af == 0.467081);
+									
+	        // Check Max VAF: "MXVAF"
+	        Double max_val_af = vars.get(0).getProperty("max.val.af");
+                Assert.assertTrue(max_val_af == 0.476380);
+
+                // Both MNVAF and MXVAF should be null for this variant
+                Assert.assertTrue(vars.get(1).getProperty("mean.val.af") == null);
+                Assert.assertTrue(vars.get(1).getProperty("max.val.af") == null);
+
+                // Both MNVAF and MXVAF should be 0.0 for this variant
+                Assert.assertTrue(vars.get(2).getProperty("mean.val.af") == 0.0);
+                Assert.assertTrue(vars.get(2).getProperty("max.val.af") == 0.0);
+						
+		System.err.println("\tVCFLineParser tests passed on Lithium Filtered VCF.");
+
+     }
 
 }
 	

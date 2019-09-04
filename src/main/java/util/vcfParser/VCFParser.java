@@ -601,6 +601,16 @@ public class VCFParser implements VariantLineReader {
 		if (valAF != null) {
 			var.addProperty(VariantRec.VAL_AF, valAF);
 		}
+
+                Double meanValAF = getMeanValAF();
+                if (meanValAF != null) {
+                        var.addProperty(VariantRec.MEAN_VAL_AF, meanValAF);
+                }
+ 
+                Double maxValAF = getMaxValAF();
+                if (maxValAF != null) {
+                        var.addProperty(VariantRec.MAX_VAL_AF, maxValAF);
+                }
 		
 		var.addAnnotation(VariantRec.RAW_GT, getSampleMetricsStr("GT"));
 
@@ -1275,6 +1285,30 @@ public class VCFParser implements VariantLineReader {
 		String valAF = getSampleMetricsStr("VAL_AF");
 		return convertStr2Double(valAF);
 	}
+
+        /**
+         * Parse the MNVAF field from the variant and return it as a Double
+         */
+        public Double getMeanValAF() {
+                if(sampleMetrics.containsKey("MNVAF")) {
+                        String meanValAF = getSampleMetricsStr("MNVAF");
+                        return convertStr2Double(meanValAF);
+                } else {
+                        return null;
+                }
+        }
+
+        /**
+         * Parse the MXVAF field from the variant and return it as a Double
+         */
+        public Double getMaxValAF() {
+                if(sampleMetrics.containsKey("MXVAF")) {
+                        String maxValAF = getSampleMetricsStr("MXVAF");
+                        return convertStr2Double(maxValAF);
+                } else {
+                        return null;
+                }
+        }
 	
 	/**
 	 * Returns the genotype sequence alleles 

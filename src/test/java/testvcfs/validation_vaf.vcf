@@ -1,0 +1,188 @@
+##fileformat=VCFv4.2
+##FILTER=<ID=PASS,Description="All filters passed">
+##ALT=<ID=BND,Description="Translocation Breakend">
+##ALT=<ID=DEL,Description="Deletion">
+##ALT=<ID=DUP:TANDEM,Description="Tandem Duplication">
+##ALT=<ID=INS,Description="Insertion">
+##ALT=<ID=INV,Description="Inversion">
+##FILTER=<ID=HighAltCnt,Description="high alternative allele count (>1000000)">
+##FILTER=<ID=HighChi2score,Description="high chi-squared score (>20)">
+##FILTER=<ID=HighCov,Description="high coverage (>1000000)">
+##FILTER=<ID=LowAltCnt,Description="low alternative allele count (<5)">
+##FILTER=<ID=LowChi2score,Description="low chi-squared score (<0)">
+##FILTER=<ID=LowCov,Description="low coverage (<5)">
+##FILTER=<ID=LowVaf,Description="low variant allele frequency (<0.05)">
+##FILTER=<ID=MS,Description="Microsatellite mutation (format: #LEN#MOTIF)">
+##FILTER=<ID=MaxMQ0Frac,Description="For a small variant (<1000 base), the fraction of reads with MAPQ0 around either breakend exceeds 0.4">
+##FILTER=<ID=min_indelqual_20,Description="Minimum Indel Quality (Phred) 20">
+##FILTER=<ID=min_snvqual_76,Description="Minimum SNV Quality (Phred) 76">
+##FILTER=<ID=min_snvqual_89,Description="Minimum SNV Quality (Phred) 89">
+##FORMAT=<ID=AD,Number=R,Type=Integer,Description="Allelic depths for the ref and alt alleles in the order listed">
+##FORMAT=<ID=AF,Number=1,Type=Float,Description="Allele Frequency">
+##FORMAT=<ID=BQ,Number=.,Type=Integer,Description="Average base quality for reads supporting alleles">
+##FORMAT=<ID=DP,Number=1,Type=Integer,Description="k-mer Depth">
+##FORMAT=<ID=DP4,Number=4,Type=Integer,Description="Counts for ref-forward bases, ref-reverse, alt-forward and alt-reverse bases">
+##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
+##FORMAT=<ID=PL,Number=G,Type=Integer,Description="Normalized, Phred-scaled likelihoods for genotypes as defined in the VCF specification">
+##FORMAT=<ID=PR,Number=.,Type=Integer,Description="Spanning paired-read support for the ref and alt alleles in the order listed">
+##FORMAT=<ID=SR,Number=.,Type=Integer,Description="Split reads for the ref and alt alleles in the order listed, for reads where P(allele|read)>0.999">
+##FORMAT=<ID=SS,Number=1,Type=Integer,Description="Variant status relative to non-adjacent Normal,0=wildtype,1=germline,2=somatic,3=LOH,4=post-transcriptional modification,5=unknown">
+##GATKCommandLine=<ID=SelectVariants,CommandLine="SelectVariants  --output var/select_variants.vcf --variant var/all_variants_raw.vcf --intervals bed/padded_probes_MedianInsertSize.bed --reference /docker/reference/Data/B37/GATKBundle/2.8_subset_arup_v0.1/human_g1k_v37_decoy_phiXAdaptr.fasta  --invertSelect false --exclude-non-variants false --exclude-filtered false --preserve-alleles false --remove-unused-alternates false --restrict-alleles-to ALL --keep-original-ac false --keep-original-dp false --mendelian-violation false --invert-mendelian-violation false --mendelian-violation-qual-threshold 0.0 --select-random-fraction 0.0 --remove-fraction-genotypes 0.0 --fully-decode false --max-indel-size 2147483647 --min-indel-size 0 --max-filtered-genotypes 2147483647 --min-filtered-genotypes 0 --max-fraction-filtered-genotypes 1.0 --min-fraction-filtered-genotypes 0.0 --max-nocall-number 2147483647 --max-nocall-fraction 1.0 --set-filtered-gt-to-nocall false --allow-nonoverlapping-command-line-samples false --suppress-reference-path false --interval-set-rule UNION --interval-padding 0 --interval-exclusion-padding 0 --interval-merging-rule ALL --read-validation-stringency SILENT --seconds-between-progress-updates 10.0 --disable-sequence-dictionary-validation false --create-output-bam-index true --create-output-bam-md5 false --create-output-variant-index true --create-output-variant-md5 false --lenient false --add-output-sam-program-record true --add-output-vcf-command-line true --cloud-prefetch-buffer 40 --cloud-index-prefetch-buffer -1 --disable-bam-index-caching false --sites-only-vcf-output false --help false --version false --showHidden false --verbosity INFO --QUIET false --use-jdk-deflater false --use-jdk-inflater false --gcs-max-retries 20 --gcs-project-for-requester-pays  --disable-tool-default-read-filters false",Version=4.1.0.0,Date="August 19, 2019 4:30:38 AM UTC">
+##INFO=<ID=AC,Number=A,Type=Integer,Description="Allele count in genotypes, for each ALT allele, in the same order as listed">
+##INFO=<ID=AF,Number=A,Type=Float,Description="Allele Frequency, for each ALT allele, in the same order as listed">
+##INFO=<ID=ALTCOV,Number=1,Type=Integer,Description="k-mer coverage of reference + any other allele (different from current non-reference) at locus">
+##INFO=<ID=AN,Number=1,Type=Integer,Description="Total number of alleles in called genotypes">
+##INFO=<ID=AVGCOV,Number=1,Type=Float,Description="average k-mer coverage">
+##INFO=<ID=BESTSTATE,Number=1,Type=String,Description="state of the mutation">
+##INFO=<ID=BND_DEPTH,Number=1,Type=Integer,Description="Read depth at local translocation breakend">
+##INFO=<ID=CHI2,Number=1,Type=Float,Description="chi-square score">
+##INFO=<ID=CIEND,Number=2,Type=Integer,Description="Confidence interval around END">
+##INFO=<ID=CIGAR,Number=A,Type=String,Description="CIGAR alignment for each alternate indel allele">
+##INFO=<ID=CIPOS,Number=2,Type=Integer,Description="Confidence interval around POS">
+##INFO=<ID=CONSVAR,Number=0,Type=Flag,Description="Indicates that the variant is a consensus variant (as opposed to a low frequency variant).">
+##INFO=<ID=COVRATIO,Number=1,Type=Float,Description="coverage ratio [(MINCOV)/(ALTCOV+MINCOV)]">
+##INFO=<ID=COVSTATE,Number=1,Type=String,Description="coverage state of the mutation">
+##INFO=<ID=DENOVO,Number=0,Type=Flag,Description="De novo mutation">
+##INFO=<ID=DP,Number=1,Type=Integer,Description="Raw Depth">
+##INFO=<ID=DP4,Number=4,Type=Integer,Description="Counts for ref-forward bases, ref-reverse, alt-forward and alt-reverse bases">
+##INFO=<ID=END,Number=1,Type=Integer,Description="End position of the variant described in this record">
+##INFO=<ID=EVENT,Number=1,Type=String,Description="ID of event associated to breakend">
+##INFO=<ID=FISHERPHREDSCORE,Number=1,Type=Float,Description="phred-scaled p-value from the Fisher's exact test for tumor-normal allele counts">
+##INFO=<ID=HOMLEN,Number=.,Type=Integer,Description="Length of base pair identical micro-homology at event breakpoints">
+##INFO=<ID=HOMSEQ,Number=.,Type=String,Description="Sequence of base pair identical micro-homology at event breakpoints">
+##INFO=<ID=HRUN,Number=1,Type=Integer,Description="Homopolymer length to the right of report indel position">
+##INFO=<ID=IMPRECISE,Number=0,Type=Flag,Description="Imprecise structural variation">
+##INFO=<ID=INDEL,Number=0,Type=Flag,Description="Indicates that the variant is an INDEL.">
+##INFO=<ID=INH,Number=1,Type=String,Description="inheritance">
+##INFO=<ID=INV3,Number=0,Type=Flag,Description="Inversion breakends open 3' of reported location">
+##INFO=<ID=INV5,Number=0,Type=Flag,Description="Inversion breakends open 5' of reported location">
+##INFO=<ID=LEFT_SVINSSEQ,Number=.,Type=String,Description="Known left side of insertion for an insertion of unknown length">
+##INFO=<ID=MATEID,Number=.,Type=String,Description="ID of mate breakend">
+##INFO=<ID=MATE_BND_DEPTH,Number=1,Type=Integer,Description="Read depth at remote translocation mate breakend">
+##INFO=<ID=MINCOV,Number=1,Type=Integer,Description="minimum k-mer coverage of non-reference allele">
+##INFO=<ID=NTLEN,Number=.,Type=Integer,Description="Number of bases inserted in place of deleted code">
+##INFO=<ID=PF,Number=1,Type=Integer,Description="The number of samples carry the variant">
+##INFO=<ID=RIGHT_SVINSSEQ,Number=.,Type=String,Description="Known right side of insertion for an insertion of unknown length">
+##INFO=<ID=SB,Number=1,Type=Float,Description="Strand Bias">
+##INFO=<ID=SOMATIC,Number=0,Type=Flag,Description="Somatic mutation">
+##INFO=<ID=SVINSLEN,Number=.,Type=Integer,Description="Length of insertion">
+##INFO=<ID=SVINSSEQ,Number=.,Type=String,Description="Sequence of insertion">
+##INFO=<ID=SVLEN,Number=.,Type=Integer,Description="Difference in length between REF and ALT alleles">
+##INFO=<ID=SVTYPE,Number=1,Type=String,Description="Type of structural variant">
+##INFO=<ID=TYPEOFSV,Number=1,Type=String,Description="Type of structural variant">
+##INFO=<ID=ZYG,Number=1,Type=String,Description="zygosity">
+##INFO=<ID=orig_alt,Number=1,Type=String,Description="Original ALT sequence">
+##INFO=<ID=orig_ref,Number=1,Type=String,Description="Original REF sequence">
+##INFO=<ID=set,Number=1,Type=String,Description="Source VCF for the merged record in CombineVariants">
+##center=""
+##cmdline=/home/arup/conda/envs/soma_vc/share/manta-1.2.1-0/bin/configManta.py --config /docker/reference/Data/Manta/1.0.0/configManta.py.ini --tumorBam bam/final.bam --referenceFasta /docker/reference/Data/B37/GATKBundle/2.8_subset_arup_v0.1/human_g1k_v37_decoy_phiXAdaptr.fasta --exome --callRegions bed/manta_varcall.bed.gz --runDir var/Manta
+##contig=<ID=1,length=249250621,assembly=human_g1k_v37_decoy_phiXAdaptr.fasta>
+##contig=<ID=2,length=243199373,assembly=human_g1k_v37_decoy_phiXAdaptr.fasta>
+##contig=<ID=3,length=198022430,assembly=human_g1k_v37_decoy_phiXAdaptr.fasta>
+##contig=<ID=4,length=191154276,assembly=human_g1k_v37_decoy_phiXAdaptr.fasta>
+##contig=<ID=5,length=180915260,assembly=human_g1k_v37_decoy_phiXAdaptr.fasta>
+##contig=<ID=6,length=171115067,assembly=human_g1k_v37_decoy_phiXAdaptr.fasta>
+##contig=<ID=7,length=159138663,assembly=human_g1k_v37_decoy_phiXAdaptr.fasta>
+##contig=<ID=8,length=146364022,assembly=human_g1k_v37_decoy_phiXAdaptr.fasta>
+##contig=<ID=9,length=141213431,assembly=human_g1k_v37_decoy_phiXAdaptr.fasta>
+##contig=<ID=10,length=135534747,assembly=human_g1k_v37_decoy_phiXAdaptr.fasta>
+##contig=<ID=11,length=135006516,assembly=human_g1k_v37_decoy_phiXAdaptr.fasta>
+##contig=<ID=12,length=133851895,assembly=human_g1k_v37_decoy_phiXAdaptr.fasta>
+##contig=<ID=13,length=115169878,assembly=human_g1k_v37_decoy_phiXAdaptr.fasta>
+##contig=<ID=14,length=107349540,assembly=human_g1k_v37_decoy_phiXAdaptr.fasta>
+##contig=<ID=15,length=102531392,assembly=human_g1k_v37_decoy_phiXAdaptr.fasta>
+##contig=<ID=16,length=90354753,assembly=human_g1k_v37_decoy_phiXAdaptr.fasta>
+##contig=<ID=17,length=81195210,assembly=human_g1k_v37_decoy_phiXAdaptr.fasta>
+##contig=<ID=18,length=78077248,assembly=human_g1k_v37_decoy_phiXAdaptr.fasta>
+##contig=<ID=19,length=59128983,assembly=human_g1k_v37_decoy_phiXAdaptr.fasta>
+##contig=<ID=20,length=63025520,assembly=human_g1k_v37_decoy_phiXAdaptr.fasta>
+##contig=<ID=21,length=48129895,assembly=human_g1k_v37_decoy_phiXAdaptr.fasta>
+##contig=<ID=22,length=51304566,assembly=human_g1k_v37_decoy_phiXAdaptr.fasta>
+##contig=<ID=X,length=155270560,assembly=human_g1k_v37_decoy_phiXAdaptr.fasta>
+##contig=<ID=Y,length=59373566,assembly=human_g1k_v37_decoy_phiXAdaptr.fasta>
+##contig=<ID=MT,length=16569,assembly=human_g1k_v37_decoy_phiXAdaptr.fasta>
+##contig=<ID=GL000207.1,length=4262,assembly=human_g1k_v37_decoy_phiXAdaptr.fasta>
+##contig=<ID=GL000226.1,length=15008,assembly=human_g1k_v37_decoy_phiXAdaptr.fasta>
+##contig=<ID=GL000229.1,length=19913,assembly=human_g1k_v37_decoy_phiXAdaptr.fasta>
+##contig=<ID=GL000231.1,length=27386,assembly=human_g1k_v37_decoy_phiXAdaptr.fasta>
+##contig=<ID=GL000210.1,length=27682,assembly=human_g1k_v37_decoy_phiXAdaptr.fasta>
+##contig=<ID=GL000239.1,length=33824,assembly=human_g1k_v37_decoy_phiXAdaptr.fasta>
+##contig=<ID=GL000235.1,length=34474,assembly=human_g1k_v37_decoy_phiXAdaptr.fasta>
+##contig=<ID=GL000201.1,length=36148,assembly=human_g1k_v37_decoy_phiXAdaptr.fasta>
+##contig=<ID=GL000247.1,length=36422,assembly=human_g1k_v37_decoy_phiXAdaptr.fasta>
+##contig=<ID=GL000245.1,length=36651,assembly=human_g1k_v37_decoy_phiXAdaptr.fasta>
+##contig=<ID=GL000197.1,length=37175,assembly=human_g1k_v37_decoy_phiXAdaptr.fasta>
+##contig=<ID=GL000203.1,length=37498,assembly=human_g1k_v37_decoy_phiXAdaptr.fasta>
+##contig=<ID=GL000246.1,length=38154,assembly=human_g1k_v37_decoy_phiXAdaptr.fasta>
+##contig=<ID=GL000249.1,length=38502,assembly=human_g1k_v37_decoy_phiXAdaptr.fasta>
+##contig=<ID=GL000196.1,length=38914,assembly=human_g1k_v37_decoy_phiXAdaptr.fasta>
+##contig=<ID=GL000248.1,length=39786,assembly=human_g1k_v37_decoy_phiXAdaptr.fasta>
+##contig=<ID=GL000244.1,length=39929,assembly=human_g1k_v37_decoy_phiXAdaptr.fasta>
+##contig=<ID=GL000238.1,length=39939,assembly=human_g1k_v37_decoy_phiXAdaptr.fasta>
+##contig=<ID=GL000202.1,length=40103,assembly=human_g1k_v37_decoy_phiXAdaptr.fasta>
+##contig=<ID=GL000234.1,length=40531,assembly=human_g1k_v37_decoy_phiXAdaptr.fasta>
+##contig=<ID=GL000232.1,length=40652,assembly=human_g1k_v37_decoy_phiXAdaptr.fasta>
+##contig=<ID=GL000206.1,length=41001,assembly=human_g1k_v37_decoy_phiXAdaptr.fasta>
+##contig=<ID=GL000240.1,length=41933,assembly=human_g1k_v37_decoy_phiXAdaptr.fasta>
+##contig=<ID=GL000236.1,length=41934,assembly=human_g1k_v37_decoy_phiXAdaptr.fasta>
+##contig=<ID=GL000241.1,length=42152,assembly=human_g1k_v37_decoy_phiXAdaptr.fasta>
+##contig=<ID=GL000243.1,length=43341,assembly=human_g1k_v37_decoy_phiXAdaptr.fasta>
+##contig=<ID=GL000242.1,length=43523,assembly=human_g1k_v37_decoy_phiXAdaptr.fasta>
+##contig=<ID=GL000230.1,length=43691,assembly=human_g1k_v37_decoy_phiXAdaptr.fasta>
+##contig=<ID=GL000237.1,length=45867,assembly=human_g1k_v37_decoy_phiXAdaptr.fasta>
+##contig=<ID=GL000233.1,length=45941,assembly=human_g1k_v37_decoy_phiXAdaptr.fasta>
+##contig=<ID=GL000204.1,length=81310,assembly=human_g1k_v37_decoy_phiXAdaptr.fasta>
+##contig=<ID=GL000198.1,length=90085,assembly=human_g1k_v37_decoy_phiXAdaptr.fasta>
+##contig=<ID=GL000208.1,length=92689,assembly=human_g1k_v37_decoy_phiXAdaptr.fasta>
+##contig=<ID=GL000191.1,length=106433,assembly=human_g1k_v37_decoy_phiXAdaptr.fasta>
+##contig=<ID=GL000227.1,length=128374,assembly=human_g1k_v37_decoy_phiXAdaptr.fasta>
+##contig=<ID=GL000228.1,length=129120,assembly=human_g1k_v37_decoy_phiXAdaptr.fasta>
+##contig=<ID=GL000214.1,length=137718,assembly=human_g1k_v37_decoy_phiXAdaptr.fasta>
+##contig=<ID=GL000221.1,length=155397,assembly=human_g1k_v37_decoy_phiXAdaptr.fasta>
+##contig=<ID=GL000209.1,length=159169,assembly=human_g1k_v37_decoy_phiXAdaptr.fasta>
+##contig=<ID=GL000218.1,length=161147,assembly=human_g1k_v37_decoy_phiXAdaptr.fasta>
+##contig=<ID=GL000220.1,length=161802,assembly=human_g1k_v37_decoy_phiXAdaptr.fasta>
+##contig=<ID=GL000213.1,length=164239,assembly=human_g1k_v37_decoy_phiXAdaptr.fasta>
+##contig=<ID=GL000211.1,length=166566,assembly=human_g1k_v37_decoy_phiXAdaptr.fasta>
+##contig=<ID=GL000199.1,length=169874,assembly=human_g1k_v37_decoy_phiXAdaptr.fasta>
+##contig=<ID=GL000217.1,length=172149,assembly=human_g1k_v37_decoy_phiXAdaptr.fasta>
+##contig=<ID=GL000216.1,length=172294,assembly=human_g1k_v37_decoy_phiXAdaptr.fasta>
+##contig=<ID=GL000215.1,length=172545,assembly=human_g1k_v37_decoy_phiXAdaptr.fasta>
+##contig=<ID=GL000205.1,length=174588,assembly=human_g1k_v37_decoy_phiXAdaptr.fasta>
+##contig=<ID=GL000219.1,length=179198,assembly=human_g1k_v37_decoy_phiXAdaptr.fasta>
+##contig=<ID=GL000224.1,length=179693,assembly=human_g1k_v37_decoy_phiXAdaptr.fasta>
+##contig=<ID=GL000223.1,length=180455,assembly=human_g1k_v37_decoy_phiXAdaptr.fasta>
+##contig=<ID=GL000195.1,length=182896,assembly=human_g1k_v37_decoy_phiXAdaptr.fasta>
+##contig=<ID=GL000212.1,length=186858,assembly=human_g1k_v37_decoy_phiXAdaptr.fasta>
+##contig=<ID=GL000222.1,length=186861,assembly=human_g1k_v37_decoy_phiXAdaptr.fasta>
+##contig=<ID=GL000200.1,length=187035,assembly=human_g1k_v37_decoy_phiXAdaptr.fasta>
+##contig=<ID=GL000193.1,length=189789,assembly=human_g1k_v37_decoy_phiXAdaptr.fasta>
+##contig=<ID=GL000194.1,length=191469,assembly=human_g1k_v37_decoy_phiXAdaptr.fasta>
+##contig=<ID=GL000225.1,length=211173,assembly=human_g1k_v37_decoy_phiXAdaptr.fasta>
+##contig=<ID=GL000192.1,length=547496,assembly=human_g1k_v37_decoy_phiXAdaptr.fasta>
+##contig=<ID=NC_007605,length=171823,assembly=human_g1k_v37_decoy_phiXAdaptr.fasta>
+##contig=<ID=hs37d5,length=35477943,assembly=human_g1k_v37_decoy_phiXAdaptr.fasta>
+##contig=<ID=chrAdapter,length=6987,assembly=human_g1k_v37_decoy_phiXAdaptr.fasta>
+##contig=<ID=chrPhiX_Illumina,length=5386,assembly=human_g1k_v37_decoy_phiXAdaptr.fasta>
+##fileDate=20190819
+##phasing=none
+##reference=file:///docker/reference/Data/B37/GATKBundle/2.8_subset_arup_v0.1/human_g1k_v37_decoy_phiXAdaptr.fasta
+##source=lofreq_scalpel_manta
+##tcgaversion=1.2
+##vcfProcessLog=<InputVCF="var/Pindel/pindel.vcf",InputVCFSource="pindel2vcf",InputVCFVer="0.6.3",InputVCFParam="d=2019-08-18">
+##INFO=<ID=OLD_MULTIALLELIC,Number=1,Type=String,Description="Original chr:pos:ref:alt encoding">
+##INFO=<ID=OLD_VARIANT,Number=.,Type=String,Description="Original chr:pos:ref:alt encoding">
+##INFO=<ID=ALLELES,Number=1,Type=String,Description="Locations of variant records used to compose this MNP">
+##FILTER=<ID=giab_lowconf,Description=/docker/reference/Bed/Production_Bed_Files/2.0/Support/All-HiConf-HG1thru6.merge.complement.oncprobev3+150.v1.merge.bed>
+##FILTER=<ID=homopolymer,Description=/docker/reference/Bed/Production_Bed_Files/2.0/Support/SimpleRepeat_homopolymer_gt10.oncprobev3+150.v1.padleft1.merge.bed>
+##FILTER=<ID=kmersniper,Description=/docker/reference/Bed/Production_Bed_Files/2.0/Support/ONCUBER_Tiers123_v3-0_probes.withsequence.kmersniper.4col.gte8.bed>
+##FILTER=<ID=low_complexity,Description=/docker/reference/Bed/Production_Bed_Files/2.0/Support/AllRepeats_lt51bp_gt95identity_merged.ONC150.v2.bed>
+##FILTER=<ID=mappability,Description=/docker/reference/Bed/Production_Bed_Files/2.0/Support/ONCUBER_Map0MultiMap_peaks.ONC-probe.AVsamps.pad150.v2.merge.bed>
+##FILTER=<ID=pseudogene,Description=/docker/reference/Bed/Production_Bed_Files/2.0/Support/ONC_pseudogenes.fullgene.merge.v2.bed>
+##FILTER=<ID=segdup_90to98pct,Description=/docker/reference/Bed/Production_Bed_Files/2.0/Support/UCSCgenomicSuperDups_90to98_segdup.sort.ONC150.v2.bed>
+##INFO=<ID=MNVAF,Number=1,Type=Float,Description="MNVAF field from tmp.vcf.gz">
+##INFO=<ID=MXVAF,Number=1,Type=Float,Description="MXVAF field from tmp.vcf.gz">
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	dd9d5313
+1	2490857	.	G	A	15167	PASS	AF=0.454118;DP=1275;DP4=435,250,390,199;SB=4;set=lofreq;MNVAF=0.467081;MXVAF=0.476380	GT:AF:DP4	0/1:0.454118:435,250,390,199
+1	3598900	.	C	A	113	mappability	AF=0.006899;DP=2609;DP4=1231,1356,2,17;SB=30;set=lofreq	GT:AF:DP4	0/1:0.006899:1231,1356,2,17
+1	3598910	.	C	T	17502	PASS	AF=0.460756;DP=1376;DP4=455,273,416,227;SB=3;set=lofreq;MNVAF=0.0;MXVAF=0.0	GT:AF:DP4	0/1:0.460756:455,273,416,227
