@@ -552,7 +552,7 @@ public class VCFParser implements VariantLineReader {
 			}
 		}
 
-		Integer netlen = getNETLEN(if (netlen != null) {
+		Integer netlen = getNETLEN();
 		if (netlen != null) {
 			var.addPropertyInt(VariantRec.NETLEN, Math.abs(netlen));
 		}
