@@ -552,15 +552,15 @@ public class VCFParser implements VariantLineReader {
 			}
 		}
 
-                Integer netlen = getNETLEN();
-                if (netlen != null) {
-                        var.addPropertyInt(VariantRec.NETLEN, Math.abs(netlen));
-                }
+		Integer netlen = getNETLEN(if (netlen != null) {
+		if (netlen != null) {
+			var.addPropertyInt(VariantRec.NETLEN, Math.abs(netlen));
+		}
 
-                String insseq = getINSSEQ();
-                if (insseq != null) {
-                        var.addAnnotation(VariantRec.INSSEQ, insseq);
-                }
+		String insseq = getINSSEQ();
+		if (insseq != null) {
+			var.addAnnotation(VariantRec.INSSEQ, insseq);
+		}
 
 		String pindelRef = getPindelRef();
 		if (pindelRef != null) {
@@ -1212,33 +1212,33 @@ public class VCFParser implements VariantLineReader {
 		return svlen;
 	}
 
-        /**
-         * Grabs net length value from VCF, identified by NETLEN field, or null if that key doesn't exist (for Germline and Lofreq variants)
-         * @return netlen (net length of variant)
-         * @author ashinib 
+	/**
+	 * Grabs net length value from VCF, identified by NETLEN field, or null if that key doesn't exist (for Germline and Lofreq variants)
+	 * @return netlen (net length of variant)
+	 * @author ashinib 
 	 */
-        public int getNETLEN(){
-                if (sampleMetrics.containsKey("NETLEN")) {
-                        String netlen = getSampleMetricsStr("NETLEN");
-                        return convertStr2Int(netlen);
-                } else {
-                       return null;
-                }
-        } 
+	public int getNETLEN(){
+		if (sampleMetrics.containsKey("NETLEN")) {
+			String netlen = getSampleMetricsStr("NETLEN");
+			return convertStr2Int(netlen);
+		} else {
+			return null;
+		}
+	} 
 
 
-        /**
-         * Return the bases inserted with the 'INSSEQ' field, or null if that key doesn't exist
-         * @return insseq (inserted bases within a DUP or DEL)
-         * @author ashinib            
-         */
-        public String getINSSEQ() {
-                if (sampleMetrics.containsKey("INSSEQ")) {
-                        return sampleMetrics.get("INSSEQ");
-                } else {
-                        return null;
-                }
-        }
+	/**
+	* Return the bases inserted with the 'INSSEQ' field, or null if that key doesn't exist
+	* @return insseq (inserted bases within a DUP or DEL)
+	* @author ashinib            
+	*/
+	public String getINSSEQ() {
+		if (sampleMetrics.containsKey("INSSEQ")) {
+			return sampleMetrics.get("INSSEQ");
+		} else {
+			return null;
+		}
+	}
 
 	/**
 	 * Grabs the info field END annotation if it exists. If not infoEND (as would be the case for germline), return -1
