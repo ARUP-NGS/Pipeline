@@ -1030,6 +1030,9 @@ public class VariantRec {
    public static final String MEAN_VAL_AF = "mean.val.af";
    public static final String MAX_VAL_AF = "max.val.af";
 
+   public static final String NETLEN = "netlen";
+   public static final String INSSEQ = "insseq";
+
    public static final String PINDEL_ORIG_REF = "pindel.orig.ref";
    public static final String PINDEL_ORIG_ALT = "pindel.orig.alt";
 
