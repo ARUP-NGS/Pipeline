@@ -40,6 +40,8 @@ public class TestVCFParser {
 
         File valafVCF = new File("src/test/java/testvcfs/validation_vaf.vcf");
 	
+	File netlenVCF = new File("src/test/java/testvcfs/netlen_inseq.vcf");
+
 	@Test (expected = IOException.class)
 	public void TestEmptyHeader() throws IOException {
 		System.out.println("VCFParser tests on parsing header:");
@@ -1350,6 +1352,37 @@ public class TestVCFParser {
 		System.err.println("\tVCFLineParser tests passed on Lithium Filtered VCF.");
 
      }
+
+	// Test single sample with netlen and insseq keys
+        @Test
+	public void TestNetlenInsseqVCF() throws IOException {
+		System.err.println("Testing VCFLineParser: Netlen and Insseq VCF ...");
+		
+		VCFParser parser = new VCFParser(netlenVCF);
+		List<VariantRec> vars = new ArrayList<VariantRec>();
+		while(parser.advanceLine()) {
+			VariantRec var = parser.toVariantRec();
+			vars.add(var);
+		}
+		Assert.assertTrue(vars.size() == 3);
+
+		// Check Net Length: "NETLEN" for first variant
+		Integer net_len = vars.get(0).getProperty("netlen");
+		Assert.assertTrue(net_len == 186);
+	
+		// Check Inserted Sequence: "INSSEQ" for first variant
+		String ins_seq = vars.get(0).getProperty("insseq");
+		Assert.assertTrue(ins_seq == "GTCAGAAAAATTTGGCACATTACATTCTTACAAAACTATAACTTTTCTCTTGGAAAATCCCATTTGAGATCATATTCATATTCTCTGAAGCTT");
+
+		// Check Both Netlen and Insseq for second variant
+		Assert.assertTrue(vars.get(1).getProperty("netlen") == 9);
+		Assert.assertTrue(vars.get(1).getProperty("ins_seq") == "T");
+
+		// Insseq should be null and Netlen not a null value for this variant
+		Assert.assertTrue(vars.get(2).getProperty("netlen") == 6);
+		Assert.assertTrue(vars.get(1).getProperty("ins_seq") == null);
+		
+		System.err.println("\tVCFLineParser tests passed on Netlen and Inseq VCF ....");
 
 }
 	
