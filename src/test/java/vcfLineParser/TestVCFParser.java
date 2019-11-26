@@ -1390,6 +1390,7 @@ public class TestVCFParser {
 		
 		System.err.println("\tVCFLineParser tests passed on Netlen and Inseq VCF ....");
 
+     }
 }
 	
 
