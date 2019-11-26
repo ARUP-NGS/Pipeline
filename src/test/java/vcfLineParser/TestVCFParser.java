@@ -1228,7 +1228,7 @@ public class TestVCFParser {
 		
 				String genotype = parserGT.getGT();
 				Assert.assertTrue(genotype.equals("./-"));
-				
+G				
 				GTType hetero = parserGT.isHetero();
 				Assert.assertTrue(hetero == GTType.HET);
                         } else if (i == 7) {
@@ -1367,26 +1367,26 @@ public class TestVCFParser {
 		Assert.assertTrue(vars.size() == 4);
 
 		// Both "NETLEN" and INSSEQ for first variant should be null
-		Integer net_len = vars.get(0).getProperty("netlen");
+		Integer net_len = vars.get(0).getPropertyInt("netlen");
 		Assert.assertTrue(net_len == null);
 
-		String ins_seq = vars.get(0).getProperty("insseq");
+		String ins_seq = vars.get(0).getAnnotation("insseq");
 		Assert.assertTrue(ins_seq == null);
 	
 		// Check Net Length and Inserted sequence values for second variant
-		Integer net_len = vars.get(1).getProperty("netlen");
+		Integer net_len = vars.get(1).getPropertyInt("netlen");
 		Assert.assertTrue(net_len == 186);
 	
-		String ins_seq = vars.get(1).getProperty("insseq");
+		String ins_seq = vars.get(1).getAnnotation("insseq");
 		Assert.assertTrue(ins_seq == "GTCAGAAAAATTTGGCACATTACATTCTTACAAAACTATAACTTTTCTCTTGGAAAATCCCATTTGAGATCATATTCATATTCTCTGAAGCTT");
 
 		// Check Both Netlen and Insseq for third variant
-		Assert.assertTrue(vars.get(2).getProperty("netlen") == 9);
-		Assert.assertTrue(vars.get(2).getProperty("ins_seq") == "T");
+		Assert.assertTrue(vars.get(2).getPropertyInt("netlen") == 9);
+		Assert.assertTrue(vars.get(2).getAnnotation("ins_seq") == "T");
 
 		// Insseq should be null and Netlen not a null value for this fourth variant
-		Assert.assertTrue(vars.get(3).getProperty("netlen") == 6);
-		Assert.assertTrue(vars.get(3).getProperty("ins_seq") == null);
+		Assert.assertTrue(vars.get(3).getPropertyInt("netlen") == 6);
+		Assert.assertTrue(vars.get(3).getAnnotation("ins_seq") == null);
 		
 		System.err.println("\tVCFLineParser tests passed on Netlen and Inseq VCF ....");
 
