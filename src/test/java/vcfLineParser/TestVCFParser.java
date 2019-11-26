@@ -1364,23 +1364,29 @@ public class TestVCFParser {
 			VariantRec var = parser.toVariantRec();
 			vars.add(var);
 		}
-		Assert.assertTrue(vars.size() == 3);
+		Assert.assertTrue(vars.size() == 4);
 
-		// Check Net Length: "NETLEN" for first variant
+		// Both "NETLEN" and INSSEQ for first variant should be null
 		Integer net_len = vars.get(0).getProperty("netlen");
+		Assert.assertTrue(net_len == null);
+
+		String ins_seq = vars.get(0).getProperty("insseq");
+		Assert.assertTrue(ins_seq == null);
+	
+		// Check Net Length and Inserted sequence values for second variant
+		Integer net_len = vars.get(1).getProperty("netlen");
 		Assert.assertTrue(net_len == 186);
 	
-		// Check Inserted Sequence: "INSSEQ" for first variant
-		String ins_seq = vars.get(0).getProperty("insseq");
+		String ins_seq = vars.get(1).getProperty("insseq");
 		Assert.assertTrue(ins_seq == "GTCAGAAAAATTTGGCACATTACATTCTTACAAAACTATAACTTTTCTCTTGGAAAATCCCATTTGAGATCATATTCATATTCTCTGAAGCTT");
 
-		// Check Both Netlen and Insseq for second variant
-		Assert.assertTrue(vars.get(1).getProperty("netlen") == 9);
-		Assert.assertTrue(vars.get(1).getProperty("ins_seq") == "T");
+		// Check Both Netlen and Insseq for third variant
+		Assert.assertTrue(vars.get(2).getProperty("netlen") == 9);
+		Assert.assertTrue(vars.get(2).getProperty("ins_seq") == "T");
 
-		// Insseq should be null and Netlen not a null value for this variant
-		Assert.assertTrue(vars.get(2).getProperty("netlen") == 6);
-		Assert.assertTrue(vars.get(1).getProperty("ins_seq") == null);
+		// Insseq should be null and Netlen not a null value for this fourth variant
+		Assert.assertTrue(vars.get(3).getProperty("netlen") == 6);
+		Assert.assertTrue(vars.get(3).getProperty("ins_seq") == null);
 		
 		System.err.println("\tVCFLineParser tests passed on Netlen and Inseq VCF ....");
 
