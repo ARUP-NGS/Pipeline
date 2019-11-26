@@ -1,4 +1,5 @@
-##fileformat=VCFv4.1
+##fileformat=VCFv4.2
+##source=lofreq_scalpel_manta
 ##FILTER=<ID=PASS,Description="All filters passed">
 ##FILTER=<ID=min_dp_10,Description="Minimum Coverage 10">
 ##FILTER=<ID=sb_fdr,Description="Strand-Bias Multiple Testing Correction: fdr corr. pvalue > 0.001000">
