@@ -40,6 +40,8 @@ public class TestVCFParser {
 
         File valafVCF = new File("src/test/java/testvcfs/validation_vaf.vcf");
 	
+	File netlenVCF = new File("src/test/java/testvcfs/netlen_inseq.vcf");
+
 	@Test (expected = IOException.class)
 	public void TestEmptyHeader() throws IOException {
 		System.out.println("VCFParser tests on parsing header:");
@@ -1226,7 +1228,7 @@ public class TestVCFParser {
 		
 				String genotype = parserGT.getGT();
 				Assert.assertTrue(genotype.equals("./-"));
-				
+	
 				GTType hetero = parserGT.isHetero();
 				Assert.assertTrue(hetero == GTType.HET);
                         } else if (i == 7) {
@@ -1351,6 +1353,41 @@ public class TestVCFParser {
 
      }
 
+	// Test single sample with netlen and insseq keys
+        @Test
+	public void TestNetlenInsseqVCF() throws IOException {
+		System.err.println("Testing VCFLineParser: Netlen and Insseq VCF ...");
+		
+		VCFParser parser = new VCFParser(netlenVCF);
+		List<VariantRec> vars = new ArrayList<VariantRec>();
+		while(parser.advanceLine()) {
+			VariantRec var = parser.toVariantRec();
+			vars.add(var);
+		}
+		Assert.assertTrue(vars.size() == 4);
+
+		// Both "NETLEN" and INSSEQ for first variant should be null
+		Integer net_len = vars.get(0).getPropertyInt("netlen");
+		Assert.assertTrue(net_len == null);
+
+		String ins_seq = vars.get(0).getAnnotation("insseq");
+		Assert.assertTrue(ins_seq == null);
+
+		// Check Net Length and Inserted sequence values for second variant
+		Assert.assertTrue(vars.get(1).getPropertyInt("netlen") == 186);
+		Assert.assertTrue(vars.get(1).getAnnotation("insseq").equals("GTCAGAAAAATTTGGCACATTACATTCTTACAAAACTATAACTTTTCTCTTGGAAAATCCCATTTGAGATCATATTCATATTCTCTGAAGCTT"));
+
+		// Check Both Netlen and Insseq for third variant
+		Assert.assertTrue(vars.get(2).getPropertyInt("netlen") == 9);
+		Assert.assertTrue(vars.get(2).getAnnotation("insseq").equals("T"));
+
+		// Insseq should be null and Netlen not a null value for this fourth variant
+		Assert.assertTrue(vars.get(3).getPropertyInt("netlen") == 6);
+		Assert.assertTrue(vars.get(3).getAnnotation("insseq") == null);
+		
+		System.err.println("\tVCFLineParser tests passed on Netlen and Inseq VCF ....");
+
+     }
 }
 	
 

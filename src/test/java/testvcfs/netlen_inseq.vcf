@@ -1,0 +1,44 @@
+##fileformat=VCFv4.2
+##source=lofreq_scalpel_manta
+##FILTER=<ID=PASS,Description="All filters passed">
+##FILTER=<ID=min_dp_10,Description="Minimum Coverage 10">
+##FILTER=<ID=sb_fdr,Description="Strand-Bias Multiple Testing Correction: fdr corr. pvalue > 0.001000">
+##FILTER=<ID=min_snvqual_92,Description="Minimum SNV Quality (Phred) 92">
+##FILTER=<ID=min_indelqual_20,Description="Minimum Indel Quality (Phred) 20">
+##fileDate=20171109
+##tcgaversion=1.2
+##reference=human_g1k_v37_decoy_phiXAdaptr
+##center=""
+##phasing=none
+##vcfProcessLog=<InputVCF="netlen_inseq.vcf",InputVCFSource="netleninsseqvcf",InputVCFVer="0.0",InputVCFParam="d=20171109">
+##INFO=<ID=AF,Number=1,Type=Float,Description="Allele Frequency">
+##INFO=<ID=SB,Number=1,Type=Integer,Description="Phred-scaled strand bias at this position">
+##INFO=<ID=DP4,Number=4,Type=Integer,Description="Counts for ref-forward bases, ref-reverse, alt-forward and alt-reverse bases">
+##INFO=<ID=INDEL,Number=0,Type=Flag,Description="Indicates that the variant is an INDEL.">
+##INFO=<ID=CONSVAR,Number=0,Type=Flag,Description="Indicates that the variant is a consensus variant (as opposed to a low frequency variant).">
+##INFO=<ID=HRUN,Number=1,Type=Integer,Description="Homopolymer length to the right of report indel position">
+##INFO=<ID=END,Number=1,Type=Integer,Description="End position of the variant described in this record">
+##INFO=<ID=HOMLEN,Number=.,Type=Integer,Description="Length of base pair identical micro-homology at event breakpoints">
+##INFO=<ID=PF,Number=1,Type=Integer,Description="The number of samples carry the variant">
+##INFO=<ID=HOMSEQ,Number=.,Type=String,Description="Sequence of base pair identical micro-homology at event breakpoints">
+##INFO=<ID=SVLEN,Number=.,Type=Integer,Description="Difference in length between REF and ALT alleles">
+##INFO=<ID=TYPEOFSV,Number=1,Type=String,Description="Type of structural variant">
+##INFO=<ID=NTLEN,Number=.,Type=Integer,Description="Number of bases inserted in place of deleted code">
+##INFO=<ID=orig_ref,Number=1,Type=String,Description="Original REF sequence">
+##INFO=<ID=orig_alt,Number=1,Type=String,Description="Original ALT sequence">
+##INFO=<ID=set,Number=1,Type=String,Description="Source VCF for the merged record in CombineVariants">
+##INFO=<ID=NETLEN,Number=.,Type=Integer,Description="Net length of insertion and duplication or deletion and insertion">
+##INFO=<ID=INSSEQ,Number=.,Type=String,Description="Inserted sequence between duplication or in place of a deletion">
+##FORMAT=<ID=DP4,Number=4,Type=Integer,Description="Counts for ref-forward bases, ref-reverse, alt-forward and alt-reverse bases">
+##FORMAT=<ID=AF,Number=1,Type=Float,Description="Allele Frequency">
+##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
+##FORMAT=<ID=DP,Number=1,Type=Integer,Description="Read depth at this position in the sample">
+##FORMAT=<ID=BQ,Number=.,Type=Integer,Description="Average base quality for reads supporting alleles">
+##FORMAT=<ID=SS,Number=1,Type=Integer,Description="Variant status relative to non-adjacent Normal,0=wildtype,1=germline,2=somatic,3=LOH,4=post-transcriptional modification,5=unknown">
+##FORMAT=<ID=AD,Number=.,Type=Integer,Description="Depth of reads supporting alleles 0/1/2/3...">
+##FORMAT=<ID=PL,Number=3,Type=Integer,Description="Normalized, Phred-scaled likelihoods for AA,AB,BB genotypes where A=ref and B=alt; not applicable if site is not biallelic">
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	test
+1	843405	.	A	G	25622	PASS	DP=2588;AF=0.414606;SB=0;DP4=731,762,528,561;set=lofreq	GT:AF:DP4	0/1:0.414606:731,762,528,561
+13	28608094	.	C	<DUP:TANDEM>	.	PASS	END=28608187;HOMLEN=0;SVLEN=93;TYPEOFSV=DUP:TANDEM;NTLEN=93;orig_ref=CACTTTTCCAAAAGCACCTGATCCTAGTACCTTCCCTGCAAAGACAAATGGTGAGTACGTGCATTTTAAAGATTTTCCAATGGAAAAGAAATGC;orig_alt=CACTTTTCCAAAAGCACCTGATCCTAGTACCTTCCCTGCAAAGACAAATGGTGAGTACGTGCATTTTAAAGATTTTCCAATGGAAAAGAAATGCGTCAGAAAAATTTGGCACATTACATTCTTACAAAACTATAACTTTTCTCTTGGAAAATCCCATTTGAGATCATATTCATATTCTCTGAAGCTTACTTTTCCAAAAGCACCTGATCCTAGTACCTTCCCTGCAAAGACAAATGGTGAGTACGTGCATTTTAAAGATTTTCCAATGGAAAAGAAATGC;AF=0;set=pindel;NETLEN=186;INSSEQ=GTCAGAAAAATTTGGCACATTACATTCTTACAAAACTATAACTTTTCTCTTGGAAAATCCCATTTGAGATCATATTCATATTCTCTGAAGCTT	GT:DP:BQ:SS:AD	0/0:2594:.:2:2593,1
+13	28608275	.	AAATCAACGTA	AT	.	PASS	END=28608285;HOMLEN=0;SVLEN=-10;TYPEOFSV=RPL;NTLEN=1;orig_ref=AAATCAACGTA;orig_alt=AT;AF=0.003;set=pindel;NETLEN=-9;INSSEQ=T	GT:DP:BQ:SS:AD	0/0:1167:.:2:1164,3
+13	28608282	.	C	<DEL>	.	PASS	END=28608288;HOMLEN=3;HOMSEQ=GTA;SVLEN=-6;TYPEOFSV=DEL;orig_ref=CGTAGAA;orig_alt=C;AF=0.001;set=pindel;NETLEN=-6	GT:DP:BQ:SS:AD	0/0:1110:.:2:1109,1
