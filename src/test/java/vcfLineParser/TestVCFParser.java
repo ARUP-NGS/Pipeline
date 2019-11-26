@@ -1375,7 +1375,6 @@ public class TestVCFParser {
 
 		// Check Net Length and Inserted sequence values for second variant
 		Assert.assertTrue(vars.get(1).getPropertyInt("netlen") == 186);
-		System.err.println(vars.get(1).getAnnotation("insseq") + "ashini");
 		Assert.assertTrue(vars.get(1).getAnnotation("insseq").equals("GTCAGAAAAATTTGGCACATTACATTCTTACAAAACTATAACTTTTCTCTTGGAAAATCCCATTTGAGATCATATTCATATTCTCTGAAGCTT"));
 
 		// Check Both Netlen and Insseq for third variant
