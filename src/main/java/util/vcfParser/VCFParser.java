@@ -1217,7 +1217,7 @@ public class VCFParser implements VariantLineReader {
 	 * @return netlen (net length of variant)
 	 * @author ashinib 
 	 */
-	public int getNETLEN(){
+	public Integer getNETLEN(){
 		if (sampleMetrics.containsKey("NETLEN")) {
 			String netlen = getSampleMetricsStr("NETLEN");
 			return convertStr2Int(netlen);
